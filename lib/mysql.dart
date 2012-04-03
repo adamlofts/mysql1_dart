@@ -4,12 +4,14 @@ class MySqlConnection implements Connection {
   String _user;
   String _password;
   int _port;
+  Socket _socket;
   
   MySqlConnection([String host='localhost', String user, String password, int port=3306]) {
     _host = host;
     _user = user;
     _password = password;
     _port = port;
+    _socket = new Socket(host, port);
   }
   
   Database openDatabase(String dbName) {
@@ -29,6 +31,7 @@ class MySqlConnection implements Connection {
     for (Database db in _dbs.getValues()) {
       db.close();
     }
+    _socket.close();
   }
 }
 

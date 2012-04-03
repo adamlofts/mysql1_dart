@@ -1,7 +1,7 @@
 #import('lib/sqljockey.dart');
 
 void main() {
-  Connection cnx = new MySqlConnection(host:'localhost', port:3307, user:'large', password:'large');
+  Connection cnx = new MySqlConnection(port:3307, user:'large', password:'large');
   Database db = cnx.openDatabase('large');
   
   Results results = db.query('select * from projects');
