@@ -10,11 +10,14 @@ class MySqlConnection implements Connection {
   int _port;
   Socket _socket;
 
-  List _headerBuffer;
-  List _dataBuffer;
+  Buffer _headerBuffer;
+  Buffer _dataBuffer;
+  
+  HandshakePacket _handshakePacket;
   
   int _dataSize;
   int _readPos = 0;
+  bool _expectHandshake = true;
   
   int _state = STATE_PACKET_HEADER;
   
@@ -24,7 +27,7 @@ class MySqlConnection implements Connection {
     _password = password;
     _port = port;
     
-    _headerBuffer = new List(HEADER_SIZE);
+    _headerBuffer = new Buffer(HEADER_SIZE);
     
     _dbs = new Map<String, Database>();
 
@@ -53,23 +56,35 @@ class MySqlConnection implements Connection {
     print("got data");
     switch (_state) {
     case STATE_PACKET_HEADER:
-      int bytes = _socket.readList(_headerBuffer, _readPos, HEADER_SIZE - _readPos);
+      int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
       if (_readPos == HEADER_SIZE) {
         _state = STATE_PACKET_DATA;
         _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
         _readPos = 0;
         print("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
-        _dataBuffer = new List(_dataSize);
+        _dataBuffer = new Buffer(_dataSize);
       }
       break;
     case STATE_PACKET_DATA:
-      int bytes = _socket.readList(_dataBuffer, _readPos, _dataSize - _readPos);
+      int bytes = _dataBuffer.readFrom(_socket, _dataSize - _readPos);
       print("got $bytes bytes");
       _readPos += bytes;
       if (_readPos == _dataSize) {
         print("read all data");
         _state = STATE_PACKET_HEADER;
+        _headerBuffer.reset();
+        
+        if (_expectHandshake) {
+          _expectHandshake = false;
+          _handshakePacket = new HandshakePacket(_dataBuffer);
+          _handshakePacket.show();
+          
+          int clientFlags = 0;
+          List scrambleBuffer = new List();
+          ClientAuthPacket authPacket 
+              = new ClientAuthPacket(clientFlags, 0, _user, scrambleBuffer);
+        }
       }
       break;
     }
