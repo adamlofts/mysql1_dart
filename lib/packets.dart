@@ -2,6 +2,17 @@ interface SendablePacket {
   Buffer get buffer();
 }
 
+class QueryPacket implements SendablePacket {
+  Buffer _buffer;
+  
+  QueryPacket(String sql) {
+    _buffer.writeByte(COM_QUERY);
+    _buffer.writeStringToEnd(sql);
+  }
+  
+  Buffer get buffer() => _buffer;
+}
+
 class ClientAuthPacket implements SendablePacket {
   Buffer _buffer;
   
@@ -47,8 +58,29 @@ class ClientAuthPacket implements SendablePacket {
     print("made packet ${_buffer._list}");
   }
   
-  Buffer get buffer() {
-    return _buffer;
+  Buffer get buffer() => _buffer;
+}
+
+class OkPacket {
+  int affectedRows;
+  int insertId;
+  int serverStatus;
+  String message;
+  
+  OkPacket(Buffer buffer) {
+    buffer.seek(1);
+    affectedRows = buffer.readLengthCodedBinary();
+    insertId = buffer.readLengthCodedBinary();
+    serverStatus = buffer.readInt16();
+    message = buffer.readStringToEnd();
+  }
+  
+  void show() {
+    print("OK PACKET");
+    print("affected rows $affectedRows");
+    print("insert id $insertId");
+    print("server status $serverStatus");
+    print("message $message");
   }
 }
 
@@ -82,6 +114,7 @@ class HandshakePacket {
   }
   
   void show() {
+    print("HANDSHAKE PACKET");
     print("protocol version $protocolVersion");
     print("server version $serverVersion");
     print("thread id $threadId");

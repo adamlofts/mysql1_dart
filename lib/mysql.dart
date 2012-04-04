@@ -58,6 +58,7 @@ class MySqlConnection implements Connection {
     print("got data");
     switch (_state) {
     case STATE_PACKET_HEADER:
+      print("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
       if (_readPos == HEADER_SIZE) {
@@ -77,7 +78,9 @@ class MySqlConnection implements Connection {
         print("read all data");
         _state = STATE_PACKET_HEADER;
         _headerBuffer.reset();
+        _readPos = 0;
         
+        print(_dataBuffer._list);
         if (_expectHandshake) {
           _expectHandshake = false;
           _handshakePacket = new HandshakePacket(_dataBuffer);
@@ -90,6 +93,9 @@ class MySqlConnection implements Connection {
               = new ClientAuthPacket(_handshakePacket.isNewProtocol(),
                 clientFlags, 0, 33, _user, _password, scrambleBuffer);
           _sendPacket(authPacket);
+        } else if (_dataBuffer[0] == 0) {
+          OkPacket okPacket = new OkPacket(_dataBuffer);
+          okPacket.show();
         }
       }
       break;

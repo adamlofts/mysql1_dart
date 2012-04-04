@@ -85,6 +85,35 @@ class Buffer {
     writeNullTerminatedList(s.charCodes());
   }
   
+  String readStringToEnd() {
+    return new String.fromCharCodes(_list.getRange(_readPos, _list.length - _readPos));
+  }
+  
+  void writeStringToEnd(String s) {
+    writeList(s.charCodes());
+  }
+  
+  int readLengthCodedBinary() {
+    int first = readByte();
+    if (first <= 251) {
+      return first;
+    }
+    switch (first) {
+      case 251:
+        return null;
+      case 252:
+        return readInt16();
+      case 253:
+        return readInt24();
+      case 254:
+        return readInt64();
+    }
+  }
+  
+  void writeLengthCodedBinary(int value) {
+    throw "not implemented writeLengthCodedBinary yet";
+  }
+  
   int readByte() {
     return _list[_readPos++];
   }
@@ -100,6 +129,17 @@ class Buffer {
   void writeInt16(int i) {
     _list[_writePos++] = i & 0xFF;
     _list[_writePos++] = (i & 0xFF00) >> 8;
+  }
+
+  int readInt24() {
+    return _list[_readPos++] + (_list[_readPos++] << 8)
+        + (_list[_readPos++] << 16);
+  }
+
+  void writeInt24(int i) {
+    _list[_writePos++] = i & 0xFF;
+    _list[_writePos++] = (i & 0xFF00) >> 8;
+    _list[_writePos++] = (i & 0xFF0000) >> 16;
   }
 
   int readInt32() {
