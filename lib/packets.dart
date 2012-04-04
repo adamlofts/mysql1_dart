@@ -6,8 +6,21 @@ class QueryPacket implements SendablePacket {
   Buffer _buffer;
   
   QueryPacket(String sql) {
+    _buffer = new Buffer(sql.length + 1);
     _buffer.writeByte(COM_QUERY);
-    _buffer.writeStringToEnd(sql);
+    _buffer.writeString(sql);
+  }
+  
+  Buffer get buffer() => _buffer;
+}
+
+class InitDbPacket implements SendablePacket {
+  Buffer _buffer;
+  
+  InitDbPacket(String dbName) {
+    _buffer = new Buffer(dbName.length + 1);
+    _buffer.writeByte(COM_INIT_DB);
+    _buffer.writeString(dbName);
   }
   
   Buffer get buffer() => _buffer;
@@ -59,6 +72,31 @@ class ClientAuthPacket implements SendablePacket {
   }
   
   Buffer get buffer() => _buffer;
+}
+
+class ErrorPacket {
+  int errorNumber;
+  String sqlState;
+  String message;
+  
+  ErrorPacket(Buffer buffer) {
+    buffer.seek(1);
+    errorNumber = buffer.readInt16();
+    buffer.skip(1);
+    sqlState = buffer.readString(5);
+    message = buffer.readStringToEnd();
+  }
+  
+  void show() {
+    print("ERROR PACKET");
+    print("error number $errorNumber");
+    print("sqlState $sqlState");
+    print("message $message");
+  }
+  
+  String toString() {
+    return "Error $errorNumber ($sqlState): $message";
+  }
 }
 
 class OkPacket {

@@ -86,11 +86,17 @@ class Buffer {
   }
   
   String readStringToEnd() {
-    return new String.fromCharCodes(_list.getRange(_readPos, _list.length - _readPos));
+    return readString(_list.length - _readPos);
   }
   
-  void writeStringToEnd(String s) {
+  void writeString(String s) {
     writeList(s.charCodes());
+  }
+  
+  String readString(int length) {
+    String s = new String.fromCharCodes(_list.getRange(_readPos, length));
+    _readPos += length;
+    return s;
   }
   
   int readLengthCodedBinary() {

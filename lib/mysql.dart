@@ -3,7 +3,6 @@ class MySqlConnection implements Connection {
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
   
-  Map<String, Database> _dbs;
   String _host;
   String _user;
   String _password;
@@ -16,12 +15,13 @@ class MySqlConnection implements Connection {
   HandshakePacket _handshakePacket;
 
   int _packetNumber = 0;
+  int _packetState = STATE_PACKET_HEADER;
   
   int _dataSize;
   int _readPos = 0;
   bool _expectHandshake = true;
   
-  int _state = STATE_PACKET_HEADER;
+  bool connected = false;
   
   MySqlConnection([String host='localhost', String user, String password, int port=3306]) {
     _host = host;
@@ -30,13 +30,12 @@ class MySqlConnection implements Connection {
     _port = port;
     
     _headerBuffer = new Buffer(HEADER_SIZE);
-    
-    _dbs = new Map<String, Database>();
-
-    _openConnection();
   }
   
-  void _openConnection() {
+  Completer _completer;
+  
+  Future connect() {
+    _completer = new Completer();
     print("opening connection to $_host:$_port");
     _socket = new Socket(_host, _port);
     _socket.onClosed = () {
@@ -52,17 +51,18 @@ class MySqlConnection implements Connection {
     _socket.onWrite = () {
       print("write");
     };
+    return _completer.future;
   }
   
   void _onData() {
     print("got data");
-    switch (_state) {
+    switch (_packetState) {
     case STATE_PACKET_HEADER:
       print("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
       if (_readPos == HEADER_SIZE) {
-        _state = STATE_PACKET_DATA;
+        _packetState = STATE_PACKET_DATA;
         _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
         _packetNumber = _headerBuffer[3];
         _readPos = 0;
@@ -76,7 +76,7 @@ class MySqlConnection implements Connection {
       _readPos += bytes;
       if (_readPos == _dataSize) {
         print("read all data");
-        _state = STATE_PACKET_HEADER;
+        _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;
         
@@ -96,6 +96,13 @@ class MySqlConnection implements Connection {
         } else if (_dataBuffer[0] == 0) {
           OkPacket okPacket = new OkPacket(_dataBuffer);
           okPacket.show();
+          if (!connected) {
+            connected = true;
+          }
+          _completer.complete(null);
+        } else if (_dataBuffer[0] == 0xFF) {
+          ErrorPacket errorPacket = new ErrorPacket(_dataBuffer);
+          throw errorPacket;
         }
       }
       break;
@@ -112,45 +119,27 @@ class MySqlConnection implements Connection {
     packet.buffer.writeTo(_socket, packet.buffer.length);
   }
   
-  Database openDatabase(String dbName) {
-    if (_dbs.containsKey(dbName)) {
-      return _dbs[dbName];
-    }
-    Database db = new MySqlDatabase._internal(this, dbName);
-    _dbs[dbName] = db;
-    return db;
-  }
-  
-  void _dbClosed(String dbName) {
-    _dbs.remove(dbName);
+  Future useDatabase(String dbName) {
+    _completer = new Completer();
+    _packetNumber = -1;
+    InitDbPacket packet = new InitDbPacket(dbName);
+    _sendPacket(packet);
+    return _completer.future;
   }
   
   void close() {
-    for (Database db in _dbs.getValues()) {
-      db.close();
-    }
     _socket.close();
   }
-}
 
-class MySqlDatabase implements Database {
-  MySqlConnection _connection;
-  String _dbName;
-  
-  MySqlDatabase._internal(MySqlConnection this._connection, String this._dbName) {
-    
+  Future<Results> query(String sql) {
+    _completer = new Completer<Results>();
+    _packetNumber = -1;
+    QueryPacket packet = new QueryPacket(sql);
+    _sendPacket(packet);
   }
   
-  Results query(String sql) {
+  Future<int> update(String sql) {
     
-  }
-  
-  int update(String sql) {
-    
-  }
-  
-  void close() {
-    _connection._dbClosed(_dbName);
   }
   
   Query prepare(String sql) {
@@ -163,11 +152,11 @@ class MySqlQuery implements Query {
     
   }
   
-  Results execute() {
+  Future<Results> execute() {
     
   }
   
-  int executeUpdate() {
+  Future<int> executeUpdate() {
     
   }
   
