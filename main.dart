@@ -1,7 +1,7 @@
 #import('lib/sqljockey.dart');
 
 void main() {
-  Connection cnx = new MySqlConnection(user:'large', password:'large');
+  Connection cnx = new MySqlConnection(user:'james');
   print("got connection");
 //  Database db = cnx.openDatabase('large');
 //  

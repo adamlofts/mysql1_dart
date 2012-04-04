@@ -3,6 +3,9 @@
 
 #import('dart:io');
 
+#import('crypto/hash.dart');
+#import('crypto/sha1.dart');
+
 #source('constants.dart');
 #source('buffer.dart');
 #source('packets.dart');

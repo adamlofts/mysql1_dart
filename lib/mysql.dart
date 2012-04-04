@@ -14,6 +14,8 @@ class MySqlConnection implements Connection {
   Buffer _dataBuffer;
   
   HandshakePacket _handshakePacket;
+
+  int _packetNumber = 0;
   
   int _dataSize;
   int _readPos = 0;
@@ -61,6 +63,7 @@ class MySqlConnection implements Connection {
       if (_readPos == HEADER_SIZE) {
         _state = STATE_PACKET_DATA;
         _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
+        _packetNumber = _headerBuffer[3];
         _readPos = 0;
         print("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
         _dataBuffer = new Buffer(_dataSize);
@@ -80,14 +83,27 @@ class MySqlConnection implements Connection {
           _handshakePacket = new HandshakePacket(_dataBuffer);
           _handshakePacket.show();
           
-          int clientFlags = 0;
+          int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
+            | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
           List scrambleBuffer = new List();
           ClientAuthPacket authPacket 
-              = new ClientAuthPacket(clientFlags, 0, _user, scrambleBuffer);
+              = new ClientAuthPacket(_handshakePacket.isNewProtocol(),
+                clientFlags, 0, 33, _user, _password, scrambleBuffer);
+          _sendPacket(authPacket);
         }
       }
       break;
     }
+  }
+  
+  void _sendPacket(SendablePacket packet) {
+    _headerBuffer[0] = packet.buffer.length & 0xFF;
+    _headerBuffer[1] = (packet.buffer.length & 0xFF00) << 8;
+    _headerBuffer[2] = (packet.buffer.length & 0xFF0000) << 16;
+    _headerBuffer[3] = ++_packetNumber;
+    _headerBuffer.writeTo(_socket, HEADER_SIZE);
+    packet.buffer.reset();
+    packet.buffer.writeTo(_socket, packet.buffer.length);
   }
   
   Database openDatabase(String dbName) {
