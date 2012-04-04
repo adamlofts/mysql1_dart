@@ -2,12 +2,12 @@
 
 void main() {
   Connection cnx = new MySqlConnection(user:'james');
-  Future whenConnected = cnx.connect();
-  whenConnected.then((nothing) {
+  cnx.connect().then((nothing) {
     print("got connection");
-    Future whenUsingDb = cnx.useDatabase('bob');
-    whenUsingDb.then((nothing2) {
-      cnx.query("select * from bill");
+    cnx.useDatabase('bob').then((nothing2) {
+      cnx.query("select * from bill").then((Results results) {
+        print("queried");
+      });
     });
   });
 //  Database db = cnx.openDatabase('large');
