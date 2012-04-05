@@ -12,14 +12,13 @@ class MySqlConnection implements Connection {
   Buffer _headerBuffer;
   Buffer _dataBuffer;
   
-  HandshakePacket _handshakePacket;
-
   int _packetNumber = 0;
   int _packetState = STATE_PACKET_HEADER;
   
   int _dataSize;
   int _readPos = 0;
-  bool _expectHandshake = true;
+  
+  Handler handler;
   
   bool connected = false;
   
@@ -30,6 +29,7 @@ class MySqlConnection implements Connection {
     _port = port;
     
     _headerBuffer = new Buffer(HEADER_SIZE);
+    handler = new HandshakeHandler();
   }
   
   Completer _completer;
@@ -81,25 +81,28 @@ class MySqlConnection implements Connection {
         _readPos = 0;
         
         print(_dataBuffer._list);
-        if (_expectHandshake) {
-          _expectHandshake = false;
-          _handshakePacket = new HandshakePacket(_dataBuffer);
-          _handshakePacket.show();
+        if (handler is HandshakeHandler) {
+          handler.processResponse(_dataBuffer);
+          if ((handler.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+            throw "Unsupported protocol (must be 4.1 or newer";
+          }
           
           int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
             | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
           List scrambleBuffer = new List();
-          ClientAuthPacket authPacket 
-              = new ClientAuthPacket(_handshakePacket.isNewProtocol(),
-                clientFlags, 0, 33, _user, _password, scrambleBuffer);
-          _sendPacket(authPacket);
+          
+          handler = new AuthHandler(_user, _password, scrambleBuffer, 
+            clientFlags, 0, 33);
+          _sendBuffer(handler.createRequest());
         } else if (_dataBuffer[0] == 0) {
           OkPacket okPacket = new OkPacket(_dataBuffer);
           okPacket.show();
           if (!connected) {
             connected = true;
           }
-          _completer.complete(null);
+          Handler theHandler = handler;
+          handler = null;
+          _completer.complete(theHandler.processResponse(_dataBuffer));
         } else if (_dataBuffer[0] == 0xFF) {
           ErrorPacket errorPacket = new ErrorPacket(_dataBuffer);
           throw errorPacket;
@@ -109,21 +112,24 @@ class MySqlConnection implements Connection {
     }
   }
   
-  void _sendPacket(SendablePacket packet) {
-    _headerBuffer[0] = packet.buffer.length & 0xFF;
-    _headerBuffer[1] = (packet.buffer.length & 0xFF00) << 8;
-    _headerBuffer[2] = (packet.buffer.length & 0xFF0000) << 16;
+  void _sendBuffer(Buffer buffer) {
+    _headerBuffer[0] = buffer.length & 0xFF;
+    _headerBuffer[1] = (buffer.length & 0xFF00) << 8;
+    _headerBuffer[2] = (buffer.length & 0xFF0000) << 16;
     _headerBuffer[3] = ++_packetNumber;
     _headerBuffer.writeTo(_socket, HEADER_SIZE);
-    packet.buffer.reset();
-    packet.buffer.writeTo(_socket, packet.buffer.length);
+    buffer.reset();
+    buffer.writeTo(_socket, buffer.length);
   }
   
   Future useDatabase(String dbName) {
+    if (handler != null) {
+      throw "request already in progress";
+    }
     _completer = new Completer();
     _packetNumber = -1;
-    InitDbPacket packet = new InitDbPacket(dbName);
-    _sendPacket(packet);
+    handler = new UseDbHandler(dbName);
+    _sendBuffer(handler.createRequest());
     return _completer.future;
   }
   
@@ -132,10 +138,13 @@ class MySqlConnection implements Connection {
   }
 
   Future<Results> query(String sql) {
+    if (handler != null) {
+      throw "request already in progress";
+    }
     _completer = new Completer<Results>();
     _packetNumber = -1;
-    QueryPacket packet = new QueryPacket(sql);
-    _sendPacket(packet);
+    handler = new QueryHandler(sql);
+    _sendBuffer(handler.createRequest());
   }
   
   Future<int> update(String sql) {
