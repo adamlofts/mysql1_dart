@@ -48,19 +48,9 @@ class ErrorPacket {
 
 
 class MySqlConnection implements Connection {
-  static final int HEADER_SIZE = 4;
-  static final int STATE_PACKET_HEADER = 0;
-  static final int STATE_PACKET_DATA = 1;
-  
   Transport _transport;
   
-  MySqlConnection.async() {
-    _transport = new AsyncTransport._internal();
-  }
-  
-  MySqlConnection.sync() {
-    _transport = new SyncTransport._internal();
-  }
+  MySqlConnection._internal(Transport this._transport);
   
   Dynamic connect([String host='localhost', int port=3306, String user, String password]) {
     return _transport.connect(host, port, user, password);
@@ -80,12 +70,26 @@ class MySqlConnection implements Connection {
     return _transport.processHandler(handler);
   }
   
-  Future<int> update(String sql) {
+  Dynamic update(String sql) {
     
   }
   
   Query prepare(String sql) {
     return new MySqlQuery._prepare(sql);
+  }
+}
+
+class AsyncMySqlConnection extends MySqlConnection implements AsyncConnection {
+  factory AsyncMySqlConnection() {
+    Transport transport = new AsyncTransport._internal();
+    return new MySqlConnection._internal(transport);
+  }
+}
+
+class SyncMySqlConnection extends MySqlConnection implements SyncConnection {
+  factory SyncMySqlConnection() {
+    Transport transport = new SyncTransport._internal();
+    return new MySqlConnection._internal(transport);
   }
 }
 
