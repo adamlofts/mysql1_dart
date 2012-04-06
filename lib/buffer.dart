@@ -1,3 +1,5 @@
+//TODO: must fix negatives
+
 class Buffer {
   int _writePos = 0;
   int _readPos = 0;

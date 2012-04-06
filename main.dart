@@ -11,8 +11,8 @@ void main() {
   AsyncConnection cnx = new AsyncMySqlConnection();
   cnx.connect(user:'root').then((nothing) {
     print("got connection");
-    cnx.useDatabase('test').then((nothing2) {
-      cnx.query("select * from bill").then((Results results) {
+    cnx.useDatabase('bob').then((nothing2) {
+      cnx.query("select * from people").then((Results results) {
         print("queried");
       });
     });

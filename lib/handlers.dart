@@ -1,14 +1,80 @@
-interface HandlerResult {
+class OkPacket {
+  int affectedRows;
+  int insertId;
+  int serverStatus;
+  String message;
   
+  OkPacket(Buffer buffer) {
+    buffer.seek(1);
+    affectedRows = buffer.readLengthCodedBinary();
+    insertId = buffer.readLengthCodedBinary();
+    serverStatus = buffer.readInt16();
+    message = buffer.readStringToEnd();
+  }
+  
+  void show() {
+    print("OK PACKET");
+    print("affected rows $affectedRows");
+    print("insert id $insertId");
+    print("server status $serverStatus");
+    print("message $message");
+  }
 }
 
-interface Handler {
-  Buffer createRequest();
+class ErrorPacket {
+  int errorNumber;
+  String sqlState;
+  String message;
   
-  HandlerResult processResponse(Buffer response);
+  ErrorPacket(Buffer buffer) {
+    buffer.seek(1);
+    errorNumber = buffer.readInt16();
+    buffer.skip(1);
+    sqlState = buffer.readString(5);
+    message = buffer.readStringToEnd();
+  }
+  
+  void show() {
+    print("ERROR PACKET");
+    print("error number $errorNumber");
+    print("sqlState $sqlState");
+    print("message $message");
+  }
+  
+  String toString() {
+    return "Error $errorNumber ($sqlState): $message";
+  }
 }
 
-class HandshakeHandler implements Handler {
+class Handler {
+  bool _finished = false;
+  
+  abstract Buffer createRequest();
+  
+  abstract Dynamic processResponse(Buffer response);
+  
+  /*
+   * returns true if handled
+   */
+  bool checkResponse(Buffer response) {
+    if (response[0] == 0) {
+      OkPacket okPacket = new OkPacket(response);
+      okPacket.show();
+      return true;
+    } else if (response[0] == 0xFF) {
+      ErrorPacket errorPacket = new ErrorPacket(response);
+      throw errorPacket;
+    }
+    return false;
+  }
+  
+  bool get finished() => _finished;
+}
+
+class HandshakeHandler extends Handler {
+  String _user;
+  String _password;
+  
   int protocolVersion;
   String serverVersion;
   int threadId;
@@ -17,12 +83,14 @@ class HandshakeHandler implements Handler {
   int serverLanguage;
   int serverStatus;
   int scrambleLength;
+  
+  HandshakeHandler(String this._user, String this._password);
 
   Buffer createRequest() {
     throw "Cannot create a handshake request"; 
   }
   
-  HandlerResult processResponse(Buffer response) {
+  Dynamic processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
@@ -32,10 +100,21 @@ class HandshakeHandler implements Handler {
     serverCapabilities = response.readInt16();
     serverLanguage = response.readByte();
     serverStatus = response.readInt16();
+    _finished = true;
+    
+    if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+      throw "Unsupported protocol (must be 4.1 or newer";
+    }
+    
+    int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
+      | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+    
+    return new AuthHandler(_user, _password, scrambleBuffer, 
+      clientFlags, 0, 33);
   }
 }
 
-class AuthHandler implements Handler {
+class AuthHandler extends Handler {
   String _username;
   String _password;
   List<int> _scrambleBuffer;
@@ -85,12 +164,13 @@ class AuthHandler implements Handler {
     return buffer;
   }
   
-  HandlerResult processResponse(Buffer response) {
-    
+  Dynamic processResponse(Buffer response) {
+    checkResponse(response);
+    _finished = true;
   }
 }
 
-class UseDbHandler implements Handler {
+class UseDbHandler extends Handler {
   String _dbName;
   
   UseDbHandler(String this._dbName);
@@ -102,12 +182,13 @@ class UseDbHandler implements Handler {
     return buffer;
   }
   
-  HandlerResult processResponse(Buffer response) {
-    
+  Dynamic processResponse(Buffer response) {
+    checkResponse(response);
+    _finished = true;
   }
 }
 
-class QueryHandler implements Handler {
+class QueryHandler extends Handler {
   String _sql;
   
   QueryHandler(String this._sql);
@@ -119,7 +200,11 @@ class QueryHandler implements Handler {
     return buffer;
   }
   
-  HandlerResult processResponse(Buffer response) {
-    
+  Dynamic processResponse(Buffer response) {
+    if (!checkResponse(response)) {
+      if (response[0] == 0xFE) {
+        _finished = true;
+      }
+    }
   }
 }

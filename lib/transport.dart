@@ -41,7 +41,7 @@ class AsyncTransport implements Transport {
     
     _user = user;
     _password = password;
-    _handler = new HandshakeHandler();
+    _handler = new HandshakeHandler(user, password);
     
     _completer = new Completer();
     print("opening connection to $host:$port");
@@ -99,29 +99,14 @@ class AsyncTransport implements Transport {
         _readPos = 0;
         
         print(_dataBuffer._list);
-        if (_handler is HandshakeHandler) {
-          _handler.processResponse(_dataBuffer);
-          HandshakeHandler h = _handler;
-          if ((h.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-            throw "Unsupported protocol (must be 4.1 or newer";
-          }
-          
-          int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
-            | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
-          List scrambleBuffer = new List();
-          
-          _handler = new AuthHandler(_user, _password, scrambleBuffer, 
-            clientFlags, 0, 33);
+        // we have two EOFs in a stream - why?
+        var result = _handler.processResponse(_dataBuffer);
+        if (result is Handler) {
+          _handler = result;
           _sendBuffer(_handler.createRequest());
-        } else if (_dataBuffer[0] == 0) {
-          OkPacket okPacket = new OkPacket(_dataBuffer);
-          okPacket.show();
-          Handler theHandler = _handler;
+        } else if (_handler.finished) {
           _handler = null;
-          _completer.complete(theHandler.processResponse(_dataBuffer));
-        } else if (_dataBuffer[0] == 0xFF) {
-          ErrorPacket errorPacket = new ErrorPacket(_dataBuffer);
-          throw errorPacket;
+          _completer.complete(result);
         }
       }
       break;
@@ -166,7 +151,7 @@ class SyncTransport implements Transport {
       List<int> packet = readPacket();
 
       print(packet);
-      HandshakeHandler handler = new HandshakeHandler();
+      HandshakeHandler handler = new HandshakeHandler(user, password);
       handler.processResponse(new Buffer.fromList(packet));
       if ((handler.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
         throw "Unsupported protocol (must be 4.1 or newer";
@@ -192,9 +177,9 @@ class SyncTransport implements Transport {
     
     int read = 0;
     while (read < bytes) {
-      print("read $read of $bytes");
+//      print("read $read of $bytes");
       int bytesRead = _inputStream.readInto(list, read, bytes - read);
-      print("read $bytesRead");
+//      print("read $bytesRead");
       if (bytesRead != null) {
         read += bytesRead;
       }
@@ -231,7 +216,11 @@ class SyncTransport implements Transport {
   Dynamic processHandler(Handler handler) {
     _packetNumber = -1;
     sendPacket(handler.createRequest()._list);
-    return handler.processResponse(new Buffer.fromList(readPacket()));
+    var result = handler.processResponse(new Buffer.fromList(readPacket()));
+    if (result is Handler) {
+      return processHandler(result);
+    }
+    return result;
   }
 }
 
