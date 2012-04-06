@@ -8,6 +8,10 @@ class Buffer {
     _list = new List<int>(size);
   }
   
+  Buffer.fromList(List<int> list) {
+    _list = list;
+  }
+  
   int readFrom(Socket socket, int count) {
     int bytesRead = socket.readList(_list, _writePos, count);
     _writePos += bytesRead;

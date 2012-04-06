@@ -1,14 +1,17 @@
 #import('lib/sqljockey.dart');
 
 void main() {
-  Connection cnx = new MySqlConnection(user:'root');
-  cnx.connect().then((nothing) {
-    print("got connection");
-    cnx.useDatabase('test').then((nothing2) {
-      cnx.query("select * from bill").then((Results results) {
-        print("queried");
-      });
-    });
+  Connection cnx = new MySqlConnection.sync();
+  cnx.connect(user:'root').then((nothing) {
+    print("connected");
+    cnx.useDatabase('test');
+    cnx.query("select * from bill");
+//    print("got connection");
+//    cnx.useDatabase('test').then((nothing2) {
+//      cnx.query("select * from bill").then((Results results) {
+//        print("queried");
+//      });
+//    });
   });
 //  Database db = cnx.openDatabase('large');
 //  

@@ -1,12 +1,17 @@
-class MySqlConnection implements Connection {
+interface Transport {
+  Dynamic connect([String host, int port, String user, String password]);
+  Dynamic processHandler(Handler handler);
+  void close();
+}
+
+class AsyncTransport implements Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
+
+  Handler _handler;
+  Completer<Dynamic> _completer;
   
-  String _host;
-  String _user;
-  String _password;
-  int _port;
   Socket _socket;
 
   Buffer _headerBuffer;
@@ -18,26 +23,29 @@ class MySqlConnection implements Connection {
   int _dataSize;
   int _readPos = 0;
   
-  Handler handler;
-  
-  bool connected = false;
-  
-  MySqlConnection([String host='localhost', String user, String password, int port=3306]) {
-    _host = host;
-    _user = user;
-    _password = password;
-    _port = port;
-    
+  String _user;
+  String _password;
+
+  AsyncTransport._internal() {
     _headerBuffer = new Buffer(HEADER_SIZE);
-    handler = new HandshakeHandler();
   }
   
-  Completer _completer;
+  void close() {
+    _socket.close();
+  }
   
-  Future connect() {
+  Future connect([String host='localhost', int port=3306, String user, String password]) {
+    if (_socket != null) {
+      throw "connection already open";
+    }
+    
+    _user = user;
+    _password = password;
+    _handler = new HandshakeHandler();
+    
     _completer = new Completer();
-    print("opening connection to $_host:$_port");
-    _socket = new Socket(_host, _port);
+    print("opening connection to $host:$port");
+    _socket = new Socket(host, port);
     _socket.onClosed = () {
       print("closed");
     };
@@ -54,6 +62,16 @@ class MySqlConnection implements Connection {
     return _completer.future;
   }
   
+  void _sendBuffer(Buffer buffer) {
+    _headerBuffer[0] = buffer.length & 0xFF;
+    _headerBuffer[1] = (buffer.length & 0xFF00) << 8;
+    _headerBuffer[2] = (buffer.length & 0xFF0000) << 16;
+    _headerBuffer[3] = ++_packetNumber;
+    _headerBuffer.writeTo(_socket, HEADER_SIZE);
+    buffer.reset();
+    buffer.writeTo(_socket, buffer.length);
+  }
+
   void _onData() {
     print("got data");
     switch (_packetState) {
@@ -81,9 +99,10 @@ class MySqlConnection implements Connection {
         _readPos = 0;
         
         print(_dataBuffer._list);
-        if (handler is HandshakeHandler) {
-          handler.processResponse(_dataBuffer);
-          if ((handler.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+        if (_handler is HandshakeHandler) {
+          _handler.processResponse(_dataBuffer);
+          HandshakeHandler h = _handler;
+          if ((h.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
             throw "Unsupported protocol (must be 4.1 or newer";
           }
           
@@ -91,17 +110,14 @@ class MySqlConnection implements Connection {
             | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
           List scrambleBuffer = new List();
           
-          handler = new AuthHandler(_user, _password, scrambleBuffer, 
+          _handler = new AuthHandler(_user, _password, scrambleBuffer, 
             clientFlags, 0, 33);
-          _sendBuffer(handler.createRequest());
+          _sendBuffer(_handler.createRequest());
         } else if (_dataBuffer[0] == 0) {
           OkPacket okPacket = new OkPacket(_dataBuffer);
           okPacket.show();
-          if (!connected) {
-            connected = true;
-          }
-          Handler theHandler = handler;
-          handler = null;
+          Handler theHandler = _handler;
+          _handler = null;
           _completer.complete(theHandler.processResponse(_dataBuffer));
         } else if (_dataBuffer[0] == 0xFF) {
           ErrorPacket errorPacket = new ErrorPacket(_dataBuffer);
@@ -112,39 +128,144 @@ class MySqlConnection implements Connection {
     }
   }
   
-  void _sendBuffer(Buffer buffer) {
-    _headerBuffer[0] = buffer.length & 0xFF;
-    _headerBuffer[1] = (buffer.length & 0xFF00) << 8;
-    _headerBuffer[2] = (buffer.length & 0xFF0000) << 16;
-    _headerBuffer[3] = ++_packetNumber;
-    _headerBuffer.writeTo(_socket, HEADER_SIZE);
-    buffer.reset();
-    buffer.writeTo(_socket, buffer.length);
-  }
-  
-  Future useDatabase(String dbName) {
-    if (handler != null) {
+  Dynamic processHandler(Handler handler) {
+    if (_handler != null) {
       throw "request already in progress";
     }
-    _completer = new Completer();
+    _completer = new Completer<Dynamic>();
     _packetNumber = -1;
-    handler = new UseDbHandler(dbName);
+    _handler = handler;
     _sendBuffer(handler.createRequest());
     return _completer.future;
   }
+}
+
+class SyncTransport implements Transport {
+  static final int HEADER_SIZE = 4;
+
+  Socket _socket;
+  InputStream _inputStream;
+  OutputStream _outputStream;
   
+  int _packetNumber = 0;
+  
+  List<int> _headerBuffer;
+  
+  SyncTransport._internal() {
+    _headerBuffer = new List<int>(HEADER_SIZE);
+  }
+  
+  Future connect([String host, int port, String user, String password]) {
+    _socket = new Socket(host, port);
+    Completer completer = new Completer();
+    _socket.onConnect = () {
+      print("connected");
+      _inputStream = _socket.inputStream;
+      _outputStream = _socket.outputStream;
+      
+      List<int> packet = readPacket();
+
+      print(packet);
+      HandshakeHandler handler = new HandshakeHandler();
+      handler.processResponse(new Buffer.fromList(packet));
+      if ((handler.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+        throw "Unsupported protocol (must be 4.1 or newer";
+      }
+      
+      int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
+        | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+      List scrambleBuffer = new List();
+      
+      AuthHandler authHandler = new AuthHandler(user, password, scrambleBuffer, 
+        clientFlags, 0, 33);
+      sendPacket(authHandler.createRequest()._list);
+      
+      completer.complete(null);
+    };
+    return completer.future;
+  }
+  
+  List<int> blockingRead(int bytes, [List<int> list]) {
+    if (list == null) {
+      list = new List<int>(bytes);      
+    }
+    
+    int read = 0;
+    while (read < bytes) {
+      print("read $read of $bytes");
+      int bytesRead = _inputStream.readInto(list, read, bytes - read);
+      print("read $bytesRead");
+      if (bytesRead != null) {
+        read += bytesRead;
+      }
+    }
+    
+    return list;
+  }
+  
+  List<int> readPacket() {
+    blockingRead(HEADER_SIZE, _headerBuffer);
+    
+    int dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
+    int packetNumber = _headerBuffer[3];
+    
+    List<int> packet = blockingRead(dataSize);
+    return packet;
+  }
+  
+  void sendPacket(List<int> list) {
+    _headerBuffer[0] = list.length & 0xFF;
+    _headerBuffer[1] = (list.length & 0xFF00) << 8;
+    _headerBuffer[2] = (list.length & 0xFF0000) << 16;
+    _headerBuffer[3] = ++_packetNumber;
+    print("sending header");
+    _outputStream.write(_headerBuffer);
+    print("sending packet");
+    _outputStream.write(list);
+  }
+
   void close() {
     _socket.close();
   }
-
-  Future<Results> query(String sql) {
-    if (handler != null) {
-      throw "request already in progress";
-    }
-    _completer = new Completer<Results>();
+  
+  Dynamic processHandler(Handler handler) {
     _packetNumber = -1;
-    handler = new QueryHandler(sql);
-    _sendBuffer(handler.createRequest());
+    sendPacket(handler.createRequest()._list);
+    return handler.processResponse(new Buffer.fromList(readPacket()));
+  }
+}
+
+class MySqlConnection implements Connection {
+  static final int HEADER_SIZE = 4;
+  static final int STATE_PACKET_HEADER = 0;
+  static final int STATE_PACKET_DATA = 1;
+  
+  Transport _transport;
+  
+  MySqlConnection.async() {
+    _transport = new AsyncTransport._internal();
+  }
+  
+  MySqlConnection.sync() {
+    _transport = new SyncTransport._internal();
+  }
+  
+  Dynamic connect([String host='localhost', int port=3306, String user, String password]) {
+    return _transport.connect(host, port, user, password);
+  }
+  
+  Dynamic useDatabase(String dbName) {
+    var handler = new UseDbHandler(dbName);
+    return _transport.processHandler(handler);
+  }
+  
+  void close() {
+    _transport.close();
+  }
+
+  Dynamic query(String sql) {
+    var handler = new QueryHandler(sql);
+    return _transport.processHandler(handler);
   }
   
   Future<int> update(String sql) {
