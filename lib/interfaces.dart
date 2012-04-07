@@ -8,7 +8,7 @@ interface Connection {
 }
 
 interface SyncConnection extends Connection {
-  void connect([String host, int port, String user, String password]);
+  Future connect([String host, int port, String user, String password]);
   void useDatabase(String dbName);
   Results query(String sql);
   int update(String sql);

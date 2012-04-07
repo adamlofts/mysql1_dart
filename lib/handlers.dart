@@ -199,6 +199,7 @@ class QueryHandler extends Handler {
   }
   
   Dynamic processResponse(Buffer response) {
+    print("Query processing response");
     if (!checkResponse(response)) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
