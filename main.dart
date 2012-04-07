@@ -14,6 +14,7 @@ void main() {
     cnx.useDatabase('bob').then((nothing2) {
       cnx.query("select * from people").then((Results results) {
         print("queried");
+        cnx.close();
       });
     });
   });

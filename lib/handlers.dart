@@ -1,44 +1,42 @@
 class OkPacket {
-  int affectedRows;
-  int insertId;
-  int serverStatus;
-  String message;
+  int _affectedRows;
+  int _insertId;
+  int _serverStatus;
+  String _message;
+  
+  int get affectedRows() => _affectedRows;
+  int get insertId() => _insertId;
+  int get serverStatus() => _serverStatus;
+  String get message() => _message;
   
   OkPacket(Buffer buffer) {
     buffer.seek(1);
-    affectedRows = buffer.readLengthCodedBinary();
-    insertId = buffer.readLengthCodedBinary();
-    serverStatus = buffer.readInt16();
-    message = buffer.readStringToEnd();
+    _affectedRows = buffer.readLengthCodedBinary();
+    _insertId = buffer.readLengthCodedBinary();
+    _serverStatus = buffer.readInt16();
+    _message = buffer.readStringToEnd();
   }
   
-  void show() {
-    print("OK PACKET");
-    print("affected rows $affectedRows");
-    print("insert id $insertId");
-    print("server status $serverStatus");
-    print("message $message");
+  String toString() {
+    return "OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message";
   }
 }
 
-class ErrorPacket {
-  int errorNumber;
-  String sqlState;
-  String message;
+class MySqlError {
+  int _errorNumber;
+  String _sqlState;
+  String _message;
   
-  ErrorPacket(Buffer buffer) {
+  int get errorNumber() => _errorNumber;
+  String get sqlState() => _sqlState;
+  String get message() => _message;
+  
+  MySqlError(Buffer buffer) {
     buffer.seek(1);
-    errorNumber = buffer.readInt16();
+    _errorNumber = buffer.readInt16();
     buffer.skip(1);
-    sqlState = buffer.readString(5);
-    message = buffer.readStringToEnd();
-  }
-  
-  void show() {
-    print("ERROR PACKET");
-    print("error number $errorNumber");
-    print("sqlState $sqlState");
-    print("message $message");
+    _sqlState = buffer.readString(5);
+    _message = buffer.readStringToEnd();
   }
   
   String toString() {
@@ -57,13 +55,12 @@ class Handler {
    * returns true if handled
    */
   bool checkResponse(Buffer response) {
-    if (response[0] == 0) {
+    if (response[0] == PACKET_OK) {
       OkPacket okPacket = new OkPacket(response);
-      okPacket.show();
+      print(okPacket);
       return true;
-    } else if (response[0] == 0xFF) {
-      ErrorPacket errorPacket = new ErrorPacket(response);
-      throw errorPacket;
+    } else if (response[0] == PACKET_ERROR) {
+      throw new MySqlError(response);
     }
     return false;
   }
@@ -127,7 +124,6 @@ class AuthHandler extends Handler {
     int this._maxPacketSize, int this._collation);
   
   Buffer createRequest() {
-    print("creating packet");
     List<int> hash;
     if (_password == null) {
       hash = new List<int>(0);
@@ -145,7 +141,6 @@ class AuthHandler extends Handler {
       for (int i = 0; i < hash.length; i++) {
         hash[i] = digest[i] ^ newdigest[i];
       }
-      print("got digest");
     }
     
     int size = hash.length + _username.length + 2 + 32;;
@@ -160,7 +155,6 @@ class AuthHandler extends Handler {
     buffer.writeByte(hash.length);
     buffer.writeList(hash);
     
-    print("made packet ${buffer._list}");
     return buffer;
   }
   
@@ -189,7 +183,11 @@ class UseDbHandler extends Handler {
 }
 
 class QueryHandler extends Handler {
+  static final int STATE_HEADER_PACKET = 0;
+  static final int STATE_FIELD_PACKETS = 1;
+  static final int STATE_ROW_PACKETS = 2;
   String _sql;
+  int _state = STATE_HEADER_PACKET;
   
   QueryHandler(String this._sql);
   
@@ -202,9 +200,17 @@ class QueryHandler extends Handler {
   
   Dynamic processResponse(Buffer response) {
     if (!checkResponse(response)) {
-      if (response[0] == 0xFE) {
-        _finished = true;
-      }
+      if (response[0] == PACKET_EOF) {
+        if (_state == STATE_FIELD_PACKETS) {
+          _state = STATE_ROW_PACKETS;
+        } else if (_state == STATE_ROW_PACKETS){
+          _finished = true;
+        }
+      } else {
+        if (_state == STATE_HEADER_PACKET) {
+          _state = STATE_FIELD_PACKETS;
+        }
+      } 
     }
   }
 }

@@ -1,3 +1,7 @@
+final int PACKET_OK = 0;
+final int PACKET_ERROR = 0xFF;
+final int PACKET_EOF = 0xFE;
+
 final int CLIENT_LONG_PASSWORD = 1; /* new more secure passwords */
 final int CLIENT_FOUND_ROWS = 2; /* Found instead of affected rows */
 final int CLIENT_LONG_FLAG = 4; /* Get all column flags */

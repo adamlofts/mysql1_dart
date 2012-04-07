@@ -93,13 +93,11 @@ class AsyncTransport implements Transport {
       print("got $bytes bytes");
       _readPos += bytes;
       if (_readPos == _dataSize) {
-        print("read all data");
+        print("read all data: ${_dataBuffer._list}");
         _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;
         
-        print(_dataBuffer._list);
-        // we have two EOFs in a stream - why?
         var result = _handler.processResponse(_dataBuffer);
         if (result is Handler) {
           _handler = result;
