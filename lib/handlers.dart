@@ -200,7 +200,7 @@ class ResultSetHeaderPacket {
   }
 }
 
-class FieldPacket {
+class FieldPacket implements Field {
   String _catalog;
   String _db;
   String _table;
@@ -213,6 +213,19 @@ class FieldPacket {
   int _flags;
   int _decimals;
   int _defaultValue;
+  
+  String get name() => _name;
+  String get table() => _table;
+  String get catalog() => _catalog;
+  String get orgName() => _orgName;
+  String get orgTable() => _orgTable;
+  String get db() => _db;
+  int get characterSet() => _characterSet;
+  int get length() => _length;
+  int get type() => _type;
+  int get flags() => _flags;
+  int get decimals() => _decimals;
+  int get defaultValue() => _defaultValue;
   
   FieldPacket(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
@@ -263,6 +276,7 @@ class QueryHandler extends Handler {
   String _sql;
   int _state = STATE_HEADER_PACKET;
   
+  OkPacket _okPacket;
   ResultSetHeaderPacket _resultSetHeaderPacket;
   List<FieldPacket> _fieldPackets;
   List<DataPacket> _dataPackets;
@@ -282,13 +296,15 @@ class QueryHandler extends Handler {
   //TODO: Handle binary data packets
   Dynamic processResponse(Buffer response) {
     print("Query processing response");
-    if (checkResponse(response) == null) {
+    var packet = checkResponse(response);
+    if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
         } else if (_state == STATE_ROW_PACKETS){
           _finished = true;
-          //TODO: Return a result here
+          
+          return new ResultsImpl(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
         }
       } else {
         switch (_state) {
@@ -298,17 +314,19 @@ class QueryHandler extends Handler {
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
-          FieldPacket packet = new FieldPacket(response);
-          print(packet);
-          _fieldPackets.add(packet);
+          FieldPacket fieldPacket = new FieldPacket(response);
+          print(fieldPacket);
+          _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          DataPacket packet = new DataPacket(response, _resultSetHeaderPacket.fieldCount);
-          print(packet);
-          _dataPackets.add(packet);
+          DataPacket dataPacket = new DataPacket(response, _resultSetHeaderPacket.fieldCount);
+          print(dataPacket);
+          _dataPackets.add(dataPacket);
           break;
         }
       } 
+    } else if (packet is OkPacket) {
+      _okPacket = packet;
     }
   }
 }

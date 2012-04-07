@@ -28,17 +28,19 @@ interface AsyncConnection extends Connection {
 interface Query {
   Future<Results> execute();
   Future<int> executeUpdate();
-  operator [](int pos);
-  void operator []=(int index, value);
+  Dynamic operator [](int pos);
+  void operator []=(int index, Dynamic value);
+}
+
+interface Field {
+  String get name();
+  String get table();
 }
 
 interface Results extends Iterable default ResultsImpl {
+  int get insertId();
+  int get affectedRows();
   int get count();
-  operator [](int pos);
-  void operator []=(int index, value);
-}
-
-interface Result default ResultImpl {
-  get value();
-  int get index();
+  List<Field> get fields();
+  List<Dynamic> operator [](int pos);
 }
