@@ -31,6 +31,11 @@ class Buffer {
   }
   
   /**
+   * Returns true if more data can be read from the buffer, false otherwise.
+   */
+  bool canReadMore() => _readPos < _list.length;
+  
+  /**
    * Reads up to [count] bytes from the [socket] into the buffer.
    * Returns the number of bytes read.
    */
@@ -210,6 +215,14 @@ class Buffer {
    */
   void writeLengthCodedBinary(int value) {
     throw "not implemented writeLengthCodedBinary yet";
+  }
+
+  /**
+   * Returns a length coded string, read from the buffer.
+   */
+  String readLengthCodedString() {
+    int length = readLengthCodedBinary();
+    return readString(length);
   }
   
   /**
