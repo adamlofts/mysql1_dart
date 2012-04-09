@@ -35,6 +35,16 @@ interface Query {
 interface Field {
   String get name();
   String get table();
+  String get catalog();
+  String get orgName();
+  String get orgTable();
+  String get db();
+  int get characterSet();
+  int get length();
+  int get type();
+  int get flags();
+  int get decimals();
+  int get defaultValue();
 }
 
 interface Results extends Iterable default ResultsImpl {

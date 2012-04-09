@@ -5,7 +5,15 @@ void main() {
 //  cnx.connect(user:'root').then((nothing) {
 //    print("connected");
 //    cnx.useDatabase('bob');
-//    cnx.query("select * from people");
+//    Results results = cnx.query("select name as bob, age as wibble from people p");
+//    for (Field field in results.fields) {
+//      print("Field: ${field.name}");
+//    }
+//    for (List<Dynamic> row in results) {
+//      for (Dynamic field in row) {
+//        print(field);
+//      }
+//    }
 //    cnx.close();
 //  });
 
@@ -23,7 +31,10 @@ void main() {
             print(field);
           }
         }
-        cnx.close();
+        cnx.query("select * from blobby").then((Results results2) {
+          print("queried");
+          cnx.close();
+        });
       });
     });
   });

@@ -31,6 +31,9 @@ class MySqlError {
   String get sqlState() => _sqlState;
   String get message() => _message;
   
+  /**
+   * Create a [MySqlError] based on an error response from the mysql server
+   */
   MySqlError(Buffer buffer) {
     buffer.seek(1);
     _errorNumber = buffer.readInt16();
@@ -44,15 +47,34 @@ class MySqlError {
   }
 }
 
+/**
+ * Each command which the mysql protocol implements is handled with a [Handler] object.
+ * A handler is created with the appropriate parameters when the command is invoked
+ * from the connection. The transport is then responsible for sending the
+ * request which the handler creates, and then parsing the result returned by 
+ * the mysql server, either synchronously or asynchronously.
+ */
 class Handler {
   bool _finished = false;
   
+  /**
+   * Returns a [Buffer] containing the command packet.
+   */
   abstract Buffer createRequest();
   
+  /**
+   * Parses a [Buffer] containing the response to the command.
+   * Returns a [Handler] if that handler should take over and
+   * process subsequent packets from the server, or [:null:]
+   * in all other cases.
+   */
   abstract Dynamic processResponse(Buffer response);
   
-  /*
-   * returns true if handled
+  /**
+   * Parses the response packet to recognise Ok and Error packets.
+   * Returns an [OkPacket] if the packet was an Ok packet, throws
+   * a [MySqlError] if it was an Error packet, or returns [:null:] 
+   * if the packet has not been handled by this method.
    */
   Dynamic checkResponse(Buffer response) {
     if (response[0] == PACKET_OK) {
@@ -64,7 +86,10 @@ class Handler {
     }
     return null;
   }
-  
+
+  /**
+   * When [finished] is true, this handler has finished processing responses.
+   */
   bool get finished() => _finished;
 }
 
@@ -83,10 +108,21 @@ class HandshakeHandler extends Handler {
   
   HandshakeHandler(String this._user, String this._password);
 
+  /**
+   * The server initiates the handshake after the client connects,
+   * so a request will never be created.
+   */
   Buffer createRequest() {
     throw "Cannot create a handshake request"; 
   }
   
+  /**
+   * After receiving the handshake packet, if all is well, an [AuthHandler]
+   * is created and returned to handle authentication.
+   *
+   * Currently, if the client protocol version is not 4.1, an
+   * exception is thrown.
+   */
   Dynamic processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
@@ -124,22 +160,23 @@ class AuthHandler extends Handler {
     int this._maxPacketSize, int this._collation);
   
   Buffer createRequest() {
+    // calculate the mysql password hash
     List<int> hash;
     if (_password == null) {
       hash = new List<int>(0);
     } else {
-      hash:Hash x = new Sha1();
-      x.updateString(_password);
-      List<int> digest = x.digest();
+      hash:Hash hasher = new Sha1();
+      hasher.updateString(_password);
+      List<int> hashedPassword = hasher.digest();
       
-      hash:Hash x2 = new Sha1();
-      x2.update(_scrambleBuffer);
-      x2.update(digest);
+      hash:Hash hasher2 = new Sha1();
+      hasher2.update(_scrambleBuffer);
+      hasher2.update(hashedPassword);
+      List<int> hashedSaltedPassword = hasher2.digest();
       
-      List<int> newdigest = x2.digest();
-      hash = new List<int>(newdigest.length);
+      hash = new List<int>(hashedSaltedPassword.length);
       for (int i = 0; i < hash.length; i++) {
-        hash[i] = digest[i] ^ newdigest[i];
+        hash[i] = hashedPassword[i] ^ hashedSaltedPassword[i];
       }
     }
     
@@ -293,7 +330,7 @@ class QueryHandler extends Handler {
     return buffer;
   }
   
-  //TODO: Handle binary data packets
+  //TODO: Handle binary data packets (where are they found?)
   Dynamic processResponse(Buffer response) {
     print("Query processing response");
     var packet = checkResponse(response);
