@@ -55,6 +55,7 @@ class MySqlError {
  * the mysql server, either synchronously or asynchronously.
  */
 class Handler {
+  Log log;
   bool _finished = false;
   
   /**
@@ -79,7 +80,7 @@ class Handler {
   Dynamic checkResponse(Buffer response) {
     if (response[0] == PACKET_OK) {
       OkPacket okPacket = new OkPacket(response);
-      print(okPacket);
+      log.debug(okPacket.toString());
       return okPacket;
     } else if (response[0] == PACKET_ERROR) {
       throw new MySqlError(response);
@@ -106,7 +107,9 @@ class HandshakeHandler extends Handler {
   int serverStatus;
   int scrambleLength;
   
-  HandshakeHandler(String this._user, String this._password);
+  HandshakeHandler(String this._user, String this._password) {
+    log = new Log("HandshakeHandler");
+  }
 
   /**
    * The server initiates the handshake after the client connects,
@@ -157,7 +160,9 @@ class AuthHandler extends Handler {
   
   AuthHandler(String this._username, String this._password, 
     List<int> this._scrambleBuffer, int this._clientFlags,
-    int this._maxPacketSize, int this._collation);
+    int this._maxPacketSize, int this._collation) {
+    log = new Log("AuthHandler");
+  }
   
   Buffer createRequest() {
     // calculate the mysql password hash
@@ -204,7 +209,9 @@ class AuthHandler extends Handler {
 class UseDbHandler extends Handler {
   String _dbName;
   
-  UseDbHandler(String this._dbName);
+  UseDbHandler(String this._dbName) {
+    log = new Log("UseDbHandler");
+  }
   
   Buffer createRequest() {
     Buffer buffer = new Buffer(_dbName.length + 1);
@@ -222,10 +229,12 @@ class UseDbHandler extends Handler {
 class ResultSetHeaderPacket {
   int _fieldCount;
   int _extra;
+  Log log;
   
   int get fieldCount() => _fieldCount;
   
   ResultSetHeaderPacket(Buffer buffer) {
+    log = new Log("ResultSetHeaderPacket");
     _fieldCount = buffer.readLengthCodedBinary();
     if (buffer.canReadMore()) {
       _extra = buffer.readLengthCodedBinary();
@@ -233,7 +242,7 @@ class ResultSetHeaderPacket {
   }
   
   String toString() {
-    print("Field count: $_fieldCount, Extra: $_extra");
+    log.debug("Field count: $_fieldCount, Extra: $_extra");
   }
 }
 
@@ -319,6 +328,7 @@ class QueryHandler extends Handler {
   List<DataPacket> _dataPackets;
   
   QueryHandler(String this._sql) {
+    log = new Log("QueryHandler");
     _fieldPackets = new List<FieldPacket>();
     _dataPackets = new List<DataPacket>();
   }
@@ -332,7 +342,7 @@ class QueryHandler extends Handler {
   
   //TODO: Handle binary data packets (where are they found?)
   Dynamic processResponse(Buffer response) {
-    print("Query processing response");
+    log.debug("Query processing response");
     var packet = checkResponse(response);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
@@ -347,17 +357,17 @@ class QueryHandler extends Handler {
         switch (_state) {
         case STATE_HEADER_PACKET:
           _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
-          print (_resultSetHeaderPacket);
+          log.debug (_resultSetHeaderPacket.toString());
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
           FieldPacket fieldPacket = new FieldPacket(response);
-          print(fieldPacket);
+          log.debug(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
           DataPacket dataPacket = new DataPacket(response, _resultSetHeaderPacket.fieldCount);
-          print(dataPacket);
+          log.debug(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;
         }

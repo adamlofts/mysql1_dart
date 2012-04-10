@@ -8,6 +8,7 @@ class AsyncTransport implements Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
+  Log log;
 
   Handler _handler;
   Completer<Dynamic> _completer;
@@ -27,6 +28,7 @@ class AsyncTransport implements Transport {
   String _password;
 
   AsyncTransport._internal() {
+    log = new Log("AsyncTransport");
     _headerBuffer = new Buffer(HEADER_SIZE);
   }
   
@@ -44,20 +46,20 @@ class AsyncTransport implements Transport {
     _handler = new HandshakeHandler(user, password);
     
     _completer = new Completer();
-    print("opening connection to $host:$port");
+    log.debug("opening connection to $host:$port");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
-      print("closed");
+      log.debug("closed");
     };
     _socket.onConnect = () {
-      print("connected");
+      log.debug("connected");
     };
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
-      print("exception $e");
+      log.debug("exception $e");
     };
     _socket.onWrite = () {
-      print("write");
+      log.debug("write");
     };
     return _completer.future;
   }
@@ -67,17 +69,17 @@ class AsyncTransport implements Transport {
     _headerBuffer[1] = (buffer.length & 0xFF00) << 8;
     _headerBuffer[2] = (buffer.length & 0xFF0000) << 16;
     _headerBuffer[3] = ++_packetNumber;
-    print("sending header, packet $_packetNumber");
+    log.debug("sending header, packet $_packetNumber");
     _headerBuffer.writeTo(_socket, HEADER_SIZE);
     buffer.reset();
     buffer.writeTo(_socket, buffer.length);
   }
 
   void _onData() {
-    print("got data");
+    log.debug("got data");
     switch (_packetState) {
     case STATE_PACKET_HEADER:
-      print("reading header $_readPos");
+      log.debug("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
       if (_readPos == HEADER_SIZE) {
@@ -85,16 +87,16 @@ class AsyncTransport implements Transport {
         _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
         _packetNumber = _headerBuffer[3];
         _readPos = 0;
-        print("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
+        log.debug("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
         _dataBuffer = new Buffer(_dataSize);
       }
       break;
     case STATE_PACKET_DATA:
       int bytes = _dataBuffer.readFrom(_socket, _dataSize - _readPos);
-      print("got $bytes bytes");
+      log.debug("got $bytes bytes");
       _readPos += bytes;
       if (_readPos == _dataSize) {
-        print("read all data: ${_dataBuffer._list}");
+        log.debug("read all data: ${_dataBuffer._list}");
         _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;
@@ -127,6 +129,7 @@ class AsyncTransport implements Transport {
 class SyncTransport implements Transport {
   static final int HEADER_SIZE = 4;
 
+  Log log;
   Socket _socket;
   InputStream _inputStream;
   OutputStream _outputStream;
@@ -136,6 +139,7 @@ class SyncTransport implements Transport {
   List<int> _headerBuffer;
   
   SyncTransport._internal() {
+    log = new Log("SyncTransport");
     _headerBuffer = new List<int>(HEADER_SIZE);
   }
   
@@ -143,7 +147,7 @@ class SyncTransport implements Transport {
     _socket = new Socket(host, port);
     Completer completer = new Completer();
     _socket.onConnect = () {
-      print("connected");
+      log.debug("connected");
       _inputStream = _socket.inputStream;
       _outputStream = _socket.outputStream;
       
@@ -190,9 +194,9 @@ class SyncTransport implements Transport {
     _headerBuffer[1] = (list.length & 0xFF00) << 8;
     _headerBuffer[2] = (list.length & 0xFF0000) << 16;
     _headerBuffer[3] = ++_packetNumber;
-    print("sending header, packet $_packetNumber");
+    log.debug("sending header, packet $_packetNumber");
     _outputStream.write(_headerBuffer);
-    print("sending packet");
+    log.debug("sending packet");
     _outputStream.write(list);
   }
 
@@ -201,7 +205,7 @@ class SyncTransport implements Transport {
   }
   
   Dynamic processHandler(Handler handler, [bool resetPacket=true]) {
-    print(handler);
+    log.debug(handler.toString());
     if (resetPacket) {
       _packetNumber = -1;
     }
@@ -211,13 +215,13 @@ class SyncTransport implements Transport {
     do {
       Buffer buffer = new Buffer.fromList(readPacket());
       result = handler.processResponse(buffer);
-      print("got result $result");
+      log.debug("got result $result");
       if (result is Handler) {
-        print("result is handler");
+        log.debug("result is handler");
         result = processHandler(handler);
       }
     } while (!handler.finished);
-    print("handler finished");
+    log.debug("handler finished");
     return result;
   }
 }

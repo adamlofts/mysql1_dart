@@ -9,6 +9,7 @@
  * Which makes things much easier.
  */
 class Buffer {
+  Log log;
   int _writePos = 0;
   int _readPos = 0;
   
@@ -20,6 +21,7 @@ class Buffer {
    * Creates a [Buffer] of the given [size]
    */
   Buffer(int size) {
+    log = new Log("Buffer");
     _list = new List<int>(size);
   }
   
@@ -27,6 +29,7 @@ class Buffer {
    * Creates a [Buffer] with the given [list] as backing storage
    */
   Buffer.fromList(List<int> list) {
+    log = new Log("Buffer");
     _list = list;
   }
   
@@ -50,7 +53,7 @@ class Buffer {
    * Returns the number of bytes written.
    */
   int writeTo(Socket socket, int count) {
-    print("writing $_list from $_readPos");
+    log.debug("writing $_list from $_readPos");
     int bytesWritten = socket.writeList(_list, _readPos, count);
     _readPos += bytesWritten;
     return bytesWritten;

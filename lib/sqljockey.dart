@@ -6,6 +6,7 @@
 #import('crypto/hash.dart');
 #import('crypto/sha1.dart');
 
+#source('log.dart');
 #source('constants.dart');
 #source('buffer.dart');
 #source('transport.dart');
