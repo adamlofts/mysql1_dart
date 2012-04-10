@@ -3,7 +3,7 @@ interface Connection {
   Dynamic useDatabase(String dbName);
   Dynamic query(String sql);
   Dynamic update(String sql);
-  Query prepare(String sql);
+  Dynamic prepare(String sql);
   void close();
 }
 
@@ -21,7 +21,7 @@ interface AsyncConnection extends Connection {
   Future useDatabase(String dbName);
   Future<Results> query(String sql);
   Future<int> update(String sql);
-  Query prepare(String sql);
+  Future<MySqlQuery> prepare(String sql);
   void close();
 }
 

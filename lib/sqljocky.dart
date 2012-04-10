@@ -13,4 +13,7 @@
 #source('interfaces.dart');
 #source('mysql.dart');
 #source('defaults.dart');
-#source('handlers.dart');
+#source('handlers/handlers.dart');
+#source('handlers/prepared_statements.dart');
+#source('handlers/query.dart');
+#source('handlers/handshake_auth.dart');
