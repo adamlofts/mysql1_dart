@@ -1,4 +1,4 @@
-#import('lib/sqljockey.dart');
+#import('lib/sqljocky.dart');
 
 void main() {
   Log log = new Log("main");

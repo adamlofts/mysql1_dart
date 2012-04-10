@@ -8,7 +8,7 @@ class AsyncTransport implements Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
-  Log log;
+  static Log log;
 
   Handler _handler;
   Completer<Dynamic> _completer;
