@@ -9,7 +9,9 @@
 #source('log.dart');
 #source('constants.dart');
 #source('buffer.dart');
-#source('transport.dart');
+#source('transport/transport.dart');
+#source('transport/async.dart');
+#source('transport/sync.dart');
 #source('interfaces.dart');
 #source('mysql.dart');
 #source('defaults.dart');
