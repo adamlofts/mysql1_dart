@@ -1,4 +1,4 @@
-#library('sqlJockey');
+#library('sqlJocky');
 // named after Jocky Wilson, the late, great darts player 
 
 #import('dart:io');
