@@ -1,4 +1,6 @@
 #import('lib/sqljocky.dart');
+#import('lib/crypto/hash.dart');
+#import('lib/crypto/sha1.dart');
 
 void main() {
   Log log = new Log("main");
@@ -21,7 +23,7 @@ void main() {
 
   log.debug("starting");
   AsyncConnection cnx = new AsyncMySqlConnection();
-  cnx.connect(user:'root').then((nothing) {
+  cnx.connect(user:'test', password:'test', db:'bob').then((nothing) {
     log.debug("got connection");
     cnx.useDatabase('bob').then((nothing2) {
       cnx.query("select name as bob, age as wibble from people p").then((Results results) {

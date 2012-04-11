@@ -2,8 +2,8 @@ class MySqlConnection implements Connection {
   Transport _transport;
   List<MySqlQuery> _queries;
   
-  Dynamic connect([String host='localhost', int port=3306, String user, String password]) {
-    return _transport.connect(host, port, user, password);
+  Dynamic connect([String host='localhost', int port=3306, String user, String password, String db]) {
+    return _transport.connect(host, port, user, password, db);
   }
   
   Dynamic useDatabase(String dbName) {
