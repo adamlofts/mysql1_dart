@@ -198,7 +198,7 @@ class Buffer {
    */
   int readLengthCodedBinary() {
     int first = readByte();
-    if (first <= 251) {
+    if (first < 251) {
       return first;
     }
     switch (first) {
@@ -225,6 +225,9 @@ class Buffer {
    */
   String readLengthCodedString() {
     int length = readLengthCodedBinary();
+    if (length == null) {
+      return null;
+    }
     return readString(length);
   }
   

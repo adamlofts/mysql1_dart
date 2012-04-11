@@ -1,0 +1,167 @@
+// not using this one yet
+class ParameterPacket {
+  int _type;
+  int _flags;
+  int _decimals;
+  int _length;
+  
+  int get type() => _type;
+  int get flags() => _flags;
+  int get decimals() => _decimals;
+  int get length() => _length;
+  
+  ParameterPacket(Buffer buffer) {
+    _type = buffer.readInt16();
+    _flags = buffer.readInt16();
+    _decimals = buffer.readByte();
+    _length = buffer.readInt32();
+  }
+}
+
+class OkPacket {
+  int _affectedRows;
+  int _insertId;
+  int _serverStatus;
+  String _message;
+  
+  int get affectedRows() => _affectedRows;
+  int get insertId() => _insertId;
+  int get serverStatus() => _serverStatus;
+  String get message() => _message;
+  
+  OkPacket(Buffer buffer) {
+    buffer.seek(1);
+    _affectedRows = buffer.readLengthCodedBinary();
+    _insertId = buffer.readLengthCodedBinary();
+    _serverStatus = buffer.readInt16();
+    _message = buffer.readStringToEnd();
+  }
+  
+  String toString() {
+    return "OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message";
+  }
+}
+
+class PrepareOkPacket {
+  int _statementHandlerId;
+  int _columnCount;
+  int _parameterCount;
+  int _warningCount;
+
+  int get statementHandlerId() => _statementHandlerId;
+  int get columnCount() => _columnCount;
+  int get parameterCount() => _parameterCount;
+  int get warningCount() => _warningCount;
+  
+  PrepareOkPacket(Buffer buffer) {
+    buffer.seek(1);
+    _statementHandlerId = buffer.readInt32();
+    _columnCount = buffer.readInt16();
+    _parameterCount = buffer.readInt16();
+    buffer.skip(1);
+    _warningCount = buffer.readInt16();
+  }
+  
+  String toString() {
+    return "OK: statement handler id: $_statementHandlerId, columns: $_columnCount, "
+    "parameters: $_parameterCount, warnings: $_warningCount";
+  }
+}
+
+class MySqlError {
+  int _errorNumber;
+  String _sqlState;
+  String _message;
+  
+  int get errorNumber() => _errorNumber;
+  String get sqlState() => _sqlState;
+  String get message() => _message;
+  
+  /**
+   * Create a [MySqlError] based on an error response from the mysql server
+   */
+  MySqlError(Buffer buffer) {
+    buffer.seek(1);
+    _errorNumber = buffer.readInt16();
+    buffer.skip(1);
+    _sqlState = buffer.readString(5);
+    _message = buffer.readStringToEnd();
+  }
+  
+  String toString() {
+    return "Error $errorNumber ($sqlState): $message";
+  }
+}
+
+/**
+ * Each command which the mysql protocol implements is handled with a [Handler] object.
+ * A handler is created with the appropriate parameters when the command is invoked
+ * from the connection. The transport is then responsible for sending the
+ * request which the handler creates, and then parsing the result returned by 
+ * the mysql server, either synchronously or asynchronously.
+ */
+class Handler {
+  Log log;
+  bool _finished = false;
+  
+  /**
+   * Returns a [Buffer] containing the command packet.
+   */
+  abstract Buffer createRequest();
+  
+  /**
+   * Parses a [Buffer] containing the response to the command.
+   * Returns a [Handler] if that handler should take over and
+   * process subsequent packets from the server, or [:null:]
+   * in all other cases.
+   */
+  abstract Dynamic processResponse(Buffer response);
+  
+  /**
+   * Parses the response packet to recognise Ok and Error packets.
+   * Returns an [OkPacket] if the packet was an Ok packet, throws
+   * a [MySqlError] if it was an Error packet, or returns [:null:] 
+   * if the packet has not been handled by this method.
+   */
+  Dynamic checkResponse(Buffer response, [bool prepareStmt=false]) {
+    if (response[0] == PACKET_OK) {
+      if (prepareStmt) {
+        PrepareOkPacket okPacket = new PrepareOkPacket(response);
+        log.debug(okPacket.toString());
+        return okPacket;
+      } else {
+        OkPacket okPacket = new OkPacket(response);
+        log.debug(okPacket.toString());
+        return okPacket;
+      }
+    } else if (response[0] == PACKET_ERROR) {
+      throw new MySqlError(response);
+    }
+    return null;
+  }
+
+  /**
+   * When [finished] is true, this handler has finished processing responses.
+   */
+  bool get finished() => _finished;
+}
+
+class UseDbHandler extends Handler {
+  String _dbName;
+  
+  UseDbHandler(String this._dbName) {
+    log = new Log("UseDbHandler");
+  }
+  
+  Buffer createRequest() {
+    Buffer buffer = new Buffer(_dbName.length + 1);
+    buffer.writeByte(COM_INIT_DB);
+    buffer.writeString(_dbName);
+    return buffer;
+  }
+  
+  Dynamic processResponse(Buffer response) {
+    checkResponse(response);
+    _finished = true;
+  }
+}

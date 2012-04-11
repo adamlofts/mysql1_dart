@@ -1,7 +1,6 @@
 class MySqlConnection implements Connection {
   Transport _transport;
-  
-  MySqlConnection._internal(Transport this._transport);
+  List<MySqlQuery> _queries;
   
   Dynamic connect([String host='localhost', int port=3306, String user, String password]) {
     return _transport.connect(host, port, user, password);
@@ -25,28 +24,65 @@ class MySqlConnection implements Connection {
     
   }
   
-  Query prepare(String sql) {
-    return new MySqlQuery._prepare(sql);
+  abstract Dynamic prepare(String sql);
+  
+  Dynamic _closeQuery(MySqlQuery q) {
+    int index = _queries.indexOf(q);
+    if (index != -1) {
+      _queries.removeRange(index, 1);
+    }
+    var handler = new CloseStatementHandler(q.statementId);
+    return _transport.processHandler(handler);
   }
 }
 
 class AsyncMySqlConnection extends MySqlConnection implements AsyncConnection {
-  factory AsyncMySqlConnection() {
-    Transport transport = new AsyncTransport._internal();
-    return new MySqlConnection._internal(transport);
+  AsyncMySqlConnection() {
+    _transport = new AsyncTransport._internal();
+    _queries = new List<MySqlQuery>();
+  }
+  
+  Future<Query> prepare(String sql) {
+    var handler = new PrepareHandler(sql);
+    Future<PreparedQuery> future = _transport.processHandler(handler);
+    Completer c = new Completer();
+    future.then((preparedQuery) {
+      MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
+      _queries.add(q);
+      c.complete(q);
+    });
+    return c.future;
   }
 }
 
 class SyncMySqlConnection extends MySqlConnection implements SyncConnection {
-  factory SyncMySqlConnection() {
-    Transport transport = new SyncTransport._internal();
-    return new MySqlConnection._internal(transport);
+  SyncMySqlConnection() {
+    _transport = new SyncTransport._internal();
+    _queries = new List<MySqlQuery>();
+  }
+
+  Query prepare (String sql) {
+    var handler = new PrepareHandler(sql);
+    PreparedQuery preparedQuery = _transport.processHandler(handler);
+    MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
+    _queries.add(q);
+    return q;
   }
 }
 
 class MySqlQuery implements Query {
-  MySqlQuery._prepare(String sql) {
+  MySqlConnection _cnx;
+  PreparedQuery _preparedQuery;
+  
+  MySqlQuery._internal(MySqlConnection this._cnx,
+    PreparedQuery this._preparedQuery) {
     
+  }
+  
+  int get statementId() => _preparedQuery._handler._okPacket._statementHandlerId;
+  
+  Dynamic close() {
+    return _cnx._closeQuery(this);
   }
   
   Future<Results> execute() {

@@ -36,7 +36,15 @@ void main() {
         }
         cnx.query("select * from blobby").then((Results results2) {
           log.debug("queried");
-          cnx.close();
+          
+          cnx.prepare("select * from people where age = ?").then((query) {
+            log.debug("prepared $query");
+            var x = query.close().then((y) {
+              log.debug("stmt closed");
+              cnx.close();
+              
+            });
+          });
         });
       });
     });
