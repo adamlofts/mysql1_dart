@@ -1,6 +1,7 @@
 class HandshakeHandler extends Handler {
   String _user;
   String _password;
+  String _db;
   
   int protocolVersion;
   String serverVersion;
@@ -11,8 +12,9 @@ class HandshakeHandler extends Handler {
   int serverStatus;
   int scrambleLength;
   
-  HandshakeHandler(String this._user, String this._password) {
+  HandshakeHandler(String this._user, String this._password, [String db]) {
     log = new Log("HandshakeHandler");
+    _db = db;
   }
 
   /**
@@ -35,11 +37,19 @@ class HandshakeHandler extends Handler {
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
     threadId = response.readInt32();
-    scrambleBuffer = response.readList(8);
+    List<int> scrambleBuffer1 = response.readList(8);
     response.skip(1);
     serverCapabilities = response.readInt16();
     serverLanguage = response.readByte();
     serverStatus = response.readInt16();
+    serverCapabilities += (response.readInt16() << 16);
+    scrambleLength = response.readByte();
+    response.skip(10);
+    List<int> scrambleBuffer2 = response.readNullTerminatedList();
+    scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+    scrambleBuffer.setRange(0, 8, scrambleBuffer1);
+    scrambleBuffer.setRange(8, scrambleBuffer2.length, scrambleBuffer2);
+    
     _finished = true;
     
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
@@ -49,7 +59,7 @@ class HandshakeHandler extends Handler {
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
       | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
     
-    return new AuthHandler(_user, _password, scrambleBuffer, 
+    return new AuthHandler(_user, _password, _db, scrambleBuffer, 
       clientFlags, 0, 33);
   }
 }
@@ -57,12 +67,13 @@ class HandshakeHandler extends Handler {
 class AuthHandler extends Handler {
   String _username;
   String _password;
+  String _db;
   List<int> _scrambleBuffer;
   int _clientFlags;
   int _maxPacketSize;
   int _collation;
   
-  AuthHandler(String this._username, String this._password, 
+  AuthHandler(String this._username, String this._password, String this._db,
     List<int> this._scrambleBuffer, int this._clientFlags,
     int this._maxPacketSize, int this._collation) {
     log = new Log("AuthHandler");
@@ -78,18 +89,26 @@ class AuthHandler extends Handler {
       hasher.updateString(_password);
       List<int> hashedPassword = hasher.digest();
       
-      hash:Hash hasher2 = new Sha1();
-      hasher2.update(_scrambleBuffer);
-      hasher2.update(hashedPassword);
-      List<int> hashedSaltedPassword = hasher2.digest();
+      hasher = new Sha1();
+      hasher.update(hashedPassword);
+      List<int> doubleHashedPassword = hasher.digest();
+      
+      hasher = new Sha1();
+      hasher.update(_scrambleBuffer);
+      hasher.update(doubleHashedPassword);
+      List<int> hashedSaltedPassword = hasher.digest();
       
       hash = new List<int>(hashedSaltedPassword.length);
       for (int i = 0; i < hash.length; i++) {
-        hash[i] = hashedPassword[i] ^ hashedSaltedPassword[i];
+        hash[i] = hashedSaltedPassword[i] ^ hashedPassword[i];
       }
     }
-    
-    int size = hash.length + _username.length + 2 + 32;;
+
+    int size = hash.length + _username.length + 2 + 32;
+    if (_db != null) {
+      size += _db.length + 1;
+      _clientFlags |= CLIENT_CONNECT_WITH_DB;
+    }
     
     Buffer buffer = new Buffer(size);
     buffer.seekWrite(0);
@@ -100,6 +119,10 @@ class AuthHandler extends Handler {
     buffer.writeNullTerminatedString(_username);
     buffer.writeByte(hash.length);
     buffer.writeList(hash);
+    
+    if (_db != null) {
+      buffer.writeNullTerminatedString(_db);
+    }
     
     return buffer;
   }

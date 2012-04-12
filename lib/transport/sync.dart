@@ -15,7 +15,7 @@ class SyncTransport implements Transport {
     _headerBuffer = new List<int>(HEADER_SIZE);
   }
   
-  Future connect([String host, int port, String user, String password]) {
+  Future connect([String host, int port, String user, String password, String db]) {
     _socket = new Socket(host, port);
     Completer completer = new Completer();
     _socket.onConnect = () {
@@ -23,7 +23,7 @@ class SyncTransport implements Transport {
       _inputStream = _socket.inputStream;
       _outputStream = _socket.outputStream;
       
-      HandshakeHandler handler = new HandshakeHandler(user, password);
+      HandshakeHandler handler = new HandshakeHandler(user, password, db);
 
       var result = handler.processResponse(new Buffer.fromList(readPacket()));
       if (result is Handler) {

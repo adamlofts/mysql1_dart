@@ -30,17 +30,17 @@ class AsyncTransport implements Transport {
     _socket.close();
   }
   
-  Future connect([String host='localhost', int port=3306, String user, String password]) {
+  Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
     if (_socket != null) {
       throw "connection already open";
     }
     
     _user = user;
     _password = password;
-    _handler = new HandshakeHandler(user, password);
+    _handler = new HandshakeHandler(user, password, db);
     
     _completer = new Completer();
-    log.debug("opening connection to $host:$port");
+    log.debug("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
       log.debug("closed");
