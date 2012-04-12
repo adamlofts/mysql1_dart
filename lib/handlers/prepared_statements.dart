@@ -164,15 +164,7 @@ class ExecuteQueryHandler extends Handler {
       }
     };
     
-//    FieldWriter fields = new FieldWriter();
-//    for (int i = 0; i < _values.length; i++) {
-//      Dynamic value = _values[i];
-//      if (value != null) {
-//        fields.write(value, _preparedQuery.parameters[i].type);
-//      }
-//    }
-//    List<int> values = fields.list;
-    
+    //TODO do this properly
     List<int> types = new List<int>();
     List<int> values = new List<int>();
     for (int i = 0; i < _values.length; i++) {
