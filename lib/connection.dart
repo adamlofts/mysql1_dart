@@ -21,7 +21,16 @@ class MySqlConnection implements Connection {
   }
   
   Dynamic update(String sql) {
-    
+  }
+  
+  Dynamic ping() {
+    var handler = new PingHandler();
+    return _transport.processHandler(handler);
+  }
+  
+  Dynamic debug() {
+    var handler = new DebugHandler();
+    return _transport.processHandler(handler);
   }
   
   abstract Dynamic prepare(String sql);
@@ -47,7 +56,7 @@ class AsyncMySqlConnection extends MySqlConnection implements AsyncConnection {
     Future<PreparedQuery> future = _transport.processHandler(handler);
     Completer c = new Completer();
     future.then((preparedQuery) {
-      MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
+      MySqlQuery q = new AsyncMySqlQuery._internal(this, preparedQuery);
       _queries.add(q);
       c.complete(q);
     });
@@ -64,7 +73,7 @@ class SyncMySqlConnection extends MySqlConnection implements SyncConnection {
   Query prepare (String sql) {
     var handler = new PrepareHandler(sql);
     PreparedQuery preparedQuery = _transport.processHandler(handler);
-    MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
+    MySqlQuery q = new SyncMySqlQuery._internal(this, preparedQuery);
     _queries.add(q);
     return q;
   }
@@ -75,27 +84,22 @@ class MySqlQuery implements Query {
   PreparedQuery _preparedQuery;
   List<Dynamic> _values;
   bool _executed = false;
-  
-  MySqlQuery._internal(MySqlConnection this._cnx,
-    PreparedQuery this._preparedQuery) {
-    _values = new List<Dynamic>(_preparedQuery.parameters.length);
-  }
-  
+
   int get statementId() => _preparedQuery.statementHandlerId;
   
   Dynamic close() {
     return _cnx._closeQuery(this);
   }
   
-  Future<Results> execute() {
+  Dynamic execute() {
     var handler = new ExecuteQueryHandler(_preparedQuery, _executed, _values);
     return _cnx._transport.processHandler(handler);
   }
   
-  Future<int> executeUpdate() {
+  Dynamic executeUpdate() {
     
   }
-  
+
   Dynamic operator [](int pos) {
     return _values[pos];
   }
@@ -103,5 +107,21 @@ class MySqlQuery implements Query {
   void operator []=(int index, Dynamic value) {
     _values[index] = value;
     _executed = false;
+  }
+}
+
+class AsyncMySqlQuery extends MySqlQuery implements AsyncQuery {
+  AsyncMySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
+    _cnx = cnx;
+    _preparedQuery = preparedQuery;
+    _values = new List<Dynamic>(_preparedQuery.parameters.length);
+  }
+}
+
+class SyncMySqlQuery extends MySqlQuery implements AsyncQuery {
+  SyncMySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
+    _cnx = cnx;
+    _preparedQuery = preparedQuery;
+    _values = new List<Dynamic>(_preparedQuery.parameters.length);
   }
 }

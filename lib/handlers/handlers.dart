@@ -139,3 +139,37 @@ class UseDbHandler extends Handler {
     _finished = true;
   }
 }
+
+class PingHandler extends Handler {
+  PingHandler() {
+    log = new Log("PingHandler");
+  }
+  
+  Buffer createRequest() {
+    Buffer buffer = new Buffer(1);
+    buffer.writeByte(COM_PING);
+    return buffer;
+  }
+  
+  Dynamic processResponse(Buffer response) {
+    checkResponse(response);
+    _finished = true;
+  }
+}
+
+class DebugHandler extends Handler {
+  DebugHandler() {
+    log = new Log("DebugHandler");
+  }
+  
+  Buffer createRequest() {
+    Buffer buffer = new Buffer(1);
+    buffer.writeByte(COM_DEBUG);
+    return buffer;
+  }
+  
+  Dynamic processResponse(Buffer response) {
+    checkResponse(response);
+    _finished = true;
+  }
+}
