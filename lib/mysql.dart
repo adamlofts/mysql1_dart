@@ -73,31 +73,35 @@ class SyncMySqlConnection extends MySqlConnection implements SyncConnection {
 class MySqlQuery implements Query {
   MySqlConnection _cnx;
   PreparedQuery _preparedQuery;
+  List<Dynamic> _values;
+  bool _executed = false;
   
   MySqlQuery._internal(MySqlConnection this._cnx,
     PreparedQuery this._preparedQuery) {
-    
+    _values = new List<Dynamic>(_preparedQuery.parameters.length);
   }
   
-  int get statementId() => _preparedQuery._handler._okPacket._statementHandlerId;
+  int get statementId() => _preparedQuery.statementHandlerId;
   
   Dynamic close() {
     return _cnx._closeQuery(this);
   }
   
   Future<Results> execute() {
-    
+    var handler = new ExecuteQueryHandler(_preparedQuery, _executed, _values);
+    return _cnx._transport.processHandler(handler);
   }
   
   Future<int> executeUpdate() {
     
   }
   
-  operator [](int pos) {
-    
+  Dynamic operator [](int pos) {
+    return _values[pos];
   }
   
-  void operator []=(int index, value) {
-    
+  void operator []=(int index, Dynamic value) {
+    _values[index] = value;
+    _executed = false;
   }
 }

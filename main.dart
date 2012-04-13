@@ -41,10 +41,12 @@ void main() {
           
           cnx.prepare("select * from people where age = ?").then((query) {
             log.debug("prepared $query");
-            var x = query.close().then((y) {
-              log.debug("stmt closed");
-              cnx.close();
-              
+            query[0] = 35;
+            var res = query.execute().then((a) {
+              var x = query.close().then((y) {
+                log.debug("stmt closed");
+                cnx.close();
+              });
             });
           });
         });
