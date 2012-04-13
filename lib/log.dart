@@ -23,7 +23,7 @@ class Log {
   String _name;
   bool debugEnabled = true;
   
-  debug(String message) {
+  debug(Dynamic message) {
     if (loggingEnabled && debugEnabled) {
       Date now = new Date.now();
       print("$now $_name: $message");

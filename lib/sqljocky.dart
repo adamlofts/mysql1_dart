@@ -13,7 +13,7 @@
 #source('transport/async.dart');
 #source('transport/sync.dart');
 #source('interfaces.dart');
-#source('mysql.dart');
+#source('connection.dart');
 #source('defaults.dart');
 #source('handlers/handlers.dart');
 #source('handlers/prepared_statements.dart');

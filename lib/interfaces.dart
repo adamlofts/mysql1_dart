@@ -26,8 +26,9 @@ interface AsyncConnection extends Connection {
 }
 
 interface Query {
-  Future<Results> execute();
-  Future<int> executeUpdate();
+  Dynamic execute();
+  Dynamic executeUpdate();
+  Dynamic close();
   Dynamic operator [](int pos);
   void operator []=(int index, Dynamic value);
 }

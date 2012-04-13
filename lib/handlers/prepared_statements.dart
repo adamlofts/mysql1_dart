@@ -94,7 +94,7 @@ class PrepareHandler extends Handler {
         _columnsToRead--;
       }
     } else if (packet is PrepareOkPacket) {
-      log.debug(packet.toString);
+      log.debug(packet.toString());
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
