@@ -21,7 +21,16 @@ class MySqlConnection implements Connection {
   }
   
   Dynamic update(String sql) {
-    
+  }
+  
+  Dynamic ping() {
+    var handler = new PingHandler();
+    return _transport.processHandler(handler);
+  }
+  
+  Dynamic debug() {
+    var handler = new DebugHandler();
+    return _transport.processHandler(handler);
   }
   
   abstract Dynamic prepare(String sql);

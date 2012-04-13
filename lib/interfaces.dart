@@ -5,6 +5,8 @@ interface Connection {
   Dynamic update(String sql);
   Dynamic prepare(String sql);
   void close();
+  Dynamic ping();
+  Dynamic debug();
 }
 
 interface SyncConnection extends Connection {
@@ -14,6 +16,8 @@ interface SyncConnection extends Connection {
   int update(String sql);
   SyncQuery prepare(String sql);
   void close();
+  void ping();
+  void debug();
 }
 
 interface AsyncConnection extends Connection {
@@ -23,6 +27,8 @@ interface AsyncConnection extends Connection {
   Future<int> update(String sql);
   Future<AsyncQuery> prepare(String sql);
   void close();
+  Future ping();
+  Future debug();
 }
 
 interface Query {
