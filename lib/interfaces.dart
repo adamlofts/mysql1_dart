@@ -12,7 +12,7 @@ interface SyncConnection extends Connection {
   void useDatabase(String dbName);
   Results query(String sql);
   int update(String sql);
-  Query prepare(String sql);
+  SyncQuery prepare(String sql);
   void close();
 }
 
@@ -21,7 +21,7 @@ interface AsyncConnection extends Connection {
   Future useDatabase(String dbName);
   Future<Results> query(String sql);
   Future<int> update(String sql);
-  Future<MySqlQuery> prepare(String sql);
+  Future<AsyncQuery> prepare(String sql);
   void close();
 }
 
@@ -31,6 +31,18 @@ interface Query {
   Dynamic close();
   Dynamic operator [](int pos);
   void operator []=(int index, Dynamic value);
+}
+
+interface SyncQuery extends Query {
+  Results execute();
+  int executeUpdate();
+  void close();
+}
+
+interface AsyncQuery extends Query {
+  Future<Results> execute();
+  Future<int> executeUpdate();
+  Future close();
 }
 
 interface Field {
