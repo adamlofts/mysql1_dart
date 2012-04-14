@@ -275,15 +275,115 @@ class BinaryDataPacket {
     
     _values = new List<String>(fields.length);
     for (int i = 0; i < fields.length; i++) {
+      log.debug(fields[i].name);
       switch (fields[i].type) {
         case FIELD_TYPE_BLOB:
           log.debug("BLOB");
           int len = buffer.readByte();
           _values[i] = buffer.readList(len);
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_TINY:
+          log.debug("TINY");
+          _values[i] = buffer.readByte();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_SHORT:
+          log.debug("SHORT");
+          _values[i] = buffer.readInt16();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_INT24:
+          log.debug("INT24");
+          _values[i] = buffer.readInt32();
+          log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_LONG:
           log.debug("LONG");
           _values[i] = buffer.readInt32();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_LONGLONG:
+          log.debug("LONGLONG");
+          _values[i] = buffer.readInt64();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_NEWDECIMAL:
+          log.debug("NEWDECIMAL");
+          int len = buffer.readByte();
+          //TODO
+          _values[i] = buffer.readList(len);
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_FLOAT:
+          log.debug("FLOAT");
+          //TODO
+          _values[i] = buffer.readList(4);
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_DOUBLE:
+          log.debug("DOUBLE");
+          //TODO
+          _values[i] = buffer.readList(8);
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_BIT:
+          log.debug("BIT");
+          int len = buffer.readByte();
+          //TODO
+          _values[i] = buffer.readList(len);
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_DATE:
+          log.debug("DATE");
+          //TODO
+          _values[i] = buffer.readInt24();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_DATETIME:
+          log.debug("DATETIME");
+          //TODO
+          _values[i] = buffer.readInt64();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_TIMESTAMP:
+          log.debug("TIMESTAMP");
+          //TODO
+          _values[i] = buffer.readInt32();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_TIME:
+          log.debug("TIME");
+          //TODO
+          _values[i] = buffer.readInt24();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_YEAR:
+          log.debug("YEAR");
+          _values[i] = buffer.readInt16();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_STRING:
+          log.debug("STRING");
+          _values[i] = buffer.readLengthCodedString();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_VAR_STRING:
+          log.debug("STRING");
+          _values[i] = buffer.readLengthCodedString();
+          log.debug("Value: ${_values[i]}");
+          break;
+        case FIELD_TYPE_NEWDATE:
+        case FIELD_TYPE_DECIMAL:
+        case FIELD_TYPE_SET:
+        case FIELD_TYPE_ENUM:
+        case FIELD_TYPE_TINY_BLOB:
+        case FIELD_TYPE_MEDIUM_BLOB:
+        case FIELD_TYPE_LONG_BLOB:
+        case FIELD_TYPE_VARCHAR:
+        case FIELD_TYPE_GEOMETRY:
+          log.debug("Field type not implemented yet ${fields[i].type}");
+          log.debug(buffer.readList(8));
           break;
         default:
           //TODO: support all the other field types
