@@ -60,10 +60,11 @@ class AsyncTransport implements Transport {
   
   void _sendBuffer(Buffer buffer) {
     _headerBuffer[0] = buffer.length & 0xFF;
-    _headerBuffer[1] = (buffer.length & 0xFF00) << 8;
-    _headerBuffer[2] = (buffer.length & 0xFF0000) << 16;
+    _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
+    _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
     log.debug("sending header, packet $_packetNumber");
+    _headerBuffer.reset();
     _headerBuffer.writeTo(_socket, HEADER_SIZE);
     buffer.reset();
     buffer.writeTo(_socket, buffer.length);
@@ -108,15 +109,19 @@ class AsyncTransport implements Transport {
     }
   }
   
-  Dynamic processHandler(Handler handler) {
+  Dynamic processHandler(Handler handler, [bool resetPacket=true, bool noResponse=false]) {
     if (_handler != null) {
       throw "request already in progress";
     }
-    _completer = new Completer<Dynamic>();
     _packetNumber = -1;
-    _handler = handler;
+    if (!noResponse) {
+      _completer = new Completer<Dynamic>();
+      _handler = handler;
+    }
     _sendBuffer(handler.createRequest());
-    return _completer.future;
+    if (!noResponse) {
+      return _completer.future;
+    }
   }
 }
 

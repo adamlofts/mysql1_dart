@@ -12,6 +12,8 @@ class MySqlConnection implements Connection {
   }
   
   void close() {
+    var handler = new QuitHandler();
+    _transport.processHandler(handler, noResponse:true);
     _transport.close();
   }
 
@@ -35,13 +37,13 @@ class MySqlConnection implements Connection {
   
   abstract Dynamic prepare(String sql);
   
-  Dynamic _closeQuery(MySqlQuery q) {
+  void _closeQuery(MySqlQuery q) {
     int index = _queries.indexOf(q);
     if (index != -1) {
       _queries.removeRange(index, 1);
     }
     var handler = new CloseStatementHandler(q.statementId);
-    return _transport.processHandler(handler);
+    _transport.processHandler(handler, noResponse:true);
   }
 }
 
@@ -87,8 +89,8 @@ class MySqlQuery implements Query {
 
   int get statementId() => _preparedQuery.statementHandlerId;
   
-  Dynamic close() {
-    return _cnx._closeQuery(this);
+  void close() {
+    _cnx._closeQuery(this);
   }
   
   Dynamic execute() {

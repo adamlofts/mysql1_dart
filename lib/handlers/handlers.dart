@@ -173,3 +173,19 @@ class DebugHandler extends Handler {
     _finished = true;
   }
 }
+
+class QuitHandler extends Handler {
+  QuitHandler() {
+    log = new Log("QuitHandler");
+  }
+  
+  Buffer createRequest() {
+    Buffer buffer = new Buffer(1);
+    buffer.writeByte(COM_QUIT);
+    return buffer;
+  }
+  
+  Dynamic processResponse(Buffer response) {
+    throw "No response expected";
+  }
+}

@@ -76,13 +76,16 @@ class SyncTransport implements Transport {
     _socket.close();
   }
   
-  Dynamic processHandler(Handler handler, [bool resetPacket=true]) {
+  Dynamic processHandler(Handler handler, [bool resetPacket=true, bool noResponse=false]) {
     log.debug(handler.toString());
     if (resetPacket) {
       _packetNumber = -1;
     }
     sendPacket(handler.createRequest()._list);
     
+    if (noResponse) {
+      return;
+    }
     var result;
     do {
       Buffer buffer = new Buffer.fromList(readPacket());
