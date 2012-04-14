@@ -270,11 +270,27 @@ class BinaryDataPacket {
   BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) {
     log = new Log("BinaryDataPacket");
     buffer.skip(1);
-    buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
-    //TODO: parse null list and skip nulls
+    List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
+    List<bool> nullMap = new List<bool>(fields.length);
+    int shift = 7;
+    int byte = 0;
+    for (int i = 0; i < fields.length; i++) {
+      int mask = 1 << shift;
+      shift--;
+      if (shift < 0) {
+        shift = 7;
+        byte++;
+      }
+      nullMap[i] = (nulls[byte] & mask) != 0;
+      log.debug("Field $i nullity: ${nullMap[i]}");
+    }
     
     _values = new List<String>(fields.length);
     for (int i = 0; i < fields.length; i++) {
+      if (nullMap[i]) {
+        _values[i] = null;
+        continue;
+      }
       log.debug(fields[i].name);
       switch (fields[i].type) {
         case FIELD_TYPE_BLOB:
@@ -312,7 +328,8 @@ class BinaryDataPacket {
           log.debug("NEWDECIMAL");
           int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readList(len);
+          String num = buffer.readString(len);
+           _values[i] = Math.parseDouble(num);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_FLOAT:
@@ -334,33 +351,64 @@ class BinaryDataPacket {
           _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
-        case FIELD_TYPE_DATE:
-          log.debug("DATE");
-          int len = buffer.readByte();
-          //TODO
-          _values[i] = buffer.readList(len);
-          log.debug("Value: ${_values[i]}");
-          break;
         case FIELD_TYPE_DATETIME:
-          log.debug("DATETIME");
-          int len = buffer.readByte();
-          //TODO
-          _values[i] = buffer.readList(len);
-          log.debug("Value: ${_values[i]}");
-          break;
+        case FIELD_TYPE_DATE:
         case FIELD_TYPE_TIMESTAMP:
-          log.debug("TIMESTAMP");
+          log.debug("DATE/DATETIME");
           int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readList(len);
+          List<int> date = buffer.readList(len);
+          int year = 0;
+          int month = 0;
+          int day = 0;
+          int hours = 0;
+          int minutes = 0;
+          int seconds = 0;
+          int billionths = 0;
+          
+          if (date.length > 0) {
+            year = date[0] + (date[1] << 8);
+            month = date[2];
+            day = date[3];
+            if (date.length > 4) {
+              hours = date[4];
+              minutes = date[5];
+              seconds = date[6];
+              if (date.length > 7) {
+                billionths = date[7] + (date[8] << 8)
+                    + (date[9] << 16) + (date[10] << 24);
+              }
+            }
+          }
+          
+          _values[i] = new Date(year, month, day, hours, minutes, seconds, (billionths / 1000000).toInt());
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TIME:
           log.debug("TIME");
           int len = buffer.readByte();
-          //TODO
-          _values[i] = buffer.readList(len);
-          log.debug("Value: ${_values[i]}");
+          //TODO return a duration
+          List<int> time = buffer.readList(len);
+          
+          int sign = 1;
+          int days = 0;
+          int hours = 0;
+          int minutes = 0;
+          int seconds = 0;
+          int billionths = 0;
+          
+          log.debug("time: $time");
+          if (time.length > 0) {
+            sign = time[0] == 1 ? -1 : 1;
+            days = time[1] + (time[2] << 8) + (time[3] << 16) + (time[4] << 24);
+            hours = time[5];
+            minutes = time[6];
+            seconds = time[7];
+            if (time.length > 8) {
+              billionths = time[8] + (time[9] << 8) + (time[10] << 16) + (time[11] << 24);
+            }
+          }
+          _values[i] = new Duration(days * sign, hours * sign, minutes * sign, seconds * sign, (billionths / 1000000).toInt() * sign);
           break;
         case FIELD_TYPE_YEAR:
           log.debug("YEAR");
