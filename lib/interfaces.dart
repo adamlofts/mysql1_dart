@@ -7,6 +7,19 @@ interface Connection {
   void close();
   Dynamic ping();
   Dynamic debug();
+//  Dynamic fieldList(String table, [String column]);
+//  Dynamic refresh(bool grant, bool log, bool tables, bool hosts,
+//                  bool status, bool threads, bool slave, bool master);
+//  Dynamic shutdown(bool def, bool waitConnections, bool waitTransactions,
+//                   bool waitUpdates, bool waitAllBuffers,
+//                   bool waitCriticalBuffers, bool killQuery, bool killConnection);
+//  Dynamic statistics();
+//  Dynamic processInfo();
+//  Dynamic processKill(int id);
+//  Dynamic changeUser(String user, String password, [String db]);
+//  Dynamic binlogDump(options);
+//  Dynamic registerSlave(options);
+//  Dynamic setOptions(int option);
 }
 
 interface SyncConnection extends Connection {
@@ -35,6 +48,9 @@ interface Query {
   Dynamic execute();
   Dynamic executeUpdate();
   Dynamic close();
+//  Dynamic longData(int index, data);
+//  Dynamic reset();
+//  Dynamic fetch(int rows);
   Dynamic operator [](int pos);
   void operator []=(int index, Dynamic value);
 }

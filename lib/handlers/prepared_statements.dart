@@ -136,12 +136,25 @@ class CloseStatementHandler extends Handler {
 }
 
 class ExecuteQueryHandler extends Handler {
+  static final int STATE_HEADER_PACKET = 0;
+  static final int STATE_FIELD_PACKETS = 1;
+  static final int STATE_ROW_PACKETS = 2;
+  
+  int _state = STATE_HEADER_PACKET;
+
+  ResultSetHeaderPacket _resultSetHeaderPacket;
+  List<FieldPacket> _fieldPackets;
+  List<BinaryDataPacket> _dataPackets;
+
   PreparedQuery _preparedQuery;
   List<Dynamic> _values;
+  OkPacket _okPacket;
   bool _executed;
   
   ExecuteQueryHandler(PreparedQuery this._preparedQuery, bool this._executed,
     List<Dynamic> this._values) {
+    _fieldPackets = new List<FieldPacket>();
+    _dataPackets = new List<BinaryDataPacket>();
     log = new Log("ExecuteQueryHandler");
   }
   
@@ -208,7 +221,79 @@ class ExecuteQueryHandler extends Handler {
   }
   
   Dynamic processResponse(Buffer response) {
-    checkResponse(response);
-    _finished = true;
+    var packet;
+    if (_state == STATE_HEADER_PACKET) {
+      packet = checkResponse(response);
+    }
+    if (packet == null) {
+      if (response[0] == PACKET_EOF) {
+        log.debug('Got an EOF');
+        if (_state == STATE_FIELD_PACKETS) {
+          _state = STATE_ROW_PACKETS;
+        } else if (_state == STATE_ROW_PACKETS){
+          _finished = true;
+          
+          return new ResultsImpl(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+        }
+      } else {
+        switch (_state) {
+        case STATE_HEADER_PACKET:
+          log.debug('Got a header packet');
+          _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
+          log.debug(_resultSetHeaderPacket.toString());
+          _state = STATE_FIELD_PACKETS;
+          break;
+        case STATE_FIELD_PACKETS:
+          log.debug('Got a field packet');
+          FieldPacket fieldPacket = new FieldPacket(response);
+          log.debug(fieldPacket.toString());
+          _fieldPackets.add(fieldPacket);
+          break;
+        case STATE_ROW_PACKETS:
+          log.debug('Got a row packet');
+          BinaryDataPacket dataPacket = new BinaryDataPacket(response, _fieldPackets);
+          log.debug(dataPacket.toString());
+          _dataPackets.add(dataPacket);
+          break;
+        }
+      }
+    } else if (packet is OkPacket) {
+      _okPacket = packet;
+    }
+  }
+}
+
+class BinaryDataPacket {
+  List<Dynamic> _values;
+  Log log;
+  
+  BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) {
+    log = new Log("BinaryDataPacket");
+    buffer.skip(1);
+    buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
+    //TODO: parse null list and skip nulls
+    
+    _values = new List<String>(fields.length);
+    for (int i = 0; i < fields.length; i++) {
+      switch (fields[i].type) {
+        case FIELD_TYPE_BLOB:
+          log.debug("BLOB");
+          int len = buffer.readByte();
+          _values[i] = buffer.readList(len);
+          break;
+        case FIELD_TYPE_LONG:
+          log.debug("LONG");
+          _values[i] = buffer.readInt32();
+          break;
+        default:
+          //TODO: support all the other field types
+          log.debug("Unsupported field type ${fields[i].type}");
+          break;
+      }
+    }
+  }
+  
+  String toString() {
+    return "Value: $_values";
   }
 }
