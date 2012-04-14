@@ -336,26 +336,30 @@ class BinaryDataPacket {
           break;
         case FIELD_TYPE_DATE:
           log.debug("DATE");
+          int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readInt24();
+          _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DATETIME:
           log.debug("DATETIME");
+          int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readInt64();
+          _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TIMESTAMP:
           log.debug("TIMESTAMP");
+          int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readInt32();
+          _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TIME:
           log.debug("TIME");
+          int len = buffer.readByte();
           //TODO
-          _values[i] = buffer.readInt24();
+          _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_YEAR:
@@ -373,6 +377,12 @@ class BinaryDataPacket {
           _values[i] = buffer.readLengthCodedString();
           log.debug("Value: ${_values[i]}");
           break;
+        case FIELD_TYPE_GEOMETRY:
+          log.debug("GEOMETRY - not implemented");
+          int len = buffer.readByte();
+          //TODO
+          _values[i] = buffer.readList(len);
+          break;
         case FIELD_TYPE_NEWDATE:
         case FIELD_TYPE_DECIMAL:
         case FIELD_TYPE_SET:
@@ -381,7 +391,6 @@ class BinaryDataPacket {
         case FIELD_TYPE_MEDIUM_BLOB:
         case FIELD_TYPE_LONG_BLOB:
         case FIELD_TYPE_VARCHAR:
-        case FIELD_TYPE_GEOMETRY:
           log.debug("Field type not implemented yet ${fields[i].type}");
           log.debug(buffer.readList(8));
           break;
