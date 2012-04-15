@@ -327,27 +327,71 @@ class BinaryDataPacket {
         case FIELD_TYPE_NEWDECIMAL:
           log.debug("NEWDECIMAL");
           int len = buffer.readByte();
-          //TODO
           String num = buffer.readString(len);
            _values[i] = Math.parseDouble(num);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_FLOAT:
           log.debug("FLOAT");
-          //TODO
-          _values[i] = buffer.readList(4);
+          //TODO not sure this is quite right
+          List<int> list = buffer.readList(4);
+          int num = (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
+          if (num > 0xFF800000) {
+            _values[i] = -0/0; // -NaN
+          } else if (num == 0xF8000000) {
+            _values[i] = -1/0; // -Infinity
+          } else if (num > 0x7F800000 && num < 0x7FFFFFFF) {
+            _values[i] = 0/0; // +NaN
+          } else if (num == 0x7F800000) {
+            _values[i] = 1/0; // +Inifinity
+          } else {
+            int sign = list[3] & 0x80;
+            int exponent = ((list[3] & 0x7F) << 1) + ((list[2] & 0x80) >> 7) - 127;
+            int significandbits = ((list[2] & 0x7F) << 16) +
+                (list[1] << 8) + list[0];
+            double significand = significandbits / 0x800000 + 1; 
+            log.debug("sign $sign, exp $exponent sig $significand");
+            num = Math.pow(2, exponent) * significand;
+            if (sign != 0) {
+              num = -num;
+            }
+            _values[i] = num;
+          }
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DOUBLE:
           log.debug("DOUBLE");
-          //TODO
-          _values[i] = buffer.readList(8);
+          //TODO not sure this is quite right
+          List<int> list = buffer.readList(8);
+          int num = (list[7] << 54) + (list[6] << 48) + (list[5] << 40) + (list[4] << 32) + 
+              (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
+          if (num > 0xFF80000000000000) {
+            _values[i] = -0/0; // -NaN
+          } else if (num == 0xF800000000000000) {
+            _values[i] = -1/0; // -Infinity
+          } else if (num > 0x7F80000000000000 && num < 0x7FFFFFFFFFFFFFFF) {
+            _values[i] = 0/0; // +NaN
+          } else if (num == 0x7F80000000000000) {
+            _values[i] = 1/0; // +Inifinity
+          } else {
+            int sign = list[7] & 0x80;
+            int exponent = ((list[7] & 0x7F) << 4) + ((list[6] & 0xF0) >> 4) - 1023;
+            int significandbits = ((list[6] & 0x0F) << 48) + (list[5] << 40) + (list[4] << 32) + 
+                (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
+            double significand = significandbits / 0x10000000000000 + 1; 
+            log.debug("sign $sign, exp $exponent sig $significand");
+            num = Math.pow(2, exponent) * significand;
+            if (sign != 0) {
+              num = -num;
+            }
+            _values[i] = num;
+          }
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_BIT:
           log.debug("BIT");
           int len = buffer.readByte();
-          //TODO
+          // TODO should this be returned as a list, or an arbitrarily long number?
           _values[i] = buffer.readList(len);
           log.debug("Value: ${_values[i]}");
           break;
@@ -356,7 +400,6 @@ class BinaryDataPacket {
         case FIELD_TYPE_TIMESTAMP:
           log.debug("DATE/DATETIME");
           int len = buffer.readByte();
-          //TODO
           List<int> date = buffer.readList(len);
           int year = 0;
           int month = 0;
@@ -387,7 +430,6 @@ class BinaryDataPacket {
         case FIELD_TYPE_TIME:
           log.debug("TIME");
           int len = buffer.readByte();
-          //TODO return a duration
           List<int> time = buffer.readList(len);
           
           int sign = 1;
@@ -433,17 +475,18 @@ class BinaryDataPacket {
           break;
         case FIELD_TYPE_NEWDATE:
         case FIELD_TYPE_DECIMAL:
+          //TODO pre 5.0.3 will return old decimal values
         case FIELD_TYPE_SET:
         case FIELD_TYPE_ENUM:
         case FIELD_TYPE_TINY_BLOB:
         case FIELD_TYPE_MEDIUM_BLOB:
         case FIELD_TYPE_LONG_BLOB:
         case FIELD_TYPE_VARCHAR:
+          //Are there any other types a mysql server can return?
           log.debug("Field type not implemented yet ${fields[i].type}");
           log.debug(buffer.readList(8));
           break;
         default:
-          //TODO: support all the other field types
           log.debug("Unsupported field type ${fields[i].type}");
           break;
       }
