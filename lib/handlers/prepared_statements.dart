@@ -70,25 +70,28 @@ class PrepareHandler extends Handler {
     log.debug("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {
+      log.debug('Not an OK packet, params to read: $_parametersToRead');
       if (_parametersToRead > -1) {
         if (response[0] == PACKET_EOF) {
+          log.debug("EOF");
           if (_parametersToRead != 0) {
             throw "Unexpected EOF packet";
           }
         } else {
           FieldPacket fieldPacket = new FieldPacket(response);
-          log.debug(fieldPacket.toString());
+          log.debug("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] = fieldPacket;
         }
         _parametersToRead--;
       } else if (_columnsToRead > -1) {
         if (response[0] == PACKET_EOF) {
+          log.debug("EOF");
           if (_columnsToRead != 0) {
             throw "Unexpected EOF packet";
           }
         } else {
           FieldPacket fieldPacket = new FieldPacket(response);
-          log.debug(fieldPacket.toString());
+          log.debug("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
         _columnsToRead--;
@@ -110,6 +113,7 @@ class PrepareHandler extends Handler {
     
     if (_parametersToRead == -1 && _columnsToRead == -1) {
       _finished = true;
+      log.debug("finished");
       return new PreparedQuery(this);
     }
   }
@@ -183,7 +187,8 @@ class ExecuteQueryHandler extends Handler {
     for (int i = 0; i < _values.length; i++) {
       Dynamic value = _values[i];
       if (value != null) {
-        if (value is num) {
+        if (value is int) {
+          log.debug("LONG: $value");
           types.add(FIELD_TYPE_LONGLONG);
           types.add(0);
           values.add(value & 0xFF);
@@ -195,10 +200,16 @@ class ExecuteQueryHandler extends Handler {
           values.add(value >> 48 & 0xFF);
           values.add(value >> 56 & 0xFF);
         } else if (value is String) {
+          log.debug("STRING: $value");
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
           values.add(value.length);
-          values.addAll(value);
+          values.addAll(value.charCodes());
+        } else if (value is double) {
+          log.debug("DOUBLE: $value");
+          types.add(FIELD_TYPE_FLOAT);
+          types.add(0);
+          values.addAll(floatToList(value));
         }
       }
     }
@@ -216,7 +227,7 @@ class ExecuteQueryHandler extends Handler {
     } else {
       buffer.writeByte(0);      
     }
-    
+    log.debug(buffer._list);
     return buffer;
   }
   
@@ -333,59 +344,14 @@ class BinaryDataPacket {
           break;
         case FIELD_TYPE_FLOAT:
           log.debug("FLOAT");
-          //TODO not sure this is quite right
           List<int> list = buffer.readList(4);
-          int num = (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
-          if (num > 0xFF800000) {
-            _values[i] = -0/0; // -NaN
-          } else if (num == 0xF8000000) {
-            _values[i] = -1/0; // -Infinity
-          } else if (num > 0x7F800000 && num < 0x7FFFFFFF) {
-            _values[i] = 0/0; // +NaN
-          } else if (num == 0x7F800000) {
-            _values[i] = 1/0; // +Inifinity
-          } else {
-            int sign = list[3] & 0x80;
-            int exponent = ((list[3] & 0x7F) << 1) + ((list[2] & 0x80) >> 7) - 127;
-            int significandbits = ((list[2] & 0x7F) << 16) +
-                (list[1] << 8) + list[0];
-            double significand = significandbits / 0x800000 + 1; 
-            log.debug("sign $sign, exp $exponent sig $significand");
-            num = Math.pow(2, exponent) * significand;
-            if (sign != 0) {
-              num = -num;
-            }
-            _values[i] = num;
-          }
+          _values[i] = listToFloat(list);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DOUBLE:
           log.debug("DOUBLE");
-          //TODO not sure this is quite right
           List<int> list = buffer.readList(8);
-          int num = (list[7] << 54) + (list[6] << 48) + (list[5] << 40) + (list[4] << 32) + 
-              (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
-          if (num > 0xFF80000000000000) {
-            _values[i] = -0/0; // -NaN
-          } else if (num == 0xF800000000000000) {
-            _values[i] = -1/0; // -Infinity
-          } else if (num > 0x7F80000000000000 && num < 0x7FFFFFFFFFFFFFFF) {
-            _values[i] = 0/0; // +NaN
-          } else if (num == 0x7F80000000000000) {
-            _values[i] = 1/0; // +Inifinity
-          } else {
-            int sign = list[7] & 0x80;
-            int exponent = ((list[7] & 0x7F) << 4) + ((list[6] & 0xF0) >> 4) - 1023;
-            int significandbits = ((list[6] & 0x0F) << 48) + (list[5] << 40) + (list[4] << 32) + 
-                (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
-            double significand = significandbits / 0x10000000000000 + 1; 
-            log.debug("sign $sign, exp $exponent sig $significand");
-            num = Math.pow(2, exponent) * significand;
-            if (sign != 0) {
-              num = -num;
-            }
-            _values[i] = num;
-          }
+          _values[i] = listToDouble(list);
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_BIT:
