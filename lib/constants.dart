@@ -43,6 +43,7 @@ final int CLIENT_MULTI_RESULTS = 131072;  /* Enable/disable multi-results */
 
 final int SERVER_STATUS_IN_TRANS = 1; /* Transaction has started */
 final int SERVER_STATUS_AUTOCOMMIT = 2; /* Server in auto_commit mode */
+final int SERVER_MORE_RESULTS_EXISTS = 8;
 
 final int COM_SLEEP = 0x00; // (none, this is an internal thread state)
 final int COM_QUIT = 0x01; // mysql_close

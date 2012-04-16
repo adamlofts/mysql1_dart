@@ -210,6 +210,11 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_FLOAT);
           types.add(0);
           values.addAll(floatToList(value));
+        } else if (value is bool) {
+          log.debug("BOOL: $value");
+          types.add(FIELD_TYPE_TINY);
+          types.add(0);
+          values.add(value ? 1 : 0);
         }
       }
     }
@@ -270,6 +275,9 @@ class ExecuteQueryHandler extends Handler {
       }
     } else if (packet is OkPacket) {
       _okPacket = packet;
+      if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
+        _finished = true;
+      }
     }
   }
 }

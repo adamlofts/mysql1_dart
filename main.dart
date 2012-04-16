@@ -5,18 +5,6 @@
 void main() {
   Log log = new Log("main");
   
-//  var num = 1e-37;
-//  num = 1e-100;
-//  num = 12452345234.523452345;
-//  print(num);
-//  var list = floatToList(num);
-//  var s = listToHexString(list, reverse:true);
-//  print(s);
-//
-//  var doub = listToFloat(list);
-//  print(doub);
-//  
-//  return;
   {
     SyncConnection cnx = new SyncMySqlConnection();
     cnx.connect(user:'root').then((nothing) {
@@ -78,8 +66,8 @@ void testPreparedQuery(AsyncConnection cnx, Log log) {
 
 void testPreparedQuery2(AsyncConnection cnx, Log log) {
   log.debug('------------------------');
-  cnx.prepare("update types set areal = ?").then((query) {
-    query[0] = 5.456;
+  cnx.prepare("update types set aboolean = ?").then((query) {
+    query[0] = true;
     var res = query.execute().then((dummy) {
       query.close();
       log.debug("stmt closed");

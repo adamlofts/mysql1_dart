@@ -87,21 +87,19 @@ List<int> floatToList(double num) {
       return list;
     }
   } else if (num.isNaN()) {
-    if (num.isNegative()) {
-      // -NaN
-      list[0] = 0x01;
-      list[1] = 0x00;
-      list[2] = 0x80;
-      list[3] = 0xFF;
-      return list;
-    } else {
-      // +NaN
-      list[0] = 0x01;
-      list[1] = 0x00;
-      list[2] = 0x80;
-      list[3] = 0x7F;
-      return list;
-    }
+    // NaN
+    list[0] = 0x01;
+    list[1] = 0x00;
+    list[2] = 0x80;
+    list[3] = 0x7F;
+    return list;
+  }
+  if (num == 0) {
+    list[0] = 0x00;
+    list[1] = 0x00;
+    list[2] = 0x00;
+    list[3] = 0x00;
+    return list;
   }
   
   var exp = 0;

@@ -4,4 +4,8 @@ class BufferTest {
     buffer.writeByte(15);
     buffer.list[0] == 15;
   }
+  
+  void runAll() {
+    canWriteByteToBuffer();
+  }
 }

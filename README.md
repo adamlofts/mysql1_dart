@@ -27,5 +27,8 @@ Things to do
 * DartDoc
 * Decide whether this should be a mysql only driver, or a general db driver framework
 * Refactor everything a few times, when I think of a nicer way of doing things, or the Dart language changes
-* User some kind of logger
-
+* Use some kind of logger
+* Geometry type
+* MySQL 4 types (old decimal, anything else?)
+* Test against multiple mysql versions
+* Write binary dates
