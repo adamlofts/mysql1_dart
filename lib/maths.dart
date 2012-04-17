@@ -1,7 +1,7 @@
 double listToFloat(List<int> list) {
   int num = (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
   if (num > 0xFF800000) {
-    return -0/0; // -NaN
+    return -0/0; // -NaN but I don't think dart cares about negativity of NaN
   } else if (num == 0xF8000000) {
     return -1/0; // -Infinity
   } else if (num > 0x7F800000 && num < 0x7FFFFFFF) {
@@ -35,7 +35,7 @@ double listToDouble(List<int> list) {
   int num = (list[7] << 54) + (list[6] << 48) + (list[5] << 40) + (list[4] << 32) + 
       (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
   if (num > 0xFF80000000000000) {
-    return -0/0; // -NaN
+    return -0/0; // -NaN but I don't think dart cares about negativity of NaN
   } else if (num == 0xF800000000000000) {
     return -1/0; // -Infinity
   } else if (num > 0x7F80000000000000 && num < 0x7FFFFFFFFFFFFFFF) {
