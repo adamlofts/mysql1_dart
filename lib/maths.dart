@@ -131,6 +131,92 @@ List<int> floatToList(double num) {
   return list;
 }
 
+List<int> doubleToList(double num) {
+  // alg uses non-rounded method currently
+  //TODO: use rounded method?
+  //TODO: handle infinities and nans
+  List<int> list = new List<int>(8);
+  if (num.isInfinite()) {
+    if (num.isNegative()) {
+      // -Infinity
+      list[0] = 0x00;
+      list[1] = 0x00;
+      list[2] = 0x00;
+      list[3] = 0x00;
+      list[4] = 0x00;
+      list[5] = 0x00;
+      list[6] = 0xF0;
+      list[7] = 0xFF;
+      return list;
+    } else {
+      // +Infinity
+      list[0] = 0x00;
+      list[1] = 0x00;
+      list[2] = 0x00;
+      list[3] = 0x00;
+      list[4] = 0x00;
+      list[5] = 0x00;
+      list[6] = 0xF0;
+      list[7] = 0x7F;
+      return list;
+    }
+  } else if (num.isNaN()) {
+    // NaN
+    list[0] = 0x01;
+    list[1] = 0x00;
+    list[2] = 0x00;
+    list[3] = 0x00;
+    list[4] = 0x00;
+    list[5] = 0x00;
+    list[6] = 0xF0;
+    list[7] = 0xFF;
+    return list;
+  }
+  if (num == 0) {
+    list[0] = 0x00;
+    list[1] = 0x00;
+    list[2] = 0x00;
+    list[3] = 0x00;
+    list[4] = 0x00;
+    list[5] = 0x00;
+    list[6] = 0x00;
+    list[7] = 0x00;
+    return list;
+  }
+  
+  var exp = 0;
+  var sign = 0;
+  if (num < 0) {
+    sign = 1;
+    num = -num;
+  }
+  if (num >=1) {
+    while (num > 2) {
+      exp++;
+      num = num / 2;
+    }
+  } else {
+    while (num < 1) {
+      exp--;
+      num = num * 2;
+    }
+  }
+  num = num - 1;
+  int sig = (num * Math.pow(2, 52)).toInt();
+//  print("$num $exp $sig ($num)");
+  
+  exp += 1023;
+  list[7] = (sign << 7) + ((exp & 0x7F0) >> 4);
+  list[6] = ((exp & 0x0F) << 4) + ((sig >> 48) & 0x0F);
+  list[5] = (sig >> 40) & 0xFF;
+  list[4] = (sig >> 32) & 0xFF;
+  list[3] = (sig >> 24) & 0xFF;
+  list[2] = (sig >> 16) & 0xFF;
+  list[1] = (sig >> 8) & 0xFF;
+  list[0] = sig & 0xFF;
+  return list;
+}
+
 String listToHexString(List<int> list, [bool reverse=false]) {
   String s = "";
   for (int i = 0; i < list.length; i++) {

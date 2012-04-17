@@ -209,7 +209,7 @@ class ExecuteQueryHandler extends Handler {
           log.debug("DOUBLE: $value");
           types.add(FIELD_TYPE_FLOAT);
           types.add(0);
-          values.addAll(floatToList(value));
+          values.addAll(doubleToList(value));
         } else if (value is Date) {
           log.debug("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
