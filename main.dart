@@ -66,8 +66,8 @@ void testPreparedQuery(AsyncConnection cnx, Log log) {
 
 void testPreparedQuery2(AsyncConnection cnx, Log log) {
   log.debug('------------------------');
-  cnx.prepare("update types set aboolean = ?").then((query) {
-    query[0] = true;
+  cnx.prepare("update types set adatetime = ?").then((query) {
+    query[0] = new Date.now();
     var res = query.execute().then((dummy) {
       query.close();
       log.debug("stmt closed");

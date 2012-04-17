@@ -210,6 +210,23 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_FLOAT);
           types.add(0);
           values.addAll(floatToList(value));
+        } else if (value is Date) {
+          log.debug("DATE: $value");
+          types.add(FIELD_TYPE_DATETIME);
+          types.add(0);
+          values.add(12);
+          values.add(value.year & 0xFF);
+          values.add(value.year >> 8 & 0xFF);
+          values.add(value.month);
+          values.add(value.day);
+          values.add(value.hours);
+          values.add(value.minutes);
+          values.add(value.seconds);
+          int billionths = value.milliseconds * 1000000;
+          values.add(billionths & 0xFF); 
+          values.add(billionths >> 8 & 0xFF); 
+          values.add(billionths >> 16 & 0xFF); 
+          values.add(billionths >> 24 & 0xFF); 
         } else if (value is bool) {
           log.debug("BOOL: $value");
           types.add(FIELD_TYPE_TINY);
