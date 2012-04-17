@@ -1,3 +1,26 @@
+//TODO handle very small and very large numbers
+//TODO probably should do rounded numbers?
+
+final double SMALLEST_POSITIVE_SUBNORMAL_FLOAT = 1.4012984643248170E-45;
+final double LARGEST_POSITIVE_SUBNORMAL_FLOAT = 1.1754942106924411E-38;
+final double SMALLEST_POSITIVE_NORMAL_FLOAT = 1.1754943508222875E-38;
+final double LARGEST_POSITIVE_NORMAL_FLOAT = 3.4028234663852886E+38;
+
+final double LARGEST_NEGATIVE_NORMAL_FLOAT = -1.1754943508222875E-38; // closest to zero
+final double SMALLEST_NEGATIVE_NORMAL_FLOAT = -3.4028234663852886E+38; // most negative
+final double LARGEST_NEGATIVE_SUBNORMAL_FLOAT = -1.1754942106924411E-38;
+final double SMALLEST_NEGATIVE_SUBNORMAL_FLOAT = -1.4012984643248170E-45;
+
+final double SMALLEST_POSITIVE_SUBNORMAL_DOUBLE = 4.9406564584124654E-324;
+final double LARGEST_POSITIVE_SUBNORMAL_DOUBLE = 2.2250738585072010E-308;
+final double SMALLEST_POSITIVE_NORMAL_DOUBLE = 2.2250738585072014E-308;
+final double LARGEST_POSITIVE_NORMAL_DOUBLE = 1.7976931348623157E+308;
+
+final double LARGEST_NEGATIVE_NORMAL_DOUBLE = -2.2250738585072014E-308; // closest to zero
+final double SMALLEST_NEGATIVE_NORMAL_DOUBLE = -1.7976931348623157E+308; // most negative
+final double LARGEST_NEGATIVE_SUBNORMAL_DOUBLE = -4.9406564584124654E-324;
+final double SMALLEST_NEGATIVE_SUBNORMAL_DOUBLE = -2.2250738585072010E-308;
+
 double listToFloat(List<int> list) {
   int num = (list[3] << 24) + (list[2] << 16) + (list[1] << 8) + list[0];
   if (num > 0xFF800000) {
@@ -68,8 +91,18 @@ double listToDouble(List<int> list) {
 List<int> floatToList(double num) {
   // alg uses non-rounded method currently
   //TODO: use rounded method?
-  //TODO: handle infinities and nans
   List<int> list = new List<int>(4);
+  if (num.isNegative() && num > LARGEST_NEGATIVE_SUBNORMAL_FLOAT) {
+    num = 0.0;
+  } else if (!num.isNegative() && num < SMALLEST_POSITIVE_SUBNORMAL_FLOAT) {
+    num = 0.0;
+  }
+  if (num.isNegative() && num < SMALLEST_NEGATIVE_NORMAL_FLOAT) {
+    num = -1/0;
+  }
+  if (!num.isNegative() && num > LARGEST_POSITIVE_NORMAL_FLOAT) {
+    num = 1/0;
+  }
   if (num.isInfinite()) {
     if (num.isNegative()) {
       // -Infinity
@@ -134,7 +167,6 @@ List<int> floatToList(double num) {
 List<int> doubleToList(double num) {
   // alg uses non-rounded method currently
   //TODO: use rounded method?
-  //TODO: handle infinities and nans
   List<int> list = new List<int>(8);
   if (num.isInfinite()) {
     if (num.isNegative()) {

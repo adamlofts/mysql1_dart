@@ -147,6 +147,9 @@ class QueryHandler extends Handler {
       } 
     } else if (packet is OkPacket) {
       _okPacket = packet;
+      if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
+        _finished = true;
+      }
     }
   }
 }

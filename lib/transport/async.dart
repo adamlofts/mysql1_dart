@@ -96,7 +96,14 @@ class AsyncTransport implements Transport {
         _headerBuffer.reset();
         _readPos = 0;
         
-        var result = _handler.processResponse(_dataBuffer);
+        var result;
+        try {
+          result = _handler.processResponse(_dataBuffer);
+        } catch (Dynamic e) {
+          _handler = null;
+          _completer.completeException(e);
+          return;
+        }
         if (result is Handler) {
           _handler = result;
           _sendBuffer(_handler.createRequest());

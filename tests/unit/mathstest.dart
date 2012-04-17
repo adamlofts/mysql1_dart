@@ -58,14 +58,16 @@ class MathsTest {
     
     // TODO: test very small numbers
     n = 3.4028234663852886E+38;
-    print(n);
     bytes = floatToList(n);
     Expect.equals("7F7FFFFF", listToHexString(bytes, true));
     
     n = 1.1754943508222875E-38;
-    print(n);
     bytes = floatToList(n);
     Expect.equals("00800000", listToHexString(bytes, true));
+    
+    n = SMALLEST_POSITIVE_SUBNORMAL_FLOAT / 2;
+    bytes = floatToList(n);
+    Expect.equals("00000000", listToHexString(bytes, true));
   }
   
   
@@ -76,12 +78,10 @@ class MathsTest {
     
     // TODO: test very small numbers
     n = 1.7976931348623157E+308;
-    print(n);
     bytes = doubleToList(n);
     Expect.equals("7FEFFFFFFFFFFFFF", listToHexString(bytes, true));
     
     n = -1.7976931348623157E+308;
-    print(n);
     bytes = doubleToList(n);
     Expect.equals("FFEFFFFFFFFFFFFF", listToHexString(bytes, true));
   }

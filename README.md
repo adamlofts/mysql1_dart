@@ -31,4 +31,4 @@ Things to do
 * Geometry type
 * MySQL 4 types (old decimal, anything else?)
 * Test against multiple mysql versions
-* Write binary dates
+* Make floating point stuff work correctly

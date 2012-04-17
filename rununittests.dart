@@ -1,4 +1,4 @@
-#import('tests/tests.dart');
+#import('tests/unittests.dart');
 
 void main() {
   print("Starting tests");
