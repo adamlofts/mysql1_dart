@@ -199,12 +199,6 @@ class ExecuteQueryHandler extends Handler {
           values.add(value >> 40 & 0xFF);
           values.add(value >> 48 & 0xFF);
           values.add(value >> 56 & 0xFF);
-        } else if (value is String) {
-          log.debug("STRING: $value");
-          types.add(FIELD_TYPE_VARCHAR);
-          types.add(0);
-          values.add(value.length);
-          values.addAll(value.charCodes());
         } else if (value is double) {
           log.debug("DOUBLE: $value");
           types.add(FIELD_TYPE_FLOAT);
@@ -232,6 +226,13 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_TINY);
           types.add(0);
           values.add(value ? 1 : 0);
+        } else {
+          log.debug("STRING: $value");
+          String s = value.toString();
+          types.add(FIELD_TYPE_VARCHAR);
+          types.add(0);
+          values.add(s.length);
+          values.addAll(s.charCodes());
         }
       }
     }
