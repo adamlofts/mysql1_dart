@@ -76,6 +76,8 @@ class FieldPacket implements Field {
 class DataPacket {
   List<String> _values;
   
+  List<Dynamic> get values() => _values;
+  
   DataPacket(Buffer buffer, int fieldCount) {
     _values = new List<String>(fieldCount);
     for (int i = 0; i < fieldCount; i++) {

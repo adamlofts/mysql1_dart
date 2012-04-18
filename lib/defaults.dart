@@ -27,7 +27,7 @@ class ResultsImpl implements Results {
   }
   
   List<Dynamic> operator [](int pos) {
-    return _dataPackets[pos]._values;
+    return _dataPackets[pos].values;
   }
   
   Iterator<List<Dynamic>> iterator() {
@@ -46,6 +46,6 @@ class ResultsImplIterator implements Iterator<Dynamic> {
   }
   
   List<Dynamic> next() {
-    return _results._dataPackets[i++]._values;
+    return _results._dataPackets[i++].values;
   }
 }

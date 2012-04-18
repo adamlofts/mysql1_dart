@@ -300,9 +300,11 @@ class ExecuteQueryHandler extends Handler {
   }
 }
 
-class BinaryDataPacket {
+class BinaryDataPacket implements DataPacket {
   List<Dynamic> _values;
   Log log;
+  
+  List<Dynamic> get values() => _values;
   
   BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) {
     log = new Log("BinaryDataPacket");
