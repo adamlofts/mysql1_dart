@@ -7,11 +7,11 @@ class MySqlConnection implements Connection {
     _queries = new List<MySqlQuery>();
   }
 
-  Dynamic connect([String host='localhost', int port=3306, String user, String password, String db]) {
+  Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
     return _transport.connect(host, port, user, password, db);
   }
   
-  Dynamic useDatabase(String dbName) {
+  Future useDatabase(String dbName) {
     var handler = new UseDbHandler(dbName);
     return _transport.processHandler(handler);
   }
@@ -22,20 +22,20 @@ class MySqlConnection implements Connection {
     _transport.close();
   }
 
-  Dynamic query(String sql) {
+  Future<Results> query(String sql) {
     var handler = new QueryHandler(sql);
     return _transport.processHandler(handler);
   }
   
-  Dynamic update(String sql) {
+  Future<int> update(String sql) {
   }
   
-  Dynamic ping() {
+  Future ping() {
     var handler = new PingHandler();
     return _transport.processHandler(handler);
   }
   
-  Dynamic debug() {
+  Future debug() {
     var handler = new DebugHandler();
     return _transport.processHandler(handler);
   }
@@ -80,12 +80,12 @@ class MySqlQuery implements Query {
     _cnx._closeQuery(this);
   }
   
-  Dynamic execute() {
+  Future<Results> execute() {
     var handler = new ExecuteQueryHandler(_preparedQuery, _executed, _values);
     return _cnx._transport.processHandler(handler);
   }
   
-  Dynamic executeUpdate() {
+  Future<int> executeUpdate() {
     
   }
 

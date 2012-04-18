@@ -32,7 +32,7 @@ void main() {
       }
     }
     return cnx.query("select * from blobby");
-  }).chain((Results results2) {
+  }).chain((Results results) {
     log.debug("queried");
     
     return cnx.prepare("select * from types");
@@ -41,7 +41,7 @@ void main() {
     log.debug("prepared $query");
     // query[0] = 35;
     return query.execute();
-  }).chain((dummy) {
+  }).chain((Results results) {
     thequery.close();
     log.debug("stmt closed");
     log.debug('------------------------');
@@ -50,7 +50,7 @@ void main() {
     thequery = query;
     query[0] = new Date.now();
     return query.execute();
-  }).chain((dummy) {
+  }).then((Results results) {
     thequery.close();
     log.debug("stmt closed");
     cnx.close();
