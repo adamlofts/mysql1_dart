@@ -73,12 +73,19 @@ class FieldPacket implements Field {
   }
 }
 
-class DataPacket {
+
+
+interface DataPacket default DataPacketImpl {
+  List<Dynamic> get values();
+  DataPacket(Buffer buffer, int fieldCount);
+}
+
+class DataPacketImpl implements DataPacket {
   List<String> _values;
   
-  List<Dynamic> get values() => _values;
+  List<String> get values() => _values;
   
-  DataPacket(Buffer buffer, int fieldCount) {
+  DataPacketImpl(Buffer buffer, int fieldCount) {
     _values = new List<String>(fieldCount);
     for (int i = 0; i < fieldCount; i++) {
       _values[i] = buffer.readLengthCodedString();
