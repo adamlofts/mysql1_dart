@@ -1,7 +1,12 @@
 class MySqlConnection implements Connection {
   Transport _transport;
   List<MySqlQuery> _queries;
-  
+
+  MySqlConnection() {
+    _transport = new AsyncTransport._internal();
+    _queries = new List<MySqlQuery>();
+  }
+
   Dynamic connect([String host='localhost', int port=3306, String user, String password, String db]) {
     return _transport.connect(host, port, user, password, db);
   }
@@ -35,8 +40,6 @@ class MySqlConnection implements Connection {
     return _transport.processHandler(handler);
   }
   
-  abstract Dynamic prepare(String sql);
-  
   void _closeQuery(MySqlQuery q) {
     int index = _queries.indexOf(q);
     if (index != -1) {
@@ -45,39 +48,17 @@ class MySqlConnection implements Connection {
     var handler = new CloseStatementHandler(q.statementId);
     _transport.processHandler(handler, noResponse:true);
   }
-}
-
-class AsyncMySqlConnection extends MySqlConnection implements AsyncConnection {
-  AsyncMySqlConnection() {
-    _transport = new AsyncTransport._internal();
-    _queries = new List<MySqlQuery>();
-  }
   
   Future<Query> prepare(String sql) {
     var handler = new PrepareHandler(sql);
     Future<PreparedQuery> future = _transport.processHandler(handler);
     Completer c = new Completer();
     future.then((preparedQuery) {
-      MySqlQuery q = new AsyncMySqlQuery._internal(this, preparedQuery);
+      MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
       _queries.add(q);
       c.complete(q);
     });
     return c.future;
-  }
-}
-
-class SyncMySqlConnection extends MySqlConnection implements SyncConnection {
-  SyncMySqlConnection() {
-    _transport = new SyncTransport._internal();
-    _queries = new List<MySqlQuery>();
-  }
-
-  Query prepare (String sql) {
-    var handler = new PrepareHandler(sql);
-    PreparedQuery preparedQuery = _transport.processHandler(handler);
-    MySqlQuery q = new SyncMySqlQuery._internal(this, preparedQuery);
-    _queries.add(q);
-    return q;
   }
 }
 
@@ -89,6 +70,12 @@ class MySqlQuery implements Query {
 
   int get statementId() => _preparedQuery.statementHandlerId;
   
+  MySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
+    _cnx = cnx;
+    _preparedQuery = preparedQuery;
+    _values = new List<Dynamic>(_preparedQuery.parameters.length);
+  }
+
   void close() {
     _cnx._closeQuery(this);
   }
@@ -109,21 +96,5 @@ class MySqlQuery implements Query {
   void operator []=(int index, Dynamic value) {
     _values[index] = value;
     _executed = false;
-  }
-}
-
-class AsyncMySqlQuery extends MySqlQuery implements AsyncQuery {
-  AsyncMySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
-    _cnx = cnx;
-    _preparedQuery = preparedQuery;
-    _values = new List<Dynamic>(_preparedQuery.parameters.length);
-  }
-}
-
-class SyncMySqlQuery extends MySqlQuery implements AsyncQuery {
-  SyncMySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
-    _cnx = cnx;
-    _preparedQuery = preparedQuery;
-    _values = new List<Dynamic>(_preparedQuery.parameters.length);
   }
 }

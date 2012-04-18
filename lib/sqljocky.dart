@@ -11,8 +11,7 @@
 #source('constants.dart');
 #source('buffer.dart');
 #source('transport/transport.dart');
-#source('transport/async.dart');
-#source('transport/sync.dart');
+#source('transport/transport_impl.dart');
 #source('interfaces.dart');
 #source('connection.dart');
 #source('defaults.dart');

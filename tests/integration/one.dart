@@ -17,7 +17,7 @@ class One {
   void runAll() {
     tables = ["integ", "integ2", "integ3"];
     
-    AsyncConnection cnx = new AsyncMySqlConnection();
+    Connection cnx = new MySqlConnection();
     cnx.connect(user:_user, password:_password, db:_db, port:_port, host:_host).then((nothing) {
       cnx.useDatabase('bob').then((dummy) {
         dropTables(cnx);
@@ -25,7 +25,7 @@ class One {
     });
   }
   
-  void dropTables(AsyncConnection cnx) {
+  void dropTables(Connection cnx) {
     String table = tables.last();
     tables.removeLast();
     print("drop table $table");
@@ -51,7 +51,7 @@ class One {
     });
   }
   
-  void createTables(AsyncConnection cnx) {
+  void createTables(Connection cnx) {
     print("creating tables");
     Future future = cnx.query("create table integ (name text)");
     future.then((x) {

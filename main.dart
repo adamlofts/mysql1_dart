@@ -13,30 +13,8 @@ void main() {
   String db = options.getString('db');
   String host = options.getString('host', 'localhost');
   
-  {
-    SyncConnection cnx = new SyncMySqlConnection();
-    cnx.connect(user:user, password:password, port:port, db:db, host:host).then((nothing) {
-      print("connected");
-      cnx.useDatabase(db);
-      Results results = cnx.query("select name as bob, age as wibble from people p");
-      for (Field field in results.fields) {
-        print("Field: ${field.name}");
-      }
-      for (List<Dynamic> row in results) {
-        for (Dynamic field in row) {
-          print(field);
-        }
-      }
-      results = cnx.query("select * from blobby");
-      Query query = cnx.prepare("select * from types");
-      query.execute();
-      query.close();
-      cnx.close();
-    });
-  }
-
   log.debug("starting");
-  AsyncConnection cnx = new AsyncMySqlConnection();
+  Connection cnx = new MySqlConnection();
   cnx.connect(user:user, password:password, port:port, db:db, host:host).then((nothing) {
     log.debug("got connection");
     cnx.useDatabase(db).then((dummy) {
@@ -60,7 +38,7 @@ void main() {
   });
 }
 
-void testPreparedQuery(AsyncConnection cnx, Log log) {
+void testPreparedQuery(Connection cnx, Log log) {
   cnx.prepare("select * from types").then((query) {
     log.debug("prepared $query");
 //    query[0] = 35;
@@ -72,7 +50,7 @@ void testPreparedQuery(AsyncConnection cnx, Log log) {
   });
 }
 
-void testPreparedQuery2(AsyncConnection cnx, Log log) {
+void testPreparedQuery2(Connection cnx, Log log) {
   log.debug('------------------------');
   cnx.prepare("update types set adatetime = ?").then((query) {
     query[0] = new Date.now();
