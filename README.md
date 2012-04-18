@@ -12,12 +12,6 @@ The SQLJocky Name
 
 It is named after [Jocky Wilson](http://en.wikipedia.org/wiki/Jocky_Wilson), the late, great darts player. (Hence the lack of an 'e' in Jocky.)
 
-Synchronous Transport
----------------------
-
-This driver includes a synchronous option, which only uses a Future for the initial connection. However, I'm not sure it's a good idea,
-and I'm mostly concentrating on the asynchronous transport implementation, so it's probably best avoided at the moment.
-
 Things to do
 ------------
 
