@@ -1,11 +1,24 @@
 class One {
   List<String> tables;
+  String _user;
+  String _password;
+  String _db;
+  int _port;
+  String _host;
+  
+  One([String user, String password, String db, int port=3306, String host='localhost']) {
+    _user = user;
+    _password = password;
+    _db = db;
+    _port = port;
+    _host = host;
+  }
   
   void runAll() {
     tables = ["integ", "integ2", "integ3"];
     
     AsyncConnection cnx = new AsyncMySqlConnection();
-    cnx.connect(user:'test', password:'test', db:'bob').then((nothing) {
+    cnx.connect(user:_user, password:_password, db:_db, port:_port, host:_host).then((nothing) {
       cnx.useDatabase('bob').then((dummy) {
         dropTables(cnx);
       });
