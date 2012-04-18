@@ -12,6 +12,7 @@ void main() {
   
   print("Starting tests");
   One one = new One(user:user, password:password, port:port, db:db, host:host);
-  one.runAll();
-  print("Finished tests");
+  one.runAll().then((x) {
+    print("Finished tests");
+  });
 }

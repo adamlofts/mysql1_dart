@@ -208,7 +208,7 @@ class ExecuteQueryHandler extends Handler {
           log.debug("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
-          values.add(12);
+          values.add(11);
           values.add(value.year & 0xFF);
           values.add(value.year >> 8 & 0xFF);
           values.add(value.month);
@@ -295,6 +295,8 @@ class ExecuteQueryHandler extends Handler {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         _finished = true;
+        
+        return new ResultsImpl(_okPacket, null, null, null);
       }
     }
   }
@@ -324,7 +326,7 @@ class BinaryDataPacket implements DataPacket {
       log.debug("Field $i nullity: ${nullMap[i]}");
     }
     
-    _values = new List<String>(fields.length);
+    _values = new List<Dynamic>(fields.length);
     for (int i = 0; i < fields.length; i++) {
       if (nullMap[i]) {
         _values[i] = null;

@@ -14,15 +14,21 @@ class One {
     _host = host;
   }
   
-  void runAll() {
-    tables = ["integ", "integ2", "integ3"];
+  Completer _completer;
+  
+  Future runAll() {
+    _completer = new Completer();
+//    tables = ["test1", "test2", "test3"];
+    tables = ["test1"];
     
     Connection cnx = new MySqlConnection();
     cnx.connect(user:_user, password:_password, db:_db, port:_port, host:_host).then((nothing) {
-      cnx.useDatabase('bob').then((dummy) {
+      // check use database works
+      cnx.useDatabase(_db).then((dummy) {
         dropTables(cnx);
       });
     });
+    return _completer.future;
   }
   
   void dropTables(Connection cnx) {
@@ -53,10 +59,52 @@ class One {
   
   void createTables(Connection cnx) {
     print("creating tables");
-    Future future = cnx.query("create table integ (name text)");
-    future.then((x) {
+    Future f = cnx.query("create table test1 (achar char(20), "
+      "aint int, adate date, adatetime datetime, avarchar varchar(20))");
+    f.chain((x) {
       print("created");
+      return cnx.query("show tables");
+    }).chain((Results results) {
+      print("tables");
+      for (List<Dynamic> row in results) {
+        print(row);
+      }
+      return cnx.query("describe test1");
+    }).chain((Results results) {
+      print("table test1");
+      showResults(results);
+      return cnx.prepare("insert into test1 (achar, aint, adate, adatetime, avarchar) values (?, ?, ?, ?, ?)");
+    }).chain((Query query) {
+      query[0] = "Hey!";
+      query[1] = 163;
+      query[2] = new Date.now();
+      query[3] = new Date.now();
+      query[4] = "Hello.";
+      return query.execute();
+    }).chain((Results results) {
+      print("updated ${results.affectedRows} ${results.insertId}");
+      return cnx.query("select * from test1");
+    }).chain((Results results) {
+      print("values");
+      showResults(results);
+      return cnx.prepare("select * from test1");
+    }).chain((Query query) {
+      return query.execute();
+    }).then((Results results) {
+      showResults(results);
       cnx.close();
+      _completer.complete(true);
     });
+  }
+  
+  void showResults(Results results) {
+    List<String> fieldNames = new List<String>();
+    for (Field field in results.fields) {
+      fieldNames.add(field.name);
+    }
+    print(fieldNames);
+    for (List<Dynamic> row in results) {
+      print(row);
+    }
   }
 }

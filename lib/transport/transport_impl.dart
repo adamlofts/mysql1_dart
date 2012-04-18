@@ -101,6 +101,7 @@ class AsyncTransport implements Transport {
           result = _handler.processResponse(_dataBuffer);
         } catch (Dynamic e) {
           _handler = null;
+          log.debug("completing with exception: $e");
           _completer.completeException(e);
           return;
         }
