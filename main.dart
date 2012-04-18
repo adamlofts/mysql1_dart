@@ -15,49 +15,44 @@ void main() {
   
   log.debug("starting");
   Connection cnx = new MySqlConnection();
-  cnx.connect(user:user, password:password, port:port, db:db, host:host).then((nothing) {
+  Query thequery;
+  cnx.connect(user:user, password:password, port:port, db:db, host:host).chain((nothing) {
     log.debug("got connection");
-    cnx.useDatabase(db).then((dummy) {
-      cnx.query("select name as bob, age as wibble from people p").then((Results results) {
-        log.debug("queried");
-        for (Field field in results.fields) {
-          print("Field: ${field.name}");
-        }
-        for (List<Dynamic> row in results) {
-          for (Dynamic field in row) {
-            log.debug(field);
-          }
-        }
-        cnx.query("select * from blobby").then((Results results2) {
-          log.debug("queried");
-          
-          testPreparedQuery(cnx, log);
-        });
-      });
-    });
-  });
-}
-
-void testPreparedQuery(Connection cnx, Log log) {
-  cnx.prepare("select * from types").then((query) {
+    return cnx.useDatabase(db);
+  }).chain((dummy) {
+    return cnx.query("select name as bob, age as wibble from people p");
+  }).chain((Results results) {
+    log.debug("queried");
+    for (Field field in results.fields) {
+      print("Field: ${field.name}");
+    }
+    for (List<Dynamic> row in results) {
+      for (Dynamic field in row) {
+        log.debug(field);
+      }
+    }
+    return cnx.query("select * from blobby");
+  }).chain((Results results2) {
+    log.debug("queried");
+    
+    return cnx.prepare("select * from types");
+  }).chain((query) {
+    thequery = query;
     log.debug("prepared $query");
-//    query[0] = 35;
-    var res = query.execute().then((dummy) {
-      query.close();
-      log.debug("stmt closed");
-      testPreparedQuery2(cnx, log);
-    });
-  });
-}
-
-void testPreparedQuery2(Connection cnx, Log log) {
-  log.debug('------------------------');
-  cnx.prepare("update types set adatetime = ?").then((query) {
+    // query[0] = 35;
+    return query.execute();
+  }).chain((dummy) {
+    thequery.close();
+    log.debug("stmt closed");
+    log.debug('------------------------');
+    return cnx.prepare("update types set adatetime = ?");
+  }).chain((query) {
+    thequery = query;
     query[0] = new Date.now();
-    var res = query.execute().then((dummy) {
-      query.close();
-      log.debug("stmt closed");
-      cnx.close();
-    });
+    return query.execute();
+  }).chain((dummy) {
+    thequery.close();
+    log.debug("stmt closed");
+    cnx.close();
   });
 }
