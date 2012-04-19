@@ -3,6 +3,7 @@
 #import('lib/crypto/sha1.dart');
 #import('options.dart');
 
+// ignore this file - runintegrationtests.dart is more useful at the moment
 void main() {
   Log.initialize();
   Log log = new Log("main");
