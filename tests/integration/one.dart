@@ -108,7 +108,7 @@ class One {
       query[8] = 123.456;
       
       query[9] = true;
-      query[10] = 0xFF020235B01; //TODO this doesn't serialise correctly
+      query[10] = [1, 2, 3];
       query[11] = 123;
       
       query[12] = new Date.now();

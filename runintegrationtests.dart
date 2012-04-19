@@ -4,7 +4,7 @@
 #import('options.dart');
 
 void main() {
-  Log.initialize();
+  Log.initialize(false);
   
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
