@@ -201,9 +201,17 @@ class ExecuteQueryHandler extends Handler {
           values.add(value >> 56 & 0xFF);
         } else if (value is double) {
           log.debug("DOUBLE: $value");
-          types.add(FIELD_TYPE_FLOAT);
+
+          String s = value.toString();
+          types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          values.addAll(doubleToList(value));
+          values.add(s.length);
+          values.addAll(s.charCodes());
+          
+          // TODO: if you send a double value for a decimal field, it doesn't like it
+//          types.add(FIELD_TYPE_FLOAT);
+//          types.add(0);
+//          values.addAll(doubleToList(value));
         } else if (value is Date) {
           log.debug("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
@@ -226,6 +234,12 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_TINY);
           types.add(0);
           values.add(value ? 1 : 0);
+        } else if (value is List<int>) {
+          log.debug("LIST: $value");
+          types.add(FIELD_TYPE_BLOB);
+          types.add(0);
+          values.add(value.length);
+          values.addAll(value);
         } else {
           log.debug("STRING: $value");
           String s = value.toString();
@@ -312,27 +326,28 @@ class BinaryDataPacket implements DataPacket {
     log = new Log("BinaryDataPacket");
     buffer.skip(1);
     List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
+    log.debug("Nulls: $nulls");
     List<bool> nullMap = new List<bool>(fields.length);
-    int shift = 7;
+    int shift = 2;
     int byte = 0;
     for (int i = 0; i < fields.length; i++) {
       int mask = 1 << shift;
-      shift--;
-      if (shift < 0) {
-        shift = 7;
+      nullMap[i] = (nulls[byte] & mask) != 0;
+      shift++;
+      if (shift > 7) {
+        shift = 0;
         byte++;
       }
-      nullMap[i] = (nulls[byte] & mask) != 0;
-      log.debug("Field $i nullity: ${nullMap[i]}");
     }
     
     _values = new List<Dynamic>(fields.length);
     for (int i = 0; i < fields.length; i++) {
+      log.debug("$i: ${fields[i].name}");
       if (nullMap[i]) {
+        log.debug("Value: null");
         _values[i] = null;
         continue;
       }
-      log.debug(fields[i].name);
       switch (fields[i].type) {
         case FIELD_TYPE_BLOB:
           log.debug("BLOB");

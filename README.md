@@ -15,8 +15,10 @@ and suchlike may come in the future.
 Licence
 -------
 
-It is released under the GPL, because it uses a modified part of mysql's include/mysql_com.h, 
+It is released under the GPL, because it uses a modified part of mysql's include/mysql_com.h in constants.dart, 
 which is licensed under the GPL. I would prefer to release it under the BSD Licence, but there you go.
+
+Includes some hashing code from the closure library, which contains its own copyright notice.
 
 The Name
 --------

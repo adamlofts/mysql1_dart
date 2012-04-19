@@ -59,8 +59,16 @@ class One {
   
   void createTables(Connection cnx) {
     print("creating tables");
-    Future f = cnx.query("create table test1 (achar char(20), "
-      "aint int, adate date, adatetime datetime, avarchar varchar(20))");
+    Future f = cnx.query("create table test1 ("
+      "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+      "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+      "aboolean boolean, abit bit(20), aserial serial, "
+      "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+      "achar char(10), avarchar varchar(10), "
+      "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+      "abinary binary(10), avarbinary varbinary(1), "
+      "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+      "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
     f.chain((x) {
       print("created");
       return cnx.query("show tables");
@@ -73,13 +81,59 @@ class One {
     }).chain((Results results) {
       print("table test1");
       showResults(results);
-      return cnx.prepare("insert into test1 (achar, aint, adate, adatetime, avarchar) values (?, ?, ?, ?, ?)");
+      return cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, "
+        "adate, adatetime, atimestamp, atime, ayear, "
+        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+        "aenum, aset) values" 
+        "(?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, "
+        "?, ?, ?, "
+        "?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?)");
     }).chain((Query query) {
-      query[0] = "Hey!";
-      query[1] = 163;
-      query[2] = new Date.now();
-      query[3] = new Date.now();
-      query[4] = "Hello.";
+      query[0] = 163;
+      query[1] = 164;
+      query[2] = 165;
+      query[3] = 166;
+      query[4] = 167;
+      
+      query[5] = 592;
+      query[6] = 123.456;
+      query[7] = 123.456;
+      query[8] = 123.456;
+      
+      query[9] = true;
+      query[10] = 0xFF020235B01; //TODO this doesn't serialise correctly
+      query[11] = 123;
+      
+      query[12] = new Date.now();
+      query[13] = new Date.now();
+      query[14] = new Date.now();
+      query[15] = new Date.now();
+      query[16] = 2012;
+      
+      query[17] = "Hello";
+      query[18] = "Hey";
+      query[19] = "Hello there";
+      query[20] = "Good morning";
+      query[21] = "Habari boss";
+      query[22] = "Bonjour";
+
+      query[23] = [65, 66, 67, 68];
+      query[24] = [65, 66, 67, 68];
+      query[25] = [65, 66, 67, 68];
+      query[26] = [65, 66, 67, 68];
+      query[27] = [65, 66, 67, 68];
+      query[28] = [65, 66, 67, 68];
+      
+      query[29] = "a";
+      query[30] = "a,b";
+             
       return query.execute();
     }).chain((Results results) {
       print("updated ${results.affectedRows} ${results.insertId}");
