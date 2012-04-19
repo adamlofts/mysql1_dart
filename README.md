@@ -30,7 +30,7 @@ Things to do
 ------------
 
 * Make floating point stuff work correctly. (I'm almost 100% certain my implementation is incorrect).
-* Parse string responses to non-parameterized queries
+* Direct queries and prepared queries behave differently. Try to make them consistent.
 * Implement the rest of mysql's commands
 * Unit testing (I would have developed using TDD, but I wasn't sure what unit testing framework to use)
 * More integration tests

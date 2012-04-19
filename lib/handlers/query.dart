@@ -76,18 +76,55 @@ class FieldPacket implements Field {
 
 interface DataPacket default DataPacketImpl {
   List<Dynamic> get values();
-  DataPacket(Buffer buffer, int fieldCount);
+  DataPacket(Buffer buffer, List<FieldPacket> fieldPackets);
 }
 
 class DataPacketImpl implements DataPacket {
-  List<String> _values;
+  List<Dynamic> _values;
   
-  List<String> get values() => _values;
+  List<Dynamic> get values() => _values;
   
-  DataPacketImpl(Buffer buffer, int fieldCount) {
-    _values = new List<String>(fieldCount);
-    for (int i = 0; i < fieldCount; i++) {
-      _values[i] = buffer.readLengthCodedString();
+  DataPacketImpl(Buffer buffer, List<FieldPacket> fieldPackets) {
+    _values = new List<Dynamic>(fieldPackets.length);
+    for (int i = 0; i < fieldPackets.length; i++) {
+      String s = buffer.readLengthCodedString();
+      print("$i $s ${fieldPackets[i].type}");
+      switch (fieldPackets[i].type) {
+        case FIELD_TYPE_TINY: // tinyint/bool
+        case FIELD_TYPE_SHORT: // smallint
+        case FIELD_TYPE_INT24: // mediumint
+        case FIELD_TYPE_LONGLONG: // bigint/serial
+        case FIELD_TYPE_LONG: // int
+          _values[i] = Math.parseInt(s);
+          break;
+        case FIELD_TYPE_NEWDECIMAL: // decimal
+        case FIELD_TYPE_FLOAT: // float
+        case FIELD_TYPE_DOUBLE: // double
+          _values[i] = Math.parseDouble(s);
+          break;
+        case FIELD_TYPE_BIT: // bit
+          _values[i] = s;
+          break;
+        case FIELD_TYPE_DATE: // date
+        case FIELD_TYPE_DATETIME: // datetime
+        case FIELD_TYPE_TIMESTAMP: // timestamp
+          _values[i] = new Date.fromString(s);
+          break;
+        case FIELD_TYPE_TIME: // time
+          List<String> parts = s.split(":");
+          _values[i] = new Duration(0, Math.parseInt(parts[0]),
+            Math.parseInt(parts[1]), Math.parseInt(parts[2]), 0);
+          break;
+        case FIELD_TYPE_YEAR: // year
+          _values[i] = Math.parseInt(s);
+          break;
+        case FIELD_TYPE_STRING: // char/binary/enum/set
+        case FIELD_TYPE_VAR_STRING: // varchar/varbinary
+        case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
+        case FIELD_TYPE_GEOMETRY: // geometry
+          _values[i] = s;
+          break;
+      }
     }
   }
   
@@ -121,7 +158,6 @@ class QueryHandler extends Handler {
     return buffer;
   }
   
-  //TODO: Handle binary data packets (where are they found?)
   Dynamic processResponse(Buffer response) {
     log.debug("Query processing response");
     var packet = checkResponse(response);
@@ -147,7 +183,7 @@ class QueryHandler extends Handler {
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          DataPacket dataPacket = new DataPacket(response, _resultSetHeaderPacket.fieldCount);
+          DataPacket dataPacket = new DataPacket(response, _fieldPackets);
           log.debug(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;

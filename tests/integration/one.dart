@@ -81,6 +81,7 @@ class One {
     }).chain((Results results) {
       print("table test1");
       showResults(results);
+      print("preparing query");
       return cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
@@ -154,7 +155,7 @@ class One {
   void showResults(Results results) {
     List<String> fieldNames = new List<String>();
     for (Field field in results.fields) {
-      fieldNames.add(field.name);
+      fieldNames.add("${field.name}:${field.type}");
     }
     print(fieldNames);
     for (List<Dynamic> row in results) {

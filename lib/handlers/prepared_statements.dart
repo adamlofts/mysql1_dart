@@ -185,6 +185,7 @@ class ExecuteQueryHandler extends Handler {
     List<int> types = new List<int>();
     List<int> values = new List<int>();
     for (int i = 0; i < _values.length; i++) {
+      log.debug("field $i ${_preparedQuery._parameters[i].type}");
       Dynamic value = _values[i];
       if (value != null) {
         if (value is int) {
