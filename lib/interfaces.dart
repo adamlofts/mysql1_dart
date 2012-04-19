@@ -1,4 +1,5 @@
-interface Connection {
+interface Connection default MySqlConnection {
+  Connection();
   Future connect([String host, int port, String user, String password, String db]);
   Future useDatabase(String dbName);
   Future<Results> query(String sql);

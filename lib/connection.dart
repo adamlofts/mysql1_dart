@@ -3,7 +3,7 @@ class MySqlConnection implements Connection {
   List<MySqlQuery> _queries;
 
   MySqlConnection() {
-    _transport = new AsyncTransport._internal();
+    _transport = new Transport();
     _queries = new List<MySqlQuery>();
   }
 

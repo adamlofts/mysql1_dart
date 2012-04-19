@@ -1,4 +1,3 @@
-
 class ResultSetHeaderPacket {
   int _fieldCount;
   int _extra;

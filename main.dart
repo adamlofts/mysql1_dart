@@ -4,6 +4,7 @@
 #import('options.dart');
 
 void main() {
+  Log.initialize();
   Log log = new Log("main");
   
   OptionsFile options = new OptionsFile('connection.options');
@@ -14,7 +15,7 @@ void main() {
   String host = options.getString('host', 'localhost');
   
   log.debug("starting");
-  Connection cnx = new MySqlConnection();
+  Connection cnx = new Connection();
   Query thequery;
   cnx.connect(user:user, password:password, port:port, db:db, host:host).chain((nothing) {
     log.debug("got connection");

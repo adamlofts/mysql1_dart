@@ -21,7 +21,7 @@ class AsyncTransport implements Transport {
   String _user;
   String _password;
 
-  AsyncTransport._internal() {
+  AsyncTransport() {
     log = new Log("AsyncTransport");
     _headerBuffer = new Buffer(HEADER_SIZE);
   }
@@ -30,7 +30,7 @@ class AsyncTransport implements Transport {
     _socket.close();
   }
   
-  Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
+  Future connect(String host, int port, String user, String password, String db) {
     if (_socket != null) {
       throw "connection already open";
     }
@@ -117,7 +117,7 @@ class AsyncTransport implements Transport {
     }
   }
   
-  Dynamic processHandler(Handler handler, [bool resetPacket=true, bool noResponse=false]) {
+  Future processHandler(Handler handler, [bool noResponse=false]) {
     if (_handler != null) {
       throw "request already in progress";
     }

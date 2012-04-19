@@ -21,7 +21,7 @@ class One {
 //    tables = ["test1", "test2", "test3"];
     tables = ["test1"];
     
-    Connection cnx = new MySqlConnection();
+    Connection cnx = new Connection();
     cnx.connect(user:_user, password:_password, db:_db, port:_port, host:_host).then((nothing) {
       // check use database works
       cnx.useDatabase(_db).then((dummy) {
