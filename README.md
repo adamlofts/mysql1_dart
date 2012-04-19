@@ -3,7 +3,7 @@ SQLJocky
 
 This is a MySQL connector for the Dart programming language. It is in early stages of development,
 so please report issues, contribute code and suggest how I could make this better. (I won't 
-guarantee I'll agree with you).
+guarantee I'll agree with you). Please expect this code to change, possibly massively, in the near future.
 
 Usage
 -----
