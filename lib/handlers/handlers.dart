@@ -37,9 +37,7 @@ class OkPacket {
     _message = buffer.readStringToEnd();
   }
   
-  String toString() {
-    return "OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message";
-  }
+  String toString() => "OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message";
 }
 
 class MySqlError {
@@ -62,9 +60,7 @@ class MySqlError {
     _message = buffer.readStringToEnd();
   }
   
-  String toString() {
-    return "Error $errorNumber ($sqlState): $message";
-  }
+  String toString() => "Error $errorNumber ($sqlState): $message";
 }
 
 /**

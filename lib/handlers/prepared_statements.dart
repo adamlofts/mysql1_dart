@@ -512,7 +512,5 @@ class BinaryDataPacket implements DataPacket {
     }
   }
   
-  String toString() {
-    return "Value: $_values";
-  }
+  String toString() => "Value: $_values";
 }

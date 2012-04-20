@@ -73,16 +73,12 @@ class Buffer {
   /**
    * Returns the int at the specified [index]
    */
-  int operator[](int index) {
-    return _list[index];
-  }
+  int operator[](int index) => _list[index];
   
   /**
    * Sets the int at the specified [index] to the given [value]
    */
-  int operator[]=(int index, value) {
-    _list[index] = value;
-  }
+  int operator[]=(int index, value) => _list[index] = value;
   
   /**
    * Resets the read and write positions markers to the start of
@@ -95,9 +91,7 @@ class Buffer {
   /**
    * Returns the size of the buffer
    */
-  int get length() {
-    return _list.length;
-  }
+  int get length() => _list.length;
   
   /**
    * Moves the read marker to the given [position]
@@ -165,9 +159,7 @@ class Buffer {
    * Reads a null terminated string from the buffer.
    * Returns the string, without a terminating null.
    */
-  String readNullTerminatedString() {
-    return new String.fromCharCodes(readNullTerminatedList());
-  }
+  String readNullTerminatedString() => new String.fromCharCodes(readNullTerminatedList());
   
   /**
    * Writes a null terminated string to the buffer.
@@ -181,9 +173,7 @@ class Buffer {
    * Reads a string from the buffer, terminating when the end of the
    * buffer is reached.
    */
-  String readStringToEnd() {
-    return readString(_list.length - _readPos);
-  }
+  String readStringToEnd() => readString(_list.length - _readPos);
   
   /**
    * Writes a [string] to the buffer, without any length indicators or
@@ -245,9 +235,7 @@ class Buffer {
   /**
    * Returns a single byte, read from the buffer.
    */
-  int readByte() {
-    return _list[_readPos++];
-  }
+  int readByte() => _list[_readPos++];
   
   /**
    * Writes a single [byte] to the buffer.
@@ -259,9 +247,7 @@ class Buffer {
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
-  int readInt16() {
-    return _list[_readPos++] + (_list[_readPos++] << 8);
-  }
+  int readInt16() => _list[_readPos++] + (_list[_readPos++] << 8);
   
   /**
    * Writes a 16 bit [integer] to the buffer.
@@ -274,10 +260,8 @@ class Buffer {
   /**
    * Returns a 24-bit integer, read from the buffer.
    */
-  int readInt24() {
-    return _list[_readPos++] + (_list[_readPos++] << 8)
+  int readInt24() => _list[_readPos++] + (_list[_readPos++] << 8)
         + (_list[_readPos++] << 16);
-  }
 
   /**
    * Writes a 24 bit [integer] to the buffer.

@@ -89,9 +89,7 @@ class MySqlQuery implements Query {
     
   }
 
-  Dynamic operator [](int pos) {
-    return _values[pos];
-  }
+  Dynamic operator [](int pos) => _values[pos];
   
   void operator []=(int index, Dynamic value) {
     _values[index] = value;

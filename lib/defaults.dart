@@ -7,32 +7,19 @@ class ResultsImpl implements Results {
   ResultsImpl(OkPacket this._okPacket,
     ResultSetHeaderPacket this._resultSetHeaderPacket,
     List<FieldPacket> this._fieldPackets,
-    List<DataPacket> this._dataPackets) {
-  }
+    List<DataPacket> this._dataPackets);
   
-  int get insertId() {
-    return _okPacket.insertId;
-  }
+  int get insertId()=> _okPacket.insertId;
   
-  int get affectedRows() {
-    return _okPacket.affectedRows;
-  }
+  int get affectedRows() => _okPacket.affectedRows;
   
-  int get count() {
-    return _dataPackets.length;
-  }
+  int get count() => _dataPackets.length;
   
-  List<Field> get fields() {
-    return _fieldPackets;
-  }
+  List<Field> get fields() => _fieldPackets;
   
-  List<Dynamic> operator [](int pos) {
-    return _dataPackets[pos].values;
-  }
+  List<Dynamic> operator [](int pos) => _dataPackets[pos].values;
   
-  Iterator<List<Dynamic>> iterator() {
-    return new ResultsImplIterator._internal(this);
-  }
+  Iterator<List<Dynamic>> iterator() => new ResultsImplIterator._internal(this);
 }
 
 class ResultsImplIterator implements Iterator<Dynamic> {
@@ -41,11 +28,7 @@ class ResultsImplIterator implements Iterator<Dynamic> {
   
   ResultsImplIterator._internal(ResultsImpl this._results);
   
-  bool hasNext() {
-    return (i < _results._dataPackets.length);
-  }
+  bool hasNext() => i < _results._dataPackets.length;
   
-  List<Dynamic> next() {
-    return _results._dataPackets[i++].values;
-  }
+  List<Dynamic> next() => _results._dataPackets[i++].values;
 }
