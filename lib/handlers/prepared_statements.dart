@@ -189,17 +189,24 @@ class ExecuteQueryHandler extends Handler {
       Dynamic value = _values[i];
       if (value != null) {
         if (value is int) {
-          log.debug("LONG: $value");
-          types.add(FIELD_TYPE_LONGLONG);
-          types.add(0);
-          values.add(value & 0xFF);
-          values.add(value >> 8 & 0xFF);
-          values.add(value >> 16 & 0xFF);
-          values.add(value >> 24 & 0xFF);
-          values.add(value >> 32 & 0xFF);
-          values.add(value >> 40 & 0xFF);
-          values.add(value >> 48 & 0xFF);
-          values.add(value >> 56 & 0xFF);
+//          if (value < 128 && value > -127) {
+//            log.debug("TINYINT: $value");
+//            types.add(FIELD_TYPE_TINY);
+//            types.add(0);
+//            values.add(value & 0xFF);
+//          } else {
+            log.debug("LONG: $value");
+            types.add(FIELD_TYPE_LONGLONG);
+            types.add(0);
+            values.add(value & 0xFF);
+            values.add(value >> 8 & 0xFF);
+            values.add(value >> 16 & 0xFF);
+            values.add(value >> 24 & 0xFF);
+            values.add(value >> 32 & 0xFF);
+            values.add(value >> 40 & 0xFF);
+            values.add(value >> 48 & 0xFF);
+            values.add(value >> 56 & 0xFF);
+//          }
         } else if (value is double) {
           log.debug("DOUBLE: $value");
 

@@ -89,6 +89,10 @@ class DataPacketImpl implements DataPacket {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
       print("$i $s ${fieldPackets[i].type}");
+      if (s == null) {
+        _values[i] = null;
+        continue;
+      }
       switch (fieldPackets[i].type) {
         case FIELD_TYPE_TINY: // tinyint/bool
         case FIELD_TYPE_SHORT: // smallint

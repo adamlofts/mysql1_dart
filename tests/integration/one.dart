@@ -66,7 +66,7 @@ class One {
       "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
       "achar char(10), avarchar varchar(10), "
       "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-      "abinary binary(10), avarbinary varbinary(1), "
+      "abinary binary(10), avarbinary varbinary(10), "
       "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
       "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
     f.chain((x) {
@@ -97,7 +97,7 @@ class One {
         "?, ?, ?, ?, ?, ?, "
         "?, ?)");
     }).chain((Query query) {
-      query[0] = 163;
+      query[0] = 126;
       query[1] = 164;
       query[2] = 165;
       query[3] = 166;
