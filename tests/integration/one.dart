@@ -147,9 +147,29 @@ class One {
       return query.execute();
     }).then((Results results) {
       showResults(results);
+      moreTests(cnx);
+    });
+  }
+  
+  void moreTests(Connection cnx) {
+    Query preparedQuery;
+    cnx.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
+      preparedQuery = query;
+      query[0] = 127;
+      query[1] = "123456789.987654321";
+      return query.execute();
+    }).chain((Results results) {
+      preparedQuery.close();
+      return cnx.query("select atinyint, adecimal from test1");
+    }).then((Results results) {
+      List row = results.iterator().next();
+      Expect.equals(127, row[0]);
+      Expect.equals(123456789.987654321, row[1]);
       cnx.close();
       _completer.complete(true);
     });
+    
+    //TODO make some useful tests instead of randomly hacking away
   }
   
   void showResults(Results results) {

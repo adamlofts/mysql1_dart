@@ -40,6 +40,7 @@ Things to do
 * Use idiomatic dart where possible
 * Use a real logger
 * Geometry type
+* Decimal type should probably use a bigdecimal type of some sort
 * MySQL 4 types (old decimal, anything else?)
 * Test against multiple mysql versions
 * A logo.
