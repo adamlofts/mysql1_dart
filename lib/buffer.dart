@@ -254,7 +254,7 @@ class Buffer {
    */
   void writeInt16(int integer) {
     _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = (integer & 0xFF00) >> 8;
+    _list[_writePos++] = integer >> 8 & 0xFF;
   }
 
   /**
@@ -268,8 +268,8 @@ class Buffer {
    */
   void writeInt24(int integer) {
     _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = (integer & 0xFF00) >> 8;
-    _list[_writePos++] = (integer & 0xFF0000) >> 16;
+    _list[_writePos++] = integer >> 8 & 0xFF;
+    _list[_writePos++] = integer >> 16 & 0xFF;
   }
 
   /**
@@ -285,9 +285,9 @@ class Buffer {
    */
   void writeInt32(int integer) {
     _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = (integer & 0xFF00) >> 8;
-    _list[_writePos++] = (integer & 0xFF0000) >> 16;
-    _list[_writePos++] = (integer & 0xFF000000) >> 24;
+    _list[_writePos++] = integer >> 8 & 0xFF;
+    _list[_writePos++] = integer >> 16 & 0xFF;
+    _list[_writePos++] = integer >> 24 & 0xFF;
   }
 
   /**
@@ -305,13 +305,13 @@ class Buffer {
    */
   void writeInt64(int integer) {
     _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = (integer & 0xFF00) >> 8;
-    _list[_writePos++] = (integer & 0xFF0000) >> 16;
-    _list[_writePos++] = (integer & 0xFF000000) >> 24;
-    _list[_writePos++] = (integer & 0xFF00000000) >> 32;
-    _list[_writePos++] = (integer & 0xFF0000000000) >> 40;
-    _list[_writePos++] = (integer & 0xFF000000000000) >> 48;
-    _list[_writePos++] = (integer & 0xFF00000000000000) >> 56;
+    _list[_writePos++] = integer >> 8 & 0xFF;
+    _list[_writePos++] = integer >> 16 & 0xFF;
+    _list[_writePos++] = integer >> 24 & 0xFF;
+    _list[_writePos++] = integer >> 32 & 0xFF;
+    _list[_writePos++] = integer >> 40 & 0xFF;
+    _list[_writePos++] = integer >> 48 & 0xFF;
+    _list[_writePos++] = integer >> 56 & 0xFF;
   }
 
   /**

@@ -91,7 +91,6 @@ double listToDouble(List<int> list) {
 List<int> floatToList(double num) {
   // alg uses non-rounded method currently
   //TODO: use rounded method?
-  List<int> list = new List<int>(4);
   if (num.isNegative() && num > LARGEST_NEGATIVE_SUBNORMAL_FLOAT) {
     num = 0.0;
   } else if (!num.isNegative() && num < SMALLEST_POSITIVE_SUBNORMAL_FLOAT) {
@@ -106,33 +105,17 @@ List<int> floatToList(double num) {
   if (num.isInfinite()) {
     if (num.isNegative()) {
       // -Infinity
-      list[0] = 0x00;
-      list[1] = 0x00;
-      list[2] = 0x00;
-      list[3] = 0xF8;
-      return list;
+      return [0, 0, 0, 0xF8];
     } else {
       // +Infinity
-      list[0] = 0x00;
-      list[1] = 0x00;
-      list[2] = 0x80;
-      list[3] = 0x7F;
-      return list;
+      return [0, 0, 0x80, 0x7F];
     }
   } else if (num.isNaN()) {
     // NaN
-    list[0] = 0x01;
-    list[1] = 0x00;
-    list[2] = 0x80;
-    list[3] = 0x7F;
-    return list;
+    return [0x01, 0, 0x80, 0x7F];
   }
   if (num == 0) {
-    list[0] = 0x00;
-    list[1] = 0x00;
-    list[2] = 0x00;
-    list[3] = 0x00;
-    return list;
+    return [0, 0, 0, 0];
   }
   
   var exp = 0;
@@ -157,63 +140,29 @@ List<int> floatToList(double num) {
 //  print("$num $exp $sig ($num)");
   
   exp += 127;
-  list[3] = (sign << 7) + ((exp & 0xFE) >> 1);
-  list[2] = ((exp & 0x01) << 7) + ((sig >> 16) & 0x7F);
-  list[1] = (sig >> 8) & 0xFF;
-  list[0] = sig & 0xFF;
-  return list;
+  return [sig & 0xFF,
+          (sig >> 8) & 0xFF,
+          ((exp & 0x01) << 7) + ((sig >> 16) & 0x7F),          
+          (sign << 7) + ((exp & 0xFE) >> 1)];
 }
 
 List<int> doubleToList(double num) {
   // alg uses non-rounded method currently
   //TODO: use rounded method?
-  List<int> list = new List<int>(8);
   if (num.isInfinite()) {
     if (num.isNegative()) {
       // -Infinity
-      list[0] = 0x00;
-      list[1] = 0x00;
-      list[2] = 0x00;
-      list[3] = 0x00;
-      list[4] = 0x00;
-      list[5] = 0x00;
-      list[6] = 0xF0;
-      list[7] = 0xFF;
-      return list;
+      return [0, 0, 0, 0, 0, 0, 0xF0, 0xFF];
     } else {
       // +Infinity
-      list[0] = 0x00;
-      list[1] = 0x00;
-      list[2] = 0x00;
-      list[3] = 0x00;
-      list[4] = 0x00;
-      list[5] = 0x00;
-      list[6] = 0xF0;
-      list[7] = 0x7F;
-      return list;
+      return [0, 0, 0, 0, 0, 0, 0xF0, 0x7F];
     }
   } else if (num.isNaN()) {
     // NaN
-    list[0] = 0x01;
-    list[1] = 0x00;
-    list[2] = 0x00;
-    list[3] = 0x00;
-    list[4] = 0x00;
-    list[5] = 0x00;
-    list[6] = 0xF0;
-    list[7] = 0xFF;
-    return list;
+    return [0x01, 0, 0, 0, 0, 0, 0xF0, 0xFF];
   }
   if (num == 0) {
-    list[0] = 0x00;
-    list[1] = 0x00;
-    list[2] = 0x00;
-    list[3] = 0x00;
-    list[4] = 0x00;
-    list[5] = 0x00;
-    list[6] = 0x00;
-    list[7] = 0x00;
-    return list;
+    return [0, 0, 0, 0, 0, 0, 0, 0];
   }
   
   var exp = 0;
@@ -238,15 +187,14 @@ List<int> doubleToList(double num) {
 //  print("$num $exp $sig ($num)");
   
   exp += 1023;
-  list[7] = (sign << 7) + ((exp & 0x7F0) >> 4);
-  list[6] = ((exp & 0x0F) << 4) + ((sig >> 48) & 0x0F);
-  list[5] = (sig >> 40) & 0xFF;
-  list[4] = (sig >> 32) & 0xFF;
-  list[3] = (sig >> 24) & 0xFF;
-  list[2] = (sig >> 16) & 0xFF;
-  list[1] = (sig >> 8) & 0xFF;
-  list[0] = sig & 0xFF;
-  return list;
+  return [sig & 0xFF,
+          (sig >> 8) & 0xFF,
+          (sig >> 16) & 0xFF,
+          (sig >> 24) & 0xFF,
+          (sig >> 32) & 0xFF,
+          (sig >> 40) & 0xFF,
+          ((exp & 0x0F) << 4) + ((sig >> 48) & 0x0F),
+          (sign << 7) + ((exp & 0x7F0) >> 4)];          
 }
 
 String listToHexString(List<int> list, [bool reverse=false]) {
