@@ -50,13 +50,24 @@ class Buffer {
   
   /**
    * Writes up to [count] bytes to the [socket] from the buffer.
-   * Returns the number of bytes written.
+   *
+   * Returns true if the data could be written immediately. Otherwise data is buffered
+   * and sent as soon as possible (as per [OutputStream.write()])
    */
-  int writeTo(Socket socket, int count) {
-    log.debug("writing $_list from $_readPos");
-    int bytesWritten = socket.writeList(_list, _readPos, count);
-    _readPos += bytesWritten;
-    return bytesWritten;
+  bool writeTo(Socket socket, int count) {
+    log.debug("writing $count of $_list from $_readPos");
+    return socket.outputStream.writeFrom(_list, _readPos, count);
+  }
+  
+  /**
+   * Write all of the buffer to the [socket].
+   *
+   * Returns true if the data could be written immediately. Otherwise data is buffered
+   * and sent as soon as possible (as per [OutputStream.write()])
+   */
+  bool writeAllTo(Socket socket) {
+    reset();
+    return writeTo(socket, _list.length);
   }
   
   /**

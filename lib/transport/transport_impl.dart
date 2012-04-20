@@ -64,10 +64,8 @@ class AsyncTransport implements Transport {
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
     log.debug("sending header, packet $_packetNumber");
-    _headerBuffer.reset();
-    _headerBuffer.writeTo(_socket, HEADER_SIZE);
-    buffer.reset();
-    buffer.writeTo(_socket, buffer.length);
+    _headerBuffer.writeAllTo(_socket);
+    buffer.writeAllTo(_socket);
   }
 
   void _onData() {
