@@ -397,14 +397,12 @@ class BinaryDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_FLOAT:
           log.debug("FLOAT");
-          List<int> list = buffer.readList(4);
-          _values[i] = listToFloat(list);
+          _values[i] = buffer.readFloat();
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DOUBLE:
           log.debug("DOUBLE");
-          List<int> list = buffer.readList(8);
-          _values[i] = listToDouble(list);
+          _values[i] = buffer.readDouble();
           log.debug("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_BIT:

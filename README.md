@@ -29,7 +29,6 @@ darts player. (Hence the lack of an 'e' in Jocky.)
 Things to do
 ------------
 
-* Make floating point stuff work correctly. (I'm almost 100% certain my implementation is incorrect).
 * Direct queries and prepared queries behave differently. Try to make them consistent.
 * Implement the rest of mysql's commands
 * Unit testing (I would have developed using TDD, but I wasn't sure what unit testing framework to use)

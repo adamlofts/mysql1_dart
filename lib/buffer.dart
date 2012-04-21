@@ -13,16 +13,16 @@ class Buffer {
   int _writePos = 0;
   int _readPos = 0;
   
-  List<int> _list;
+  ByteArray _list;
   
-  List<int> get list() => _list;
+  ByteArray get list() => _list;
   
   /**
    * Creates a [Buffer] of the given [size]
    */
   Buffer(int size) {
     log = new Log("Buffer");
-    _list = new List<int>(size);
+    _list = new ByteArray(size);
   }
   
   /**
@@ -30,7 +30,8 @@ class Buffer {
    */
   Buffer.fromList(List<int> list) {
     log = new Log("Buffer");
-    _list = list;
+    _list = new ByteArray(list.length);
+    _list.addAll(list);
   }
   
   /**
@@ -241,20 +242,24 @@ class Buffer {
    * Writes a single [byte] to the buffer.
    */ 
   void writeByte(int byte) {
-    _list[_writePos++] = byte;
+    _list.setInt8(_writePos++, byte);
   }
   
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
-  int readInt16() => _list[_readPos++] + (_list[_readPos++] << 8);
+  int readInt16() {
+    int result = _list.getInt16(_readPos);
+    _readPos += 2;
+    return result;
+  }
   
   /**
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
-    _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = integer >> 8 & 0xFF;
+    _list.setInt16(_writePos, integer);
+    _writePos += 2;
   }
 
   /**
@@ -276,42 +281,34 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    return _list[_readPos++] + (_list[_readPos++] << 8)
-        + (_list[_readPos++] << 16) + (_list[_readPos++] << 24);
+    int val = _list.getInt32(_readPos);
+    _readPos += 4;
+    return val;
   }
 
   /**
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
-    _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = integer >> 8 & 0xFF;
-    _list[_writePos++] = integer >> 16 & 0xFF;
-    _list[_writePos++] = integer >> 24 & 0xFF;
+    _list.setInt32(_writePos, integer);
+    _writePos += 4;
   }
 
   /**
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    return _list[_readPos++] + (_list[_readPos++] << 8)
-        + (_list[_readPos++] << 16) + (_list[_readPos++] << 24)
-        + (_list[_readPos++] << 32) + (_list[_readPos++] << 40)
-        + (_list[_readPos++] << 48) + (_list[_readPos++] << 56);
+    int val = _list.getInt64(_readPos);
+    _readPos += 8;
+    return val;
   }
   
   /**
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
-    _list[_writePos++] = integer & 0xFF;
-    _list[_writePos++] = integer >> 8 & 0xFF;
-    _list[_writePos++] = integer >> 16 & 0xFF;
-    _list[_writePos++] = integer >> 24 & 0xFF;
-    _list[_writePos++] = integer >> 32 & 0xFF;
-    _list[_writePos++] = integer >> 40 & 0xFF;
-    _list[_writePos++] = integer >> 48 & 0xFF;
-    _list[_writePos++] = integer >> 56 & 0xFF;
+    _list.setInt64(_writePos, integer);
+    _writePos += 8;
   }
 
   /**
@@ -329,6 +326,28 @@ class Buffer {
   void writeList(List<int> list) {
     _list.setRange(_writePos, list.length, list);
     _writePos += list.length;
+  }
+  
+  double readFloat() {
+    double val = _list.getFloat32(_readPos);
+    _readPos += 4;
+    return val;
+  }
+  
+  void writeFloat(double value) {
+    _list.setFloat32(_writePos, value);
+    _writePos += 4;
+  }
+  
+  double readDouble() {
+    double val = _list.getFloat64(_readPos);
+    _readPos += 8;
+    return val;
+  }
+  
+  void writeDouble(double value) {
+    _list.setFloat64(_writePos, value);
+    _writePos += 8;
   }
 }
 
