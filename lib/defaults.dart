@@ -1,8 +1,8 @@
 class ResultsImpl implements Results {
-  OkPacket _okPacket;
-  List<FieldPacket> _fieldPackets;
-  List<DataPacket> _dataPackets;
-  ResultSetHeaderPacket _resultSetHeaderPacket;
+  final OkPacket _okPacket;
+  final List<FieldPacket> _fieldPackets;
+  final List<DataPacket> _dataPackets;
+  final ResultSetHeaderPacket _resultSetHeaderPacket;
 
   ResultsImpl(OkPacket this._okPacket,
     ResultSetHeaderPacket this._resultSetHeaderPacket,
@@ -23,7 +23,7 @@ class ResultsImpl implements Results {
 }
 
 class ResultsImplIterator implements Iterator<Dynamic> {
-  ResultsImpl _results;
+  final ResultsImpl _results;
   int i = 0;
   
   ResultsImplIterator._internal(ResultsImpl this._results);

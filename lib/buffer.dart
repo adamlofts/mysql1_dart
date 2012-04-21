@@ -9,28 +9,25 @@
  * Which makes things much easier.
  */
 class Buffer {
-  Log log;
+  final Log log;
   int _writePos = 0;
   int _readPos = 0;
   
-  ByteArray _list;
+  final ByteArray _list;
   
   ByteArray get list() => _list;
   
   /**
    * Creates a [Buffer] of the given [size]
    */
-  Buffer(int size) {
-    log = new Log("Buffer");
-    _list = new ByteArray(size);
-  }
+  Buffer(int size) : _list = new ByteArray(size),
+                     log = new Log("Buffer");
   
   /**
    * Creates a [Buffer] with the given [list] as backing storage
    */
-  Buffer.fromList(List<int> list) {
-    log = new Log("Buffer");
-    _list = new ByteArray(list.length);
+  Buffer.fromList(List<int> list) : _list = new ByteArray(list.length),
+                                    log = new Log("Buffer") {
     _list.addAll(list);
   }
   

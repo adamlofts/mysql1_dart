@@ -3,7 +3,7 @@
  */
  
 class Log {
-  String _name;
+  final String _name;
   bool _debugEnabled = true;
   static bool _loggingEnabled;
   

@@ -117,7 +117,7 @@ class Handler {
 }
 
 class UseDbHandler extends Handler {
-  String _dbName;
+  final String _dbName;
   
   UseDbHandler(String this._dbName) {
     log = new Log("UseDbHandler");

@@ -2,14 +2,14 @@ class AsyncTransport implements Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
-  static Log log;
+  final Log log;
 
   Handler _handler;
   Completer<Dynamic> _completer;
   
   Socket _socket;
 
-  Buffer _headerBuffer;
+  final Buffer _headerBuffer;
   Buffer _dataBuffer;
   
   int _packetNumber = 0;
@@ -21,10 +21,9 @@ class AsyncTransport implements Transport {
   String _user;
   String _password;
 
-  AsyncTransport() {
-    log = new Log("AsyncTransport");
-    _headerBuffer = new Buffer(HEADER_SIZE);
-  }
+  AsyncTransport() :
+      log = new Log("AsyncTransport"),
+      _headerBuffer = new Buffer(HEADER_SIZE);
   
   void close() {
     _socket.close();
@@ -97,7 +96,7 @@ class AsyncTransport implements Transport {
         var result;
         try {
           result = _handler.processResponse(_dataBuffer);
-        } catch (Dynamic e) {
+        } catch (final Dynamic e) {
           _handler = null;
           log.debug("completing with exception: $e");
           _completer.completeException(e);

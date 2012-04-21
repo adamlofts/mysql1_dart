@@ -1,7 +1,7 @@
 class HandshakeHandler extends Handler {
-  String _user;
-  String _password;
-  String _db;
+  final String _user;
+  final String _password;
+  final String _db;
   
   int protocolVersion;
   String serverVersion;
@@ -12,9 +12,8 @@ class HandshakeHandler extends Handler {
   int serverStatus;
   int scrambleLength;
   
-  HandshakeHandler(String this._user, String this._password, [String db]) {
+  HandshakeHandler(String this._user, String this._password, [String db]) : _db = db {
     log = new Log("HandshakeHandler");
-    _db = db;
   }
 
   /**
@@ -65,13 +64,13 @@ class HandshakeHandler extends Handler {
 }
 
 class AuthHandler extends Handler {
-  String _username;
-  String _password;
-  String _db;
-  List<int> _scrambleBuffer;
-  int _clientFlags;
-  int _maxPacketSize;
-  int _collation;
+  final String _username;
+  final String _password;
+  final String _db;
+  final List<int> _scrambleBuffer;
+  final int _clientFlags;
+  final int _maxPacketSize;
+  final int _collation;
   
   AuthHandler(String this._username, String this._password, String this._db,
     List<int> this._scrambleBuffer, int this._clientFlags,
@@ -105,14 +104,15 @@ class AuthHandler extends Handler {
     }
 
     int size = hash.length + _username.length + 2 + 32;
+    var clientFlags = _clientFlags;
     if (_db != null) {
       size += _db.length + 1;
-      _clientFlags |= CLIENT_CONNECT_WITH_DB;
+      clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
     
     Buffer buffer = new Buffer(size);
     buffer.seekWrite(0);
-    buffer.writeInt32(_clientFlags);
+    buffer.writeInt32(clientFlags);
     buffer.writeInt32(_maxPacketSize);
     buffer.writeByte(_collation);
     buffer.fill(23, 0);

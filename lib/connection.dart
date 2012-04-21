@@ -1,11 +1,9 @@
 class MySqlConnection implements Connection {
-  Transport _transport;
-  List<MySqlQuery> _queries;
+  final Transport _transport;
+  final List<MySqlQuery> _queries;
 
-  MySqlConnection() {
-    _transport = new Transport();
-    _queries = new List<MySqlQuery>();
-  }
+  MySqlConnection() : _transport = new Transport(),
+                      _queries = new List<MySqlQuery>();
 
   Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
     return _transport.connect(host, port, user, password, db);
@@ -63,18 +61,17 @@ class MySqlConnection implements Connection {
 }
 
 class MySqlQuery implements Query {
-  MySqlConnection _cnx;
-  PreparedQuery _preparedQuery;
-  List<Dynamic> _values;
+  final MySqlConnection _cnx;
+  final PreparedQuery _preparedQuery;
+  final List<Dynamic> _values;
   bool _executed = false;
 
   int get statementId() => _preparedQuery.statementHandlerId;
   
-  MySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) {
-    _cnx = cnx;
-    _preparedQuery = preparedQuery;
-    _values = new List<Dynamic>(_preparedQuery.parameters.length);
-  }
+  MySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) :
+      _cnx = cnx,
+      _preparedQuery = preparedQuery,
+      _values = new List<Dynamic>(preparedQuery.parameters.length);
 
   void close() {
     _cnx._closeQuery(this);

@@ -76,12 +76,12 @@ interface DataPacket default DataPacketImpl {
 }
 
 class DataPacketImpl implements DataPacket {
-  List<Dynamic> _values;
+  final List<Dynamic> _values;
   
   List<Dynamic> get values() => _values;
   
-  DataPacketImpl(Buffer buffer, List<FieldPacket> fieldPackets) {
-    _values = new List<Dynamic>(fieldPackets.length);
+  DataPacketImpl(Buffer buffer, List<FieldPacket> fieldPackets) :
+      _values = new List<Dynamic>(fieldPackets.length) {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
       print("$i $s ${fieldPackets[i].type}");
@@ -135,7 +135,7 @@ class QueryHandler extends Handler {
   static final int STATE_HEADER_PACKET = 0;
   static final int STATE_FIELD_PACKETS = 1;
   static final int STATE_ROW_PACKETS = 2;
-  String _sql;
+  final String _sql;
   int _state = STATE_HEADER_PACKET;
   
   OkPacket _okPacket;

@@ -25,25 +25,24 @@ class PrepareOkPacket {
 }
 
 class PreparedQuery {
-  String _sql;
-  List<FieldPacket> _parameters;
-  List<FieldPacket> _columns;
-  int _statementHandlerId;
+  final String _sql;
+  final List<FieldPacket> _parameters;
+  final List<FieldPacket> _columns;
+  final int _statementHandlerId;
 
   int get statementHandlerId() => _statementHandlerId;
   List<FieldPacket> get parameters() => _parameters;
   List<FieldPacket> get columns() => _columns;
 
-  PreparedQuery(PrepareHandler handler) {
-    _sql = handler.sql;
-    _parameters = handler.parameters;
-    _columns = handler.columns;
-    _statementHandlerId = handler.okPacket.statementHandlerId;
-  }
+  PreparedQuery(PrepareHandler handler) :
+      _sql = handler.sql,
+      _parameters = handler.parameters,
+      _columns = handler.columns,
+      _statementHandlerId = handler.okPacket.statementHandlerId;
 }
 
 class PrepareHandler extends Handler {
-  String _sql;
+  final String _sql;
   PrepareOkPacket _okPacket;
   int _parametersToRead;
   int _columnsToRead;
@@ -120,7 +119,7 @@ class PrepareHandler extends Handler {
 }
 
 class CloseStatementHandler extends Handler {
-  int _handle;
+  final int _handle;
   
   CloseStatementHandler(int this._handle) {
     log = new Log("CloseStatementHandler");
@@ -150,8 +149,8 @@ class ExecuteQueryHandler extends Handler {
   List<FieldPacket> _fieldPackets;
   List<BinaryDataPacket> _dataPackets;
 
-  PreparedQuery _preparedQuery;
-  List<Dynamic> _values;
+  final PreparedQuery _preparedQuery;
+  final List<Dynamic> _values;
   OkPacket _okPacket;
   bool _executed;
   
@@ -326,12 +325,12 @@ class ExecuteQueryHandler extends Handler {
 
 class BinaryDataPacket implements DataPacket {
   List<Dynamic> _values;
-  Log log;
+  final Log log;
   
   List<Dynamic> get values() => _values;
   
-  BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) {
-    log = new Log("BinaryDataPacket");
+  BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) :
+      log = new Log("BinaryDataPacket") {
     buffer.skip(1);
     List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.debug("Nulls: $nulls");
