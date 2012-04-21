@@ -1,4 +1,6 @@
 connection.options
 .children
 .project
+examples
+docs
 
