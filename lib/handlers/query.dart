@@ -84,7 +84,6 @@ class DataPacketImpl implements DataPacket {
       _values = new List<Dynamic>(fieldPackets.length) {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
-      print("$i $s ${fieldPackets[i].type}");
       if (s == null) {
         _values[i] = null;
         continue;
