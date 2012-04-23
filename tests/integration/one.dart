@@ -173,7 +173,7 @@ class One {
   }
   
   void showResults(Results results) {
-    List<String> fieldNames = new List<String>();
+    List<String> fieldNames = <String>[];
     for (Field field in results.fields) {
       fieldNames.add("${field.name}:${field.type}");
     }

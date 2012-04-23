@@ -82,7 +82,7 @@ class AuthHandler extends Handler {
     // calculate the mysql password hash
     List<int> hash;
     if (_password == null) {
-      hash = new List<int>(0);
+      hash = <int>[];
     } else {
       hash:Hash hasher = new Sha1();
       hasher.updateString(_password);

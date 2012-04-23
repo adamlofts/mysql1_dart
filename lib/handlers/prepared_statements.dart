@@ -120,7 +120,7 @@ class PrepareHandler extends Handler {
 
 class CloseStatementHandler extends Handler {
   final int _handle;
-  
+
   CloseStatementHandler(int this._handle) {
     log = new Log("CloseStatementHandler");
   }
@@ -156,8 +156,8 @@ class ExecuteQueryHandler extends Handler {
   
   ExecuteQueryHandler(PreparedQuery this._preparedQuery, bool this._executed,
     List<Dynamic> this._values) {
-    _fieldPackets = new List<FieldPacket>();
-    _dataPackets = new List<BinaryDataPacket>();
+    _fieldPackets = <FieldPacket>[];
+    _dataPackets = <BinaryDataPacket>[];
     log = new Log("ExecuteQueryHandler");
   }
   
@@ -181,15 +181,15 @@ class ExecuteQueryHandler extends Handler {
     };
     
     //TODO do this properly
-    List<int> types = new List<int>();
-    List<int> values = new List<int>();
+    List<int> types = <int>[];
+    List<int> values = <int>[];
     for (int i = 0; i < _values.length; i++) {
       log.debug("field $i ${_preparedQuery._parameters[i].type}");
       Dynamic value = _values[i];
       if (value != null) {
         if (value is int) {
 //          if (value < 128 && value > -127) {
-//            log.debug("TINYINT: $value");
+//            log.debug("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
 //            types.add(0);
 //            values.add(value & 0xFF);

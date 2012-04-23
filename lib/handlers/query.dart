@@ -145,8 +145,8 @@ class QueryHandler extends Handler {
   
   QueryHandler(String this._sql) {
     log = new Log("QueryHandler");
-    _fieldPackets = new List<FieldPacket>();
-    _dataPackets = new List<DataPacket>();
+    _fieldPackets = <FieldPacket>[];
+    _dataPackets = <DataPacket>[];
   }
   
   Buffer createRequest() {

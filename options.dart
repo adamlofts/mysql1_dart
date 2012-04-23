@@ -7,7 +7,7 @@ class OptionsFile {
   
   OptionsFile(String filename) {
     File options = new File(filename);
-    _map = new Map<String, String>();
+    _map = <String>{};
     if (options.existsSync()) {
       List<String> lines = options.readAsLinesSync();
       for (String line in lines) {

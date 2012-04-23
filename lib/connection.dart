@@ -3,7 +3,7 @@ class MySqlConnection implements Connection {
   final List<MySqlQuery> _queries;
 
   MySqlConnection() : _transport = new Transport(),
-                      _queries = new List<MySqlQuery>();
+                      _queries = <MySqlQuery>[];
 
   Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
     return _transport.connect(host, port, user, password, db);

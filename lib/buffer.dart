@@ -134,7 +134,7 @@ class Buffer {
    * Returns the list of ints from the buffer, without the terminating zero
    */
   List<int> readNullTerminatedList() {
-    List<int> s = new List<int>();
+    List<int> s = <int>[];
     while (_list[_readPos] != 0) {
       s.add(_list[_readPos]);
       _readPos++;

@@ -11,7 +11,7 @@ class Log {
   
   static initialize([bool loggingEnabled=true]) {
     if (_loggers == null) {
-      _loggers = new Map<String, Log>();
+      _loggers = <Log>{};
     }
     _loggingEnabled = loggingEnabled;
   }
