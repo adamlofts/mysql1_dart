@@ -2,5 +2,6 @@
 
 #import("../lib/sqljocky.dart");
 
-#source("integration/one.dart");
+#import("../thirdparty/unittest/unittest.dart");
 
+#source("integration/one.dart");

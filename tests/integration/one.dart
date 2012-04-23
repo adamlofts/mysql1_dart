@@ -1,88 +1,81 @@
-class One {
-  List<String> tables;
-  String _user;
-  String _password;
-  String _db;
-  int _port;
-  String _host;
-  
-  One([String user, String password, String db, int port=3306, String host='localhost']) {
-    _user = user;
-    _password = password;
-    _db = db;
-    _port = port;
-    _host = host;
-  }
-  
-  Completer _completer;
-  
-  Future runAll() {
-    _completer = new Completer();
-//    tables = ["test1", "test2", "test3"];
-    tables = ["test1"];
-    
-    Connection cnx = new Connection();
-    cnx.connect(user:_user, password:_password, db:_db, port:_port, host:_host).then((nothing) {
-      // check use database works
-      cnx.useDatabase(_db).then((dummy) {
-        dropTables(cnx);
+runTests(String user, String password, String db, int port, String host) {
+  Connection cnx;
+  group('some tests:', () {
+    asyncTest('connect', 1, () {
+      cnx = new Connection();
+      cnx.connect(user:user, password:password, db:db, port:port, host:host).then((nothing) {
+        callbackDone();
       });
     });
-    return _completer.future;
-  }
-  
-  void dropTables(Connection cnx) {
-    String table = tables.last();
-    tables.removeLast();
-    print("drop table $table");
-    Future future = cnx.query("drop table $table");
-    future.handleException((exception) {
-      if (exception is MySqlError && exception.errorNumber == 1051) {
-        print("no table to delete");
-        if (tables.length == 0) {
-          createTables(cnx);
-        } else {
-          dropTables(cnx);
+    
+    asyncTest('dropTables', 1, () {
+      var tables = ["test1"];
+
+      void dropTables(Connection cnx1) {
+        String table = tables.last();
+        tables.removeLast();
+//        print("drop table $table");
+        Future future = cnx1.query("drop table $table");
+        future.handleException((exception) {
+          if (exception is MySqlError && exception.errorNumber == 1051) {
+//            print("no table to delete");
+            if (tables.length == 0) {
+              callbackDone();
+            } else {
+              dropTables(cnx1);
+            }
+          }
+          return true;
+        });
+        future.then((x) {
+//          print("deleted");
+          if (tables.length == 0) {
+            callbackDone();
+          } else {
+            dropTables(cnx1);
+          }
+        });
+      }
+      
+      dropTables(cnx);
+    });
+    
+    asyncTest('create tables', 1, () {
+      cnx.query("create table test1 ("
+        "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+        "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+        "aboolean boolean, abit bit(20), aserial serial, "
+        "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+        "achar char(10), avarchar varchar(10), "
+        "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+        "abinary binary(10), avarbinary varbinary(10), "
+        "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then((Results results) {
+//          expect(1).equals(results.affectedRows);
+          callbackDone();
+        });
+    });
+    
+    asyncTest('show tables', 1, () {
+      cnx.query("show tables").then((Results results) {
+        print("tables");
+        for (List<Dynamic> row in results) {
+          print(row);
         }
-      }
-      return true;
+        callbackDone();
+      });
     });
-    future.then((x) {
-      print("deleted");
-      if (tables.length == 0) {
-        createTables(cnx);
-      } else {
-        dropTables(cnx);
-      }
+    
+    asyncTest('describe stuff', 1, () {
+      cnx.query("describe test1").then((Results results) {
+        print("table test1");
+        showResults(results);
+        callbackDone();
+      });
     });
-  }
-  
-  void createTables(Connection cnx) {
-    print("creating tables");
-    Future f = cnx.query("create table test1 ("
-      "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
-      "adecimal decimal(20,10), afloat float, adouble double, areal real, "
-      "aboolean boolean, abit bit(20), aserial serial, "
-      "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
-      "achar char(10), avarchar varchar(10), "
-      "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-      "abinary binary(10), avarbinary varbinary(10), "
-      "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-      "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
-    f.chain((x) {
-      print("created");
-      return cnx.query("show tables");
-    }).chain((Results results) {
-      print("tables");
-      for (List<Dynamic> row in results) {
-        print(row);
-      }
-      return cnx.query("describe test1");
-    }).chain((Results results) {
-      print("table test1");
-      showResults(results);
-      print("preparing query");
-      return cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+    
+    asyncTest('insert stuff', 1, () {
+      cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
         "adate, adatetime, atimestamp, atime, ayear, "
@@ -95,98 +88,102 @@ class One {
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)");
-    }).chain((Query query) {
-      query[0] = 126;
-      query[1] = 164;
-      query[2] = 165;
-      query[3] = 166;
-      query[4] = 167;
-      
-      query[5] = 592;
-      query[6] = 123.456;
-      query[7] = 123.456;
-      query[8] = 123.456;
-      
-      query[9] = true;
-      query[10] = [1, 2, 3];
-      query[11] = 123;
-      
-      query[12] = new Date.now();
-      query[13] = new Date.now();
-      query[14] = new Date.now();
-      query[15] = new Date.now();
-      query[16] = 2012;
-      
-      query[17] = "Hello";
-      query[18] = "Hey";
-      query[19] = "Hello there";
-      query[20] = "Good morning";
-      query[21] = "Habari boss";
-      query[22] = "Bonjour";
-
-      query[23] = [65, 66, 67, 68];
-      query[24] = [65, 66, 67, 68];
-      query[25] = [65, 66, 67, 68];
-      query[26] = [65, 66, 67, 68];
-      query[27] = [65, 66, 67, 68];
-      query[28] = [65, 66, 67, 68];
-      
-      query[29] = "a";
-      query[30] = "a,b";
-             
-      return query.execute();
-    }).chain((Results results) {
-      print("updated ${results.affectedRows} ${results.insertId}");
-      return cnx.query("select * from test1");
-    }).chain((Results results) {
-      print("values");
-      showResults(results);
-      return cnx.prepare("select * from test1");
-    }).chain((Query query) {
-      return query.execute();
-    }).then((Results results) {
-      showResults(results);
-      moreTests(cnx);
-    });
-  }
-  
-  void moreTests(Connection cnx) {
-    Query preparedQuery;
-    cnx.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
-      preparedQuery = query;
-      query[0] = 127;
-      query[1] = "123456789.987654321";
-      return query.execute();
-    }).chain((Results results) {
-      preparedQuery.close();
-      return cnx.query("select atinyint, adecimal from test1");
-    }).then((Results results) {
-      List row = results.iterator().next();
-      Expect.equals(127, row[0]);
-      Expect.equals(123456789.987654321, row[1]);
-      testPrepareExecute(cnx);
+        "?, ?)").chain((Query query) {
+          query[0] = 126;
+          query[1] = 164;
+          query[2] = 165;
+          query[3] = 166;
+          query[4] = 167;
+          
+          query[5] = 592;
+          query[6] = 123.456;
+          query[7] = 123.456;
+          query[8] = 123.456;
+          
+          query[9] = true;
+          query[10] = [1, 2, 3];
+          query[11] = 123;
+          
+          query[12] = new Date.now();
+          query[13] = new Date.now();
+          query[14] = new Date.now();
+          query[15] = new Date.now();
+          query[16] = 2012;
+          
+          query[17] = "Hello";
+          query[18] = "Hey";
+          query[19] = "Hello there";
+          query[20] = "Good morning";
+          query[21] = "Habari boss";
+          query[22] = "Bonjour";
+    
+          query[23] = [65, 66, 67, 68];
+          query[24] = [65, 66, 67, 68];
+          query[25] = [65, 66, 67, 68];
+          query[26] = [65, 66, 67, 68];
+          query[27] = [65, 66, 67, 68];
+          query[28] = [65, 66, 67, 68];
+          
+          query[29] = "a";
+          query[30] = "a,b";
+                 
+          return query.execute();
+        }).then((Results results) {
+          expect(results.affectedRows).equals(1);
+          print("updated ${results.affectedRows} ${results.insertId}");
+          callbackDone();
+        });
     });
     
-    //TODO make some useful tests instead of randomly hacking away
-  }
-  
-  void testPrepareExecute(Connection cnx) {
-    cnx.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
-      Expect.equals(1, results.affectedRows);
-      cnx.close();
-      _completer.complete(true);
+    asyncTest('select everything', 1, () {
+      cnx.query('select * from test1').then((Results results) {
+//        expect(results.count).equals(1);
+        callbackDone();
+      });
     });
-  }
+    
+    asyncTest('update', 1, () {
+      Query preparedQuery;
+      cnx.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
+        preparedQuery = query;
+        query[0] = 127;
+        query[1] = "123456789.987654321";
+        return query.execute();
+      }).then((Results results) {
+        preparedQuery.close();
+        callbackDone();
+      });
+    });
+    
+    asyncTest('select stuff', 1, () {
+      cnx.query("select atinyint, adecimal from test1").then((Results results) {
+        List row = results.iterator().next();
+        Expect.equals(127, row[0]);
+        Expect.equals(123456789.987654321, row[1]);
+        callbackDone();
+      });
+    });
+    
+    asyncTest('prepare execute', 1, () {
+      cnx.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
+        Expect.equals(1, results.affectedRows);
+        callbackDone();
+      });
+    });
   
-  void showResults(Results results) {
-    List<String> fieldNames = <String>[];
-    for (Field field in results.fields) {
-      fieldNames.add("${field.name}:${field.type}");
-    }
-    print(fieldNames);
-    for (List<Dynamic> row in results) {
-      print(row);
-    }
+    test('close connection', () {
+      cnx.close();
+    });
+  });
+}
+
+void showResults(Results results) {
+  List<String> fieldNames = <String>[];
+  for (Field field in results.fields) {
+    fieldNames.add("${field.name}:${field.type}");
+  }
+  print(fieldNames);
+  for (List<Dynamic> row in results) {
+    print(row);
   }
 }

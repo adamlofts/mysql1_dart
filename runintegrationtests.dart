@@ -4,7 +4,7 @@
 #import('options.dart');
 
 void main() {
-  Log.initialize(true);
+  Log.initialize(false);
   
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
@@ -13,9 +13,5 @@ void main() {
   String db = options.getString('db');
   String host = options.getString('host', 'localhost');
   
-  print("Starting tests");
-  One one = new One(user:user, password:password, port:port, db:db, host:host);
-  one.runAll().then((x) {
-    print("Finished tests");
-  });
+  runTests(user, password, db, port, host);
 }
