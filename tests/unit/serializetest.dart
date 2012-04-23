@@ -36,36 +36,36 @@ void runSerializationTests() {
       Buffer buffer = new Buffer(4);
       double n = 0.0;
       buffer.writeFloat(n);
-      Expect.equals("00000000", bufferToHexString(buffer, true));
+      expect("00000000").equals(bufferToHexString(buffer, true));
     });
   
     test('can write zero double', () {
       Buffer buffer = new Buffer(8);
       double n = 0.0;
       buffer.writeDouble(n);
-      Expect.equals("0000000000000000", bufferToHexString(buffer, true));
+      expect("0000000000000000").equals(bufferToHexString(buffer, true));
     });
   
     test('can write one or greater float', () {
       Buffer buffer = new Buffer(4);
       double n = 1.0;
       buffer.writeFloat(n);
-      Expect.equals("3F800000", bufferToHexString(buffer, true));
+      expect("3F800000").equals(bufferToHexString(buffer, true));
       
       n = 100.0;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("42C80000", bufferToHexString(buffer, true));
+      expect("42C80000").equals(bufferToHexString(buffer, true));
       
       n = 123487.982374;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("47F12FFE", bufferToHexString(buffer, true));
+      expect("47F12FFE").equals(bufferToHexString(buffer, true));
   
       n = 10000000000000000000000000000.0;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("6E013F39", bufferToHexString(buffer, true));
+      expect("6E013F39").equals(bufferToHexString(buffer, true));
       
       // TODO: test very large numbers
     });
@@ -74,22 +74,22 @@ void runSerializationTests() {
       Buffer buffer = new Buffer(8);
       double n = 1.0;
       buffer.writeDouble(n);
-      Expect.equals("3FF0000000000000", bufferToHexString(buffer, true));
+      expect("3FF0000000000000").equals(bufferToHexString(buffer, true));
       
       n = 100.0;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("4059000000000000", bufferToHexString(buffer, true));
+      expect("4059000000000000").equals(bufferToHexString(buffer, true));
       
       n = 123487.982374;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("40FE25FFB7CDCCA7", bufferToHexString(buffer, true));
+      expect("40FE25FFB7CDCCA7").equals(bufferToHexString(buffer, true));
   
       n = 10000000000000000000000000000.0;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("45C027E72F1F1281", bufferToHexString(buffer, true));
+      expect("45C027E72F1F1281").equals(bufferToHexString(buffer, true));
       
       // TODO: test very large numbers
     });
@@ -99,23 +99,23 @@ void runSerializationTests() {
       
       double n = 0.1;
       buffer.writeFloat(n);
-      Expect.equals("3DCCCCCD", bufferToHexString(buffer, true));
+      expect("3DCCCCCD").equals(bufferToHexString(buffer, true));
       
       // TODO: test very small numbers
       n = 3.4028234663852886E+38;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("7F7FFFFF", bufferToHexString(buffer, true));
+      expect("7F7FFFFF").equals(bufferToHexString(buffer, true));
       
       n = 1.1754943508222875E-38;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("00800000", bufferToHexString(buffer, true));
+      expect("00800000").equals(bufferToHexString(buffer, true));
       
       n = SMALLEST_POSITIVE_SUBNORMAL_FLOAT / 2;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("00000000", bufferToHexString(buffer, true));
+      expect("00000000").equals(bufferToHexString(buffer, true));
     });
   
     test('can write less than one double', () {
@@ -123,18 +123,18 @@ void runSerializationTests() {
       
       double n = 0.1;
       buffer.writeDouble(n);
-      Expect.equals("3FB999999999999A", bufferToHexString(buffer, true));
+      expect("3FB999999999999A").equals(bufferToHexString(buffer, true));
       
       // TODO: test very small numbers
       n = 1.7976931348623157E+308;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("7FEFFFFFFFFFFFFF", bufferToHexString(buffer, true));
+      expect("7FEFFFFFFFFFFFFF").equals(bufferToHexString(buffer, true));
       
       n = -1.7976931348623157E+308;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("FFEFFFFFFFFFFFFF", bufferToHexString(buffer, true));
+      expect("FFEFFFFFFFFFFFFF").equals(bufferToHexString(buffer, true));
     });
   
     test('can write non numbers float', () {
@@ -142,17 +142,17 @@ void runSerializationTests() {
       
       double n = 1.0/0.0;
       buffer.writeFloat(n);
-      Expect.equals("7F800000", bufferToHexString(buffer, true));
+      expect("7F800000").equals(bufferToHexString(buffer, true));
   
       n = -1.0/0.0;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("FF800000", bufferToHexString(buffer, true));
+      expect("FF800000").equals(bufferToHexString(buffer, true));
   
       n = 0.0/0.0;
       buffer.reset();
       buffer.writeFloat(n);
-      Expect.equals("FFC00000", bufferToHexString(buffer, true));
+      expect("FFC00000").equals(bufferToHexString(buffer, true));
     });
   
     test('can write non numbers double', () {
@@ -160,17 +160,17 @@ void runSerializationTests() {
       
       double n = 1.0/0.0;
       buffer.writeDouble(n);
-      Expect.equals("7FF0000000000000", bufferToHexString(buffer, true));
+      expect("7FF0000000000000").equals(bufferToHexString(buffer, true));
   
       n = -1.0/0.0;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("FFF0000000000000", bufferToHexString(buffer, true));
+      expect("FFF0000000000000").equals(bufferToHexString(buffer, true));
   
       n = 0.0/0.0;
       buffer.reset();
       buffer.writeDouble(n);
-      Expect.equals("FFF8000000000000", bufferToHexString(buffer, true));
+      expect("FFF8000000000000").equals(bufferToHexString(buffer, true));
     });
   });
 }
