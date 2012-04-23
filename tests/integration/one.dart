@@ -165,11 +165,18 @@ class One {
       List row = results.iterator().next();
       Expect.equals(127, row[0]);
       Expect.equals(123456789.987654321, row[1]);
-      cnx.close();
-      _completer.complete(true);
+      testPrepareExecute(cnx);
     });
     
     //TODO make some useful tests instead of randomly hacking away
+  }
+  
+  void testPrepareExecute(Connection cnx) {
+    cnx.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
+      Expect.equals(1, results.affectedRows);
+      cnx.close();
+      _completer.complete(true);
+    });
   }
   
   void showResults(Results results) {

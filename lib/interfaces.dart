@@ -5,6 +5,7 @@ interface Connection default MySqlConnection {
   Future<Results> query(String sql);
   Future<int> update(String sql);
   Future<Query> prepare(String sql);
+  Future<Results> prepareExecute(String sql, List<List<Dynamic>> parameters);
   void close();
   Future ping();
   Future debug();

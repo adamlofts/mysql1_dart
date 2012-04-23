@@ -50,13 +50,27 @@ class MySqlConnection implements Connection {
   Future<Query> prepare(String sql) {
     var handler = new PrepareHandler(sql);
     Future<PreparedQuery> future = _transport.processHandler(handler);
-    Completer c = new Completer();
+    Completer<Query> c = new Completer<Query>();
     future.then((preparedQuery) {
       MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
       _queries.add(q);
       c.complete(q);
     });
     return c.future;
+  }
+  
+  Future<Results> prepareExecute(String sql, List<Dynamic> parameters) {
+    Completer<Results> completer = new Completer<Results>();
+    Future<Query> future = prepare(sql);
+    future.then((Query q) {
+      for (int i = 0; i < parameters.length; i++) {
+        q[i] = parameters[i];
+      }
+      q.execute().then((Results results) {
+        completer.complete(results);
+      });
+    });
+    return completer.future;
   }
 }
 
