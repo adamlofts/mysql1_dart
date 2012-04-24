@@ -102,7 +102,9 @@ class DataPacketImpl implements DataPacket {
           _values[i] = Math.parseDouble(s);
           break;
         case FIELD_TYPE_BIT: // bit
-          _values[i] = s;
+          ByteArray b = new ByteArray(s.length);
+          b.setRange(0, s.length, s.charCodes());
+          _values[i] = b;
           break;
         case FIELD_TYPE_DATE: // date
         case FIELD_TYPE_DATETIME: // datetime
@@ -119,7 +121,13 @@ class DataPacketImpl implements DataPacket {
           break;
         case FIELD_TYPE_STRING: // char/binary/enum/set
         case FIELD_TYPE_VAR_STRING: // varchar/varbinary
+          _values[i] = s;
+          break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
+          ByteArray b = new ByteArray(s.length);
+          b.setRange(0, s.length, s.charCodes());
+          _values[i] = b;
+          break;
         case FIELD_TYPE_GEOMETRY: // geometry
           _values[i] = s;
           break;

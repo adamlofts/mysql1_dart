@@ -115,3 +115,36 @@ final int ENUM_FLAG = 0x0100;
 final int AUTO_INCREMENT_FLAG = 0x0200;
 final int TIMESTAMP_FLAG = 0x0400;
 final int SET_FLAG = 0x0800;
+
+String fieldTypeToString(int type) {
+  switch (type) {
+    case 0x00: return "DECIMAL";
+    case 0x01: return "TINY";
+    case 0x02: return "SHORT";
+    case 0x03: return "LONG";
+    case 0x04: return "FLOAT";
+    case 0x05: return "DOUBLE";
+    case 0x06: return "NULL";
+    case 0x07: return "TIMESTAMP";
+    case 0x08: return "LONGLONG";
+    case 0x09: return "INT24";
+    case 0x0a: return "DATE";
+    case 0x0b: return "TIME";
+    case 0x0c: return "DATETIME";
+    case 0x0d: return "YEAR";
+    case 0x0e: return "NEWDATE";
+    case 0x0f: return "VARCHAR";
+    case 0x10: return "BIT";
+    case 0xf6: return "NEWDECIMAL";
+    case 0xf7: return "ENUM";
+    case 0xf8: return "SET";
+    case 0xf9: return "TINY_BLOB";
+    case 0xfa: return "MEDIUM_BLOB";
+    case 0xfb: return "LONG_BLOB";
+    case 0xfc: return "BLOB";
+    case 0xfd: return "VAR_STRING";
+    case 0xfe: return "STRING";
+    case 0xff: return "GEOMETRY";
+    default: return "UNKNOWN";
+  }
+}

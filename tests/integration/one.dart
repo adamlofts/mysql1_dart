@@ -170,7 +170,49 @@ runTests(String user, String password, String db, int port, String host) {
         callbackDone();
       });
     });
-  
+    
+    List<Field> preparedFields;
+    List<Dynamic> values;
+    
+    asyncTest('data types (prepared)', 1, () {
+      cnx.prepareExecute('select * from test1', []).then((Results results) {
+        print("----------- prepared results ---------------");
+        preparedFields = results.fields;
+        values = results.iterator().next();
+        for (int i = 0; i < results.fields.length; i++) {
+          Field field = results.fields[i];
+          print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
+        }
+        callbackDone();
+      });
+    });
+
+    asyncTest('data types (query)', 1, () {
+      cnx.query('select * from test1').then((Results results) {
+        print("----------- query results ---------------");
+        List row = results.iterator().next();
+        for (int i = 0; i < results.fields.length; i++) {
+          Field field = results.fields[i];
+          
+          // make sure field types returned by both queries are the same
+          expect(field.type).equals(preparedFields[i].type);
+          // make sure results types are the same
+          expect(typeof(row[i])).equals(typeof(values[i]));
+          // make sure the values are the same
+          if (row[i] is double) {
+            // or at least close
+            expect(row[i]).approxEquals(values[i]);
+          } else if (row[i] is Collection) {
+            expect(row[i]).equalsCollection(values[i]);
+          } else {
+            expect(row[i]).equals(values[i]);
+          }
+          print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
+        }
+        callbackDone();
+      });
+    });
+
     test('close connection', () {
       cnx.close();
     });
@@ -186,4 +228,26 @@ void showResults(Results results) {
   for (List<Dynamic> row in results) {
     print(row);
   }
+}
+
+String typeof(Dynamic item) {
+  if (item is String) {
+    return "String";
+  } else if (item is int) {
+    return "int";
+  } else if (item is double) {
+    return "double";
+  } else if (item is Date) {
+    return "Date";
+  } else if (item is ByteArray) {
+    return "ByteArray";
+  } else if (item is List<int>) {
+    return "List<int>";
+  } else if (item is List) {
+    return "List";
+  } else if (item is Duration) {
+    return "Duration";
+  } else {
+    return "Unknown";
+}
 }
