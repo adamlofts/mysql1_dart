@@ -96,6 +96,24 @@ class MySqlQuery implements Query {
     return _cnx._transport.processHandler(handler);
   }
   
+  Future<List<Results>> executeMulti(List<List<Dynamic>> parameters) {
+    Completer<List<Results>> completer = new Completer<List<Results>>();
+    List<Results> resultList = new List<Results>();
+    exec(int i) {
+      _values.setRange(0, _values.length, parameters[i]);
+      execute().then((Results results) {
+        resultList.add(results);
+        if (i < parameters.length - 1) {
+          exec(i + 1);
+        } else {
+          completer.complete(resultList);
+        }
+      });
+    }
+    exec(0);
+    return completer.future;
+  } 
+  
   Future<int> executeUpdate() {
     
   }

@@ -26,6 +26,7 @@ interface Connection default MySqlConnection {
 
 interface Query {
   Future<Results> execute();
+  Future<List<Results>> executeMulti(List<List<Dynamic>> parameters);
   Future<int> executeUpdate();
   void close();
 //  Dynamic longData(int index, data);
