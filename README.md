@@ -29,9 +29,8 @@ darts player. (Hence the lack of an 'e' in Jocky.)
 Things to do
 ------------
 
-* Direct queries and prepared queries behave differently. Try to make them consistent.
 * Implement the rest of mysql's commands
-* Unit testing (I would have developed using TDD, but I wasn't sure what unit testing framework to use)
+* More unit testing
 * More integration tests
 * DartDoc
 * Example code
