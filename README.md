@@ -30,6 +30,7 @@ Things to do
 ------------
 
 * Implement the rest of mysql's commands
+* Improve performance where possible
 * More unit testing
 * More integration tests
 * DartDoc
