@@ -21,7 +21,7 @@ final double SMALLEST_NEGATIVE_SUBNORMAL_DOUBLE = -2.2250738585072010E-308;
 String bufferToHexString(Buffer list, [bool reverse=false]) {
   String s = "";
   for (int i = 0; i < list.length; i++) {
-    var x = list[reverse ? list.length - i - 1 : i].toRadixString(16);
+    var x = list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
     if (x.length == 1) {
       s += "0";
     }

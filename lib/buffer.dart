@@ -13,20 +13,20 @@ class Buffer {
   int _writePos = 0;
   int _readPos = 0;
   
-  final ByteArray _list;
+  final Uint8List _list;
   
-  ByteArray get list() => _list;
+  Uint8List get list() => _list;
   
   /**
    * Creates a [Buffer] of the given [size]
    */
-  Buffer(int size) : _list = new ByteArray(size),
+  Buffer(int size) : _list = new Uint8List(size),
                      log = new Log("Buffer");
   
   /**
    * Creates a [Buffer] with the given [list] as backing storage
    */
-  Buffer.fromList(List<int> list) : _list = new ByteArray(list.length),
+  Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Log("Buffer") {
     _list.addAll(list);
   }
@@ -34,7 +34,7 @@ class Buffer {
   /**
    * Returns true if more data can be read from the buffer, false otherwise.
    */
-  bool canReadMore() => _readPos < _list.length;
+  bool canReadMore() => _readPos < _list.lengthInBytes();
   
   /**
    * Reads up to [count] bytes from the [socket] into the buffer.
@@ -239,14 +239,14 @@ class Buffer {
    * Writes a single [byte] to the buffer.
    */ 
   void writeByte(int byte) {
-    _list.setInt8(_writePos++, byte);
+    _list.asByteArray().setInt8(_writePos++, byte);
   }
   
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
   int readInt16() {
-    int result = _list.getInt16(_readPos);
+    int result = _list.asByteArray().getInt16(_readPos);
     _readPos += 2;
     return result;
   }
@@ -255,7 +255,7 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
-    _list.setInt16(_writePos, integer);
+    _list.asByteArray().setInt16(_writePos, integer);
     _writePos += 2;
   }
 
@@ -278,7 +278,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    int val = _list.getInt32(_readPos);
+    int val = _list.asByteArray().getInt32(_readPos);
     _readPos += 4;
     return val;
   }
@@ -287,7 +287,7 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
-    _list.setInt32(_writePos, integer);
+    _list.asByteArray().setInt32(_writePos, integer);
     _writePos += 4;
   }
 
@@ -295,7 +295,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    int val = _list.getInt64(_readPos);
+    int val = _list.asByteArray().getInt64(_readPos);
     _readPos += 8;
     return val;
   }
@@ -304,7 +304,7 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
-    _list.setInt64(_writePos, integer);
+    _list.asByteArray().setInt64(_writePos, integer);
     _writePos += 8;
   }
 
@@ -326,24 +326,24 @@ class Buffer {
   }
   
   double readFloat() {
-    double val = _list.getFloat32(_readPos);
+    double val = _list.asByteArray().getFloat32(_readPos);
     _readPos += 4;
     return val;
   }
   
   void writeFloat(double value) {
-    _list.setFloat32(_writePos, value);
+    _list.asByteArray().setFloat32(_writePos, value);
     _writePos += 4;
   }
   
   double readDouble() {
-    double val = _list.getFloat64(_readPos);
+    double val = _list.asByteArray().getFloat64(_readPos);
     _readPos += 8;
     return val;
   }
   
   void writeDouble(double value) {
-    _list.setFloat64(_writePos, value);
+    _list.asByteArray().setFloat64(_writePos, value);
     _writePos += 8;
   }
 }

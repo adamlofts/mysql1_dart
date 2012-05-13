@@ -102,7 +102,7 @@ class DataPacketImpl implements DataPacket {
           _values[i] = Math.parseDouble(s);
           break;
         case FIELD_TYPE_BIT: // bit
-          ByteArray b = new ByteArray(s.length);
+          Uint8List b = new Uint8List(s.length);
           b.setRange(0, s.length, s.charCodes());
           _values[i] = b;
           break;
@@ -124,7 +124,7 @@ class DataPacketImpl implements DataPacket {
           _values[i] = s;
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
-          ByteArray b = new ByteArray(s.length);
+          Uint8List b = new Uint8List(s.length);
           b.setRange(0, s.length, s.charCodes());
           _values[i] = b;
           break;
