@@ -5,7 +5,7 @@
 /** Configuration for running tests in a browser using dart:dom. */
 #library('dom_config');
 
-#import('dart:dom');
+#import('dart:html');
 #import('unittest.dart');
 
 #source('html_print.dart');
