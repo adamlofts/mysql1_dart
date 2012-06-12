@@ -214,17 +214,21 @@ runTests(String user, String password, String db, int port, String host) {
     });
     
     asyncTest('multi queries', 1, () {
-      Date start = new Date.now();
-      cnx.prepare('insert into test1 (aint) values (?)').then((Query query) {
-        var params = [];
-        for (int i = 0; i < 50; i++) {
-          params.add([i]);
-        }
-        query.executeMulti(params).then((List<Results> resultList) {
-          Date end = new Date.now();
-          print(end.difference(start));
-          expect(resultList.length).equals(50);
-          callbackDone();
+      cnx.query('start transaction').then((Results results) {
+        Date start = new Date.now();
+        cnx.prepare('insert into test1 (aint) values (?)').then((Query query) {
+          var params = [];
+          for (int i = 0; i < 50; i++) {
+            params.add([i]);
+          }
+          query.executeMulti(params).then((List<Results> resultList) {
+            Date end = new Date.now();
+            print(end.difference(start));
+            expect(resultList.length).equals(50);
+            cnx.query('commit').then((Results results2) {
+              callbackDone();
+            });
+          });
         });
       });
     });
