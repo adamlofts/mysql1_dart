@@ -84,15 +84,15 @@ class AuthHandler extends Handler {
     if (_password == null) {
       hash = <int>[];
     } else {
-      hash:Hash hasher = new Sha1();
-      hasher.updateString(_password);
+      hash:Hash hasher = new SHA1();
+      hasher.update(_password.charCodes());
       List<int> hashedPassword = hasher.digest();
       
-      hasher = new Sha1();
+      hasher = new SHA1();
       hasher.update(hashedPassword);
       List<int> doubleHashedPassword = hasher.digest();
       
-      hasher = new Sha1();
+      hasher = new SHA1();
       hasher.update(_scrambleBuffer);
       hasher.update(doubleHashedPassword);
       List<int> hashedSaltedPassword = hasher.digest();

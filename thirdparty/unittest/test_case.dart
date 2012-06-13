@@ -44,16 +44,16 @@ class TestCase {
     result = _PASS;
   }
 
-  void fail(String message, String stackTrace) {
+  void fail(String aMessage, String aStackTrace) {
     result = _FAIL;
-    this.message = message;
-    this.stackTrace = stackTrace;
+    this.message = aMessage;
+    this.stackTrace = aStackTrace;
   }
 
-  void error(String message, String stackTrace) {
+  void error(String aMessage, String aStackTrace) {
     result = _ERROR;
-    this.message = message;
-    this.stackTrace = stackTrace;
+    this.message = aMessage;
+    this.stackTrace = aStackTrace;
   }
 }
 

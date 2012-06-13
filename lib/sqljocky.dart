@@ -2,9 +2,7 @@
 // named after Jocky Wilson, the late, great darts player 
 
 #import('dart:io');
-
-#import('crypto/hash.dart');
-#import('crypto/sha1.dart');
+#import('dart:crypto');
 
 #source('log.dart');
 #source('constants.dart');

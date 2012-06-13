@@ -1,6 +1,4 @@
 #import('lib/sqljocky.dart');
-#import('lib/crypto/hash.dart');
-#import('lib/crypto/sha1.dart');
 #import('options.dart');
 
 // ignore this file - runintegrationtests.dart is more useful at the moment
