@@ -2,19 +2,30 @@
 
 #import('dart:io');
 
+/**
+ * [OptionsFile] reads options from a file. The options must be stored in name=value pairs, one pair per line. E.g.:
+ *   name=James
+ *   age=9
+ *   height=256
+ * Note that everything on the left of the equals sign is the key, and everything on the right is the value. No stripping
+ * of spaces is performed
+ */
 class OptionsFile {
   Map<String, String> _map;
   
+  /**
+   * Load options from the file called [filename]
+   */
   OptionsFile(String filename) {
-    File options = new File(filename);
+    var options = new File(filename);
     _map = <String>{};
     if (options.existsSync()) {
-      List<String> lines = options.readAsLinesSync();
-      for (String line in lines) {
+      var lines = options.readAsLinesSync();
+      for (var line in lines) {
         if (!line.startsWith('#')) {
-          int i = line.indexOf('=');
-          String name = line.substring(0, i);
-          String value = line.substring(i + 1);
+          var i = line.indexOf('=');
+          var name = line.substring(0, i);
+          var value = line.substring(i + 1);
           _map[name] = value;
         }
       }
@@ -26,7 +37,7 @@ class OptionsFile {
   String operator[](String key) => _map[key];
   
   int getInt(String key, [int defaultValue]) {
-    int value = Math.parseInt(_map[key]);
+    var value = Math.parseInt(_map[key]);
     if (value != null) {
       return value;
     }
@@ -34,7 +45,7 @@ class OptionsFile {
   }
   
   String getString(String key, [String defaultValue]) {
-    String value = _map[key];
+    var value = _map[key];
     if (value != null) {
       return value;
     }
