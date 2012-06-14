@@ -19,15 +19,15 @@ final double LARGEST_NEGATIVE_SUBNORMAL_DOUBLE = -4.9406564584124654E-324;
 final double SMALLEST_NEGATIVE_SUBNORMAL_DOUBLE = -2.2250738585072010E-308;
 
 String bufferToHexString(Buffer list, [bool reverse=false]) {
-  String s = "";
+  var s = new StringBuffer(); 
   for (int i = 0; i < list.length; i++) {
     var x = list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
     if (x.length == 1) {
-      s += "0";
+      s.add("0");
     }
-    s += x;
+    s.add(x);
   }
-  return s;
+  return s.toString();
 }
 
 void runSerializationTests() {
