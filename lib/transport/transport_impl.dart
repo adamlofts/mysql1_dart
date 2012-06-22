@@ -89,6 +89,7 @@ class AsyncTransport implements Transport {
       _readPos += bytes;
       if (_readPos == _dataSize) {
         log.debug("read all data: ${_dataBuffer._list}");
+        log.debug("read all data: ${Buffer.listChars(_dataBuffer._list)}");
         _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;

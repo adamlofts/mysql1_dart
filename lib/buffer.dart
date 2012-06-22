@@ -54,6 +54,7 @@ class Buffer {
    */
   bool writeTo(Socket socket, int count) {
     log.debug("writing $count of $_list from $_readPos");
+    log.debug("writing $count of [${Buffer.listChars(_list)}] from $_readPos");
     return socket.outputStream.writeFrom(_list, _readPos, count);
   }
   
@@ -345,6 +346,18 @@ class Buffer {
   void writeDouble(double value) {
     _list.asByteArray().setFloat64(_writePos, value);
     _writePos += 8;
+  }
+  
+  static String listChars(Uint8List list) {
+    var result = new StringBuffer();
+    for (final e in list) {
+      if (e >= 32 && e < 127) {
+        result.add(new String.fromCharCodes([e]));
+      } else {
+        result.add('?');
+      }
+    }
+    return result.toString();
   }
 }
 
