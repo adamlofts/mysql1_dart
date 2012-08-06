@@ -228,10 +228,10 @@ class ExecuteQueryHandler extends Handler {
           values.add(value.year >> 8 & 0xFF);
           values.add(value.month);
           values.add(value.day);
-          values.add(value.hours);
-          values.add(value.minutes);
-          values.add(value.seconds);
-          int billionths = value.milliseconds * 1000000;
+          values.add(value.hour);
+          values.add(value.minute);
+          values.add(value.second);
+          int billionths = value.millisecond * 1000000;
           values.add(billionths & 0xFF); 
           values.add(billionths >> 8 & 0xFF); 
           values.add(billionths >> 16 & 0xFF); 
