@@ -12,6 +12,10 @@ SqlJocky uses an asynchronous model to access the database, due to Dart's (proba
 of blocking reads on sockets. The API for the library can be found in lib/interfaces.dart. Examples
 and suchlike may come in the future.
 
+To run the tests, you'll need to use [pub](http://www.dartlang.org/docs/pub-package-manager/) to
+import the sdk's unittests package. You'll also need to create a 'connection.options' file, by
+copying 'connection.options.example' and modifying the settings.
+
 Licence
 -------
 
