@@ -37,11 +37,11 @@ class OptionsFile {
   String operator[](String key) => _map[key];
   
   int getInt(String key, [int defaultValue]) {
-    var value = Math.parseInt(_map[key]);
-    if (value != null) {
-      return value;
+    var value = _map[key];
+    if (value == null) {
+      return defaultValue;
     }
-    return defaultValue;
+    return Math.parseInt();
   }
   
   String getString(String key, [String defaultValue]) {
