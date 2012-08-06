@@ -17,10 +17,14 @@ class Log {
   }
   
   static bool get loggingEnabled() => _loggingEnabled;
-  static      set loggingEnabled(bool loggingEnabled) => _loggingEnabled = loggingEnabled;
+  static void set loggingEnabled(bool loggingEnabled) {
+    _loggingEnabled = loggingEnabled;
+  }
   
   bool get debugEnabled() => _debugEnabled;
-       set debugEnabled(bool debugEnabled) => _debugEnabled = debugEnabled;
+  void set debugEnabled(bool debugEnabled) {
+    _debugEnabled = debugEnabled;
+  }
     
   factory Log(String name) {
     Log logger = _loggers[name];
