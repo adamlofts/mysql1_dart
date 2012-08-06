@@ -77,7 +77,9 @@ class Buffer {
   /**
    * Sets the int at the specified [index] to the given [value]
    */
-  void operator[]=(int index, value) => _list[index] = value;
+  void operator[]=(int index, value) {
+    _list[index] = value;
+  }
   
   /**
    * Resets the read and write positions markers to the start of
