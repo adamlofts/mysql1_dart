@@ -13,5 +13,5 @@ void main() {
   String db = options.getString('db');
   String host = options.getString('host', 'localhost');
   
-  runTests(user, password, db, port, host);
+  runIntTests(user, password, db, port, host);
 }

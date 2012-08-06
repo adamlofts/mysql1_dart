@@ -41,7 +41,7 @@ class OptionsFile {
     if (value == null) {
       return defaultValue;
     }
-    return Math.parseInt();
+    return Math.parseInt(value);
   }
   
   String getString(String key, [String defaultValue]) {

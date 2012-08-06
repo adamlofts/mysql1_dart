@@ -1,4 +1,4 @@
-runTests(String user, String password, String db, int port, String host) {
+void runIntTests(String user, String password, String db, int port, String host) {
   Connection cnx;
   group('some tests:', () {
     asyncTest('connect', 1, () {
@@ -131,7 +131,7 @@ runTests(String user, String password, String db, int port, String host) {
           print("executing");
           return query.execute();
         }).then((Results results) {
-          expect(results.affectedRows).equals(1);
+          expect(results.affectedRows, equals(1));
           print("updated ${results.affectedRows} ${results.insertId}");
           callbackDone();
         });
@@ -197,17 +197,17 @@ runTests(String user, String password, String db, int port, String host) {
           Field field = results.fields[i];
           
           // make sure field types returned by both queries are the same
-          expect(field.type).equals(preparedFields[i].type);
+          expect(field.type, equals(preparedFields[i].type));
           // make sure results types are the same
-          expect(typeof(row[i])).equals(typeof(values[i]));
+          expect(typeof(row[i]), equals(typeof(values[i])));
           // make sure the values are the same
           if (row[i] is double) {
             // or at least close
-            expect(row[i]).approxEquals(values[i]);
+            expect(row[i], closeTo(values[i], 0.1));
           } else if (row[i] is Collection) {
-            expect(row[i]).equalsCollection(values[i]);
+            expect(row[i], equals(values[i]));
           } else {
-            expect(row[i]).equals(values[i]);
+            expect(row[i], equals(values[i]));
           }
           print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
         }
@@ -226,7 +226,7 @@ runTests(String user, String password, String db, int port, String host) {
           query.executeMulti(params).then((List<Results> resultList) {
             Date end = new Date.now();
             print(end.difference(start));
-            expect(resultList.length).equals(50);
+            expect(resultList.length, equals(50));
             cnx.query('commit').then((Results results2) {
               callbackDone();
             });
