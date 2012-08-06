@@ -17,7 +17,7 @@ runTests(String user, String password, String db, int port, String host) {
 //        print("drop table $table");
         Future future = cnx1.query("drop table $table");
         future.handleException((exception) {
-          if (exception is MySqlError && exception.errorNumber == 1051) {
+          if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
 //            print("no table to delete");
             if (tables.length == 0) {
               callbackDone();
@@ -75,6 +75,7 @@ runTests(String user, String password, String db, int port, String host) {
     });
     
     asyncTest('insert stuff', 1, () {
+      print("insert stuff test");
       cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
@@ -127,6 +128,7 @@ runTests(String user, String password, String db, int port, String host) {
           query[29] = "a";
           query[30] = "a,b";
                  
+          print("executing");
           return query.execute();
         }).then((Results results) {
           expect(results.affectedRows).equals(1);

@@ -26,13 +26,13 @@ class PrepareOkPacket {
 
 class PreparedQuery {
   final String _sql;
-  final List<FieldPacket> _parameters;
-  final List<FieldPacket> _columns;
+  final List<Field> _parameters;
+  final List<Field> _columns;
   final int _statementHandlerId;
 
   int get statementHandlerId() => _statementHandlerId;
-  List<FieldPacket> get parameters() => _parameters;
-  List<FieldPacket> get columns() => _columns;
+  List<Field> get parameters() => _parameters;
+  List<Field> get columns() => _columns;
 
   PreparedQuery(PrepareHandler handler) :
       _sql = handler.sql,
@@ -46,13 +46,13 @@ class PrepareHandler extends Handler {
   PrepareOkPacket _okPacket;
   int _parametersToRead;
   int _columnsToRead;
-  List<FieldPacket> _parameters;
-  List<FieldPacket> _columns;
+  List<Field> _parameters;
+  List<Field> _columns;
   
   String get sql() => _sql;
   PrepareOkPacket get okPacket() => _okPacket;
-  List<FieldPacket> get parameters() => _parameters;
-  List<FieldPacket> get columns() => _columns;
+  List<Field> get parameters() => _parameters;
+  List<Field> get columns() => _columns;
   
   PrepareHandler(String this._sql) {
     log = new Log("PrepareHandler");
@@ -77,7 +77,7 @@ class PrepareHandler extends Handler {
             throw "Unexpected EOF packet";
           }
         } else {
-          FieldPacket fieldPacket = new FieldPacket(response);
+          Field fieldPacket = new Field(response);
           log.debug("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] = fieldPacket;
         }
@@ -89,7 +89,7 @@ class PrepareHandler extends Handler {
             throw "Unexpected EOF packet";
           }
         } else {
-          FieldPacket fieldPacket = new FieldPacket(response);
+          Field fieldPacket = new Field(response);
           log.debug("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
@@ -100,8 +100,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = new List<FieldPacket>(_parametersToRead);
-      _columns = new List<FieldPacket>(_columnsToRead);
+      _parameters = new List<Field>(_parametersToRead);
+      _columns = new List<Field>(_columnsToRead);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }
@@ -146,7 +146,7 @@ class ExecuteQueryHandler extends Handler {
   int _state = STATE_HEADER_PACKET;
 
   ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<FieldPacket> _fieldPackets;
+  List<Field> _fieldPackets;
   List<BinaryDataPacket> _dataPackets;
 
   final PreparedQuery _preparedQuery;
@@ -156,7 +156,7 @@ class ExecuteQueryHandler extends Handler {
   
   ExecuteQueryHandler(PreparedQuery this._preparedQuery, bool this._executed,
     List<Dynamic> this._values) {
-    _fieldPackets = <FieldPacket>[];
+    _fieldPackets = <Field>[];
     _dataPackets = <BinaryDataPacket>[];
     log = new Log("ExecuteQueryHandler");
   }
@@ -288,7 +288,7 @@ class ExecuteQueryHandler extends Handler {
         } else if (_state == STATE_ROW_PACKETS){
           _finished = true;
           
-          return new ResultsImpl(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+          return new Results(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
         }
       } else {
         switch (_state) {
@@ -300,7 +300,7 @@ class ExecuteQueryHandler extends Handler {
           break;
         case STATE_FIELD_PACKETS:
           log.debug('Got a field packet');
-          FieldPacket fieldPacket = new FieldPacket(response);
+          Field fieldPacket = new Field(response);
           log.debug(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
@@ -317,7 +317,7 @@ class ExecuteQueryHandler extends Handler {
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         _finished = true;
         
-        return new ResultsImpl(_okPacket, null, null, null);
+        return new Results(_okPacket, null, null, null);
       }
     }
   }
@@ -329,7 +329,7 @@ class BinaryDataPacket implements DataPacket {
   
   List<Dynamic> get values() => _values;
   
-  BinaryDataPacket(Buffer buffer, List<FieldPacket> fields) :
+  BinaryDataPacket(Buffer buffer, List<Field> fields) :
       log = new Log("BinaryDataPacket") {
     buffer.skip(1);
     List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());

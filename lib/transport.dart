@@ -1,4 +1,4 @@
-class AsyncTransport implements Transport {
+class Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
@@ -21,7 +21,7 @@ class AsyncTransport implements Transport {
   String _user;
   String _password;
 
-  AsyncTransport() :
+  Transport() :
       log = new Log("AsyncTransport"),
       _headerBuffer = new Buffer(HEADER_SIZE);
   
@@ -115,7 +115,13 @@ class AsyncTransport implements Transport {
     }
   }
   
-  Future processHandler(Handler handler, [bool noResponse=false]) {
+  /**
+   * Processes a handler, from sending the initial request to handling any packets returned from
+   * mysql (unless [noResponse] is true).
+   *
+   * Returns a future
+   */
+  Future<Dynamic> processHandler(Handler handler, [bool noResponse=false]) {
     if (_handler != null) {
       throw "request already in progress";
     }

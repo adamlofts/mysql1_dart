@@ -1,9 +1,9 @@
-class MySqlConnection implements Connection {
+class Connection {
   final Transport _transport;
-  final List<MySqlQuery> _queries;
+  final List<Query> _queries;
 
-  MySqlConnection() : _transport = new Transport(),
-                      _queries = <MySqlQuery>[];
+  Connection() : _transport = new Transport(),
+                      _queries = <Query>[];
 
   Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
     return _transport.connect(host, port, user, password, db);
@@ -38,7 +38,7 @@ class MySqlConnection implements Connection {
     return _transport.processHandler(handler);
   }
   
-  void _closeQuery(MySqlQuery q) {
+  void _closeQuery(Query q) {
     int index = _queries.indexOf(q);
     if (index != -1) {
       _queries.removeRange(index, 1);
@@ -52,7 +52,7 @@ class MySqlConnection implements Connection {
     Future<PreparedQuery> future = _transport.processHandler(handler);
     Completer<Query> c = new Completer<Query>();
     future.then((preparedQuery) {
-      MySqlQuery q = new MySqlQuery._internal(this, preparedQuery);
+      Query q = new Query._internal(this, preparedQuery);
       _queries.add(q);
       c.complete(q);
     });
@@ -72,17 +72,31 @@ class MySqlConnection implements Connection {
     });
     return completer.future;
   }
+  
+//  Dynamic fieldList(String table, [String column]);
+//  Dynamic refresh(bool grant, bool log, bool tables, bool hosts,
+//                  bool status, bool threads, bool slave, bool master);
+//  Dynamic shutdown(bool def, bool waitConnections, bool waitTransactions,
+//                   bool waitUpdates, bool waitAllBuffers,
+//                   bool waitCriticalBuffers, bool killQuery, bool killConnection);
+//  Dynamic statistics();
+//  Dynamic processInfo();
+//  Dynamic processKill(int id);
+//  Dynamic changeUser(String user, String password, [String db]);
+//  Dynamic binlogDump(options);
+//  Dynamic registerSlave(options);
+//  Dynamic setOptions(int option);
 }
 
-class MySqlQuery implements Query {
-  final MySqlConnection _cnx;
+class Query {
+  final Connection _cnx;
   final PreparedQuery _preparedQuery;
   final List<Dynamic> _values;
   bool _executed = false;
 
   int get statementId() => _preparedQuery.statementHandlerId;
   
-  MySqlQuery._internal(MySqlConnection cnx, PreparedQuery preparedQuery) :
+  Query._internal(Connection cnx, PreparedQuery preparedQuery) :
       _cnx = cnx,
       _preparedQuery = preparedQuery,
       _values = new List<Dynamic>(preparedQuery.parameters.length);
@@ -124,4 +138,8 @@ class MySqlQuery implements Query {
     _values[index] = value;
     _executed = false;
   }
+  
+//  Dynamic longData(int index, data);
+//  Dynamic reset();
+//  Dynamic fetch(int rows);
 }

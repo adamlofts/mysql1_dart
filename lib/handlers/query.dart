@@ -16,7 +16,7 @@ class ResultSetHeaderPacket {
   String toString() => "Field count: $_fieldCount, Extra: $_extra";
 }
 
-class FieldPacket implements Field {
+class Field {
   String _catalog;
   String _db;
   String _table;
@@ -43,7 +43,7 @@ class FieldPacket implements Field {
   int get decimals() => _decimals;
   int get defaultValue() => _defaultValue;
   
-  FieldPacket(Buffer buffer) {
+  Field(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
     _db = buffer.readLengthCodedString();
     _table = buffer.readLengthCodedString();
@@ -72,7 +72,7 @@ class FieldPacket implements Field {
 
 interface DataPacket default DataPacketImpl {
   List<Dynamic> get values();
-  DataPacket(Buffer buffer, List<FieldPacket> fieldPackets);
+  DataPacket(Buffer buffer, List<Field> fieldPackets);
 }
 
 class DataPacketImpl implements DataPacket {
@@ -80,7 +80,7 @@ class DataPacketImpl implements DataPacket {
   
   List<Dynamic> get values() => _values;
   
-  DataPacketImpl(Buffer buffer, List<FieldPacket> fieldPackets) :
+  DataPacketImpl(Buffer buffer, List<Field> fieldPackets) :
       _values = new List<Dynamic>(fieldPackets.length) {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
@@ -147,12 +147,12 @@ class QueryHandler extends Handler {
   
   OkPacket _okPacket;
   ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<FieldPacket> _fieldPackets;
+  List<Field> _fieldPackets;
   List<DataPacket> _dataPackets;
   
   QueryHandler(String this._sql) {
     log = new Log("QueryHandler");
-    _fieldPackets = <FieldPacket>[];
+    _fieldPackets = <Field>[];
     _dataPackets = <DataPacket>[];
   }
   
@@ -173,7 +173,7 @@ class QueryHandler extends Handler {
         } else if (_state == STATE_ROW_PACKETS){
           _finished = true;
           
-          return new ResultsImpl(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+          return new Results(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
         }
       } else {
         switch (_state) {
@@ -183,7 +183,7 @@ class QueryHandler extends Handler {
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
-          FieldPacket fieldPacket = new FieldPacket(response);
+          Field fieldPacket = new Field(response);
           log.debug(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
