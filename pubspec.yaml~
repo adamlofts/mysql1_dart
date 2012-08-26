@@ -1,7 +1,5 @@
 name: sqljocky
 version: 0.0.1
-description: >
-  A MySQL connector
 dependencies:
   unittest:
     sdk: unittest
