@@ -9,13 +9,13 @@ class Results implements Iterable {
     List<Field> this._fieldPackets,
     List<DataPacket> this._dataPackets);
   
-  int get insertId()=> _okPacket.insertId;
+  int get insertId=> _okPacket.insertId;
   
-  int get affectedRows() => _okPacket.affectedRows;
+  int get affectedRows => _okPacket.affectedRows;
   
-  int get count() => _dataPackets.length;
+  int get count => _dataPackets.length;
   
-  List<Field> get fields() => _fieldPackets;
+  List<Field> get fields => _fieldPackets;
   
   List<Dynamic> operator [](int pos) => _dataPackets[pos].values;
   

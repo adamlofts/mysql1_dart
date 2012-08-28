@@ -3,7 +3,7 @@ class ResultSetHeaderPacket {
   int _extra;
   Log log;
   
-  int get fieldCount() => _fieldCount;
+  int get fieldCount => _fieldCount;
   
   ResultSetHeaderPacket(Buffer buffer) {
     log = new Log("ResultSetHeaderPacket");
@@ -30,18 +30,18 @@ class Field {
   int _decimals;
   int _defaultValue;
   
-  String get name() => _name;
-  String get table() => _table;
-  String get catalog() => _catalog;
-  String get orgName() => _orgName;
-  String get orgTable() => _orgTable;
-  String get db() => _db;
-  int get characterSet() => _characterSet;
-  int get length() => _length;
-  int get type() => _type;
-  int get flags() => _flags;
-  int get decimals() => _decimals;
-  int get defaultValue() => _defaultValue;
+  String get name => _name;
+  String get table => _table;
+  String get catalog => _catalog;
+  String get orgName => _orgName;
+  String get orgTable => _orgTable;
+  String get db => _db;
+  int get characterSet => _characterSet;
+  int get length => _length;
+  int get type => _type;
+  int get flags => _flags;
+  int get decimals => _decimals;
+  int get defaultValue => _defaultValue;
   
   Field(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
@@ -71,14 +71,14 @@ class Field {
 
 
 interface DataPacket default DataPacketImpl {
-  List<Dynamic> get values();
+  List<Dynamic> get values;
   DataPacket(Buffer buffer, List<Field> fieldPackets);
 }
 
 class DataPacketImpl implements DataPacket {
   final List<Dynamic> _values;
   
-  List<Dynamic> get values() => _values;
+  List<Dynamic> get values => _values;
   
   DataPacketImpl(Buffer buffer, List<Field> fieldPackets) :
       _values = new List<Dynamic>(fieldPackets.length) {

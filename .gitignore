@@ -4,4 +4,5 @@ connection.options
 examples
 docs
 packages
+pubspec.lock
 

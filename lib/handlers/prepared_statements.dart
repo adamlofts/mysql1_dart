@@ -4,10 +4,10 @@ class PrepareOkPacket {
   int _parameterCount;
   int _warningCount;
 
-  int get statementHandlerId() => _statementHandlerId;
-  int get columnCount() => _columnCount;
-  int get parameterCount() => _parameterCount;
-  int get warningCount() => _warningCount;
+  int get statementHandlerId => _statementHandlerId;
+  int get columnCount => _columnCount;
+  int get parameterCount => _parameterCount;
+  int get warningCount => _warningCount;
   
   PrepareOkPacket(Buffer buffer) {
     buffer.seek(1);
@@ -30,9 +30,9 @@ class PreparedQuery {
   final List<Field> _columns;
   final int _statementHandlerId;
 
-  int get statementHandlerId() => _statementHandlerId;
-  List<Field> get parameters() => _parameters;
-  List<Field> get columns() => _columns;
+  int get statementHandlerId => _statementHandlerId;
+  List<Field> get parameters => _parameters;
+  List<Field> get columns => _columns;
 
   PreparedQuery(PrepareHandler handler) :
       _sql = handler.sql,
@@ -49,10 +49,10 @@ class PrepareHandler extends Handler {
   List<Field> _parameters;
   List<Field> _columns;
   
-  String get sql() => _sql;
-  PrepareOkPacket get okPacket() => _okPacket;
-  List<Field> get parameters() => _parameters;
-  List<Field> get columns() => _columns;
+  String get sql => _sql;
+  PrepareOkPacket get okPacket => _okPacket;
+  List<Field> get parameters => _parameters;
+  List<Field> get columns => _columns;
   
   PrepareHandler(String this._sql) {
     log = new Log("PrepareHandler");
@@ -327,7 +327,7 @@ class BinaryDataPacket implements DataPacket {
   List<Dynamic> _values;
   final Log log;
   
-  List<Dynamic> get values() => _values;
+  List<Dynamic> get values => _values;
   
   BinaryDataPacket(Buffer buffer, List<Field> fields) :
       log = new Log("BinaryDataPacket") {

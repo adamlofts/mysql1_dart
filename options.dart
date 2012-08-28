@@ -1,6 +1,7 @@
 #library('options');
 
 #import('dart:io');
+#import('dart:math');
 
 /**
  * [OptionsFile] reads options from a file. The options must be stored in name=value pairs, one pair per line. E.g.:
@@ -41,7 +42,7 @@ class OptionsFile {
     if (value == null) {
       return defaultValue;
     }
-    return Math.parseInt(value);
+    return parseInt(value);
   }
   
   String getString(String key, [String defaultValue]) {

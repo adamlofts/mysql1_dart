@@ -16,12 +16,12 @@ class Log {
     _loggingEnabled = loggingEnabled;
   }
   
-  static bool get loggingEnabled() => _loggingEnabled;
+  static bool get loggingEnabled => _loggingEnabled;
   static void set loggingEnabled(bool loggingEnabled) {
     _loggingEnabled = loggingEnabled;
   }
   
-  bool get debugEnabled() => _debugEnabled;
+  bool get debugEnabled => _debugEnabled;
   void set debugEnabled(bool debugEnabled) {
     _debugEnabled = debugEnabled;
   }

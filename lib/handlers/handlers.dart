@@ -5,10 +5,10 @@ class ParameterPacket {
   int _decimals;
   int _length;
   
-  int get type() => _type;
-  int get flags() => _flags;
-  int get decimals() => _decimals;
-  int get length() => _length;
+  int get type => _type;
+  int get flags => _flags;
+  int get decimals => _decimals;
+  int get length => _length;
   
   ParameterPacket(Buffer buffer) {
     _type = buffer.readInt16();
@@ -24,10 +24,10 @@ class OkPacket {
   int _serverStatus;
   String _message;
   
-  int get affectedRows() => _affectedRows;
-  int get insertId() => _insertId;
-  int get serverStatus() => _serverStatus;
-  String get message() => _message;
+  int get affectedRows => _affectedRows;
+  int get insertId => _insertId;
+  int get serverStatus => _serverStatus;
+  String get message => _message;
   
   OkPacket(Buffer buffer) {
     buffer.seek(1);
@@ -45,9 +45,9 @@ class MySqlError {
   String _sqlState;
   String _message;
   
-  int get errorNumber() => _errorNumber;
-  String get sqlState() => _sqlState;
-  String get message() => _message;
+  int get errorNumber => _errorNumber;
+  String get sqlState => _sqlState;
+  String get message => _message;
   
   /**
    * Create a [MySqlError] based on an error response from the mysql server
@@ -113,7 +113,7 @@ class Handler {
   /**
    * When [finished] is true, this handler has finished processing responses.
    */
-  bool get finished() => _finished;
+  bool get finished => _finished;
 }
 
 class UseDbHandler extends Handler {

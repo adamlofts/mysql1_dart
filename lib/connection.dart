@@ -94,7 +94,7 @@ class Query {
   final List<Dynamic> _values;
   bool _executed = false;
 
-  int get statementId() => _preparedQuery.statementHandlerId;
+  int get statementId => _preparedQuery.statementHandlerId;
   
   Query._internal(Connection cnx, PreparedQuery preparedQuery) :
       _cnx = cnx,

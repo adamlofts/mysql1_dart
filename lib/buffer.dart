@@ -15,7 +15,7 @@ class Buffer {
   
   final Uint8List _list;
   
-  Uint8List get list() => _list;
+  Uint8List get list => _list;
   
   /**
    * Creates a [Buffer] of the given [size]
@@ -92,7 +92,7 @@ class Buffer {
   /**
    * Returns the size of the buffer
    */
-  int get length() => _list.length;
+  int get length => _list.length;
   
   /**
    * Moves the read marker to the given [position]

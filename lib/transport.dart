@@ -97,7 +97,7 @@ class Transport {
         var result;
         try {
           result = _handler.processResponse(_dataBuffer);
-        } catch (final Dynamic e) {
+        } on Dynamic catch (e) {
           _handler = null;
           log.debug("completing with exception: $e");
           _completer.completeException(e);

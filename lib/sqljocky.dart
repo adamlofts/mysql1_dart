@@ -3,6 +3,7 @@
 
 #import('dart:io');
 #import('dart:crypto');
+#import('dart:math', prefix:'Math');
 
 #source('log.dart');
 #source('constants.dart');
