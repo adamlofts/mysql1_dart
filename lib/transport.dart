@@ -2,7 +2,7 @@ class Transport {
   static final int HEADER_SIZE = 4;
   static final int STATE_PACKET_HEADER = 0;
   static final int STATE_PACKET_DATA = 1;
-  final Log log;
+  final Logger log;
 
   Handler _handler;
   Completer<Dynamic> _completer;
@@ -22,7 +22,7 @@ class Transport {
   String _password;
 
   Transport() :
-      log = new Log("AsyncTransport"),
+      log = new Logger("AsyncTransport"),
       _headerBuffer = new Buffer(HEADER_SIZE);
   
   void close() {
@@ -39,20 +39,20 @@ class Transport {
     _handler = new HandshakeHandler(user, password, db);
     
     _completer = new Completer();
-    log.debug("opening connection to $host:$port/$db");
+    log.fine("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
-      log.debug("closed");
+      log.fine("closed");
     };
     _socket.onConnect = () {
-      log.debug("connected");
+      log.fine("connected");
     };
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
-      log.debug("exception $e");
+      log.fine("exception $e");
     };
     _socket.onWrite = () {
-      log.debug("write");
+      log.fine("write");
     };
     return _completer.future;
   }
@@ -62,16 +62,16 @@ class Transport {
     _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
-    log.debug("sending header, packet $_packetNumber");
+    log.fine("sending header, packet $_packetNumber");
     _headerBuffer.writeAllTo(_socket);
     buffer.writeAllTo(_socket);
   }
 
   void _onData() {
-    log.debug("got data");
+    log.fine("got data");
     switch (_packetState) {
     case STATE_PACKET_HEADER:
-      log.debug("reading header $_readPos");
+      log.fine("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
       if (_readPos == HEADER_SIZE) {
@@ -79,17 +79,17 @@ class Transport {
         _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
         _packetNumber = _headerBuffer[3];
         _readPos = 0;
-        log.debug("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
+        log.fine("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
         _dataBuffer = new Buffer(_dataSize);
       }
       break;
     case STATE_PACKET_DATA:
       int bytes = _dataBuffer.readFrom(_socket, _dataSize - _readPos);
-      log.debug("got $bytes bytes");
+      log.fine("got $bytes bytes");
       _readPos += bytes;
       if (_readPos == _dataSize) {
-        log.debug("read all data: ${_dataBuffer._list}");
-        log.debug("read all data: ${Buffer.listChars(_dataBuffer._list)}");
+        log.fine("read all data: ${_dataBuffer._list}");
+        log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
         _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;
@@ -99,7 +99,7 @@ class Transport {
           result = _handler.processResponse(_dataBuffer);
         } on Dynamic catch (e) {
           _handler = null;
-          log.debug("completing with exception: $e");
+          log.fine("completing with exception: $e");
           _completer.completeException(e);
           return;
         }

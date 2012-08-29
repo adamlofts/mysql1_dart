@@ -5,3 +5,5 @@ description: >
 dependencies:
   unittest:
     sdk: unittest
+  logging:
+    sdk: logging

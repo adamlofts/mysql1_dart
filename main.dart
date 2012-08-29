@@ -1,10 +1,10 @@
 #import('lib/sqljocky.dart');
+#import('packages/logging/logging.dart');
 #import('options.dart');
 
 // ignore this file - runintegrationtests.dart is more useful at the moment
 void main() {
-  Log.initialize();
-  Log log = new Log("main");
+  Logger log = new Logger("main");
   
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
@@ -13,38 +13,38 @@ void main() {
   String db = options.getString('db');
   String host = options.getString('host', 'localhost');
   
-  log.debug("starting");
+  log.fine("starting");
   Connection cnx = new Connection();
   Query thequery;
   cnx.connect(user:user, password:password, port:port, db:db, host:host).chain((nothing) {
-    log.debug("got connection");
+    log.fine("got connection");
     return cnx.useDatabase(db);
   }).chain((dummy) {
     return cnx.query("select name as bob, age as wibble from people p");
   }).chain((Results results) {
-    log.debug("queried");
+    log.fine("queried");
     for (Field field in results.fields) {
       print("Field: ${field.name}");
     }
     for (List<Dynamic> row in results) {
       for (Dynamic field in row) {
-        log.debug(field);
+        log.fine(field);
       }
     }
     return cnx.query("select * from blobby");
   }).chain((Results results) {
-    log.debug("queried");
+    log.fine("queried");
     
     return cnx.prepare("select * from types");
   }).chain((query) {
     thequery = query;
-    log.debug("prepared $query");
+    log.fine("prepared $query");
     // query[0] = 35;
     return query.execute();
   }).chain((Results results) {
     thequery.close();
-    log.debug("stmt closed");
-    log.debug('------------------------');
+    log.fine("stmt closed");
+    log.fine('------------------------');
     return cnx.prepare("update types set adatetime = ?");
   }).chain((query) {
     thequery = query;
@@ -52,7 +52,7 @@ void main() {
     return query.execute();
   }).then((Results results) {
     thequery.close();
-    log.debug("stmt closed");
+    log.fine("stmt closed");
     cnx.close();
   });
 }

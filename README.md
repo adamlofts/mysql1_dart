@@ -41,7 +41,6 @@ Things to do
 * Example code
 * Refactor everything a few times, when I think of a nicer way of doing things, or the Dart language changes
 * Use idiomatic dart where possible
-* Use a real logger
 * Geometry type
 * Decimal type should probably use a bigdecimal type of some sort
 * MySQL 4 types (old decimal, anything else?)

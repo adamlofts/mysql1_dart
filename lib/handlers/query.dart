@@ -1,12 +1,12 @@
 class ResultSetHeaderPacket {
   int _fieldCount;
   int _extra;
-  Log log;
+  Logger log;
   
   int get fieldCount => _fieldCount;
   
   ResultSetHeaderPacket(Buffer buffer) {
-    log = new Log("ResultSetHeaderPacket");
+    log = new Logger("ResultSetHeaderPacket");
     _fieldCount = buffer.readLengthCodedBinary();
     if (buffer.canReadMore()) {
       _extra = buffer.readLengthCodedBinary();
@@ -151,7 +151,7 @@ class QueryHandler extends Handler {
   List<DataPacket> _dataPackets;
   
   QueryHandler(String this._sql) {
-    log = new Log("QueryHandler");
+    log = new Logger("QueryHandler");
     _fieldPackets = <Field>[];
     _dataPackets = <DataPacket>[];
   }
@@ -164,7 +164,7 @@ class QueryHandler extends Handler {
   }
   
   Dynamic processResponse(Buffer response) {
-    log.debug("Query processing response");
+    log.fine("Query processing response");
     var packet = checkResponse(response);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
@@ -179,17 +179,17 @@ class QueryHandler extends Handler {
         switch (_state) {
         case STATE_HEADER_PACKET:
           _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
-          log.debug (_resultSetHeaderPacket.toString());
+          log.fine (_resultSetHeaderPacket.toString());
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
           Field fieldPacket = new Field(response);
-          log.debug(fieldPacket.toString());
+          log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
           DataPacket dataPacket = new DataPacket(response, _fieldPackets);
-          log.debug(dataPacket.toString());
+          log.fine(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;
         }

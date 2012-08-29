@@ -4,8 +4,8 @@
 #import('dart:io');
 #import('dart:crypto');
 #import('dart:math', prefix:'Math');
+#import('../packages/logging/logging.dart');
 
-#source('log.dart');
 #source('constants.dart');
 #source('buffer.dart');
 #source('transport.dart');

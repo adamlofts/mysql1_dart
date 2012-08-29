@@ -13,7 +13,7 @@ class HandshakeHandler extends Handler {
   int scrambleLength;
   
   HandshakeHandler(String this._user, String this._password, [String db]) : _db = db {
-    log = new Log("HandshakeHandler");
+    log = new Logger("HandshakeHandler");
   }
 
   /**
@@ -75,7 +75,7 @@ class AuthHandler extends Handler {
   AuthHandler(String this._username, String this._password, String this._db,
     List<int> this._scrambleBuffer, int this._clientFlags,
     int this._maxPacketSize, int this._collation) {
-    log = new Log("AuthHandler");
+    log = new Logger("AuthHandler");
   }
   
   Buffer createRequest() {

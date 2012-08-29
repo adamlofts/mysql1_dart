@@ -71,7 +71,7 @@ class MySqlError {
  * the mysql server, either synchronously or asynchronously.
  */
 class Handler {
-  Log log;
+  Logger log;
   bool _finished = false;
   
   /**
@@ -97,11 +97,11 @@ class Handler {
     if (response[0] == PACKET_OK) {
       if (prepareStmt) {
         PrepareOkPacket okPacket = new PrepareOkPacket(response);
-        log.debug(okPacket.toString());
+        log.fine(okPacket.toString());
         return okPacket;
       } else {
         OkPacket okPacket = new OkPacket(response);
-        log.debug(okPacket.toString());
+        log.fine(okPacket.toString());
         return okPacket;
       }
     } else if (response[0] == PACKET_ERROR) {
@@ -120,7 +120,7 @@ class UseDbHandler extends Handler {
   final String _dbName;
   
   UseDbHandler(String this._dbName) {
-    log = new Log("UseDbHandler");
+    log = new Logger("UseDbHandler");
   }
   
   Buffer createRequest() {
@@ -138,7 +138,7 @@ class UseDbHandler extends Handler {
 
 class PingHandler extends Handler {
   PingHandler() {
-    log = new Log("PingHandler");
+    log = new Logger("PingHandler");
   }
   
   Buffer createRequest() {
@@ -155,7 +155,7 @@ class PingHandler extends Handler {
 
 class DebugHandler extends Handler {
   DebugHandler() {
-    log = new Log("DebugHandler");
+    log = new Logger("DebugHandler");
   }
   
   Buffer createRequest() {
@@ -172,7 +172,7 @@ class DebugHandler extends Handler {
 
 class QuitHandler extends Handler {
   QuitHandler() {
-    log = new Log("QuitHandler");
+    log = new Logger("QuitHandler");
   }
   
   Buffer createRequest() {

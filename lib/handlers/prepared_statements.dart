@@ -55,7 +55,7 @@ class PrepareHandler extends Handler {
   List<Field> get columns => _columns;
   
   PrepareHandler(String this._sql) {
-    log = new Log("PrepareHandler");
+    log = new Logger("PrepareHandler");
   }
   
   Buffer createRequest() {
@@ -66,37 +66,37 @@ class PrepareHandler extends Handler {
   }
   
   Dynamic processResponse(Buffer response) {
-    log.debug("Prepare processing response");
+    log.fine("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {
-      log.debug('Not an OK packet, params to read: $_parametersToRead');
+      log.fine('Not an OK packet, params to read: $_parametersToRead');
       if (_parametersToRead > -1) {
         if (response[0] == PACKET_EOF) {
-          log.debug("EOF");
+          log.fine("EOF");
           if (_parametersToRead != 0) {
             throw "Unexpected EOF packet";
           }
         } else {
           Field fieldPacket = new Field(response);
-          log.debug("field packet: $fieldPacket");
+          log.fine("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] = fieldPacket;
         }
         _parametersToRead--;
       } else if (_columnsToRead > -1) {
         if (response[0] == PACKET_EOF) {
-          log.debug("EOF");
+          log.fine("EOF");
           if (_columnsToRead != 0) {
             throw "Unexpected EOF packet";
           }
         } else {
           Field fieldPacket = new Field(response);
-          log.debug("field packet (column): $fieldPacket");
+          log.fine("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
         _columnsToRead--;
       }
     } else if (packet is PrepareOkPacket) {
-      log.debug(packet.toString());
+      log.fine(packet.toString());
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
@@ -112,7 +112,7 @@ class PrepareHandler extends Handler {
     
     if (_parametersToRead == -1 && _columnsToRead == -1) {
       _finished = true;
-      log.debug("finished");
+      log.fine("finished");
       return new PreparedQuery(this);
     }
   }
@@ -122,7 +122,7 @@ class CloseStatementHandler extends Handler {
   final int _handle;
 
   CloseStatementHandler(int this._handle) {
-    log = new Log("CloseStatementHandler");
+    log = new Logger("CloseStatementHandler");
   }
   
   Buffer createRequest() {
@@ -158,7 +158,7 @@ class ExecuteQueryHandler extends Handler {
     List<Dynamic> this._values) {
     _fieldPackets = <Field>[];
     _dataPackets = <BinaryDataPacket>[];
-    log = new Log("ExecuteQueryHandler");
+    log = new Logger("ExecuteQueryHandler");
   }
   
   Buffer createRequest() {
@@ -184,17 +184,17 @@ class ExecuteQueryHandler extends Handler {
     List<int> types = <int>[];
     List<int> values = <int>[];
     for (int i = 0; i < _values.length; i++) {
-      log.debug("field $i ${_preparedQuery._parameters[i].type}");
+      log.fine("field $i ${_preparedQuery._parameters[i].type}");
       Dynamic value = _values[i];
       if (value != null) {
         if (value is int) {
 //          if (value < 128 && value > -127) {
-//            log.debug("TINYINT: value");
+//            log.fine("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
 //            types.add(0);
 //            values.add(value & 0xFF);
 //          } else {
-            log.debug("LONG: $value");
+            log.fine("LONG: $value");
             types.add(FIELD_TYPE_LONGLONG);
             types.add(0);
             values.add(value & 0xFF);
@@ -207,7 +207,7 @@ class ExecuteQueryHandler extends Handler {
             values.add(value >> 56 & 0xFF);
 //          }
         } else if (value is double) {
-          log.debug("DOUBLE: $value");
+          log.fine("DOUBLE: $value");
 
           String s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
@@ -220,7 +220,7 @@ class ExecuteQueryHandler extends Handler {
 //          types.add(0);
 //          values.addAll(doubleToList(value));
         } else if (value is Date) {
-          log.debug("DATE: $value");
+          log.fine("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
           values.add(11);
@@ -237,18 +237,18 @@ class ExecuteQueryHandler extends Handler {
           values.add(billionths >> 16 & 0xFF); 
           values.add(billionths >> 24 & 0xFF); 
         } else if (value is bool) {
-          log.debug("BOOL: $value");
+          log.fine("BOOL: $value");
           types.add(FIELD_TYPE_TINY);
           types.add(0);
           values.add(value ? 1 : 0);
         } else if (value is List<int>) {
-          log.debug("LIST: $value");
+          log.fine("LIST: $value");
           types.add(FIELD_TYPE_BLOB);
           types.add(0);
           values.add(value.length);
           values.addAll(value);
         } else {
-          log.debug("STRING: $value");
+          log.fine("STRING: $value");
           String s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
@@ -271,7 +271,7 @@ class ExecuteQueryHandler extends Handler {
     } else {
       buffer.writeByte(0);      
     }
-    log.debug(buffer._list);
+    log.fine(Buffer.listChars(buffer._list));
     return buffer;
   }
   
@@ -282,7 +282,7 @@ class ExecuteQueryHandler extends Handler {
     }
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
-        log.debug('Got an EOF');
+        log.fine('Got an EOF');
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
         } else if (_state == STATE_ROW_PACKETS){
@@ -293,21 +293,21 @@ class ExecuteQueryHandler extends Handler {
       } else {
         switch (_state) {
         case STATE_HEADER_PACKET:
-          log.debug('Got a header packet');
+          log.fine('Got a header packet');
           _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
-          log.debug(_resultSetHeaderPacket.toString());
+          log.fine(_resultSetHeaderPacket.toString());
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
-          log.debug('Got a field packet');
+          log.fine('Got a field packet');
           Field fieldPacket = new Field(response);
-          log.debug(fieldPacket.toString());
+          log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          log.debug('Got a row packet');
+          log.fine('Got a row packet');
           BinaryDataPacket dataPacket = new BinaryDataPacket(response, _fieldPackets);
-          log.debug(dataPacket.toString());
+          log.fine(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;
         }
@@ -325,15 +325,15 @@ class ExecuteQueryHandler extends Handler {
 
 class BinaryDataPacket implements DataPacket {
   List<Dynamic> _values;
-  final Log log;
+  final Logger log;
   
   List<Dynamic> get values => _values;
   
   BinaryDataPacket(Buffer buffer, List<Field> fields) :
-      log = new Log("BinaryDataPacket") {
+      log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
-    log.debug("Nulls: $nulls");
+    log.fine("Nulls: $nulls");
     List<bool> nullMap = new List<bool>(fields.length);
     int shift = 2;
     int byte = 0;
@@ -349,72 +349,72 @@ class BinaryDataPacket implements DataPacket {
     
     _values = new List<Dynamic>(fields.length);
     for (int i = 0; i < fields.length; i++) {
-      log.debug("$i: ${fields[i].name}");
+      log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {
-        log.debug("Value: null");
+        log.fine("Value: null");
         _values[i] = null;
         continue;
       }
       switch (fields[i].type) {
         case FIELD_TYPE_BLOB:
-          log.debug("BLOB");
+          log.fine("BLOB");
           int len = buffer.readByte();
           _values[i] = buffer.readList(len);
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TINY:
-          log.debug("TINY");
+          log.fine("TINY");
           _values[i] = buffer.readByte();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_SHORT:
-          log.debug("SHORT");
+          log.fine("SHORT");
           _values[i] = buffer.readInt16();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_INT24:
-          log.debug("INT24");
+          log.fine("INT24");
           _values[i] = buffer.readInt32();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_LONG:
-          log.debug("LONG");
+          log.fine("LONG");
           _values[i] = buffer.readInt32();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_LONGLONG:
-          log.debug("LONGLONG");
+          log.fine("LONGLONG");
           _values[i] = buffer.readInt64();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_NEWDECIMAL:
-          log.debug("NEWDECIMAL");
+          log.fine("NEWDECIMAL");
           int len = buffer.readByte();
           String num = buffer.readString(len);
            _values[i] = Math.parseDouble(num);
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_FLOAT:
-          log.debug("FLOAT");
+          log.fine("FLOAT");
           _values[i] = buffer.readFloat();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DOUBLE:
-          log.debug("DOUBLE");
+          log.fine("DOUBLE");
           _values[i] = buffer.readDouble();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_BIT:
-          log.debug("BIT");
+          log.fine("BIT");
           int len = buffer.readByte();
           // TODO should this be returned as a list, or an arbitrarily long number?
           _values[i] = buffer.readList(len);
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_DATETIME:
         case FIELD_TYPE_DATE:
         case FIELD_TYPE_TIMESTAMP:
-          log.debug("DATE/DATETIME");
+          log.fine("DATE/DATETIME");
           int len = buffer.readByte();
           List<int> date = buffer.readList(len);
           int year = 0;
@@ -441,10 +441,10 @@ class BinaryDataPacket implements DataPacket {
           }
           
           _values[i] = new Date(year, month, day, hours, minutes, seconds, (billionths / 1000000).toInt());
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TIME:
-          log.debug("TIME");
+          log.fine("TIME");
           int len = buffer.readByte();
           List<int> time = buffer.readList(len);
           
@@ -455,7 +455,7 @@ class BinaryDataPacket implements DataPacket {
           int seconds = 0;
           int billionths = 0;
           
-          log.debug("time: $time");
+          log.fine("time: $time");
           if (time.length > 0) {
             sign = time[0] == 1 ? -1 : 1;
             days = time[1] + (time[2] << 8) + (time[3] << 16) + (time[4] << 24);
@@ -469,22 +469,22 @@ class BinaryDataPacket implements DataPacket {
           _values[i] = new Duration(days * sign, hours * sign, minutes * sign, seconds * sign, (billionths / 1000000).toInt() * sign);
           break;
         case FIELD_TYPE_YEAR:
-          log.debug("YEAR");
+          log.fine("YEAR");
           _values[i] = buffer.readInt16();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_STRING:
-          log.debug("STRING");
+          log.fine("STRING");
           _values[i] = buffer.readLengthCodedString();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_VAR_STRING:
-          log.debug("STRING");
+          log.fine("STRING");
           _values[i] = buffer.readLengthCodedString();
-          log.debug("Value: ${_values[i]}");
+          log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_GEOMETRY:
-          log.debug("GEOMETRY - not implemented");
+          log.fine("GEOMETRY - not implemented");
           int len = buffer.readByte();
           //TODO
           _values[i] = buffer.readList(len);
@@ -499,11 +499,11 @@ class BinaryDataPacket implements DataPacket {
         case FIELD_TYPE_LONG_BLOB:
         case FIELD_TYPE_VARCHAR:
           //Are there any other types a mysql server can return?
-          log.debug("Field type not implemented yet ${fields[i].type}");
-          log.debug(buffer.readList(8));
+          log.fine("Field type not implemented yet ${fields[i].type}");
+          log.fine(buffer.readList(8).toString());
           break;
         default:
-          log.debug("Unsupported field type ${fields[i].type}");
+          log.fine("Unsupported field type ${fields[i].type}");
           break;
       }
     }
