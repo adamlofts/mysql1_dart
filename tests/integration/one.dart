@@ -261,8 +261,8 @@ String typeof(Dynamic item) {
     return "double";
   } else if (item is Date) {
     return "Date";
-  } else if (item is ByteArray) {
-    return "ByteArray";
+  } else if (item is Uint8List) {
+    return "Uint8List";
   } else if (item is List<int>) {
     return "List<int>";
   } else if (item is List) {
