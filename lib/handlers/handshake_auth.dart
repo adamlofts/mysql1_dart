@@ -41,7 +41,7 @@ class HandshakeHandler extends Handler {
     serverCapabilities = response.readInt16();
     serverLanguage = response.readByte();
     serverStatus = response.readInt16();
-    serverCapabilities += (response.readInt16() << 16);
+    serverCapabilities += (response.readInt16() << 0x10);
     scrambleLength = response.readByte();
     response.skip(10);
     List<int> scrambleBuffer2 = response.readNullTerminatedList();

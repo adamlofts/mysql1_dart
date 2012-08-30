@@ -197,14 +197,14 @@ class ExecuteQueryHandler extends Handler {
             log.fine("LONG: $value");
             types.add(FIELD_TYPE_LONGLONG);
             types.add(0);
-            values.add(value & 0xFF);
-            values.add(value >> 8 & 0xFF);
-            values.add(value >> 16 & 0xFF);
-            values.add(value >> 24 & 0xFF);
-            values.add(value >> 32 & 0xFF);
-            values.add(value >> 40 & 0xFF);
-            values.add(value >> 48 & 0xFF);
-            values.add(value >> 56 & 0xFF);
+            values.add(value >> 0x00 & 0xFF);
+            values.add(value >> 0x08 & 0xFF);
+            values.add(value >> 0x10 & 0xFF);
+            values.add(value >> 0x18 & 0xFF);
+            values.add(value >> 0x20 & 0xFF);
+            values.add(value >> 0x28 & 0xFF);
+            values.add(value >> 0x30 & 0xFF);
+            values.add(value >> 0x38 & 0xFF);
 //          }
         } else if (value is double) {
           log.fine("DOUBLE: $value");
@@ -224,18 +224,18 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
           values.add(11);
-          values.add(value.year & 0xFF);
-          values.add(value.year >> 8 & 0xFF);
+          values.add(value.year >> 0x00 & 0xFF);
+          values.add(value.year >> 0x08 & 0xFF);
           values.add(value.month);
           values.add(value.day);
           values.add(value.hour);
           values.add(value.minute);
           values.add(value.second);
           int billionths = value.millisecond * 1000000;
-          values.add(billionths & 0xFF); 
-          values.add(billionths >> 8 & 0xFF); 
-          values.add(billionths >> 16 & 0xFF); 
-          values.add(billionths >> 24 & 0xFF); 
+          values.add(billionths >> 0x00 & 0xFF); 
+          values.add(billionths >> 0x08 & 0xFF); 
+          values.add(billionths >> 0x10 & 0xFF); 
+          values.add(billionths >> 0x18 & 0xFF); 
         } else if (value is bool) {
           log.fine("BOOL: $value");
           types.add(FIELD_TYPE_TINY);
@@ -426,7 +426,7 @@ class BinaryDataPacket implements DataPacket {
           int billionths = 0;
           
           if (date.length > 0) {
-            year = date[0] + (date[1] << 8);
+            year = date[0] + (date[1] << 0x08);
             month = date[2];
             day = date[3];
             if (date.length > 4) {
@@ -434,8 +434,8 @@ class BinaryDataPacket implements DataPacket {
               minutes = date[5];
               seconds = date[6];
               if (date.length > 7) {
-                billionths = date[7] + (date[8] << 8)
-                    + (date[9] << 16) + (date[10] << 24);
+                billionths = date[7] + (date[8] << 0x08)
+                    + (date[9] << 0x10) + (date[10] << 0x18);
               }
             }
           }
@@ -458,12 +458,12 @@ class BinaryDataPacket implements DataPacket {
           log.fine("time: $time");
           if (time.length > 0) {
             sign = time[0] == 1 ? -1 : 1;
-            days = time[1] + (time[2] << 8) + (time[3] << 16) + (time[4] << 24);
+            days = time[1] + (time[2] << 0x08) + (time[3] << 0x10) + (time[4] << 0x18);
             hours = time[5];
             minutes = time[6];
             seconds = time[7];
             if (time.length > 8) {
-              billionths = time[8] + (time[9] << 8) + (time[10] << 16) + (time[11] << 24);
+              billionths = time[8] + (time[9] << 0x08) + (time[10] << 0x10) + (time[11] << 0x18);
             }
           }
           _values[i] = new Duration(days * sign, hours * sign, minutes * sign, seconds * sign, (billionths / 1000000).toInt() * sign);
