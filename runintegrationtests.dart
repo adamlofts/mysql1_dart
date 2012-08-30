@@ -1,5 +1,5 @@
-#import('lib/sqljocky.dart');
-#import('tests/integration.dart');
+#import('package:sqljocky/sqljocky.dart');
+#import('test/integration.dart');
 #import('dart:io');
 #import('options.dart');
 
