@@ -1,4 +1,4 @@
-#import('package:sqljocky/sqljocky.dart');
+#import('sqljocky.dart');
 #import('test/unittests.dart');
 
 void main() {

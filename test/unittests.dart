@@ -1,6 +1,6 @@
 #library('unittests');
 
-#import("package:sqljocky/sqljocky.dart");
+#import("../sqljocky.dart");
 
 #import("package:unittest/unittest.dart");
 
