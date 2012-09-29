@@ -1,7 +1,7 @@
-#library('options');
+library options;
 
-#import('dart:io');
-#import('dart:math');
+import 'dart:io';
+import 'dart:math';
 
 /**
  * [OptionsFile] reads options from a file. The options must be stored in name=value pairs, one pair per line. E.g.:

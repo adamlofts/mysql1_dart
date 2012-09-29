@@ -139,9 +139,9 @@ class CloseStatementHandler extends Handler {
 }
 
 class ExecuteQueryHandler extends Handler {
-  static final int STATE_HEADER_PACKET = 0;
-  static final int STATE_FIELD_PACKETS = 1;
-  static final int STATE_ROW_PACKETS = 2;
+  static const int STATE_HEADER_PACKET = 0;
+  static const int STATE_FIELD_PACKETS = 1;
+  static const int STATE_ROW_PACKETS = 2;
   
   int _state = STATE_HEADER_PACKET;
 
@@ -466,7 +466,8 @@ class BinaryDataPacket implements DataPacket {
               billionths = time[8] + (time[9] << 0x08) + (time[10] << 0x10) + (time[11] << 0x18);
             }
           }
-          _values[i] = new Duration(days * sign, hours * sign, minutes * sign, seconds * sign, (billionths / 1000000).toInt() * sign);
+          _values[i] = new Duration(days: days * sign, hours: hours * sign, minutes: minutes * sign, 
+              seconds: seconds * sign, milliseconds: (billionths / 1000000).toInt() * sign);
           break;
         case FIELD_TYPE_YEAR:
           log.fine("YEAR");

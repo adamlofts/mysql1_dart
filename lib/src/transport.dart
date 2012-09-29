@@ -1,7 +1,7 @@
 class Transport {
-  static final int HEADER_SIZE = 4;
-  static final int STATE_PACKET_HEADER = 0;
-  static final int STATE_PACKET_DATA = 1;
+  static const int HEADER_SIZE = 4;
+  static const int STATE_PACKET_HEADER = 0;
+  static const int STATE_PACKET_DATA = 1;
   final Logger log;
 
   Handler _handler;
@@ -70,7 +70,7 @@ class Transport {
   void _onData() {
     log.fine("got data");
     switch (_packetState) {
-    case STATE_PACKET_HEADER:
+    case Transport.STATE_PACKET_HEADER:
       log.fine("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;

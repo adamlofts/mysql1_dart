@@ -70,17 +70,17 @@ class Field {
 
 
 
-interface DataPacket default DataPacketImpl {
+abstract class DataPacket {
   List<Dynamic> get values;
   DataPacket(Buffer buffer, List<Field> fieldPackets);
 }
 
-class DataPacketImpl implements DataPacket {
+class StandardDataPacket implements DataPacket {
   final List<Dynamic> _values;
   
   List<Dynamic> get values => _values;
   
-  DataPacketImpl(Buffer buffer, List<Field> fieldPackets) :
+  StandardDataPacket(Buffer buffer, List<Field> fieldPackets) :
       _values = new List<Dynamic>(fieldPackets.length) {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
@@ -113,8 +113,9 @@ class DataPacketImpl implements DataPacket {
           break;
         case FIELD_TYPE_TIME: // time
           List<String> parts = s.split(":");
-          _values[i] = new Duration(0, Math.parseInt(parts[0]),
-            Math.parseInt(parts[1]), Math.parseInt(parts[2]), 0);
+          _values[i] = new Duration(days: 0, hours: Math.parseInt(parts[0]),
+            minutes: Math.parseInt(parts[1]), seconds: Math.parseInt(parts[2]), 
+            milliseconds: 0);
           break;
         case FIELD_TYPE_YEAR: // year
           _values[i] = Math.parseInt(s);
@@ -139,9 +140,9 @@ class DataPacketImpl implements DataPacket {
 }
 
 class QueryHandler extends Handler {
-  static final int STATE_HEADER_PACKET = 0;
-  static final int STATE_FIELD_PACKETS = 1;
-  static final int STATE_ROW_PACKETS = 2;
+  static const int STATE_HEADER_PACKET = 0;
+  static const int STATE_FIELD_PACKETS = 1;
+  static const int STATE_ROW_PACKETS = 2;
   final String _sql;
   int _state = STATE_HEADER_PACKET;
   
@@ -188,7 +189,7 @@ class QueryHandler extends Handler {
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          DataPacket dataPacket = new DataPacket(response, _fieldPackets);
+          DataPacket dataPacket = new StandardDataPacket(response, _fieldPackets);
           log.fine(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;
