@@ -3,7 +3,7 @@ library sqljocky;
 
 import 'dart:io';
 import 'dart:crypto';
-import 'dart:math' as Math;
+import 'dart:math';
 import 'dart:scalarlist';
 import 'package:logging/logging.dart';
 

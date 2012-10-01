@@ -96,12 +96,12 @@ class StandardDataPacket implements DataPacket {
         case FIELD_TYPE_INT24: // mediumint
         case FIELD_TYPE_LONGLONG: // bigint/serial
         case FIELD_TYPE_LONG: // int
-          _values[i] = Math.parseInt(s);
+          _values[i] = int.parse(s);
           break;
         case FIELD_TYPE_NEWDECIMAL: // decimal
         case FIELD_TYPE_FLOAT: // float
         case FIELD_TYPE_DOUBLE: // double
-          _values[i] = Math.parseDouble(s);
+          _values[i] = double.parse(s);
           break;
         case FIELD_TYPE_BIT: // bit
           Uint8List b = new Uint8List(s.length);
@@ -115,12 +115,12 @@ class StandardDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_TIME: // time
           List<String> parts = s.split(":");
-          _values[i] = new Duration(days: 0, hours: Math.parseInt(parts[0]),
-            minutes: Math.parseInt(parts[1]), seconds: Math.parseInt(parts[2]), 
+          _values[i] = new Duration(days: 0, hours: int.parse(parts[0]),
+            minutes: int.parse(parts[1]), seconds: int.parse(parts[2]), 
             milliseconds: 0);
           break;
         case FIELD_TYPE_YEAR: // year
-          _values[i] = Math.parseInt(s);
+          _values[i] = int.parse(s);
           break;
         case FIELD_TYPE_STRING: // char/binary/enum/set
         case FIELD_TYPE_VAR_STRING: // varchar/varbinary

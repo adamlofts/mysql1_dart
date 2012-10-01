@@ -393,7 +393,7 @@ class BinaryDataPacket implements DataPacket {
           log.fine("NEWDECIMAL");
           int len = buffer.readByte();
           String num = buffer.readString(len);
-           _values[i] = Math.parseDouble(num);
+           _values[i] = double.parse(num);
           log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_FLOAT:
