@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class ResultSetHeaderPacket {
   int _fieldCount;
   int _extra;

@@ -1,3 +1,5 @@
+part of unittests;
+
 void runBufferTests() {
   group('buffer:', () {
     test('can write byte to buffer', () {

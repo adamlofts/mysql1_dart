@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class Transport {
   static const int HEADER_SIZE = 4;
   static const int STATE_PACKET_HEADER = 0;

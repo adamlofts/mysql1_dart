@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class HandshakeHandler extends Handler {
   final String _user;
   final String _password;

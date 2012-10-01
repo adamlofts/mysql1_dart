@@ -1,3 +1,5 @@
+part of sqljocky;
+
 /**
  * The class [Buffer] provides methods to read and write strings, lists and
  * various sized integers on a buffer (implemented as an integer list).

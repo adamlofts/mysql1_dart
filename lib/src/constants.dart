@@ -1,3 +1,5 @@
+part of sqljocky;
+
 /* Copyright (C) 2000 MySQL AB
    Copyright (C) 2012 James Ots
 

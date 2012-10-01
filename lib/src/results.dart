@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class Results implements Iterable {
   final OkPacket _okPacket;
   final List<Field> _fieldPackets;

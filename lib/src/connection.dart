@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class Connection {
   final Transport _transport;
   final List<Query> _queries;

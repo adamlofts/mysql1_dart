@@ -1,3 +1,5 @@
+part of sqljocky;
+
 // not using this one yet
 class ParameterPacket {
   int _type;

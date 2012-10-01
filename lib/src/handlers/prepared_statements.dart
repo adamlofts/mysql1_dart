@@ -1,3 +1,5 @@
+part of sqljocky;
+
 class PrepareOkPacket {
   int _statementHandlerId;
   int _columnCount;

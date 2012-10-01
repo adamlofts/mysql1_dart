@@ -1,10 +1,10 @@
-#library("unittests");
+library unittests;
 
-#import("package:sqljocky/sqljocky.dart");
-#import("package:unittest/unittest.dart");
+import 'package:sqljocky/sqljocky.dart';
+import 'package:unittest/unittest.dart';
 
-#source("unit/buffertest.dart");
-#source("unit/serializetest.dart");
+part 'unit/buffertest.dart';
+part 'unit/serializetest.dart';
 
 void main() {
   runBufferTests();

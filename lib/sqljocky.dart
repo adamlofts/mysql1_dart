@@ -1,18 +1,18 @@
-#library(' sqljocky');
+library sqljocky;
 // named after Jocky Wilson, the late, great darts player 
 
-#import('dart:io');
-#import('dart:crypto');
-#import('dart:math', prefix: 'Math');
-#import('dart:scalarlist');
-#import('package:logging/logging.dart');
+import 'dart:io';
+import 'dart:crypto';
+import 'dart:math' as Math;
+import 'dart:scalarlist';
+import 'package:logging/logging.dart';
 
-#source('src/constants.dart');
-#source('src/buffer.dart');
-#source('src/transport.dart');
-#source('src/results.dart');
-#source('src/connection.dart');
-#source('src/handlers/handlers.dart');
-#source('src/handlers/prepared_statements.dart');
-#source('src/handlers/query.dart');
-#source('src/handlers/handshake_auth.dart');
+part 'src/constants.dart';
+part 'src/buffer.dart';
+part 'src/transport.dart';
+part 'src/results.dart';
+part 'src/connection.dart';
+part 'src/handlers/handlers.dart';
+part 'src/handlers/prepared_statements.dart';
+part 'src/handlers/query.dart';
+part 'src/handlers/handshake_auth.dart';

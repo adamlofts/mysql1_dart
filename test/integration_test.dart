@@ -1,13 +1,13 @@
-#library('integrationtests');
+library integrationtests;
 
-#import("package:sqljocky/sqljocky.dart");
-#import("dart:scalarlist");
-#import("package:unittest/unittest.dart");
-#import("package:logging/logging.dart");
-#import('dart:io');
-#import('package:optionsfile/options.dart');
+import 'package:sqljocky/sqljocky.dart';
+import 'package:optionsfile/options.dart';
+import 'package:unittest/unittest.dart';
+import 'package:logging/logging.dart';
+import 'dart:io';
+import 'dart:scalarlist';
 
-#source("integration/one.dart");
+part 'integration/one.dart';
 
 void main() {
   Logger.root.level = Level.ALL;

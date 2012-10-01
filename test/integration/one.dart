@@ -1,3 +1,5 @@
+part of integrationtests;
+
 void runIntTests(String user, String password, String db, int port, String host) {
   Connection cnx;
   group('some tests:', () {
