@@ -5,7 +5,7 @@
 #import("package:unittest/unittest.dart");
 #import("package:logging/logging.dart");
 #import('dart:io');
-#import('package:sqljocky/options.dart');
+#import('package:optionsfile/options.dart');
 
 #source("integration/one.dart");
 

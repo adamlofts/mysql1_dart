@@ -3,6 +3,8 @@ version: 0.0.2
 description: >
   A MySQL connector
 dependencies:
+  optionsfile:
+    git: git://github.com/jamesots/optionsfile.git
   unittest:
     sdk: unittest
   logging:
