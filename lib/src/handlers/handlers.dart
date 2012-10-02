@@ -72,7 +72,7 @@ class MySqlError {
  * request which the handler creates, and then parsing the result returned by 
  * the mysql server, either synchronously or asynchronously.
  */
-class Handler {
+abstract class Handler {
   Logger log;
   bool _finished = false;
   
