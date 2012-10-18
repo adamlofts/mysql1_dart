@@ -99,16 +99,20 @@ class Transport {
         var result;
         try {
           result = _handler.processResponse(_dataBuffer);
-        } on dynamic catch (e) {
+        } catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
           _completer.completeException(e);
           return;
         }
         if (result is Handler) {
+          // if handler.processResponse() returned a Handler, pass control to that
+          // handler now
           _handler = result;
           _sendBuffer(_handler.createRequest());
         } else if (_handler.finished) {
+          // otherwise, complete using the result, and that result will be
+          // passed back to the future.
           _handler = null;
           _completer.complete(result);
         }
@@ -123,7 +127,7 @@ class Transport {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(Handler handler, [bool noResponse=false]) {
+  Future<dynamic> _processHandler(Handler handler, [bool noResponse=false]) {
     if (_handler != null) {
       throw "request already in progress";
     }

@@ -84,8 +84,9 @@ abstract class Handler {
   /**
    * Parses a [Buffer] containing the response to the command.
    * Returns a [Handler] if that handler should take over and
-   * process subsequent packets from the server, or [:null:]
-   * in all other cases.
+   * process subsequent packets from the server, otherwise the
+   * result is returned in the [Future], either in one of the
+   * Connection methods, or Transport.connect() 
    */
   abstract dynamic processResponse(Buffer response);
   

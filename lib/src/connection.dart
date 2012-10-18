@@ -13,18 +13,18 @@ class Connection {
   
   Future useDatabase(String dbName) {
     var handler = new UseDbHandler(dbName);
-    return _transport.processHandler(handler);
+    return _transport._processHandler(handler);
   }
   
   void close() {
     var handler = new QuitHandler();
-    _transport.processHandler(handler, noResponse:true);
+    _transport._processHandler(handler, noResponse:true);
     _transport.close();
   }
 
   Future<Results> query(String sql) {
     var handler = new QueryHandler(sql);
-    return _transport.processHandler(handler);
+    return _transport._processHandler(handler);
   }
   
   Future<int> update(String sql) {
@@ -32,12 +32,12 @@ class Connection {
   
   Future ping() {
     var handler = new PingHandler();
-    return _transport.processHandler(handler);
+    return _transport._processHandler(handler);
   }
   
   Future debug() {
     var handler = new DebugHandler();
-    return _transport.processHandler(handler);
+    return _transport._processHandler(handler);
   }
   
   void _closeQuery(Query q) {
@@ -46,12 +46,12 @@ class Connection {
       _queries.removeRange(index, 1);
     }
     var handler = new CloseStatementHandler(q.statementId);
-    _transport.processHandler(handler, noResponse:true);
+    _transport._processHandler(handler, noResponse:true);
   }
   
   Future<Query> prepare(String sql) {
     var handler = new PrepareHandler(sql);
-    Future<PreparedQuery> future = _transport.processHandler(handler);
+    Future<PreparedQuery> future = _transport._processHandler(handler);
     Completer<Query> c = new Completer<Query>();
     future.then((preparedQuery) {
       Query q = new Query._internal(this, preparedQuery);
@@ -109,7 +109,7 @@ class Query {
   
   Future<Results> execute() {
     var handler = new ExecuteQueryHandler(_preparedQuery, _executed, _values);
-    return _cnx._transport.processHandler(handler);
+    return _cnx._transport._processHandler(handler);
   }
   
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {

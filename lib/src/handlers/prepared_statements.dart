@@ -187,7 +187,7 @@ class ExecuteQueryHandler extends Handler {
     List<int> values = <int>[];
     for (int i = 0; i < _values.length; i++) {
       log.fine("field $i ${_preparedQuery._parameters[i].type}");
-      dynamic value = _values[i];
+      var value = _values[i];
       if (value != null) {
         if (value is int) {
 //          if (value < 128 && value > -127) {
