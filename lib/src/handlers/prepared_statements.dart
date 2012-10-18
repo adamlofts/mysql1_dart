@@ -67,7 +67,7 @@ class PrepareHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     log.fine("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {
@@ -134,7 +134,7 @@ class CloseStatementHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }
@@ -152,12 +152,12 @@ class ExecuteQueryHandler extends Handler {
   List<BinaryDataPacket> _dataPackets;
 
   final PreparedQuery _preparedQuery;
-  final List<Dynamic> _values;
+  final List<dynamic> _values;
   OkPacket _okPacket;
   bool _executed;
   
   ExecuteQueryHandler(PreparedQuery this._preparedQuery, bool this._executed,
-    List<Dynamic> this._values) {
+    List<dynamic> this._values) {
     _fieldPackets = <Field>[];
     _dataPackets = <BinaryDataPacket>[];
     log = new Logger("ExecuteQueryHandler");
@@ -187,7 +187,7 @@ class ExecuteQueryHandler extends Handler {
     List<int> values = <int>[];
     for (int i = 0; i < _values.length; i++) {
       log.fine("field $i ${_preparedQuery._parameters[i].type}");
-      Dynamic value = _values[i];
+      dynamic value = _values[i];
       if (value != null) {
         if (value is int) {
 //          if (value < 128 && value > -127) {
@@ -277,7 +277,7 @@ class ExecuteQueryHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     var packet;
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);
@@ -326,10 +326,10 @@ class ExecuteQueryHandler extends Handler {
 }
 
 class BinaryDataPacket implements DataPacket {
-  List<Dynamic> _values;
+  List<dynamic> _values;
   final Logger log;
   
-  List<Dynamic> get values => _values;
+  List<dynamic> get values => _values;
   
   BinaryDataPacket(Buffer buffer, List<Field> fields) :
       log = new Logger("BinaryDataPacket") {
@@ -349,7 +349,7 @@ class BinaryDataPacket implements DataPacket {
       }
     }
     
-    _values = new List<Dynamic>(fields.length);
+    _values = new List<dynamic>(fields.length);
     for (int i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {

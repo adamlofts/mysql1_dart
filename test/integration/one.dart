@@ -61,7 +61,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     asyncTest('show tables', 1, () {
       cnx.query("show tables").then((Results results) {
         print("tables");
-        for (List<Dynamic> row in results) {
+        for (List<dynamic> row in results) {
           print(row);
         }
         callbackDone();
@@ -176,7 +176,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     List<Field> preparedFields;
-    List<Dynamic> values;
+    List<dynamic> values;
     
     asyncTest('data types (prepared)', 1, () {
       cnx.prepareExecute('select * from test1', []).then((Results results) {
@@ -249,12 +249,12 @@ void showResults(Results results) {
     fieldNames.add("${field.name}:${field.type}");
   }
   print(fieldNames);
-  for (List<Dynamic> row in results) {
+  for (List<dynamic> row in results) {
     print(row);
   }
 }
 
-String typeof(Dynamic item) {
+String typeof(dynamic item) {
   if (item is String) {
     return "String";
   } else if (item is int) {

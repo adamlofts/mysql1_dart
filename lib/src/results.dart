@@ -19,12 +19,12 @@ class Results implements Iterable {
   
   List<Field> get fields => _fieldPackets;
   
-  List<Dynamic> operator [](int pos) => _dataPackets[pos].values;
+  List<dynamic> operator [](int pos) => _dataPackets[pos].values;
   
-  Iterator<List<Dynamic>> iterator() => new ResultsIterator._internal(this);
+  Iterator<List<dynamic>> iterator() => new ResultsIterator._internal(this);
 }
 
-class ResultsIterator implements Iterator<Dynamic> {
+class ResultsIterator implements Iterator<dynamic> {
   final Results _results;
   int i = 0;
   
@@ -32,5 +32,5 @@ class ResultsIterator implements Iterator<Dynamic> {
   
   bool hasNext() => i < _results._dataPackets.length;
   
-  List<Dynamic> next() => _results._dataPackets[i++].values;
+  List<dynamic> next() => _results._dataPackets[i++].values;
 }

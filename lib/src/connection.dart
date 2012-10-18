@@ -61,7 +61,7 @@ class Connection {
     return c.future;
   }
   
-  Future<Results> prepareExecute(String sql, List<Dynamic> parameters) {
+  Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     Completer<Results> completer = new Completer<Results>();
     Future<Query> future = prepare(sql);
     future.then((Query q) {
@@ -75,25 +75,25 @@ class Connection {
     return completer.future;
   }
   
-//  Dynamic fieldList(String table, [String column]);
-//  Dynamic refresh(bool grant, bool log, bool tables, bool hosts,
+//  dynamic fieldList(String table, [String column]);
+//  dynamic refresh(bool grant, bool log, bool tables, bool hosts,
 //                  bool status, bool threads, bool slave, bool master);
-//  Dynamic shutdown(bool def, bool waitConnections, bool waitTransactions,
+//  dynamic shutdown(bool def, bool waitConnections, bool waitTransactions,
 //                   bool waitUpdates, bool waitAllBuffers,
 //                   bool waitCriticalBuffers, bool killQuery, bool killConnection);
-//  Dynamic statistics();
-//  Dynamic processInfo();
-//  Dynamic processKill(int id);
-//  Dynamic changeUser(String user, String password, [String db]);
-//  Dynamic binlogDump(options);
-//  Dynamic registerSlave(options);
-//  Dynamic setOptions(int option);
+//  dynamic statistics();
+//  dynamic processInfo();
+//  dynamic processKill(int id);
+//  dynamic changeUser(String user, String password, [String db]);
+//  dynamic binlogDump(options);
+//  dynamic registerSlave(options);
+//  dynamic setOptions(int option);
 }
 
 class Query {
   final Connection _cnx;
   final PreparedQuery _preparedQuery;
-  final List<Dynamic> _values;
+  final List<dynamic> _values;
   bool _executed = false;
 
   int get statementId => _preparedQuery.statementHandlerId;
@@ -101,7 +101,7 @@ class Query {
   Query._internal(Connection cnx, PreparedQuery preparedQuery) :
       _cnx = cnx,
       _preparedQuery = preparedQuery,
-      _values = new List<Dynamic>(preparedQuery.parameters.length);
+      _values = new List<dynamic>(preparedQuery.parameters.length);
 
   void close() {
     _cnx._closeQuery(this);
@@ -112,7 +112,7 @@ class Query {
     return _cnx._transport.processHandler(handler);
   }
   
-  Future<List<Results>> executeMulti(List<List<Dynamic>> parameters) {
+  Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
     Completer<List<Results>> completer = new Completer<List<Results>>();
     List<Results> resultList = new List<Results>();
     exec(int i) {
@@ -134,14 +134,14 @@ class Query {
     
   }
 
-  Dynamic operator [](int pos) => _values[pos];
+  dynamic operator [](int pos) => _values[pos];
   
-  void operator []=(int index, Dynamic value) {
+  void operator []=(int index, dynamic value) {
     _values[index] = value;
     _executed = false;
   }
   
-//  Dynamic longData(int index, data);
-//  Dynamic reset();
-//  Dynamic fetch(int rows);
+//  dynamic longData(int index, data);
+//  dynamic reset();
+//  dynamic fetch(int rows);
 }

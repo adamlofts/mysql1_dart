@@ -87,7 +87,7 @@ abstract class Handler {
    * process subsequent packets from the server, or [:null:]
    * in all other cases.
    */
-  abstract Dynamic processResponse(Buffer response);
+  abstract dynamic processResponse(Buffer response);
   
   /**
    * Parses the response packet to recognise Ok and Error packets.
@@ -95,7 +95,7 @@ abstract class Handler {
    * a [MySqlError] if it was an Error packet, or returns [:null:] 
    * if the packet has not been handled by this method.
    */
-  Dynamic checkResponse(Buffer response, [bool prepareStmt=false]) {
+  dynamic checkResponse(Buffer response, [bool prepareStmt=false]) {
     if (response[0] == PACKET_OK) {
       if (prepareStmt) {
         PrepareOkPacket okPacket = new PrepareOkPacket(response);
@@ -132,7 +132,7 @@ class UseDbHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }
@@ -149,7 +149,7 @@ class PingHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }
@@ -166,7 +166,7 @@ class DebugHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }
@@ -183,7 +183,7 @@ class QuitHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     throw "No response expected";
   }
 }

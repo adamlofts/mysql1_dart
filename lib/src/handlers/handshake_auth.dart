@@ -33,7 +33,7 @@ class HandshakeHandler extends Handler {
    * Currently, if the client protocol version is not 4.1, an
    * exception is thrown.
    */
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
@@ -129,7 +129,7 @@ class AuthHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }

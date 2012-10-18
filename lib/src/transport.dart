@@ -7,7 +7,7 @@ class Transport {
   final Logger log;
 
   Handler _handler;
-  Completer<Dynamic> _completer;
+  Completer<dynamic> _completer;
   
   Socket _socket;
 
@@ -99,7 +99,7 @@ class Transport {
         var result;
         try {
           result = _handler.processResponse(_dataBuffer);
-        } on Dynamic catch (e) {
+        } on dynamic catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
           _completer.completeException(e);
@@ -123,13 +123,13 @@ class Transport {
    *
    * Returns a future
    */
-  Future<Dynamic> processHandler(Handler handler, [bool noResponse=false]) {
+  Future<dynamic> processHandler(Handler handler, [bool noResponse=false]) {
     if (_handler != null) {
       throw "request already in progress";
     }
     _packetNumber = -1;
     if (!noResponse) {
-      _completer = new Completer<Dynamic>();
+      _completer = new Completer<dynamic>();
       _handler = handler;
     }
     _sendBuffer(handler.createRequest());

@@ -73,17 +73,17 @@ class Field {
 
 
 abstract class DataPacket {
-  List<Dynamic> get values;
+  List<dynamic> get values;
   DataPacket(Buffer buffer, List<Field> fieldPackets);
 }
 
 class StandardDataPacket implements DataPacket {
-  final List<Dynamic> _values;
+  final List<dynamic> _values;
   
-  List<Dynamic> get values => _values;
+  List<dynamic> get values => _values;
   
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) :
-      _values = new List<Dynamic>(fieldPackets.length) {
+      _values = new List<dynamic>(fieldPackets.length) {
     for (int i = 0; i < fieldPackets.length; i++) {
       String s = buffer.readLengthCodedString();
       if (s == null) {
@@ -166,7 +166,7 @@ class QueryHandler extends Handler {
     return buffer;
   }
   
-  Dynamic processResponse(Buffer response) {
+  dynamic processResponse(Buffer response) {
     log.fine("Query processing response");
     var packet = checkResponse(response);
     if (packet == null) {
