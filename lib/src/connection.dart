@@ -7,7 +7,7 @@ class Connection {
   Connection() : _transport = new Transport(),
                       _queries = <Query>[];
 
-  Future connect([String host='localhost', int port=3306, String user, String password, String db]) {
+  Future connect({String host: 'localhost', int port: 3306, String user, String password, String db}) {
     return _transport.connect(host, port, user, password, db);
   }
   
