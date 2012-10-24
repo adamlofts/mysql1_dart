@@ -5,7 +5,7 @@ description: >
 author: James Ots <code@jamesots.com>
 homepage: https://github.com/jamesots/sqljocky
 dependencies:
-  options_file: '>=0.9.2'
+  options_file: any
   unittest:
     sdk: unittest
   logging:

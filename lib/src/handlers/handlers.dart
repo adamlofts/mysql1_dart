@@ -79,7 +79,7 @@ abstract class Handler {
   /**
    * Returns a [Buffer] containing the command packet.
    */
-  abstract Buffer createRequest();
+  Buffer createRequest();
   
   /**
    * Parses a [Buffer] containing the response to the command.
@@ -88,7 +88,7 @@ abstract class Handler {
    * result is returned in the [Future], either in one of the
    * Connection methods, or Transport.connect() 
    */
-  abstract dynamic processResponse(Buffer response);
+  dynamic processResponse(Buffer response);
   
   /**
    * Parses the response packet to recognise Ok and Error packets.
