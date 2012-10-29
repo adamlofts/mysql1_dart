@@ -87,7 +87,7 @@ class AuthHandler extends Handler {
       hash = <int>[];
     } else {
       hash:Hash hasher = new SHA1();
-      hasher.update(_password.charCodes());
+      hasher.update(_password.charCodes);
       List<int> hashedPassword = hasher.digest();
       
       hasher = new SHA1();

@@ -215,7 +215,7 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
           values.add(s.length);
-          values.addAll(s.charCodes());
+          values.addAll(s.charCodes);
           
           // TODO: if you send a double value for a decimal field, it doesn't like it
 //          types.add(FIELD_TYPE_FLOAT);
@@ -255,7 +255,7 @@ class ExecuteQueryHandler extends Handler {
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
           values.add(s.length);
-          values.addAll(s.charCodes());
+          values.addAll(s.charCodes);
         }
       }
     }

@@ -14,7 +14,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       var tables = ["test1"];
 
       void dropTables(Connection cnx1) {
-        String table = tables.last();
+        String table = tables.last;
         tables.removeLast();
 //        print("drop table $table");
         Future future = cnx1.query("drop table $table");

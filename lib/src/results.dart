@@ -30,7 +30,7 @@ class ResultsIterator implements Iterator<dynamic> {
   
   ResultsIterator._internal(Results this._results);
   
-  bool hasNext() => i < _results._dataPackets.length;
+  bool get hasNext => i < _results._dataPackets.length;
   
   List<dynamic> next() => _results._dataPackets[i++].values;
 }

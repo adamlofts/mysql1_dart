@@ -105,7 +105,7 @@ class StandardDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_BIT: // bit
           Uint8List b = new Uint8List(s.length);
-          b.setRange(0, s.length, s.charCodes());
+          b.setRange(0, s.length, s.charCodes);
           _values[i] = b;
           break;
         case FIELD_TYPE_DATE: // date
@@ -128,7 +128,7 @@ class StandardDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
           Uint8List b = new Uint8List(s.length);
-          b.setRange(0, s.length, s.charCodes());
+          b.setRange(0, s.length, s.charCodes);
           _values[i] = b;
           break;
         case FIELD_TYPE_GEOMETRY: // geometry
