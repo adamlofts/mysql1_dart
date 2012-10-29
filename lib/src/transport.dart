@@ -127,7 +127,7 @@ class Transport {
    *
    * Returns a future
    */
-  Future<dynamic> _processHandler(Handler handler, [bool noResponse=false]) {
+  Future<dynamic> _processHandler(Handler handler, {bool noResponse:false}) {
     if (_handler != null) {
       throw "request already in progress";
     }
