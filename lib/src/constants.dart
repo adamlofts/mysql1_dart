@@ -47,6 +47,8 @@ const int SERVER_STATUS_IN_TRANS = 1; /* Transaction has started */
 const int SERVER_STATUS_AUTOCOMMIT = 2; /* Server in auto_commit mode */
 const int SERVER_MORE_RESULTS_EXISTS = 8;
 
+const int ERROR_UNKNOWN_TABLE = 1051;
+
 const int COM_SLEEP = 0x00; // (none, this is an internal thread state)
 const int COM_QUIT = 0x01; // mysql_close
 const int COM_INIT_DB = 0x02; // mysql_select_db 

@@ -1,18 +1,25 @@
 part of utils;
 
+/**
+ * Drops a set of tables.
+ */
 class TableDropper {
-  Connection cnx;
-  List<String> tableList;
+  Connection connection;
+  List<String> tables;
   List<String> _tables = [];
   
-  TableDropper(this.cnx, this.tableList);
+  /**
+   * Create a [TableDropper]. Needs an open [connection] and
+   * a list of [tables].
+   */
+  TableDropper(this.connection, this.tables);
   
   void _dropTables(Completer c) {
-    String table = _tables[0];
+    var table = _tables[0];
     _tables.removeRange(0, 1);
-    Future future = cnx.query('drop table $table');
+    var future = connection.query('drop table $table');
     future.handleException((exception) {
-      if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
+      if (exception is MySqlError && (exception as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE) {
         if (_tables.length == 0) {
           c.complete(null);
         } else {
@@ -30,39 +37,57 @@ class TableDropper {
     });
   }
 
+  /**
+   * Drops the tables this [TableDropper] was created with. The 
+   * returned [Future] completes when all the tables have been dropped.
+   * If a table doesn't exist, it is ignored.
+   */
   Future dropTables() {
     var dropCompleter = new Completer();
     _tables.clear();
-    _tables.addAll(tableList);
+    _tables.addAll(tables);
     _dropTables(dropCompleter);
     return dropCompleter.future;
   }
 }
 
-class TableCreator {
-  Connection cnx;
-  List<String> createQueries;
-  List<String> _queries = [];
+/**
+ * Runs a list of arbitrary queries. Currently only handles update
+ * queries as the results are ignored.
+ */
+class QueryRunner {
+  final Connection connection;
+  final List<String> queries;
+  final List<String> _queries = [];
   
-  TableCreator(this.cnx, this.createQueries);
+  /**
+   * Create a [QueryRunner]. Needs an open [connection] and
+   * a list of [queries]. 
+   */
+  QueryRunner(this.connection, this.queries);
   
-  Future _createTables(Completer c) {
-    String query = _queries[0];
+  Future _executeQueries(Completer c) {
+    var query = _queries[0];
     _queries.removeRange(0, 1);
-    cnx.query(query).then((x) {
+    connection.query(query).then((result) {
       if (_queries.length == 0) {
         c.complete(null);
       } else {
-        _createTables(c);
+        _executeQueries(c);
       }
     });
   }
 
-  Future createTables() {
-    Completer completer = new Completer();
+  /**
+   * Executes the queries this [QueryRunner] was created with. The
+   * returned [Future] completes when all the queries have been executed.
+   * Results are ignored.
+   */
+  Future executeQueries() {
+    var completer = new Completer();
     _queries.clear();
-    _queries.addAll(createQueries);
-    _createTables(completer);
+    _queries.addAll(queries);
+    _executeQueries(completer);
     return completer.future;
   }
 }
