@@ -25,8 +25,9 @@ class TableDropper {
         } else {
           _dropTables(c);
         }
+        return true;
       }
-      return true;
+      return false;
     });
     future.then((x) {
       if (_tables.length == 0) {

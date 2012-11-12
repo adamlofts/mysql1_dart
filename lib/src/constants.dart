@@ -48,6 +48,7 @@ const int SERVER_STATUS_AUTOCOMMIT = 2; /* Server in auto_commit mode */
 const int SERVER_MORE_RESULTS_EXISTS = 8;
 
 const int ERROR_UNKNOWN_TABLE = 1051;
+const int ERROR_CANNOT_DELETE_OR_UPDATE_PARENT_ROW_FOREIGN_KEY_CONSTRAINT_FAILS = 1217;
 
 const int COM_SLEEP = 0x00; // (none, this is an internal thread state)
 const int COM_QUIT = 0x01; // mysql_close
