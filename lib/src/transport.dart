@@ -52,6 +52,7 @@ class Transport {
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
       log.fine("exception $e");
+      _completer.completeException(e);
     };
     _socket.onWrite = () {
       log.fine("write");
