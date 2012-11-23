@@ -58,6 +58,10 @@ class Connection {
       _queries.add(q);
       c.complete(q);
     });
+    future.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
     return c.future;
   }
   
@@ -68,9 +72,18 @@ class Connection {
       for (int i = 0; i < parameters.length; i++) {
         q[i] = parameters[i];
       }
-      q.execute().then((Results results) {
+      var future = q.execute();
+      future.then((Results results) {
         completer.complete(results);
       });
+      future.handleException((e) {
+        completer.completeException(e);
+        return true;
+      });
+    });
+    future.handleException((e) {
+      completer.completeException(e);
+      return true;
     });
     return completer.future;
   }
@@ -117,13 +130,18 @@ class Query {
     List<Results> resultList = new List<Results>();
     exec(int i) {
       _values.setRange(0, _values.length, parameters[i]);
-      execute().then((Results results) {
+      var future = execute();
+      future.then((Results results) {
         resultList.add(results);
         if (i < parameters.length - 1) {
           exec(i + 1);
         } else {
           completer.complete(resultList);
         }
+      });
+      future.handleException((e) {
+        completer.completeException(e);
+        return true;
       });
     }
     exec(0);
