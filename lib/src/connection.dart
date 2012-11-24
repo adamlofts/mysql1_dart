@@ -3,10 +3,29 @@ part of sqljocky;
 class Connection {
   final Transport _transport;
   final List<Query> _queries;
+  bool _inUse = false;
+  Pool _pool;
+  Callback onClosed;
 
   Connection() : _transport = new Transport(),
-                      _queries = <Query>[];
+      _queries = <Query>[];
 
+  Connection._forPool(Pool pool) : _transport = new Transport(),
+      _queries = <Query>[] {
+    _transport.onClosed = _onClosed;
+  }
+  
+  _onClosed() {
+    if (onClosed != null) {
+      onClosed();
+    }
+  }
+  
+  Future _connect({String host: 'localhost', int port: 3306, String user, String password, String db}) {
+    _inUse = true;
+    return _transport.connect(host, port, user, password, db);
+  }
+  
   Future connect({String host: 'localhost', int port: 3306, String user, String password, String db}) {
     return _transport.connect(host, port, user, password, db);
   }
@@ -17,9 +36,12 @@ class Connection {
   }
   
   void close() {
-    var handler = new QuitHandler();
-    _transport._processHandler(handler, noResponse:true);
-    _transport.close();
+    if (_pool != null) {
+    } else {
+      var handler = new QuitHandler();
+      _transport._processHandler(handler, noResponse:true);
+      _transport.close();
+    }
   }
 
   Future<Results> query(String sql) {

@@ -1,5 +1,7 @@
 part of sqljocky;
 
+typedef void Callback();
+
 class Transport {
   static const int HEADER_SIZE = 4;
   static const int STATE_PACKET_HEADER = 0;
@@ -22,6 +24,8 @@ class Transport {
   
   String _user;
   String _password;
+  
+  Callback onClosed;
 
   Transport() :
       log = new Logger("AsyncTransport"),
@@ -29,6 +33,9 @@ class Transport {
   
   void close() {
     _socket.close();
+    if (onClosed != null) {
+      onClosed();
+    }
   }
   
   Future connect(String host, int port, String user, String password, String db) {
@@ -44,6 +51,10 @@ class Transport {
     log.fine("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
+      //TODO need a closed handler
+      if (onClosed != null) {
+        onClosed();
+      }
       log.fine("closed");
     };
     _socket.onConnect = () {

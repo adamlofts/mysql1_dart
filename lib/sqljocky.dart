@@ -12,6 +12,7 @@ part 'src/buffer.dart';
 part 'src/transport.dart';
 part 'src/results.dart';
 part 'src/connection.dart';
+part 'src/pool.dart';
 part 'src/handlers/handlers.dart';
 part 'src/handlers/prepared_statements.dart';
 part 'src/handlers/query.dart';

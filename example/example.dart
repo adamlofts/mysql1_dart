@@ -114,8 +114,10 @@ void main() {
 
   // create a connection
   print("opening connection");
-  var cnx = new Connection();
-  cnx.connect(host: host, port: port, user: user, password: password, db: db).then((x) {
+  var pool = new Pool(host: host, port: port, user: user, password: password, db: db);
+  pool.connect().then((cnx) {
+//  var cnx = new Connection();
+//  cnx.connect(host: host, port: port, user: user, password: password, db: db).then((x) {
     print("connection open");
     // create an example class
     var example = new Example(cnx);
