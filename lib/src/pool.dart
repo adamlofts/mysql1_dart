@@ -28,6 +28,7 @@ class Pool {
       if (!cnx._inUse) {
         print("Reusing existing pooled connection");
         completer.complete(cnx);
+        return;
       }
     }
     
