@@ -378,6 +378,9 @@ class Query {
 class Transaction {
   Connection cnx;
   
+  // TODO: make connection persistent here
+  // TODO: maybe give the connection a link to its transaction?
+  
   Transaction._interal(this.cnx);
   
   Future commit() {
