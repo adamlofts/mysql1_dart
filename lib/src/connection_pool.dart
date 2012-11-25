@@ -6,6 +6,7 @@ class ConnectionPool {
   final String _user;
   final String _password;
   final String _db;
+  final Queue<Completer<Connection>> _pendingConnections;
   
   int _max;
   
@@ -16,6 +17,7 @@ class ConnectionPool {
   ConnectionPool({String host: 'localhost', int port: 3306, String user, 
       String password, String db, int max: 5}) :
         _preparedQueryCache = new Map<String, Query>(),
+        _pendingConnections = new Queue<Completer>(),
         _pool = new List<Connection>(),
         _host = host,
         _port = port,
@@ -25,7 +27,7 @@ class ConnectionPool {
         _max = max;
   
   Future<Connection> _getConnection() {
-    var completer = new Completer();
+    var completer = new Completer<Connection>();
     
     for (var cnx in _pool) {
       if (!cnx._inUse) {
@@ -54,8 +56,7 @@ class ConnectionPool {
         return true;
       });
     } else {
-      // TODO queue connection
-      completer.completeException(new NoConnectionAvailable("Connection pool full"));
+      _pendingConnections.add(completer);
     }
     return completer.future;
   }
@@ -67,8 +68,14 @@ class ConnectionPool {
         return;
       }
       
-      print("Marking pooled connection as not in use");
-      cnx._inUse = false;
+      if (_pendingConnections.length > 0) {
+        print("Connection finished with - reusing for queued operation");
+        var completer = _pendingConnections.removeFirst();
+        completer.complete(cnx);
+      } else {
+        print("Marking pooled connection as not in use");
+        cnx._inUse = false;
+      }
     };
   }
   
