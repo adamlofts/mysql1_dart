@@ -13,6 +13,10 @@ class ConnectionPool {
   
   final Queue<Completer<Connection>> _pendingConnections;
   final List<Connection> _pool;
+  
+  addPendingConnection(Completer<Connection> pendingConnection) {
+    _pendingConnections.add(pendingConnection);
+  }
 
   ConnectionPool({String host: 'localhost', int port: 3306, String user, 
       String password, String db, int max: 5}) :
@@ -70,7 +74,7 @@ class ConnectionPool {
       });
     } else {
       log.finest("Waiting for an available connection");
-      _pendingConnections.add(c);
+      addPendingConnection(c);
     }
     return c.future;
   }

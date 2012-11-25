@@ -176,7 +176,7 @@ class Connection {
     if (!_inUse) {
       c.complete(this);
     } else {
-      _pool._pendingConnections.add(c);
+      _pool.addPendingConnection(c);
     }
     return c.future;
   }
