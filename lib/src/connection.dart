@@ -1,187 +1,163 @@
 part of sqljocky;
 
+typedef void Callback();
+
 class Connection {
-  final Transport _transport;
-  final List<Query> _queries;
-  bool _inUse = false;
-  Pool _pool;
+  static const int HEADER_SIZE = 4;
+  static const int STATE_PACKET_HEADER = 0;
+  static const int STATE_PACKET_DATA = 1;
+  final Logger log;
+
+  ConnectionPool _pool;
+  Handler _handler;
+  Completer<dynamic> _completer;
+  
+  Socket _socket;
+
+  final Buffer _headerBuffer;
+  Buffer _dataBuffer;
+  
+  int _packetNumber = 0;
+  int _packetState = STATE_PACKET_HEADER;
+  
+  int _dataSize;
+  int _readPos = 0;
+  
+  String _user;
+  String _password;
+  
+  bool _inUse;
+  
   Callback onClosed;
 
-  Connection() : _transport = new Transport(),
-      _queries = <Query>[];
-
-  Connection._forPool(Pool pool) : _transport = new Transport(),
-      _queries = <Query>[] {
-    _transport.onClosed = _onClosed;
-  }
+  Connection(ConnectionPool pool) :
+      log = new Logger("AsyncTransport"),
+      _headerBuffer = new Buffer(HEADER_SIZE),
+      _pool = pool,
+      _inUse = false;
   
-  _onClosed() {
+  void close() {
+    _socket.close();
     if (onClosed != null) {
       onClosed();
     }
   }
   
-  Future _connect({String host: 'localhost', int port: 3306, String user, String password, String db}) {
-    _inUse = true;
-    return _transport.connect(host, port, user, password, db);
-  }
-  
-  Future connect({String host: 'localhost', int port: 3306, String user, String password, String db}) {
-    return _transport.connect(host, port, user, password, db);
-  }
-  
-  Future useDatabase(String dbName) {
-    var handler = new UseDbHandler(dbName);
-    return _transport._processHandler(handler);
-  }
-  
-  void close() {
-    if (_pool != null) {
-    } else {
-      var handler = new QuitHandler();
-      _transport._processHandler(handler, noResponse:true);
-      _transport.close();
+  Future connect({String host, int port, String user, 
+      String password, String db}) {
+    if (_socket != null) {
+      throw "connection already open";
     }
-  }
-
-  Future<Results> query(String sql) {
-    var handler = new QueryHandler(sql);
-    return _transport._processHandler(handler);
-  }
-  
-  Future<int> update(String sql) {
-  }
-  
-  Future ping() {
-    var handler = new PingHandler();
-    return _transport._processHandler(handler);
-  }
-  
-  Future debug() {
-    var handler = new DebugHandler();
-    return _transport._processHandler(handler);
-  }
-  
-  void _closeQuery(Query q) {
-    int index = _queries.indexOf(q);
-    if (index != -1) {
-      _queries.removeRange(index, 1);
-    }
-    var handler = new CloseStatementHandler(q.statementId);
-    _transport._processHandler(handler, noResponse:true);
-  }
-  
-  Future<Query> prepare(String sql) {
-    var handler = new PrepareHandler(sql);
-    Future<PreparedQuery> future = _transport._processHandler(handler);
-    Completer<Query> c = new Completer<Query>();
-    future.then((preparedQuery) {
-      Query q = new Query._internal(this, preparedQuery);
-      _queries.add(q);
-      c.complete(q);
-    });
-    future.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
-    return c.future;
-  }
-  
-  Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
-    Completer<Results> completer = new Completer<Results>();
-    Future<Query> future = prepare(sql);
-    future.then((Query q) {
-      for (int i = 0; i < parameters.length; i++) {
-        q[i] = parameters[i];
-      }
-      var future = q.execute();
-      future.then((Results results) {
-        completer.complete(results);
-      });
-      future.handleException((e) {
-        completer.completeException(e);
-        return true;
-      });
-    });
-    future.handleException((e) {
-      completer.completeException(e);
-      return true;
-    });
-    return completer.future;
-  }
-  
-//  dynamic fieldList(String table, [String column]);
-//  dynamic refresh(bool grant, bool log, bool tables, bool hosts,
-//                  bool status, bool threads, bool slave, bool master);
-//  dynamic shutdown(bool def, bool waitConnections, bool waitTransactions,
-//                   bool waitUpdates, bool waitAllBuffers,
-//                   bool waitCriticalBuffers, bool killQuery, bool killConnection);
-//  dynamic statistics();
-//  dynamic processInfo();
-//  dynamic processKill(int id);
-//  dynamic changeUser(String user, String password, [String db]);
-//  dynamic binlogDump(options);
-//  dynamic registerSlave(options);
-//  dynamic setOptions(int option);
-}
-
-class Query {
-  final Connection _cnx;
-  final PreparedQuery _preparedQuery;
-  final List<dynamic> _values;
-  bool _executed = false;
-
-  int get statementId => _preparedQuery.statementHandlerId;
-  
-  Query._internal(Connection cnx, PreparedQuery preparedQuery) :
-      _cnx = cnx,
-      _preparedQuery = preparedQuery,
-      _values = new List<dynamic>(preparedQuery.parameters.length);
-
-  void close() {
-    _cnx._closeQuery(this);
-  }
-  
-  Future<Results> execute() {
-    var handler = new ExecuteQueryHandler(_preparedQuery, _executed, _values);
-    return _cnx._transport._processHandler(handler);
-  }
-  
-  Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
-    Completer<List<Results>> completer = new Completer<List<Results>>();
-    List<Results> resultList = new List<Results>();
-    exec(int i) {
-      _values.setRange(0, _values.length, parameters[i]);
-      var future = execute();
-      future.then((Results results) {
-        resultList.add(results);
-        if (i < parameters.length - 1) {
-          exec(i + 1);
-        } else {
-          completer.complete(resultList);
-        }
-      });
-      future.handleException((e) {
-        completer.completeException(e);
-        return true;
-      });
-    }
-    exec(0);
-    return completer.future;
-  } 
-  
-  Future<int> executeUpdate() {
     
+    _user = user;
+    _password = password;
+    _handler = new HandshakeHandler(user, password, db);
+    
+    _completer = new Completer();
+    log.fine("opening connection to $host:$port/$db");
+    _socket = new Socket(host, port);
+    _socket.onClosed = () {
+      //TODO need a closed handler
+      if (onClosed != null) {
+        onClosed();
+      }
+      log.fine("closed");
+    };
+    _socket.onConnect = () {
+      log.fine("connected");
+    };
+    _socket.onData = _onData;
+    _socket.onError = (Exception e) {
+      log.fine("exception $e");
+      _completer.completeException(e);
+    };
+    _socket.onWrite = () {
+      log.fine("write");
+    };
+    return _completer.future;
+  }
+  
+  void _sendBuffer(Buffer buffer) {
+    _headerBuffer[0] = buffer.length & 0xFF;
+    _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
+    _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
+    _headerBuffer[3] = ++_packetNumber;
+    log.fine("sending header, packet $_packetNumber");
+    _headerBuffer.writeAllTo(_socket);
+    buffer.writeAllTo(_socket);
   }
 
-  dynamic operator [](int pos) => _values[pos];
-  
-  void operator []=(int index, dynamic value) {
-    _values[index] = value;
-    _executed = false;
+  void _onData() {
+    log.fine("got data");
+    switch (_packetState) {
+    case Connection.STATE_PACKET_HEADER:
+      log.fine("reading header $_readPos");
+      int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
+      _readPos += bytes;
+      if (_readPos == HEADER_SIZE) {
+        _packetState = STATE_PACKET_DATA;
+        _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
+        _packetNumber = _headerBuffer[3];
+        _readPos = 0;
+        log.fine("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
+        _dataBuffer = new Buffer(_dataSize);
+      }
+      break;
+    case STATE_PACKET_DATA:
+      int bytes = _dataBuffer.readFrom(_socket, _dataSize - _readPos);
+      log.fine("got $bytes bytes");
+      _readPos += bytes;
+      if (_readPos == _dataSize) {
+        log.fine("read all data: ${_dataBuffer._list}");
+        log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
+        _packetState = STATE_PACKET_HEADER;
+        _headerBuffer.reset();
+        _readPos = 0;
+        
+        var result;
+        try {
+          result = _handler.processResponse(_dataBuffer);
+        } catch (e) {
+          _handler = null;
+          log.fine("completing with exception: $e");
+          _completer.completeException(e);
+          return;
+        }
+        if (result is Handler) {
+          // if handler.processResponse() returned a Handler, pass control to that
+          // handler now
+          _handler = result;
+          _sendBuffer(_handler.createRequest());
+        } else if (_handler.finished) {
+          // otherwise, complete using the result, and that result will be
+          // passed back to the future.
+          _handler = null;
+          _completer.complete(result);
+        }
+      }
+      break;
+    }
   }
   
-//  dynamic longData(int index, data);
-//  dynamic reset();
-//  dynamic fetch(int rows);
+  /**
+   * Processes a handler, from sending the initial request to handling any packets returned from
+   * mysql (unless [noResponse] is true).
+   *
+   * Returns a future
+   */
+  Future<dynamic> _processHandler(Handler handler, {bool noResponse:false}) {
+    if (_handler != null) {
+      throw "request already in progress";
+    }
+    _packetNumber = -1;
+    if (!noResponse) {
+      _completer = new Completer<dynamic>();
+      _handler = handler;
+    }
+    _sendBuffer(handler.createRequest());
+    if (!noResponse) {
+      return _completer.future;
+    }
+  }
 }
+

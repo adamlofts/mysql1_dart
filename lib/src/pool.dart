@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class ConnectionPool {
+class OldPool {
   String _host;
   int _port;
   String _user;
@@ -21,7 +21,7 @@ class ConnectionPool {
     _max = max;
   }
   
-  Future<Connection> connect() {
+  Future<Connection> _connect() {
     var completer = new Completer();
     
     for (var cnx in _pool) {
@@ -50,6 +50,7 @@ class ConnectionPool {
         completer.completeException(e);
       });
     } else {
+      // TODO queue connection
       completer.completeException(new NoConnectionAvailable("Connection pool full"));
     }
     return completer.future;
@@ -66,10 +67,6 @@ class ConnectionPool {
       cnx._inUse = false;
     };
   }
-}
-
-class NoConnectionAvailable implements Exception {
-  final String message;
   
-  NoConnectionAvailable(this.message);
+  
 }

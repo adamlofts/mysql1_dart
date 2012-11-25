@@ -9,7 +9,7 @@ import 'package:logging/logging.dart';
 
 part 'src/constants.dart';
 part 'src/buffer.dart';
-part 'src/transport.dart';
+part 'src/connection_pool.dart';
 part 'src/results.dart';
 part 'src/connection.dart';
 part 'src/pool.dart';

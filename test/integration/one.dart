@@ -1,30 +1,28 @@
 part of integrationtests;
 
 void runIntTests(String user, String password, String db, int port, String host) {
-  Connection cnx;
+  ConnectionPool pool;
   group('some tests:', () {
     asyncTest('connect', 1, () {
-      cnx = new Connection();
-      cnx.connect(user:user, password:password, db:db, port:port, host:host).then((nothing) {
-        callbackDone();
-      });
+      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host);
+      callbackDone();
     });
     
     asyncTest('dropTables', 1, () {
       var tables = ["test1"];
 
-      void dropTables(Connection cnx1) {
+      void dropTables() {
         String table = tables.last;
         tables.removeLast();
 //        print("drop table $table");
-        Future future = cnx1.query("drop table $table");
+        Future future = pool.query("drop table $table");
         future.handleException((exception) {
           if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
 //            print("no table to delete");
             if (tables.length == 0) {
               callbackDone();
             } else {
-              dropTables(cnx1);
+              dropTables();
             }
           }
           return true;
@@ -34,16 +32,16 @@ void runIntTests(String user, String password, String db, int port, String host)
           if (tables.length == 0) {
             callbackDone();
           } else {
-            dropTables(cnx1);
+            dropTables();
           }
         });
       }
       
-      dropTables(cnx);
+      dropTables();
     });
     
     asyncTest('create tables', 1, () {
-      cnx.query("create table test1 ("
+      pool.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
         "adecimal decimal(20,10), afloat float, adouble double, areal real, "
         "aboolean boolean, abit bit(20), aserial serial, "
@@ -59,7 +57,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('show tables', 1, () {
-      cnx.query("show tables").then((Results results) {
+      pool.query("show tables").then((Results results) {
         print("tables");
         for (List<dynamic> row in results) {
           print(row);
@@ -69,7 +67,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('describe stuff', 1, () {
-      cnx.query("describe test1").then((Results results) {
+      pool.query("describe test1").then((Results results) {
         print("table test1");
         showResults(results);
         callbackDone();
@@ -78,7 +76,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('insert stuff', 1, () {
       print("insert stuff test");
-      cnx.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+      pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
         "adate, adatetime, atimestamp, atime, ayear, "
@@ -140,7 +138,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('select everything', 1, () {
-      cnx.query('select * from test1').then((Results results) {
+      pool.query('select * from test1').then((Results results) {
 //        expect(results.count).equals(1);
         callbackDone();
       });
@@ -148,7 +146,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('update', 1, () {
       Query preparedQuery;
-      cnx.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
+      pool.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
         preparedQuery = query;
         query[0] = 127;
         query[1] = "123456789.987654321";
@@ -160,7 +158,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('select stuff', 1, () {
-      cnx.query("select atinyint, adecimal from test1").then((Results results) {
+      pool.query("select atinyint, adecimal from test1").then((Results results) {
         List row = results.iterator().next();
         Expect.equals(127, row[0]);
         Expect.equals(123456789.987654321, row[1]);
@@ -169,7 +167,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('prepare execute', 1, () {
-      cnx.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
+      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
         Expect.equals(1, results.affectedRows);
         callbackDone();
       });
@@ -179,7 +177,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     List<dynamic> values;
     
     asyncTest('data types (prepared)', 1, () {
-      cnx.prepareExecute('select * from test1', []).then((Results results) {
+      pool.prepareExecute('select * from test1', []).then((Results results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
         values = results.iterator().next();
@@ -192,7 +190,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     asyncTest('data types (query)', 1, () {
-      cnx.query('select * from test1').then((Results results) {
+      pool.query('select * from test1').then((Results results) {
         print("----------- query results ---------------");
         List row = results.iterator().next();
         for (int i = 0; i < results.fields.length; i++) {
@@ -218,9 +216,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('multi queries', 1, () {
-      cnx.query('start transaction').then((Results results) {
+      pool.query('start transaction').then((Results results) {
         Date start = new Date.now();
-        cnx.prepare('insert into test1 (aint) values (?)').then((Query query) {
+        pool.prepare('insert into test1 (aint) values (?)').then((Query query) {
           var params = [];
           for (int i = 0; i < 50; i++) {
             params.add([i]);
@@ -229,7 +227,7 @@ void runIntTests(String user, String password, String db, int port, String host)
             Date end = new Date.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
-            cnx.query('commit').then((Results results2) {
+            pool.query('commit').then((Results results2) {
               callbackDone();
             });
           });
@@ -238,7 +236,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('close connection', () {
-      cnx.close();
+      pool.close();
     });
   });
 }
