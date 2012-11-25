@@ -139,7 +139,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('select everything', 1, () {
       pool.query('select * from test1').then((Results results) {
-//        expect(results.count).equals(1);
+        expect(results.count, equals(1));
         callbackDone();
       });
     });

@@ -105,11 +105,8 @@ class ConnectionPool {
 //  }
   
   void close() {
-    if (_pool != null) {
-    } else {
-      var handler = new QuitHandler();
-      _connection._processHandler(handler, noResponse:true);
-      _connection.close();
+    for (Connection cnx in _pool) {
+      cnx.close();
     }
   }
 
@@ -274,7 +271,9 @@ class Query {
       queryFuture.then((preparedQuery) {
         preparedQuery._cnx = cnx;
         cnx._preparedQueryCache[sql] = preparedQuery;
-        _values = new List<dynamic>(preparedQuery.parameters.length);
+        if (_values == null) {
+          _values = new List<dynamic>(preparedQuery.parameters.length);
+        }
         completer.complete(preparedQuery);
       });
       queryFuture.handleException((e) {
