@@ -185,7 +185,7 @@ class ConnectionPool {
     return completer.future;
   }
   
-  Future<Transaction> startTransaction({bool consistent = false}) {
+  Future<Transaction> startTransaction({bool consistent: false}) {
     var c = new Completer<Transaction>();
     
     var cnxFuture = _getConnection();
