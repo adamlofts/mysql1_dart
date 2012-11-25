@@ -27,20 +27,18 @@ class PrepareOkPacket {
 }
 
 class PreparedQuery {
-  final String _sql;
-  final List<Field> _parameters;
-  final List<Field> _columns;
-  final int _statementHandlerId;
-
-  int get statementHandlerId => _statementHandlerId;
-  List<Field> get parameters => _parameters;
-  List<Field> get columns => _columns;
+  final String sql;
+  final List<Field> parameters;
+  final List<Field> columns;
+  final int statementHandlerId;
+  Connection _cnx;
 
   PreparedQuery(PrepareHandler handler) :
-      _sql = handler.sql,
-      _parameters = handler.parameters,
-      _columns = handler.columns,
-      _statementHandlerId = handler.okPacket.statementHandlerId;
+      sql = handler.sql,
+      parameters = handler.parameters,
+      columns = handler.columns,
+      
+      statementHandlerId = handler.okPacket.statementHandlerId;
 }
 
 class PrepareHandler extends Handler {
@@ -186,7 +184,7 @@ class ExecuteQueryHandler extends Handler {
     List<int> types = <int>[];
     List<int> values = <int>[];
     for (int i = 0; i < _values.length; i++) {
-      log.fine("field $i ${_preparedQuery._parameters[i].type}");
+      log.fine("field $i ${_preparedQuery.parameters[i].type}");
       var value = _values[i];
       if (value != null) {
         if (value is int) {

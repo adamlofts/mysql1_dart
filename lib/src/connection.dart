@@ -27,19 +27,24 @@ class Connection {
   String _password;
   
   bool _inUse;
+  final Map<String, PreparedQuery> _preparedQueryCache;
   
-  Callback onClosed;
+  Callback onFinished;
 
   Connection(ConnectionPool pool) :
       log = new Logger("AsyncTransport"),
       _headerBuffer = new Buffer(HEADER_SIZE),
+      _preparedQueryCache = new Map<String, PreparedQuery>(),
       _pool = pool,
       _inUse = false;
   
   void close() {
     _socket.close();
-    if (onClosed != null) {
-      onClosed();
+  }
+  
+  void _finished() {
+    if (onFinished != null) {
+      onFinished();
     }
   }
   
@@ -57,10 +62,7 @@ class Connection {
     log.fine("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
-      //TODO need a closed handler
-      if (onClosed != null) {
-        onClosed();
-      }
+      _finished();
       log.fine("closed");
     };
     _socket.onConnect = () {
@@ -69,6 +71,7 @@ class Connection {
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
       log.fine("exception $e");
+      _finished();
       _completer.completeException(e);
     };
     _socket.onWrite = () {
@@ -120,6 +123,7 @@ class Connection {
         } catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
+          _finished();
           _completer.completeException(e);
           return;
         }
@@ -132,6 +136,7 @@ class Connection {
           // otherwise, complete using the result, and that result will be
           // passed back to the future.
           _handler = null;
+          _finished();
           _completer.complete(result);
         }
       }
@@ -158,6 +163,20 @@ class Connection {
     if (!noResponse) {
       return _completer.future;
     }
+  }
+  
+  /**
+   * The future returned by [whenReady] fires when there is nothing
+   * in the queue.
+   */
+  Future<Connection> whenReady() {
+    var c = new Completer<Connection>();
+    if (!_inUse) {
+      c.complete(this);
+    } else {
+      _pool._pendingConnections.add(c);
+    }
+    return c.future;
   }
 }
 
