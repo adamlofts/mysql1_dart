@@ -27,6 +27,7 @@ class Connection {
   String _password;
   
   bool _inUse;
+  bool _retain;
   final Map<String, PreparedQuery> _preparedQueryCache;
   
   Callback onFinished;
@@ -43,7 +44,7 @@ class Connection {
   }
   
   void _finished() {
-    if (onFinished != null) {
+    if (onFinished != null && !_retain) {
       onFinished();
     }
   }

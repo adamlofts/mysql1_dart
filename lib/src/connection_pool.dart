@@ -23,13 +23,14 @@ class ConnectionPool {
         _db = db,
         _max = max;
   
-  Future<Connection> _getConnection() {
+  Future<Connection> _getConnection({bool retain: false}) {
     var completer = new Completer<Connection>();
     
     for (var cnx in _pool) {
       if (!cnx._inUse) {
         print("Reusing existing pooled connection");
         cnx._inUse = true;
+        cnx._retain = retain;
         completer.complete(cnx);
         return completer.future;
       }
@@ -46,6 +47,7 @@ class ConnectionPool {
           password: _password, 
           db: _db);
       cnx._inUse = true;
+      cnx._retain = retain;
       _pool.add(cnx);
       future.then((x) {
         completer.complete(cnx);
@@ -149,10 +151,11 @@ class ConnectionPool {
   
   void _closeQuery(Query q) {
     for (var cnx in _pool) {
-      if (cnx._preparedQueryCache.contains(q)) {
+      if (cnx._preparedQueryCache.containsKey(q.sql)) {
+        var preparedQuery = cnx._preparedQueryCache[q.sql];
         cnx._preparedQueryCache.remove(q.sql);
         cnx.whenReady().then((x) {
-          var handler = new CloseStatementHandler(q.statementId);
+          var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx._processHandler(handler, noResponse: true);
         });
       }
@@ -246,7 +249,7 @@ class Query {
   List<dynamic> _values;
   final String sql;
   bool _executed = false;
-
+  
 //  int get statementId => _preparedQuery.statementHandlerId;
   
   Query._internal(ConnectionPool pool, this.sql) :
@@ -259,7 +262,7 @@ class Query {
   Future<PreparedQuery> _prepare() {
     Completer completer = new Completer<PreparedQuery>();
     
-    var cnxFuture = _pool._getConnection();
+    var cnxFuture = _pool._getConnection(retain: true);
     cnxFuture.then((cnx) {
       if (cnx._preparedQueryCache.containsKey(sql)) {
         completer.complete(cnx._preparedQueryCache[sql]);
@@ -292,11 +295,26 @@ class Query {
   }
   
   Future<Results> execute() {
+    var c = new Completer<Results>();
     var future = _prepare();
     future.then((preparedQuery) {
       var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
-      return preparedQuery._cnx._processHandler(handler);
+      var handlerFuture = preparedQuery._cnx._processHandler(handler);
+      handlerFuture.then((results) {
+        preparedQuery._cnx._retain = false;
+        preparedQuery._cnx._finished();
+        c.complete(results);
+      });
+      handlerFuture.handleException((e) {
+        c.completeException(e);
+        return true;
+      });
     });
+    future.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+    return c.future;
   }
   
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
