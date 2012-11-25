@@ -105,7 +105,7 @@ class ConnectionPool {
 //    var cnxFuture = _getConnection();
 //    cnxFuture.then((cnx) {
 //      var handler = new UseDbHandler(dbName);
-//      var future = _connection._processHandler(handler);
+//      var future = _connection.processHandler(handler);
 //      future.then((x) {
 //        completer.completer();
 //      });
@@ -134,7 +134,7 @@ class ConnectionPool {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new QueryHandler(sql);
-      var queryFuture = cnx._processHandler(handler);
+      var queryFuture = cnx.processHandler(handler);
       queryFuture.then((results) {
         c.complete(results);
       });
@@ -160,7 +160,7 @@ class ConnectionPool {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new PingHandler();
-      var future = cnx._processHandler(handler);
+      var future = cnx.processHandler(handler);
       future.then((x) {
         c.complete(x);
       });
@@ -182,7 +182,7 @@ class ConnectionPool {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new DebugHandler();
-      var future = cnx._processHandler(handler);
+      var future = cnx.processHandler(handler);
       future.then((x) {
         c.complete(x);
       });
@@ -205,7 +205,7 @@ class ConnectionPool {
         cnx._preparedQueryCache.remove(q.sql);
         cnx.whenReady().then((x) {
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
-          cnx._processHandler(handler, noResponse: true);
+          cnx.processHandler(handler, noResponse: true);
         });
       }
     }
@@ -240,7 +240,7 @@ class ConnectionPool {
         sql = "start transaction";
       }
       var handler = new QueryHandler(sql);
-      var queryFuture = cnx._processHandler(handler);
+      var queryFuture = cnx.processHandler(handler);
       queryFuture.then((results) {
         var transaction = new Transaction._internal(cnx);
         c.complete(transaction);
@@ -324,7 +324,7 @@ class Query {
       }
       
       var handler = new PrepareHandler(sql);
-      Future<PreparedQuery> queryFuture = cnx._processHandler(handler);
+      Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
       queryFuture.then((preparedQuery) {
         preparedQuery._cnx = cnx;
         cnx._preparedQueryCache[sql] = preparedQuery;
@@ -355,7 +355,7 @@ class Query {
     var future = _prepare();
     future.then((preparedQuery) {
       var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
-      var handlerFuture = preparedQuery._cnx._processHandler(handler);
+      var handlerFuture = preparedQuery._cnx.processHandler(handler);
       handlerFuture.then((results) {
         log.finest("Finished with prepared query, setting in-use to false");
         preparedQuery._cnx._retain = false;
@@ -434,7 +434,7 @@ class Transaction {
     var c = new Completer<Results>();
     
     var handler = new QueryHandler(sql);
-    var queryFuture = cnx._processHandler(handler);
+    var queryFuture = cnx.processHandler(handler);
     queryFuture.then((results) {
       c.complete(results);
     });
