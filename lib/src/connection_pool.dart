@@ -1,16 +1,17 @@
 part of sqljocky;
 
 class ConnectionPool {
+  final Logger log;
+
   final String _host;
   final int _port;
   final String _user;
   final String _password;
   final String _db;
-  final Queue<Completer<Connection>> _pendingConnections;
-  final Logger log;
   
   int _max;
   
+  final Queue<Completer<Connection>> _pendingConnections;
   final List<Connection> _pool;
 
   ConnectionPool({String host: 'localhost', int port: 3306, String user, 
@@ -27,7 +28,7 @@ class ConnectionPool {
   
   Future<Connection> _getConnection({bool retain: false}) {
     log.finest("Getting a connection");
-    var completer = new Completer<Connection>();
+    var c = new Completer<Connection>();
 
     var inUseCount = 0;
     for (var cnx in _pool) {
@@ -42,8 +43,8 @@ class ConnectionPool {
         log.finest("Reusing existing pooled connection");
         cnx._inUse = true;
         cnx._retain = retain;
-        completer.complete(cnx);
-        return completer.future;
+        c.complete(cnx);
+        return c.future;
       }
     }
     
@@ -61,17 +62,17 @@ class ConnectionPool {
       cnx._retain = retain;
       _pool.add(cnx);
       future.then((x) {
-        completer.complete(cnx);
+        c.complete(cnx);
       });
       future.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     } else {
       log.finest("Waiting for an available connection");
-      _pendingConnections.add(completer);
+      _pendingConnections.add(c);
     }
-    return completer.future;
+    return c.future;
   }
   
   _getConnectionFinishedWithHandler(Connection cnx) {
@@ -84,8 +85,8 @@ class ConnectionPool {
       
       if (_pendingConnections.length > 0) {
         log.finest("Reusing connection for queued operation");
-        var completer = _pendingConnections.removeFirst();
-        completer.complete(cnx);
+        var c = _pendingConnections.removeFirst();
+        c.complete(cnx);
       } else {
         log.finest("Marking pooled connection as not in use");
         cnx._inUse = false;
@@ -124,39 +125,73 @@ class ConnectionPool {
   }
 
   Future<Results> query(String sql) {
-    var completer = new Completer<Results>();
+    var c = new Completer<Results>();
     
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new QueryHandler(sql);
       var queryFuture = cnx._processHandler(handler);
       queryFuture.then((results) {
-        completer.complete(results);
+        c.complete(results);
       });
       queryFuture.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     });
     cnxFuture.handleException((e) {
-      completer.completeException(e);
+      c.completeException(e);
       return true;
     });
     
-    return completer.future;
+    return c.future;
   }
   
   Future<int> update(String sql) {
   }
   
   Future ping() {
-    var handler = new PingHandler();
-    return _connection._processHandler(handler);
+    var c = new Completer<Results>();
+    
+    var cnxFuture = _getConnection();
+    cnxFuture.then((cnx) {
+      var handler = new PingHandler();
+      var future = cnx._processHandler(handler);
+      future.then((x) {
+        c.complete(x);
+      });
+      future.handleException((e) {
+        c.completeException(e);
+      });
+    });
+    cnxFuture.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+    
+    return c.future;
   }
   
   Future debug() {
-    var handler = new DebugHandler();
-    return _connection._processHandler(handler);
+    var c = new Completer<Results>();
+    
+    var cnxFuture = _getConnection();
+    cnxFuture.then((cnx) {
+      var handler = new DebugHandler();
+      var future = cnx._processHandler(handler);
+      future.then((x) {
+        c.complete(x);
+      });
+      future.handleException((e) {
+        c.completeException(e);
+      });
+    });
+    cnxFuture.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+    
+    return c.future;
   }
   
   void _closeQuery(Query q) {
@@ -203,24 +238,24 @@ class ConnectionPool {
       var handler = new QueryHandler(sql);
       var queryFuture = cnx._processHandler(handler);
       queryFuture.then((results) {
-        var transaction = new Transaction(cnx);
-        completer.complete(transaction);
+        var transaction = new Transaction._internal(cnx);
+        c.complete(transaction);
       });
       queryFuture.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     });
     cnxFuture.handleException((e) {
-      completer.completeException(e);
+      c.completeException(e);
       return true;
     });
     
-    return completer.future;
+    return c.future;
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
-    var completer = new Completer<Results>();
+    var c = new Completer<Results>();
     Future<Query> future = prepare(sql);
     future.then((Query q) {
       for (int i = 0; i < parameters.length; i++) {
@@ -228,18 +263,18 @@ class ConnectionPool {
       }
       var future = q.execute();
       future.then((Results results) {
-        completer.complete(results);
+        c.complete(results);
       });
       future.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     });
     future.handleException((e) {
-      completer.completeException(e);
+      c.completeException(e);
       return true;
     });
-    return completer.future;
+    return c.future;
   }
   
 //  dynamic fieldList(String table, [String column]);
@@ -275,13 +310,13 @@ class Query {
   }
 
   Future<PreparedQuery> _prepare() {
-    Completer completer = new Completer<PreparedQuery>();
+    Completer c = new Completer<PreparedQuery>();
     
     var cnxFuture = _pool._getConnection(retain: true);
     cnxFuture.then((cnx) {
       if (cnx._preparedQueryCache.containsKey(sql)) {
-        completer.complete(cnx._preparedQueryCache[sql]);
-        return completer.future;
+        c.complete(cnx._preparedQueryCache[sql]);
+        return c.future;
       }
       
       var handler = new PrepareHandler(sql);
@@ -292,18 +327,18 @@ class Query {
         if (_values == null) {
           _values = new List<dynamic>(preparedQuery.parameters.length);
         }
-        completer.complete(preparedQuery);
+        c.complete(preparedQuery);
       });
       queryFuture.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     });
     cnxFuture.handleException((e) {
-      completer.completeException(e);
+      c.completeException(e);
       return true;
     });
-    return completer.future;
+    return c.future;
   }
       
 
@@ -337,7 +372,7 @@ class Query {
   }
   
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
-    Completer<List<Results>> completer = new Completer<List<Results>>();
+    Completer<List<Results>> c= new Completer<List<Results>>();
     List<Results> resultList = new List<Results>();
     exec(int i) {
       _values.setRange(0, _values.length, parameters[i]);
@@ -347,16 +382,16 @@ class Query {
         if (i < parameters.length - 1) {
           exec(i + 1);
         } else {
-          completer.complete(resultList);
+          c.complete(resultList);
         }
       });
       future.handleException((e) {
-        completer.completeException(e);
+        c.completeException(e);
         return true;
       });
     }
     exec(0);
-    return completer.future;
+    return c.future;
   } 
   
   Future<int> executeUpdate() {
@@ -381,7 +416,7 @@ class Transaction {
   // TODO: make connection persistent here
   // TODO: maybe give the connection a link to its transaction?
   
-  Transaction._interal(this.cnx);
+  Transaction._internal(this.cnx);
   
   Future commit() {
     return query("commit");
