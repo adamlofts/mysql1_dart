@@ -4,20 +4,20 @@ part of utils;
  * Drops a set of tables.
  */
 class TableDropper {
-  Connection connection;
+  ConnectionPool pool;
   List<String> tables;
   List<String> _tables = [];
   
   /**
-   * Create a [TableDropper]. Needs an open [connection] and
+   * Create a [TableDropper]. Needs a [pool] and
    * a list of [tables].
    */
-  TableDropper(this.connection, this.tables);
+  TableDropper(this.pool, this.tables);
   
   void _dropTables(Completer c) {
     var table = _tables[0];
     _tables.removeRange(0, 1);
-    var future = connection.query('drop table $table');
+    var future = pool.query('drop table $table');
     future.handleException((exception) {
       if (exception is MySqlError && (exception as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE) {
         if (_tables.length == 0) {
@@ -57,20 +57,20 @@ class TableDropper {
  * queries as the results are ignored.
  */
 class QueryRunner {
-  final Connection connection;
+  final ConnectionPool pool;
   final List<String> queries;
   final List<String> _queries = [];
   
   /**
-   * Create a [QueryRunner]. Needs an open [connection] and
+   * Create a [QueryRunner]. Needs a [pool] and
    * a list of [queries]. 
    */
-  QueryRunner(this.connection, this.queries);
+  QueryRunner(this.pool, this.queries);
   
   Future _executeQueries(Completer c) {
     var query = _queries[0];
     _queries.removeRange(0, 1);
-    connection.query(query).then((result) {
+    pool.query(query).then((result) {
       if (_queries.length == 0) {
         c.complete(null);
       } else {
