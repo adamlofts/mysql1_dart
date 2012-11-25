@@ -45,6 +45,7 @@ class Connection {
   
   void _finished() {
     if (onFinished != null && !_retain) {
+      _inUse = false;
       onFinished();
     }
   }

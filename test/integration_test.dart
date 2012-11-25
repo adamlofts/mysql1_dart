@@ -10,7 +10,10 @@ import 'dart:scalarlist';
 part 'integration/one.dart';
 
 void main() {
-  Logger.root.level = Level.ALL;
+  hierarchicalLoggingEnabled = true;
+  Logger.root.level = Level.OFF;
+  new Logger("ConnectionPool").level = Level.ALL;
+  new Logger("Query").level = Level.ALL;
   var loggerHandlerList = new LoggerHandlerList(Logger.root);
   loggerHandlerList.add((LogRecord r) {
     print("${r.time}: ${r.message}");

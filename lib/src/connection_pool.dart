@@ -7,6 +7,7 @@ class ConnectionPool {
   final String _password;
   final String _db;
   final Queue<Completer<Connection>> _pendingConnections;
+  final Logger log;
   
   int _max;
   
@@ -21,14 +22,24 @@ class ConnectionPool {
         _user = user,
         _password = password,
         _db = db,
-        _max = max;
+        _max = max,
+        log = new Logger("ConnectionPool");
   
   Future<Connection> _getConnection({bool retain: false}) {
+    log.finest("Getting a connection");
     var completer = new Completer<Connection>();
+
+    var inUseCount = 0;
+    for (var cnx in _pool) {
+      if (cnx._inUse) {
+        inUseCount++;
+      }
+    }
+    log.finest("Number of in-use connections: $inUseCount");
     
     for (var cnx in _pool) {
       if (!cnx._inUse) {
-        print("Reusing existing pooled connection");
+        log.finest("Reusing existing pooled connection");
         cnx._inUse = true;
         cnx._retain = retain;
         completer.complete(cnx);
@@ -37,7 +48,7 @@ class ConnectionPool {
     }
     
     if (_pool.length < _max) {
-      print("Creating new pooled connection");
+      log.finest("Creating new pooled connection");
       Connection cnx = new Connection(this);
       cnx.onFinished = _getConnectionFinishedWithHandler(cnx);
       var future = cnx.connect(
@@ -57,6 +68,7 @@ class ConnectionPool {
         return true;
       });
     } else {
+      log.finest("Waiting for an available connection");
       _pendingConnections.add(completer);
     }
     return completer.future;
@@ -64,17 +76,18 @@ class ConnectionPool {
   
   _getConnectionFinishedWithHandler(Connection cnx) {
     return () {
+      log.finest("Finished with a connection");
       if (!_pool.contains(cnx)) {
         print("_connectionFinishedWith handler called for unmanaged connection");
         return;
       }
       
       if (_pendingConnections.length > 0) {
-        print("Connection finished with - reusing for queued operation");
+        log.finest("Reusing connection for queued operation");
         var completer = _pendingConnections.removeFirst();
         completer.complete(cnx);
       } else {
-        print("Marking pooled connection as not in use");
+        log.finest("Marking pooled connection as not in use");
         cnx._inUse = false;
       }
     };
@@ -163,7 +176,10 @@ class ConnectionPool {
     var query = new Query._internal(this, sql);
     var c = new Completer<Query>();
     var future = query._getValueCount();
-    future.then((x) {
+    future.then((preparedQuery) {
+      preparedQuery._cnx._retain = false;
+      preparedQuery._cnx._inUse = false;
+      preparedQuery._cnx._finished();
       c.complete(query);
     });
     future.handleException((e) {
@@ -246,13 +262,15 @@ class Query {
   List<dynamic> _values;
   final String sql;
   bool _executed = false;
+  final Logger log;
   
 //  int get statementId => _preparedQuery.statementHandlerId;
   
   Query._internal(ConnectionPool pool, this.sql) :
-      _pool = pool;
+      _pool = pool,
+      log = new Logger("Query");
   
-  Future _getValueCount() {
+  Future<PreparedQuery> _getValueCount() {
     return _prepare();
   }
 
@@ -300,7 +318,9 @@ class Query {
       var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
       var handlerFuture = preparedQuery._cnx._processHandler(handler);
       handlerFuture.then((results) {
+        log.finest("Finished with prepared query, setting in-use to false");
         preparedQuery._cnx._retain = false;
+        preparedQuery._cnx._inUse = false;
         preparedQuery._cnx._finished();
         c.complete(results);
       });
