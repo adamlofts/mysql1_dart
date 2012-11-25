@@ -43,6 +43,18 @@ class Connection {
     _socket.close();
   }
   
+  bool get inUse => _inUse;
+  
+  void use({retain: false}) {
+    _inUse = true;
+    _retain = retain;
+  }
+  
+  void release() {
+    _retain = false;
+    _finished();
+  }
+  
   void _finished() {
     if (onFinished != null && !_retain) {
       _inUse = false;

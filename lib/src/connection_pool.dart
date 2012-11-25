@@ -36,17 +36,16 @@ class ConnectionPool {
 
     var inUseCount = 0;
     for (var cnx in _pool) {
-      if (cnx._inUse) {
+      if (cnx.inUse) {
         inUseCount++;
       }
     }
     log.finest("Number of in-use connections: $inUseCount");
     
     for (var cnx in _pool) {
-      if (!cnx._inUse) {
+      if (!cnx.inUse) {
         log.finest("Reusing existing pooled connection");
-        cnx._inUse = true;
-        cnx._retain = retain;
+        cnx.use(retain: retain);
         c.complete(cnx);
         return c.future;
       }
@@ -62,8 +61,7 @@ class ConnectionPool {
           user: _user, 
           password: _password, 
           db: _db);
-      cnx._inUse = true;
-      cnx._retain = retain;
+      cnx.use(retain: retain);
       _pool.add(cnx);
       future.then((x) {
         c.complete(cnx);
@@ -93,7 +91,6 @@ class ConnectionPool {
         c.complete(cnx);
       } else {
         log.finest("Marking pooled connection as not in use");
-        cnx._inUse = false;
       }
     };
   }
@@ -215,9 +212,7 @@ class ConnectionPool {
     var c = new Completer<Query>();
     var future = query._getValueCount();
     future.then((preparedQuery) {
-      preparedQuery._cnx._retain = false;
-      preparedQuery._cnx._inUse = false;
-      preparedQuery._cnx._finished();
+      preparedQuery._cnx.release();
       c.complete(query);
     });
     future.handleException((e) {
@@ -358,9 +353,7 @@ class Query {
       var handlerFuture = preparedQuery._cnx.processHandler(handler);
       handlerFuture.then((results) {
         log.finest("Finished with prepared query, setting in-use to false");
-        preparedQuery._cnx._retain = false;
-        preparedQuery._cnx._inUse = false;
-        preparedQuery._cnx._finished();
+        preparedQuery._cnx.release();
         c.complete(results);
       });
       handlerFuture.handleException((e) {
