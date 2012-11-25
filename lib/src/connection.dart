@@ -167,6 +167,23 @@ class Connection {
     }
   }
   
+  PreparedQuery removePreparedQueryFromCache(String sql) {
+    var preparedQuery = null;
+    if (_preparedQueryCache.containsKey(sql)) {
+      preparedQuery = _preparedQueryCache[sql];
+      _preparedQueryCache.remove(sql);
+    }
+    return preparedQuery;
+  }
+  
+  PreparedQuery getPreparedQueryFromCache(String sql) {
+    return _preparedQueryCache[sql];
+  }
+  
+  putPreparedQueryInCache(String sql, PreparedQuery preparedQuery) {
+    _preparedQueryCache[sql] = preparedQuery;
+  }
+  
   /**
    * The future returned by [whenReady] fires when there is nothing
    * in the queue.

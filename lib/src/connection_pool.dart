@@ -200,9 +200,8 @@ class ConnectionPool {
   
   void _closeQuery(Query q) {
     for (var cnx in _pool) {
-      if (cnx._preparedQueryCache.containsKey(q.sql)) {
-        var preparedQuery = cnx._preparedQueryCache[q.sql];
-        cnx._preparedQueryCache.remove(q.sql);
+      var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
+      if (preparedQuery != null) {
         cnx.whenReady().then((x) {
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx.processHandler(handler, noResponse: true);
@@ -318,8 +317,9 @@ class Query {
     
     var cnxFuture = _pool._getConnection(retain: true);
     cnxFuture.then((cnx) {
-      if (cnx._preparedQueryCache.containsKey(sql)) {
-        c.complete(cnx._preparedQueryCache[sql]);
+      var preparedQuery = cnx.getPreparedQueryFromCache(sql);
+      if (preparedQuery != null) {
+        c.complete(preparedQuery);
         return c.future;
       }
       
@@ -327,7 +327,7 @@ class Query {
       Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
       queryFuture.then((preparedQuery) {
         preparedQuery._cnx = cnx;
-        cnx._preparedQueryCache[sql] = preparedQuery;
+        cnx.putPreparedQueryInCache(sql, preparedQuery);
         if (_values == null) {
           _values = new List<dynamic>(preparedQuery.parameters.length);
         }
