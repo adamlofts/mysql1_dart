@@ -5,6 +5,12 @@ This is a MySQL connector for the Dart programming language. It is in early stag
 so please report issues, contribute code and suggest how I could make this better. (I won't 
 guarantee I'll agree with you). Please expect this code to change, possibly massively, in the near future.
 
+News
+----
+
+SQLJocky now uses a connection pooling model, so the API has changed somewhat. TODO: try to remember to
+fill this in with more details before merging. 
+
 Usage
 -----
 
@@ -38,7 +44,7 @@ Things to do
 * More unit testing
 * More integration tests
 * DartDoc
-* Example code
+* More Example code
 * Refactor everything a few times, when I think of a nicer way of doing things, or the Dart language changes
 * Use idiomatic dart where possible
 * Geometry type
