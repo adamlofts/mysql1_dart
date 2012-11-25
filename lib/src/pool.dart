@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class Pool {
+class ConnectionPool {
   String _host;
   int _port;
   String _user;
