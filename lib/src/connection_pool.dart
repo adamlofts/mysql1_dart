@@ -260,6 +260,7 @@ class ConnectionPool {
 
 class Query {
   final ConnectionPool _pool;
+  final Connection _cnx;
   List<dynamic> _values;
   final String sql;
   bool _executed = false;
@@ -269,16 +270,31 @@ class Query {
   
   Query._internal(ConnectionPool pool, this.sql) :
       _pool = pool,
+      _cnx = null,
+      log = new Logger("Query");
+
+  Query._withConnection(Connection cnx, this.sql) :
+      _pool = null,
+      _cnx = cnx,
       log = new Logger("Query");
   
   Future<PreparedQuery> _getValueCount() {
     return _prepare();
   }
 
+  Future<Connection> _getConnection({bool retain: true}) {
+    if (_cnx != null) {
+      var c = new Completer<Connection>();
+      c.complete(_cnx);
+      return c.future;
+    }
+    return _pool._getConnection(retain: retain);
+  }
+
   Future<PreparedQuery> _prepare() {
-    Completer c = new Completer<PreparedQuery>();
+    var c = new Completer<PreparedQuery>();
     
-    var cnxFuture = _pool._getConnection(retain: true);
+    var cnxFuture = _getConnection(retain: true);
     cnxFuture.then((cnx) {
       var preparedQuery = cnx.getPreparedQueryFromCache(sql);
       if (preparedQuery != null) {
@@ -320,7 +336,7 @@ class Query {
       var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
       var handlerFuture = preparedQuery._cnx.processHandler(handler);
       handlerFuture.then((results) {
-        log.finest("Finished with prepared query, setting in-use to false");
+        log.finest("Prepared query finished with connection");
         preparedQuery._cnx.release();
         c.complete(results);
       });
@@ -385,12 +401,15 @@ class Transaction {
     _checkFinished();
     _finished = true;
     var c = new Completer();
-    var future = query("commit");
-    future.then((x) {
+  
+    var handler = new QueryHandler("commit");
+    var queryFuture = cnx.processHandler(handler);
+    queryFuture.then((results) {
       cnx.release(fromTransaction: true);
-      c.complete(x);
+      c.complete(results);
     });
-    handleFutureException(future, c);
+    handleFutureException(queryFuture, c);
+
     return c.future;
   }
   
@@ -398,12 +417,15 @@ class Transaction {
     _checkFinished();
     _finished = true;
     var c = new Completer();
-    var future = query("rollback");
-    future.then((x) {
+  
+    var handler = new QueryHandler("rollback");
+    var queryFuture = cnx.processHandler(handler);
+    queryFuture.then((results) {
       cnx.release(fromTransaction: true);
-      c.complete(x);
+      c.complete(results);
     });
-    handleFutureException(future, c);
+    handleFutureException(queryFuture, c);
+
     return c.future;
   }
 
@@ -423,6 +445,15 @@ class Transaction {
   
   Future<Query> prepare(String sql) {
     _checkFinished();
+    var query = new Query._withConnection(cnx, sql);
+    var c = new Completer<Query>();
+    var future = query._getValueCount();
+    future.then((preparedQuery) {
+      preparedQuery._cnx.release();
+      c.complete(query);
+    });
+    handleFutureException(future, c);
+    return c.future;
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {

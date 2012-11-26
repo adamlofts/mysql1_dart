@@ -216,9 +216,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('multi queries', 1, () {
-      pool.query('start transaction').then((Results results) {
+      pool.startTransaction().then((Transaction trans) {
         Date start = new Date.now();
-        pool.prepare('insert into test1 (aint) values (?)').then((Query query) {
+        trans.prepare('insert into test1 (aint) values (?)').then((Query query) {
           var params = [];
           for (int i = 0; i < 50; i++) {
             params.add([i]);
@@ -227,7 +227,7 @@ void runIntTests(String user, String password, String db, int port, String host)
             Date end = new Date.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
-            pool.query('commit').then((Results results2) {
+            trans.commit().then((x) {
               callbackDone();
             });
           });
