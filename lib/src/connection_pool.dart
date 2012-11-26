@@ -66,10 +66,7 @@ class ConnectionPool {
       future.then((x) {
         c.complete(cnx);
       });
-      future.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(future, c);
     } else {
       log.finest("Waiting for an available connection");
       addPendingConnection(c);
@@ -106,15 +103,9 @@ class ConnectionPool {
 //      future.then((x) {
 //        completer.completer();
 //      });
-//      future.handleException((e) {
-//        completer.completeException(e);
-//        return true;
-//      });
+//      handleFutureException(future, completer);
 //    });
-//    cnxFuture.handleException((e) {
-//      completer.completeException(e);
-//      return true;
-//    });
+//    handleFutureException(cnxFuture, completer);
 //    
 //    return completer.future;
 //  }
@@ -135,16 +126,10 @@ class ConnectionPool {
       queryFuture.then((results) {
         c.complete(results);
       });
-      queryFuture.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(queryFuture, c);
     });
-    cnxFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
-    
+    handleFutureException(cnxFuture, c);
+
     return c.future;
   }
   
@@ -161,14 +146,9 @@ class ConnectionPool {
       future.then((x) {
         c.complete(x);
       });
-      future.handleException((e) {
-        c.completeException(e);
-      });
+      handleFutureException(future, c);
     });
-    cnxFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
@@ -183,14 +163,9 @@ class ConnectionPool {
       future.then((x) {
         c.complete(x);
       });
-      future.handleException((e) {
-        c.completeException(e);
-      });
+      handleFutureException(future, c);
     });
-    cnxFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
@@ -215,10 +190,7 @@ class ConnectionPool {
       preparedQuery._cnx.release();
       c.complete(query);
     });
-    future.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(future, c);
     return c.future;
   }
   
@@ -227,6 +199,7 @@ class ConnectionPool {
     
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
+      cnx.use(retain: true, inTransaction: true);
       var sql;
       if (consistent) {
         sql = "start transaction with consistent snapshot";
@@ -239,15 +212,9 @@ class ConnectionPool {
         var transaction = new Transaction._internal(cnx);
         c.complete(transaction);
       });
-      queryFuture.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(queryFuture, c);
     });
-    cnxFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
@@ -263,18 +230,19 @@ class ConnectionPool {
       future.then((Results results) {
         c.complete(results);
       });
-      future.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(future, c);
     });
-    future.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(future, c);
     return c.future;
   }
   
+  handleFutureException(Future f, Completer c) {
+    f.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+  }
+
 //  dynamic fieldList(String table, [String column]);
 //  dynamic refresh(bool grant, bool log, bool tables, bool hosts,
 //                  bool status, bool threads, bool slave, bool master);
@@ -328,18 +296,18 @@ class Query {
         }
         c.complete(preparedQuery);
       });
-      queryFuture.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(queryFuture, c);
     });
-    cnxFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(cnxFuture, c);
     return c.future;
   }
       
+  handleFutureException(Future f, Completer c) {
+    f.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+  }
 
   void close() {
     _pool._closeQuery(this);
@@ -356,15 +324,9 @@ class Query {
         preparedQuery._cnx.release();
         c.complete(results);
       });
-      handlerFuture.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(handlerFuture, c);
     });
-    future.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(future, c);
     return c.future;
   }
   
@@ -382,10 +344,7 @@ class Query {
           c.complete(resultList);
         }
       });
-      future.handleException((e) {
-        c.completeException(e);
-        return true;
-      });
+      handleFutureException(future, c);
     }
     exec(0);
     return c.future;
@@ -409,21 +368,47 @@ class Query {
 
 class Transaction {
   Connection cnx;
+  bool _finished;
   
-  // TODO: make connection persistent here
   // TODO: maybe give the connection a link to its transaction?
+
+  handleFutureException(Future f, Completer c) {
+    f.handleException((e) {
+      c.completeException(e);
+      return true;
+    });
+  }
   
-  Transaction._internal(this.cnx);
+  Transaction._internal(this.cnx) : _finished = false;
   
   Future commit() {
-    return query("commit");
+    _checkFinished();
+    _finished = true;
+    var c = new Completer();
+    var future = query("commit");
+    future.then((x) {
+      cnx.release(fromTransaction: true);
+      c.complete(x);
+    });
+    handleFutureException(future, c);
+    return c.future;
   }
   
   Future rollback() {
-    return query("rollback");
+    _checkFinished();
+    _finished = true;
+    var c = new Completer();
+    var future = query("rollback");
+    future.then((x) {
+      cnx.release(fromTransaction: true);
+      c.complete(x);
+    });
+    handleFutureException(future, c);
+    return c.future;
   }
 
   Future<Results> query(String sql) {
+    _checkFinished();
     var c = new Completer<Results>();
     
     var handler = new QueryHandler(sql);
@@ -431,19 +416,22 @@ class Transaction {
     queryFuture.then((results) {
       c.complete(results);
     });
-    queryFuture.handleException((e) {
-      c.completeException(e);
-      return true;
-    });
+    handleFutureException(queryFuture, c);
 
     return c.future;
   }
   
   Future<Query> prepare(String sql) {
-    
+    _checkFinished();
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
-    
+    _checkFinished();
+  }
+
+  void _checkFinished() {
+    if (_finished) {
+      throw new StateError("Transaction has already finished");
+    }
   }
 }

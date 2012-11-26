@@ -28,6 +28,7 @@ class Connection {
   
   bool _inUse;
   bool _retain;
+  bool _inTransaction;
   final Map<String, PreparedQuery> _preparedQueryCache;
   
   Callback onFinished;
@@ -45,14 +46,18 @@ class Connection {
   
   bool get inUse => _inUse;
   
-  void use({retain: false}) {
+  void use({retain: false, inTransaction: false}) {
     _inUse = true;
     _retain = retain;
+    _inTransaction = inTransaction;
   }
   
-  void release() {
-    _retain = false;
-    _finished();
+  void release({fromTransaction: false}) {
+    if (!_inTransaction || fromTransaction) {
+      _retain = false;
+      _inTransaction = false;
+      _finished();
+    }
   }
   
   void _finished() {
