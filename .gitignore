@@ -1,6 +1,8 @@
 connection.options
 .children
 .project
+.idea
+*.iml
 examples
 docs
 packages
