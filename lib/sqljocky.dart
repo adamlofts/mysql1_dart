@@ -6,13 +6,10 @@ import 'dart:crypto';
 import 'dart:math' as Math;
 import 'dart:scalarlist';
 import 'package:logging/logging.dart';
+import 'src/handlers/handlers_lib.dart';
+import 'buffer.dart';
+import 'constants.dart';
+export 'src/handlers/handlers_lib.dart' show MySqlError, Results, Field;
 
-part 'src/constants.dart';
-part 'src/buffer.dart';
 part 'src/connection_pool.dart';
-part 'src/results.dart';
 part 'src/connection.dart';
-part 'src/handlers/handlers.dart';
-part 'src/handlers/prepared_statements.dart';
-part 'src/handlers/query.dart';
-part 'src/handlers/handshake_auth.dart';

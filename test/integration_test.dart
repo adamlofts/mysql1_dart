@@ -1,6 +1,7 @@
 library integrationtests;
 
 import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky/constants.dart';
 import 'package:options_file/options_file.dart';
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';

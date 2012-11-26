@@ -11,17 +11,17 @@ class ConnectionPool {
   
   int _max;
   
-  final Queue<Completer<Connection>> _pendingConnections;
-  final List<Connection> _pool;
+  final Queue<Completer<_Connection>> _pendingConnections;
+  final List<_Connection> _pool;
   
-  addPendingConnection(Completer<Connection> pendingConnection) {
+  addPendingConnection(Completer<_Connection> pendingConnection) {
     _pendingConnections.add(pendingConnection);
   }
 
   ConnectionPool({String host: 'localhost', int port: 3306, String user, 
       String password, String db, int max: 5}) :
         _pendingConnections = new Queue<Completer>(),
-        _pool = new List<Connection>(),
+        _pool = new List<_Connection>(),
         _host = host,
         _port = port,
         _user = user,
@@ -30,9 +30,9 @@ class ConnectionPool {
         _max = max,
         log = new Logger("ConnectionPool");
   
-  Future<Connection> _getConnection({bool retain: false}) {
+  Future<_Connection> _getConnection({bool retain: false}) {
     log.finest("Getting a connection");
-    var c = new Completer<Connection>();
+    var c = new Completer<_Connection>();
 
     var inUseCount = 0;
     for (var cnx in _pool) {
@@ -53,7 +53,7 @@ class ConnectionPool {
     
     if (_pool.length < _max) {
       log.finest("Creating new pooled connection");
-      Connection cnx = new Connection(this);
+      _Connection cnx = new _Connection(this);
       cnx.onFinished = _getConnectionFinishedWithHandler(cnx);
       var future = cnx.connect(
           host: _host, 
@@ -74,7 +74,7 @@ class ConnectionPool {
     return c.future;
   }
   
-  _getConnectionFinishedWithHandler(Connection cnx) {
+  _getConnectionFinishedWithHandler(_Connection cnx) {
     return () {
       log.finest("Finished with a connection");
       if (!_pool.contains(cnx)) {
@@ -111,7 +111,7 @@ class ConnectionPool {
 //  }
   
   void close() {
-    for (Connection cnx in _pool) {
+    for (_Connection cnx in _pool) {
       cnx.close();
     }
   }
@@ -187,7 +187,7 @@ class ConnectionPool {
     var c = new Completer<Query>();
     var future = query._getValueCount();
     future.then((preparedQuery) {
-      preparedQuery._cnx.release();
+      preparedQuery.cnx.release();
       c.complete(query);
     });
     handleFutureException(future, c);
@@ -260,7 +260,7 @@ class ConnectionPool {
 
 class Query {
   final ConnectionPool _pool;
-  final Connection _cnx;
+  final _Connection _cnx;
   List<dynamic> _values;
   final String sql;
   bool _executed = false;
@@ -273,7 +273,7 @@ class Query {
       _cnx = null,
       log = new Logger("Query");
 
-  Query._withConnection(Connection cnx, this.sql) :
+  Query._withConnection(_Connection cnx, this.sql) :
       _pool = null,
       _cnx = cnx,
       log = new Logger("Query");
@@ -282,9 +282,9 @@ class Query {
     return _prepare();
   }
 
-  Future<Connection> _getConnection({bool retain: true}) {
+  Future<_Connection> _getConnection({bool retain: true}) {
     if (_cnx != null) {
-      var c = new Completer<Connection>();
+      var c = new Completer<_Connection>();
       c.complete(_cnx);
       return c.future;
     }
@@ -305,7 +305,7 @@ class Query {
       var handler = new PrepareHandler(sql);
       Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
       queryFuture.then((preparedQuery) {
-        preparedQuery._cnx = cnx;
+        preparedQuery.cnx = cnx;
         cnx.putPreparedQueryInCache(sql, preparedQuery);
         if (_values == null) {
           _values = new List<dynamic>(preparedQuery.parameters.length);
@@ -334,10 +334,10 @@ class Query {
     var future = _prepare();
     future.then((preparedQuery) {
       var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
-      var handlerFuture = preparedQuery._cnx.processHandler(handler);
+      var handlerFuture = preparedQuery.cnx.processHandler(handler);
       handlerFuture.then((results) {
         log.finest("Prepared query finished with connection");
-        preparedQuery._cnx.release();
+        preparedQuery.cnx.release();
         c.complete(results);
       });
       handleFutureException(handlerFuture, c);
@@ -383,7 +383,7 @@ class Query {
 }
 
 class Transaction {
-  Connection cnx;
+  _Connection cnx;
   bool _finished;
   
   // TODO: maybe give the connection a link to its transaction?
@@ -449,7 +449,7 @@ class Transaction {
     var c = new Completer<Query>();
     var future = query._getValueCount();
     future.then((preparedQuery) {
-      preparedQuery._cnx.release();
+      preparedQuery.cnx.release();
       c.complete(query);
     });
     handleFutureException(future, c);

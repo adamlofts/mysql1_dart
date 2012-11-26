@@ -1,4 +1,4 @@
-part of sqljocky;
+part of handlers_lib;
 
 class PrepareOkPacket {
   int _statementHandlerId;
@@ -31,7 +31,7 @@ class PreparedQuery {
   final List<Field> parameters;
   final List<Field> columns;
   final int statementHandlerId;
-  Connection _cnx;
+  dynamic cnx; // should be a Connection
 
   PreparedQuery(PrepareHandler handler) :
       sql = handler.sql,
@@ -271,7 +271,7 @@ class ExecuteQueryHandler extends Handler {
     } else {
       buffer.writeByte(0);      
     }
-    log.fine(Buffer.listChars(buffer._list));
+//    log.fine(Buffer.listChars(buffer._list));
     return buffer;
   }
   

@@ -1,4 +1,8 @@
-part of sqljocky;
+library buffer;
+
+import 'dart:scalarlist';
+import 'package:logging/logging.dart';
+import 'dart:io';
 
 /**
  * The class [Buffer] provides methods to read and write strings, lists and

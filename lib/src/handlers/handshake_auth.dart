@@ -1,4 +1,4 @@
-part of sqljocky;
+part of handlers_lib;
 
 class HandshakeHandler extends Handler {
   final String _user;

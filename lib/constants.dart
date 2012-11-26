@@ -1,4 +1,4 @@
-part of sqljocky;
+library constants;
 
 /* Copyright (C) 2000 MySQL AB
    Copyright (C) 2012 James Ots

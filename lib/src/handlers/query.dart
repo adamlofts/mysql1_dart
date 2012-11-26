@@ -1,4 +1,4 @@
-part of sqljocky;
+part of handlers_lib;
 
 class ResultSetHeaderPacket {
   int _fieldCount;

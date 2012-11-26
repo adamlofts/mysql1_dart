@@ -2,7 +2,7 @@ part of sqljocky;
 
 typedef void Callback();
 
-class Connection {
+class _Connection {
   static const int HEADER_SIZE = 4;
   static const int STATE_PACKET_HEADER = 0;
   static const int STATE_PACKET_DATA = 1;
@@ -33,7 +33,7 @@ class Connection {
   
   Callback onFinished;
 
-  Connection(ConnectionPool pool) :
+  _Connection(ConnectionPool pool) :
       log = new Logger("AsyncTransport"),
       _headerBuffer = new Buffer(HEADER_SIZE),
       _preparedQueryCache = new Map<String, PreparedQuery>(),
@@ -112,7 +112,7 @@ class Connection {
   void _onData() {
     log.fine("got data");
     switch (_packetState) {
-    case Connection.STATE_PACKET_HEADER:
+    case _Connection.STATE_PACKET_HEADER:
       log.fine("reading header $_readPos");
       int bytes = _headerBuffer.readFrom(_socket, HEADER_SIZE - _readPos);
       _readPos += bytes;
@@ -130,8 +130,8 @@ class Connection {
       log.fine("got $bytes bytes");
       _readPos += bytes;
       if (_readPos == _dataSize) {
-        log.fine("read all data: ${_dataBuffer._list}");
-        log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
+        //log.fine("read all data: ${_dataBuffer._list}");
+        //log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
         _packetState = STATE_PACKET_HEADER;
         _headerBuffer.reset();
         _readPos = 0;
@@ -205,8 +205,8 @@ class Connection {
    * The future returned by [whenReady] fires when there is nothing
    * in the queue.
    */
-  Future<Connection> whenReady() {
-    var c = new Completer<Connection>();
+  Future<_Connection> whenReady() {
+    var c = new Completer<_Connection>();
     if (!_inUse) {
       c.complete(this);
     } else {
