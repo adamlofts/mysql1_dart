@@ -1,6 +1,6 @@
 library unittests;
 
-import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky/buffer.dart';
 import 'package:unittest/unittest.dart';
 
 part 'unit/buffertest.dart';
