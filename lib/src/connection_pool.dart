@@ -333,36 +333,51 @@ class Query {
     var c = new Completer<Results>();
     var future = _prepare();
     future.then((preparedQuery) {
-      var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
-      var handlerFuture = preparedQuery.cnx.processHandler(handler);
-      handlerFuture.then((results) {
-        log.finest("Prepared query finished with connection");
-        preparedQuery.cnx.release();
+      var future = _execute(preparedQuery, retain: false);
+      future.then((Results results) {
         c.complete(results);
       });
-      handleFutureException(handlerFuture, c);
+      handleFutureException(future, c);
     });
     handleFutureException(future, c);
     return c.future;
   }
   
+  Future<Results> _execute(PreparedQuery preparedQuery, {bool retain: false}) {
+    var c = new Completer<Results>();
+    var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
+    var handlerFuture = preparedQuery.cnx.processHandler(handler);
+    handlerFuture.then((results) {
+      log.finest("Prepared query finished with connection");
+      preparedQuery.cnx.release();
+      c.complete(results);
+    });
+    handleFutureException(handlerFuture, c);
+    return c.future;
+  }
+  
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
-    Completer<List<Results>> c= new Completer<List<Results>>();
-    List<Results> resultList = new List<Results>();
-    exec(int i) {
-      _values.setRange(0, _values.length, parameters[i]);
-      var future = execute();
-      future.then((Results results) {
-        resultList.add(results);
-        if (i < parameters.length - 1) {
-          exec(i + 1);
-        } else {
-          c.complete(resultList);
-        }
-      });
-      handleFutureException(future, c);
-    }
-    exec(0);
+    var c = new Completer<List<Results>>();
+    var future = _prepare();
+    future.then((preparedQuery) {
+      var resultList = new List<Results>();
+      exec(int i) {
+        _values.setRange(0, _values.length, parameters[i]);
+        var future = _execute(preparedQuery, retain: true);
+        future.then((Results results) {
+          resultList.add(results);
+          if (i < parameters.length - 1) {
+            exec(i + 1);
+          } else {
+            preparedQuery.cnx.release();
+            c.complete(resultList);
+          }
+        });
+        handleFutureException(future, c);
+      }
+      exec(0);
+    });
+    handleFutureException(future, c);
     return c.future;
   } 
   

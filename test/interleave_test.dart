@@ -23,10 +23,12 @@ class Example {
     }).chain((x) {
       print("created tables");
       // add some data
-      return addData();
-    }).chain((x) {
-      // and read it back out
-      return readData();
+      var futures = new List<Future>();
+      for (var i = 0; i < 100; i++) {
+        futures.add(addData());
+        futures.add(readData());
+      }
+      return Futures.wait(futures);
     }).then((x) {
       completer.complete(null);
     });
@@ -91,11 +93,13 @@ class Example {
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
-      for (var row in result) {
-        if (row[3] == null) {
-          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
-        } else {
-          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+      if (result != null) { 
+        for (var row in result) {
+          if (row[3] == null) {
+            print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
+          } else {
+            print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+          }
         }
       }
       completer.complete(null);
