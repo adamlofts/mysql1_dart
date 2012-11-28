@@ -101,6 +101,7 @@ class ConnectionPool {
     if (_pendingConnections.length > 0) {
       log.finest("Reusing cnx#${cnx.number} for a queued operation");
       var request = _pendingConnections.removeFirst();
+      cnx.use();
       request.c.complete(cnx);
     }
   }
