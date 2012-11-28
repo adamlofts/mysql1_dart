@@ -27,11 +27,7 @@ class _Connection {
   String _password;
   
   bool _inUse;
-  bool _retain;
-  bool _inTransaction;
   final Map<String, PreparedQuery> _preparedQueryCache;
-  
-  Callback onFinished;
 
   _Connection(ConnectionPool pool) :
       log = new Logger("AsyncTransport"),
@@ -46,25 +42,12 @@ class _Connection {
   
   bool get inUse => _inUse;
   
-  void use({retain: false, inTransaction: false}) {
+  void use() {
     _inUse = true;
-    _retain = retain;
-    _inTransaction = inTransaction;
   }
   
-  void release({fromTransaction: false}) {
-    if (!_inTransaction || fromTransaction) {
-      _retain = false;
-      _inTransaction = false;
-      _finished();
-    }
-  }
-  
-  void _finished() {
-    if (onFinished != null && !_retain) {
-      _inUse = false;
-      onFinished();
-    }
+  void release() {
+    _inUse = false;
   }
   
   Future connect({String host, int port, String user, 
@@ -81,7 +64,7 @@ class _Connection {
     log.fine("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
-      _finished();
+//      _finished();
       log.fine("closed");
     };
     _socket.onConnect = () {
@@ -90,7 +73,7 @@ class _Connection {
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
       log.fine("exception $e");
-      _finished();
+//      _finished();
       _completer.completeException(e);
     };
     _socket.onWrite = () {
@@ -142,8 +125,8 @@ class _Connection {
         } catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
-          _finished();
           _completer.completeException(e);
+//          _finished();
           return;
         }
         if (result is Handler) {
@@ -155,8 +138,8 @@ class _Connection {
           // otherwise, complete using the result, and that result will be
           // passed back to the future.
           _handler = null;
-          _finished();
           _completer.complete(result);
+//          _finished();
         }
       }
       break;
@@ -174,14 +157,12 @@ class _Connection {
       throw "request already in progress";
     }
     _packetNumber = -1;
+    _completer = new Completer<dynamic>();
     if (!noResponse) {
-      _completer = new Completer<dynamic>();
       _handler = handler;
     }
     _sendBuffer(handler.createRequest());
-    if (!noResponse) {
-      return _completer.future;
-    }
+    return _completer.future;
   }
   
   PreparedQuery removePreparedQueryFromCache(String sql) {

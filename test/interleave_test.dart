@@ -1,6 +1,7 @@
 import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:/options_file/options_file.dart';
+import 'package:logging/logging.dart';
 
 /*
  * This example drops a couple of tables if they exist, before recreating them.
@@ -109,6 +110,15 @@ class Example {
 }
 
 void main() {
+  hierarchicalLoggingEnabled = true;
+  Logger.root.level = Level.OFF;
+  new Logger("ConnectionPool").level = Level.ALL;
+  new Logger("Query").level = Level.ALL;
+  var loggerHandlerList = new LoggerHandlerList(Logger.root);
+  loggerHandlerList.add((LogRecord r) {
+    print("${r.time}: ${r.message}");
+  });
+
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
   String password = options.getString('password');
