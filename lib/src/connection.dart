@@ -62,7 +62,6 @@ class _Connection {
     
     _user = user;
     _password = password;
-    print("handler=HandshakeHandler");
     _handler = new HandshakeHandler(user, password, db);
     
     _completer = new Completer();
@@ -126,12 +125,9 @@ class _Connection {
         
         var result;
         try {
-          print("processResponse...");
           result = _handler.processResponse(_dataBuffer);
-          print("processed ${result}");
         } catch (e) {
           _handler = null;
-          print("handler=null");
           log.fine("completing with exception: $e");
           _completer.completeException(e);
 //          _finished();
@@ -141,13 +137,11 @@ class _Connection {
           // if handler.processResponse() returned a Handler, pass control to that
           // handler now
           _handler = result;
-          print("handler=result");
           _sendBuffer(_handler.createRequest());
         } else if (_handler.finished) {
           // otherwise, complete using the result, and that result will be
           // passed back to the future.
           _handler = null;
-          print("handler=null");
           _completer.complete(result);
 //          _finished();
         }
@@ -169,12 +163,9 @@ class _Connection {
     _packetNumber = -1;
     _completer = new Completer<dynamic>();
     if (!noResponse) {
-      print("handler=handler");
       _handler = handler;
     }
-    print("sending buffer");
     _sendBuffer(handler.createRequest());
-    print("processHandler finished");
     return _completer.future;
   }
   

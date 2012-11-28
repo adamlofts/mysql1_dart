@@ -66,7 +66,6 @@ class Example {
     print("adding");
     var completer = new Completer();
     pool.prepare("insert into people (name, age) values (?, ?)").chain((query) {
-      print("prepared query 1");
       var parameters = [
           ["Dave", 15],
           ["John", 16],
@@ -74,17 +73,14 @@ class Example {
         ];
       return query.executeMulti(parameters);
     }).chain((results) {
-      print("executed query 1");
       return pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
     }).chain((query) {
-      print("prepared query 2");
       var parameters = [
           ["Rover", "Dog", 1],
           ["Daisy", "Cow", 2],
           ["Spot", "Dog", 2]];
       return query.executeMulti(parameters);
     }).then((results) {
-      print("executed query 2");
       completer.complete(null);
     });
     return completer.future;
@@ -114,10 +110,10 @@ class Example {
 
 void main() {
   hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.ALL;
-  new Logger("ConnectionPool").level = Level.ALL;
-  new Logger("Connection.Lifecycle").level = Level.ALL;
-  new Logger("Query").level = Level.ALL;
+  Logger.root.level = Level.WARNING;
+//  new Logger("ConnectionPool").level = Level.ALL;
+//  new Logger("Connection.Lifecycle").level = Level.ALL;
+//  new Logger("Query").level = Level.ALL;
   var loggerHandlerList = new LoggerHandlerList(Logger.root);
   loggerHandlerList.add((LogRecord r) {
     print("${r.time}: ${r.loggerName}: ${r.message}");
