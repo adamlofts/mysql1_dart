@@ -37,7 +37,7 @@ class ConnectionPool {
         _max = max,
         log = new Logger("ConnectionPool");
   
-  Future<_Connection> _getConnection({bool retain: false}) {
+  Future<_Connection> _getConnection() {
     log.finest("Getting a connection");
     var c = new Completer<_Connection>();
 
@@ -51,7 +51,7 @@ class ConnectionPool {
     
     for (var cnx in _pool) {
       if (!cnx.inUse) {
-        log.finest("Reusing existing pooled connection #${cnx.number}");
+        log.finest("Using open pooled cnx#${cnx.number}");
         print("handler: ${cnx._handler}");
         cnx.use();
         c.complete(cnx);
@@ -60,41 +60,48 @@ class ConnectionPool {
     }
     
     if (_pool.length < _max) {
-      log.finest("Creating new pooled connection #${_pool.length}");
+      log.finest("Creating new pooled cnx#${_pool.length}");
       _Connection cnx = new _Connection(this, _pool.length);
+      cnx.use();
       var future = cnx.connect(
           host: _host, 
           port: _port, 
           user: _user, 
           password: _password, 
           db: _db);
-      cnx.use();
       _pool.add(cnx);
       future.then((x) {
-        log.finest("Logged in on connection #${cnx.number}, use original retain settings now");
+        log.finest("Logged in on cnx#${cnx.number}, use original retain settings now");
         c.complete(cnx);
       });
       handleFutureException(future, c, cnx);
     } else {
       log.finest("Waiting for an available connection");
-      addPendingConnection(c, retain);
+      addPendingConnection(c, false);
     }
     return c.future;
   }
   
   releaseConnection(_Connection cnx) {
     cnx.release();
-    log.finest("Finished with connection #${cnx.number}");
+    log.finest("Finished with cnx#${cnx.number}: marked as not in use");
+  }
+  
+  reuseConnection(_Connection cnx) {
     if (!_pool.contains(cnx)) {
-      print("_connectionFinishedWith handler called for unmanaged connection");
+      print("resuseConnection called for unmanaged connection");
+      return;
+    }
+    
+    if (cnx.inUse) {
+      log.finest("cnx#${cnx.number} already reused");
       return;
     }
     
     if (_pendingConnections.length > 0) {
-      log.finest("Reusing connection #${cnx.number} for a queued operation");
-      var c = _pendingConnections.removeFirst();
-    } else {
-      log.finest("Marking pooled connection #${cnx.number} as not in use");
+      log.finest("Reusing cnx#${cnx.number} for a queued operation");
+      var request = _pendingConnections.removeFirst();
+      request.c.complete(cnx);
     }
   }
   
@@ -129,13 +136,16 @@ class ConnectionPool {
     
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
-      log.fine("#${cnx.number} Got connection for query");
+      log.fine("Got cnx#${cnx.number} for query");
       var handler = new QueryHandler(sql);
+      cnx.use();
       var queryFuture = cnx.processHandler(handler);
       queryFuture.then((results) {
-        log.fine("#${cnx.number} Got query results for: ${sql}");
+        log.fine("Got query results on #${cnx.number} for: ${sql}");
+        print("about to release from query");
         releaseConnection(cnx);
         c.complete(results);
+        reuseConnection(cnx);
       });
       handleFutureException(queryFuture, c, cnx);
     });
@@ -154,11 +164,14 @@ class ConnectionPool {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new PingHandler();
+      cnx.use();
       var future = cnx.processHandler(handler);
       future.then((x) {
         log.fine("Pinged");
+        print("about to release from ping");
         releaseConnection(cnx);
         c.complete(x);
+        reuseConnection(cnx);
       });
       handleFutureException(future, c);
     });
@@ -174,11 +187,13 @@ class ConnectionPool {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       var handler = new DebugHandler();
+      cnx.use();
       var future = cnx.processHandler(handler);
       future.then((x) {
         log.fine("Message sent");
-        releaseConnection(cnx);
         c.complete(x);
+        print("about to release from debug");
+        releaseConnection(cnx);
       });
       handleFutureException(future, c, cnx);
     });
@@ -198,10 +213,14 @@ class ConnectionPool {
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
           var future = cnx.processHandler(handler, noResponse: true);
           future.then((x) {
+            print("about to release from close query");
             releaseConnection(cnx);
+            reuseConnection(cnx);
           });
           future.handleException((e) {
+            print("about to release from close query error");
             releaseConnection(cnx);
+            reuseConnection(cnx);
           });
         });
       }
@@ -211,11 +230,13 @@ class ConnectionPool {
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
     var c = new Completer<Query>();
-    var future = query._getValueCount();
+    var future = query._prepare();
     future.then((preparedQuery) {
-print("got value count");
+      log.info("Got value count");
+      print("about to release from prepare");
       releaseConnection(preparedQuery.cnx);
       c.complete(query);
+      reuseConnection(preparedQuery.cnx);
     });
     handleFutureException(future, c); //TODO release connection here?
     return c.future;
@@ -268,8 +289,10 @@ print("got value count");
   handleFutureException(Future f, Completer c, [_Connection cnx]) {
     f.handleException((e) {
       c.completeException(e);
-      if (?cnx) {
+      if (cnx != null) {
+        print("about to release from error");
         releaseConnection(cnx);
+        reuseConnection(cnx);
       }
       return true;
     });
@@ -308,10 +331,6 @@ class Query {
       _cnx = cnx,
       log = new Logger("Query");
   
-  Future<PreparedQuery> _getValueCount() {
-    return _prepare();
-  }
-
   Future<_Connection> _getConnection() {
     if (_cnx != null) {
       var c = new Completer<_Connection>();
@@ -327,22 +346,23 @@ class Query {
     
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
-      log.fine("Got connection #${cnx.number}");
+      log.fine("Got cnx#${cnx.number}");
       var preparedQuery = cnx.getPreparedQueryFromCache(sql);
       if (preparedQuery != null) {
-        log.fine("Got prepared query from cache in connection #${cnx.number} for: $sql");
+        log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
+        if (_values == null) {
+          _values = new List<dynamic>(preparedQuery.parameters.length);
+        }
         c.complete(preparedQuery);
-        return c.future;
+        return;
       }
       
-      log.fine("Preparing new query in connection #${cnx.number} for: $sql");
+      log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
       var handler = new PrepareHandler(sql);
+      cnx.use();
       Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
       queryFuture.then((preparedQuery) {
-        if (preparedQuery is Results) {
-          print("Oops");
-        }
-        log.fine("Prepared new query in connection #${cnx.number} for: $sql");
+        log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
         preparedQuery.cnx = cnx;
         cnx.putPreparedQueryInCache(sql, preparedQuery);
         if (_values == null) {
@@ -359,8 +379,10 @@ class Query {
   handleFutureException(Future f, Completer c, [_Connection cnx]) {
     f.handleException((e) {
       c.completeException(e);
-      if (?cnx) {
+      if (cnx != null) {
+        print("about to release from error");
         _pool.releaseConnection(cnx);
+        _pool.reuseConnection(cnx);
       }
       return true;
     });
@@ -374,9 +396,12 @@ class Query {
     var c = new Completer<Results>();
     var future = _prepare();
     future.then((preparedQuery) {
-      var future = _execute(preparedQuery, retain: false);
+      var future = _execute(preparedQuery);
       future.then((Results results) {
+        print("about to release from execute");
+        _pool.releaseConnection(preparedQuery.cnx);
         c.complete(results);
+        _pool.reuseConnection(preparedQuery.cnx);
       });
       handleFutureException(future, c);
     });
@@ -384,15 +409,17 @@ class Query {
     return c.future;
   }
   
-  Future<Results> _execute(PreparedQuery preparedQuery, {bool retain: false}) {
+  Future<Results> _execute(PreparedQuery preparedQuery) {
+    log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
     var handlerFuture = preparedQuery.cnx.processHandler(handler);
     handlerFuture.then((results) {
-      log.finest("Prepared query finished with connection");
+      log.finest("Prepared query got results");
       c.complete(results);
     });
     handleFutureException(handlerFuture, c, preparedQuery.cnx);
+    print("_execute finished");
     return c.future;
   }
   
@@ -400,17 +427,23 @@ class Query {
     var c = new Completer<List<Results>>();
     var future = _prepare();
     future.then((preparedQuery) {
+      log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
       var resultList = new List<Results>();
       exec(int i) {
+        log.fine("Executing query. $i");
         _values.setRange(0, _values.length, parameters[i]);
-        var future = _execute(preparedQuery, retain: true);
+        var future = _execute(preparedQuery);
+        print("_execute done");
         future.then((Results results) {
+          log.fine("Got results. $i");
           resultList.add(results);
           if (i < parameters.length - 1) {
             exec(i + 1);
           } else {
+            print("about to release from exec multi");
             _pool.releaseConnection(preparedQuery.cnx);
             c.complete(resultList);
+            _pool.reuseConnection(preparedQuery.cnx);
           }
         });
         handleFutureException(future, c, preparedQuery.cnx);
@@ -418,6 +451,7 @@ class Query {
       exec(0);
     });
     handleFutureException(future, c);
+    print("exec multi done");
     return c.future;
   } 
   
@@ -461,8 +495,10 @@ class Transaction {
     var handler = new QueryHandler("commit");
     var queryFuture = cnx.processHandler(handler);
     queryFuture.then((results) {
+      print("about to release from commit");
       _pool.releaseConnection(cnx);
       c.complete(results);
+      _pool.reuseConnection(cnx);
     });
     handleFutureException(queryFuture, c);
 
@@ -477,8 +513,10 @@ class Transaction {
     var handler = new QueryHandler("rollback");
     var queryFuture = cnx.processHandler(handler);
     queryFuture.then((results) {
+      print("about to release from rollback");
       _pool.releaseConnection(cnx);
       c.complete(results);
+      _pool.reuseConnection(cnx);
     });
     handleFutureException(queryFuture, c);
 
@@ -503,10 +541,11 @@ class Transaction {
     _checkFinished();
     var query = new Query._withConnection(_pool, cnx, sql);
     var c = new Completer<Query>();
-    var future = query._getValueCount();
+    var future = query._prepare();
     future.then((preparedQuery) {
-      preparedQuery.cnx.release();
+      print("about to release from trans.prepare");
       c.complete(query);
+      preparedQuery.cnx.release();
     });
     handleFutureException(future, c);
     return c.future;

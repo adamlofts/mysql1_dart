@@ -25,12 +25,14 @@ class Example {
       print("created tables");
       // add some data
       var futures = new List<Future>();
-      for (var i = 0; i < 3; i++) {
+      for (var i = 0; i < 10; i++) {
         futures.add(addData());
         futures.add(readData());
       }
+      print("queued all operations");
       return Futures.wait(futures);
     }).then((x) {
+      print("data added and read");
       completer.complete(null);
     });
     return completer.future;
@@ -112,7 +114,7 @@ class Example {
 
 void main() {
   hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.OFF;
+  Logger.root.level = Level.ALL;
   new Logger("ConnectionPool").level = Level.ALL;
   new Logger("Connection.Lifecycle").level = Level.ALL;
   new Logger("Query").level = Level.ALL;
@@ -130,7 +132,8 @@ void main() {
 
   // create a connection
   print("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db);
+  var pool = new ConnectionPool(host: host, port: port, user: user, 
+      password: password, db: db, max: 5);
   print("connection open");
   // create an example class
   var example = new Example(pool);
@@ -138,6 +141,7 @@ void main() {
   print("running example");
   example.run().then((x) {
     // finally, close the connection
+    print("closing");
     pool.close();
   });
 }
