@@ -13,3 +13,5 @@ export 'src/handlers/handlers_lib.dart' show MySqlError, Results, Field;
 
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
+part 'src/transaction.dart';
+part 'src/query.dart';

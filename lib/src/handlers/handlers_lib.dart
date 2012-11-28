@@ -11,5 +11,5 @@ import '../../constants.dart';
 part 'handlers.dart';
 part 'handshake_auth.dart';
 part 'prepared_statements.dart';
-part 'query.dart';
+part 'query_handler.dart';
 part 'results.dart';

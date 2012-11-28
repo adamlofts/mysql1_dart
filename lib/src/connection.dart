@@ -193,9 +193,10 @@ class _Connection {
   Future<_Connection> whenReady() {
     var c = new Completer<_Connection>();
     if (!_inUse) {
+      use();
       c.complete(this);
     } else {
-      _pool.addPendingConnection(c, false);
+      _pool.addPendingConnection(c);
     }
     return c.future;
   }

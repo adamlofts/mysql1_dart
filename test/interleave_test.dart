@@ -26,7 +26,8 @@ class Example {
       // add some data
       var futures = new List<Future>();
       for (var i = 0; i < 10; i++) {
-        futures.add(addData());
+        futures.add(addDataInTransaction());
+//        futures.add(addData());
         futures.add(readData());
       }
       print("queued all operations");
@@ -86,6 +87,34 @@ class Example {
     return completer.future;
   }
   
+  Future addDataInTransaction() {
+    print("adding");
+    var completer = new Completer();
+    pool.startTransaction().then((trans) {
+      trans.prepare("insert into people (name, age) values (?, ?)").chain((query) {
+        var parameters = [
+            ["Dave", 15],
+            ["John", 16],
+            ["Mavis", 93]
+          ];
+        return query.executeMulti(parameters);
+      }).chain((results) {
+        return trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+      }).chain((query) {
+        var parameters = [
+            ["Rover", "Dog", 1],
+            ["Daisy", "Cow", 2],
+            ["Spot", "Dog", 2]];
+        return query.executeMulti(parameters);
+      }).chain((results) {
+        return trans.commit();
+      }).then((x) {
+        completer.complete(null);
+      });
+    });
+    return completer.future;
+  }
+  
   Future readData() {
     var completer = new Completer();
     print("querying");
@@ -110,7 +139,7 @@ class Example {
 
 void main() {
   hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.WARNING;
+  Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
 //  new Logger("Connection.Lifecycle").level = Level.ALL;
 //  new Logger("Query").level = Level.ALL;
