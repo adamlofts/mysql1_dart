@@ -7,6 +7,7 @@ class _Connection {
   static const int STATE_PACKET_HEADER = 0;
   static const int STATE_PACKET_DATA = 1;
   final Logger log;
+  final Logger lifecycleLog;
 
   ConnectionPool _pool;
   Handler _handler;
@@ -25,15 +26,16 @@ class _Connection {
   
   String _user;
   String _password;
+  final int number;
   
   bool _inUse;
   final Map<String, PreparedQuery> _preparedQueryCache;
 
-  _Connection(ConnectionPool pool) :
-      log = new Logger("AsyncTransport"),
+  _Connection(this._pool, this.number) :
+      log = new Logger("Connection"),
+      lifecycleLog = new Logger("Connection.Lifecycle"),
       _headerBuffer = new Buffer(HEADER_SIZE),
       _preparedQueryCache = new Map<String, PreparedQuery>(),
-      _pool = pool,
       _inUse = false;
   
   void close() {
@@ -43,11 +45,13 @@ class _Connection {
   bool get inUse => _inUse;
   
   void use() {
+    lifecycleLog.finest("Use connection #$number");
     _inUse = true;
   }
   
   void release() {
     _inUse = false;
+    lifecycleLog.finest("Release connection #$number");
   }
   
   Future connect({String host, int port, String user, 
@@ -191,7 +195,7 @@ class _Connection {
     if (!_inUse) {
       c.complete(this);
     } else {
-      _pool.addPendingConnection(c);
+      _pool.addPendingConnection(c, false);
     }
     return c.future;
   }

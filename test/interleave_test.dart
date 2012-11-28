@@ -1,6 +1,6 @@
 import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
-import 'package:/options_file/options_file.dart';
+import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
 
 /*
@@ -25,7 +25,7 @@ class Example {
       print("created tables");
       // add some data
       var futures = new List<Future>();
-      for (var i = 0; i < 100; i++) {
+      for (var i = 0; i < 3; i++) {
         futures.add(addData());
         futures.add(readData());
       }
@@ -61,6 +61,7 @@ class Example {
   }
   
   Future addData() {
+    print("adding");
     var completer = new Completer();
     pool.prepare("insert into people (name, age) values (?, ?)").chain((query) {
       print("prepared query 1");
@@ -113,10 +114,11 @@ void main() {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
   new Logger("ConnectionPool").level = Level.ALL;
+  new Logger("Connection.Lifecycle").level = Level.ALL;
   new Logger("Query").level = Level.ALL;
   var loggerHandlerList = new LoggerHandlerList(Logger.root);
   loggerHandlerList.add((LogRecord r) {
-    print("${r.time}: ${r.message}");
+    print("${r.time}: ${r.loggerName}: ${r.message}");
   });
 
   OptionsFile options = new OptionsFile('connection.options');
