@@ -194,7 +194,7 @@ class ConnectionPool {
     return c.future;
   }
   
-  void _closeQuery(Query q) {
+  void _closeQuery(Query q, bool retain) {
     log.finest("Closing query: ${q.sql}");
     for (var cnx in _pool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
@@ -204,12 +204,16 @@ class ConnectionPool {
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
           var future = cnx.processHandler(handler, noResponse: true);
           future.then((x) {
-            releaseConnection(cnx);
-            reuseConnection(cnx);
+            if (!retain) {
+              releaseConnection(cnx);
+              reuseConnection(cnx);
+            }
           });
           future.handleException((e) {
-            releaseConnection(cnx);
-            reuseConnection(cnx);
+            if (!retain) {
+              releaseConnection(cnx);
+              reuseConnection(cnx);
+            }
           });
         });
       }

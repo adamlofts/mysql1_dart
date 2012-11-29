@@ -78,9 +78,11 @@ class Query {
   }
 
   void close() {
-    _pool._closeQuery(this);
+    _pool._closeQuery(this, _inTransaction);
   }
   
+  
+  //TODO: maybe have execute(Transaction) and execute(ConnectionPool)
   Future<Results> execute() {
     var c = new Completer<Results>();
     var future = _prepare();

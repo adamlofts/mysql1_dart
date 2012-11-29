@@ -64,6 +64,8 @@ class Transaction {
     return c.future;
   }
   
+  //TODO: should the query get closed when the transaction is closed?
+  //TODO: it isn't valid any more, at least
   Future<Query> prepare(String sql) {
     _checkFinished();
     var query = new Query._forTransaction(new _TransactionPool(cnx), cnx, sql);
@@ -78,6 +80,18 @@ class Transaction {
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     _checkFinished();
+    var c = new Completer<Results>();
+    var f = prepare(sql);
+    f.then((query) {
+      var f = query.execute();
+      f.then((results) {
+        query.close();
+        c.complete(results);
+      });
+      handleFutureException(f, c);
+    });
+    handleFutureException(f, c);
+    return c.future;
   }
 
   void _checkFinished() {
