@@ -68,7 +68,7 @@ class _Connection {
     log.fine("opening connection to $host:$port/$db");
     _socket = new Socket(host, port);
     _socket.onClosed = () {
-//      _finished();
+      release();
       log.fine("closed");
     };
     _socket.onConnect = () {
@@ -77,7 +77,7 @@ class _Connection {
     _socket.onData = _onData;
     _socket.onError = (Exception e) {
       log.fine("exception $e");
-//      _finished();
+      release();
       _completer.completeException(e);
     };
     _socket.onWrite = () {

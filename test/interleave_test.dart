@@ -17,7 +17,7 @@ class Example {
   Future run() {
     var completer = new Completer();
     // drop the tables if they already exist
-    dropTables().chain((x) {
+    var future = dropTables().chain((x) {
       print("dropped tables");
       // then recreate the tables
       return createTables();
@@ -32,9 +32,16 @@ class Example {
       }
       print("queued all operations");
       return Futures.wait(futures);
-    }).then((x) {
+    });
+    
+    future.then((x) {
       print("data added and read");
       completer.complete(null);
+    });
+    future.handleException((e) {
+      print("Exception: $e");
+      completer.complete(null);
+      return true;
     });
     return completer.future;
   }
@@ -91,7 +98,7 @@ class Example {
     print("adding");
     var completer = new Completer();
     pool.startTransaction().then((trans) {
-      trans.prepare("insert into people (name, age) values (?, ?)").chain((query) {
+      var future = trans.prepare("insert into people (name, age) values (?, ?)").chain((query) {
         var parameters = [
             ["Dave", 15],
             ["John", 16],
@@ -105,11 +112,27 @@ class Example {
             ["Rover", "Dog", 1],
             ["Daisy", "Cow", 2],
             ["Spot", "Dog", 2]];
-        return query.executeMulti(parameters);
+        var c = new Completer();
+        var f = query.executeMulti(parameters);
+        f.handleException((e) {
+          print("Exception: $e");
+          c.complete(null);
+          return true;
+        });
+        f.then((x) {
+          c.complete(null);
+        });
+        return c.future;
       }).chain((results) {
         return trans.commit();
-      }).then((x) {
+      });
+      future.then((x) {
         completer.complete(null);
+      });
+      future.handleException((e) {
+        print("Exception: $e");
+        completer.complete(null);
+        return true;
       });
     });
     return completer.future;

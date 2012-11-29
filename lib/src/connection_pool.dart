@@ -125,7 +125,6 @@ class ConnectionPool {
   void close() {
     for (_Connection cnx in _pool) {
       cnx.close();
-      
     }
   }
 

@@ -27,7 +27,8 @@ class TableDropper {
         }
         return true;
       }
-      return false;
+      c.completeException(exception);
+      return true;
     });
     future.then((x) {
       if (_tables.length == 0) {
