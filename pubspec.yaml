@@ -6,6 +6,6 @@ author: James Ots <code@jamesots.com>
 homepage: https://github.com/jamesots/sqljocky
 dependencies:
   options_file:
-    git: git@github.com:jamesots/optionsfile.git
+    git: git://github.com/jamesots/optionsfile.git
   unittest: any
   logging: any
