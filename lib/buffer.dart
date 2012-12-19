@@ -59,10 +59,24 @@ class Buffer {
    * and sent as soon as possible (as per [OutputStream.write()])
    */
   bool writeTo(Socket socket, int count) {
-    log.fine("writing $count of $_list from $_readPos");
-    log.fine("writing $count of [${Buffer.listChars(_list)}] from $_readPos");
-    return socket.outputStream.writeFrom(_list, _readPos, count);
+    return _writeAsync(socket, _readPos, count);
   }
+  
+  bool _writeAsync(Socket socket, int start, int count) {
+    log.fine("writing $count of $_list from $start");
+    log.fine("writing $count of [${Buffer.listChars(_list)}] from $start");
+    int written = socket.writeList(_list, start, count);
+    if (written == count) {
+      return true;
+    } else {
+      // TODO: shouldn't we copy _list before doing this,
+      // so it isn't overwritten?
+      socket.onWrite = () {
+        _writeAsync(socket, start + written, count - written);
+      };
+    }
+    return false;
+  }    
   
   /**
    * Write all of the buffer to the [socket].
