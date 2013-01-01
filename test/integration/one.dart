@@ -24,6 +24,8 @@ void runIntTests(String user, String password, String db, int port, String host)
             } else {
               dropTables();
             }
+          } else {
+            print(exception);
           }
           return true;
         });
