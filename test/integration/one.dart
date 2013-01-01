@@ -24,10 +24,11 @@ void runIntTests(String user, String password, String db, int port, String host)
             } else {
               dropTables();
             }
+            return true;
           } else {
             print(exception);
+            return false;
           }
-          return true;
         });
         future.then((x) {
 //          print("deleted");
