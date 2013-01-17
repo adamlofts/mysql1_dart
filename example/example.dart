@@ -1,6 +1,7 @@
 import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:/options_file/options_file.dart';
+import 'dart:async';
 
 /*
  * This example drops a couple of tables if they exist, before recreating them.
@@ -16,15 +17,15 @@ class Example {
   Future run() {
     var completer = new Completer();
     // drop the tables if they already exist
-    dropTables().chain((x) {
+    dropTables().then((x) {
       print("dropped tables");
       // then recreate the tables
       return createTables();
-    }).chain((x) {
+    }).then((x) {
       print("created tables");
       // add some data
       return addData();
-    }).chain((x) {
+    }).then((x) {
       // and read it back out
       return readData();
     }).then((x) {
@@ -59,7 +60,7 @@ class Example {
   
   Future addData() {
     var completer = new Completer();
-    pool.prepare("insert into people (name, age) values (?, ?)").chain((query) {
+    pool.prepare("insert into people (name, age) values (?, ?)").then((query) {
       print("prepared query 1");
       var parameters = [
           ["Dave", 15],
@@ -67,10 +68,10 @@ class Example {
           ["Mavis", 93]
         ];
       return query.executeMulti(parameters);
-    }).chain((results) {
+    }).then((results) {
       print("executed query 1");
       return pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-    }).chain((query) {
+    }).then((query) {
       print("prepared query 2");
       var parameters = [
           ["Rover", "Dog", 1],
@@ -122,6 +123,7 @@ void main() {
   print("running example");
   example.run().then((x) {
     // finally, close the connection
+    print("K THNX BYE!");
     pool.close();
   });
 }

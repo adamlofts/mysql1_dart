@@ -3,6 +3,8 @@ import 'package:sqljocky/utils.dart';
 import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
 
+import 'dart:async';
+
 /*
  * This example drops a couple of tables if they exist, before recreating them.
  * It then stores some data in the database and reads it back out.
@@ -17,11 +19,11 @@ class Example {
   Future run() {
     var completer = new Completer();
     // drop the tables if they already exist
-    var future = dropTables().chain((x) {
+    var future = dropTables().then((x) {
       print("dropped tables");
       // then recreate the tables
       return createTables();
-    }).chain((x) {
+    }).then((x) {
       print("created tables");
       // add some data
       var futures = new List<Future>();
@@ -31,14 +33,14 @@ class Example {
         futures.add(readData());
       }
       print("queued all operations");
-      return Futures.wait(futures);
+      return Future.wait(futures);
     });
     
     future.then((x) {
       print("data added and read");
       completer.complete(null);
     });
-    future.handleException((e) {
+    future.catchError((e) {
       print("Exception: $e");
       completer.complete(null);
       return true;
@@ -73,16 +75,16 @@ class Example {
   Future addData() {
     print("adding");
     var completer = new Completer();
-    pool.prepare("insert into people (name, age) values (?, ?)").chain((query) {
+    pool.prepare("insert into people (name, age) values (?, ?)").then((query) {
       var parameters = [
           ["Dave", 15],
           ["John", 16],
           ["Mavis", 93]
         ];
       return query.executeMulti(parameters);
-    }).chain((results) {
+    }).then((results) {
       return pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-    }).chain((query) {
+    }).then((query) {
       var parameters = [
           ["Rover", "Dog", 1],
           ["Daisy", "Cow", 2],
@@ -98,16 +100,16 @@ class Example {
     print("adding");
     var completer = new Completer();
     pool.startTransaction().then((trans) {
-      var future = trans.prepare("insert into people (name, age) values (?, ?)").chain((query) {
+      var future = trans.prepare("insert into people (name, age) values (?, ?)").then((query) {
         var parameters = [
             ["Dave", 15],
             ["John", 16],
             ["Mavis", 93]
           ];
         return query.executeMulti(parameters);
-      }).chain((results) {
+      }).then((results) {
         return trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-      }).chain((query) {
+      }).then((query) {
         var parameters = [
             ["Rover", "Dog", 1],
             ["Daisy", "Cow", 2],
@@ -123,13 +125,13 @@ class Example {
           c.complete(null);
         });
         return c.future;
-      }).chain((results) {
+      }).then((results) {
         return trans.commit();
       });
       future.then((x) {
         completer.complete(null);
       });
-      future.handleException((e) {
+      future.catchError((e) {
         print("Exception: $e");
         completer.complete(null);
         return true;
