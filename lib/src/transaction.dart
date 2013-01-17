@@ -8,8 +8,8 @@ class Transaction {
   // TODO: maybe give the connection a link to its transaction?
 
   handleFutureException(Future f, Completer c) {
-    f.handleException((e) {
-      c.completeException(e);
+    f.catchError((e) {
+      c.completeError(e);
       return true;
     });
   }

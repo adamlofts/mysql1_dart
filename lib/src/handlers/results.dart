@@ -21,16 +21,23 @@ class Results implements Iterable {
   
   List<dynamic> operator [](int pos) => _dataPackets[pos].values;
   
-  Iterator<List<dynamic>> iterator() => new ResultsIterator._internal(this);
+  Iterator<List<dynamic>> get iterator => new ResultsIterator._internal(this);
 }
 
 class ResultsIterator implements Iterator<dynamic> {
   final Results _results;
+  List<dynamic> _current;
   int i = 0;
   
   ResultsIterator._internal(Results this._results);
   
-  bool get hasNext => i < _results._dataPackets.length;
+  List<dynamic> get current => _current; 
   
-  List<dynamic> next() => _results._dataPackets[i++].values;
+  bool moveNext() {
+    if (i < _results._dataPackets.length) {
+      _current = _results._dataPackets[i++].values;
+      return true;
+    }
+    return false;
+  }
 }

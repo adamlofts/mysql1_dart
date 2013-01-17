@@ -78,7 +78,7 @@ class _Connection {
     _socket.onError = (Exception e) {
       log.fine("exception $e");
       release();
-      _completer.completeException(e);
+      _completer.completeError(e);
     };
     _socket.onWrite = () {
       log.fine("write");
@@ -129,7 +129,7 @@ class _Connection {
         } catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
-          _completer.completeException(e);
+          _completer.completeError(e);
 //          _finished();
           return;
         }

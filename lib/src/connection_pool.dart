@@ -209,7 +209,7 @@ class ConnectionPool {
               reuseConnection(cnx);
             }
           });
-          future.handleException((e) {
+          future.catchError((e) {
             if (!retain) {
               releaseConnection(cnx);
               reuseConnection(cnx);
@@ -278,8 +278,8 @@ class ConnectionPool {
   }
   
   handleFutureException(Future f, Completer c, [_Connection cnx]) {
-    f.handleException((e) {
-      c.completeException(e);
+    f.catchError((e) {
+      c.completeError(e);
       if (cnx != null) {
         releaseConnection(cnx);
         reuseConnection(cnx);

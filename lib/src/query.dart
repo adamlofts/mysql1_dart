@@ -67,8 +67,8 @@ class Query {
   }
       
   handleFutureException(Future f, Completer c, [_Connection cnx]) {
-    f.handleException((e) {
-      c.completeException(e);
+    f.catchError((e) {
+      c.completeError(e);
       if (cnx != null) {
         releaseConnection(cnx);
         reuseConnection(cnx);

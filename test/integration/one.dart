@@ -16,7 +16,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         tables.removeLast();
 //        print("drop table $table");
         Future future = pool.query("drop table $table");
-        future.handleException((exception) {
+        future.catchError((exception) {
           if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
 //            print("no table to delete");
             if (tables.length == 0) {
@@ -92,7 +92,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)").chain((Query query) {
+        "?, ?)").then((Query query) {
           query[0] = 126;
           query[1] = 164;
           query[2] = 165;
@@ -149,7 +149,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('update', 1, () {
       Query preparedQuery;
-      pool.prepare("update test1 set atinyint = ?, adecimal = ?").chain((Query query) {
+      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((Query query) {
         preparedQuery = query;
         query[0] = 127;
         query[1] = "123456789.987654321";
@@ -162,7 +162,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('select stuff', 1, () {
       pool.query("select atinyint, adecimal from test1").then((Results results) {
-        List row = results.iterator().next();
+        var it = results.iterator;
+        it.moveNext();
+        List row = it.current;
         Expect.equals(127, row[0]);
         Expect.equals(123456789.987654321, row[1]);
         callbackDone();
@@ -183,7 +185,9 @@ void runIntTests(String user, String password, String db, int port, String host)
       pool.prepareExecute('select * from test1', []).then((Results results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
-        values = results.iterator().next();
+        var it = results.iterator;
+        it.moveNext();
+        values = it.current;
         for (int i = 0; i < results.fields.length; i++) {
           Field field = results.fields[i];
           print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
@@ -195,7 +199,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     asyncTest('data types (query)', 1, () {
       pool.query('select * from test1').then((Results results) {
         print("----------- query results ---------------");
-        List row = results.iterator().next();
+        var it = results.iterator;
+        it.moveNext();
+        List row = it.current;
         for (int i = 0; i < results.fields.length; i++) {
           Field field = results.fields[i];
           

@@ -18,7 +18,7 @@ class TableDropper {
     var table = _tables[0];
     _tables.removeRange(0, 1);
     var future = pool.query('drop table $table');
-    future.handleException((exception) {
+    future.catchError((exception) {
       if (exception is MySqlError && (exception as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE) {
         if (_tables.length == 0) {
           c.complete(null);
@@ -27,7 +27,7 @@ class TableDropper {
         }
         return true;
       }
-      c.completeException(exception);
+      c.completeError(exception);
       return true;
     });
     future.then((x) {
