@@ -4,6 +4,7 @@ import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
 
 import 'dart:async';
+import 'dart:math';
 
 /*
  * This example drops a couple of tables if they exist, before recreating them.
@@ -12,6 +13,8 @@ import 'dart:async';
  */
 
 class Example {
+  var insertedIds = [];
+  var rnd = new Random();
   ConnectionPool pool;
   
   Example(this.pool);
@@ -96,6 +99,7 @@ class Example {
   Future addDataInTransaction() {
     print("adding");
     var completer = new Completer();
+    var ids = [];
     pool.startTransaction().then((trans) {
       trans.prepare("insert into people (name, age) values (?, ?)").then((query) {
         var parameters = [
@@ -105,14 +109,30 @@ class Example {
           ];
         return query.executeMulti(parameters);
       }).then((results) {
+        for (var result in results) {
+          ids.add(result.insertId);
+        }
+        print("added people");
         return trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
       }).then((query) {
+        var id1, id2, id3;
+        if (insertedIds.length < 3) {
+          id1 = ids[0];
+          id2 = ids[1];
+          id3 = ids[2];
+        } else {
+          id1 = insertedIds[rnd.nextInt(insertedIds.length)];
+          id2 = insertedIds[rnd.nextInt(insertedIds.length)];
+          id3 = insertedIds[rnd.nextInt(insertedIds.length)];
+        }
         var parameters = [
-            ["Rover", "Dog", 1],
-            ["Daisy", "Cow", 2],
-            ["Spot", "Dog", 2]];
+            ["Rover", "Dog", id1],
+            ["Daisy", "Cow", id2],
+            ["Spot", "Dog", id3]];
         var c = new Completer();
+        print("adding pets");
         query.executeMulti(parameters).then((x) {
+          print("added pets");
           c.complete(null);
         }, onError: (e) {
           print("Exception: $e");
@@ -123,6 +143,7 @@ class Example {
       }).then((results) {
         return trans.commit();
       }).then((x) {
+        insertedIds.addAll(ids);
         completer.complete(null);
       }, onError: (e) {
         print("Exception: $e");
