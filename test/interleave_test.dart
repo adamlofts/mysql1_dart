@@ -34,13 +34,10 @@ class Example {
       }
       print("queued all operations");
       return Future.wait(futures);
-    });
-    
-    future.then((x) {
+    }).then((x) {
       print("data added and read");
       completer.complete(null);
-    });
-    future.catchError((e) {
+    }, onError: (e) {
       print("Exception: $e");
       completer.complete(null);
       return true;
@@ -116,7 +113,7 @@ class Example {
             ["Spot", "Dog", 2]];
         var c = new Completer();
         var f = query.executeMulti(parameters);
-        f.handleException((e) {
+        f.catchError((e) {
           print("Exception: $e");
           c.complete(null);
           return true;

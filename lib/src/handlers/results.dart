@@ -1,6 +1,6 @@
 part of handlers_lib;
 
-class Results implements Iterable {
+class Results {
   final OkPacket _okPacket;
   final List<Field> _fieldPackets;
   final List<DataPacket> _dataPackets;
