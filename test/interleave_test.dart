@@ -97,7 +97,7 @@ class Example {
     print("adding");
     var completer = new Completer();
     pool.startTransaction().then((trans) {
-      var future = trans.prepare("insert into people (name, age) values (?, ?)").then((query) {
+      trans.prepare("insert into people (name, age) values (?, ?)").then((query) {
         var parameters = [
             ["Dave", 15],
             ["John", 16],
@@ -112,23 +112,19 @@ class Example {
             ["Daisy", "Cow", 2],
             ["Spot", "Dog", 2]];
         var c = new Completer();
-        var f = query.executeMulti(parameters);
-        f.catchError((e) {
+        query.executeMulti(parameters).then((x) {
+          c.complete(null);
+        }, onError: (e) {
           print("Exception: $e");
           c.complete(null);
           return true;
         });
-        f.then((x) {
-          c.complete(null);
-        });
         return c.future;
       }).then((results) {
         return trans.commit();
-      });
-      future.then((x) {
+      }).then((x) {
         completer.complete(null);
-      });
-      future.catchError((e) {
+      }, onError: (e) {
         print("Exception: $e");
         completer.complete(null);
         return true;
