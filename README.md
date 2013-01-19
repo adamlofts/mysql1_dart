@@ -1,25 +1,69 @@
 SQLJocky
 ========
 
-This is a MySQL connector for the Dart programming language. It is in early stages of development,
-so please report issues, contribute code and suggest how I could make this better. (I won't 
-guarantee I'll agree with you). Please expect this code to change, possibly massively, in the near future.
+This is a MySQL connector for the Dart programming language. It isn't finished, but should
+work for most normal use. Expect this code to change though, possibly massively, 
+in the near future.
 
 News
 ----
 
-SQLJocky now uses a connection pooling model, so the API has changed somewhat. TODO: try to remember to
-fill this in with more details before merging. 
+v0.2.0: Support for the new SDK. 
+v0.1.3: SQLJocky now uses a connection pooling model, so the API has changed somewhat.
 
 Usage
 -----
 
-SqlJocky uses an asynchronous model to access the database, due to Dart's (probably sensible) lack 
-of blocking reads on sockets. The API for the library can be found in lib/interfaces.dart. Examples
-and suchlike may come in the future.
+Create a connection pool:
 
-To run the tests, you'll need to use [pub](http://www.dartlang.org/docs/pub-package-manager/) to
-import the sdk's unittests and logging packages. You'll also need to create a 'connection.options' file, by
+	var pool = new ConnectionPool(host: 'localhost', port: 3306, user: 'bob', password: 'wibble', db: 'stuff');
+
+Execute a query:
+
+	pool.query('select name, email from users').then((result) {...});
+
+Use the results:
+
+	for (row in result) {
+		print('Name: ${row[0]}, email: ${row[1]}');
+	}
+
+Prepare a query:
+
+	pool.prepare('insert into users (name, email, age) values (?, ?, ?)').then((query) {...});
+
+Execute the query:
+
+	query.execute(['Bob', 'bob@bob.com', 25]).then((result) {...});
+
+An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
+
+	print("New user's id: ${result.insertId}");
+
+Execute a query with multiple sets of parameters:
+
+	query.executeMulti([['Bob', 'bob@bob.com', 25],
+			['Bill', 'bill@bill.com', 26],
+			['Joe', 'joe@joe.com', 37]]).then((results) {...}); 
+			
+Use the list of results:
+
+	for (result in results) {
+		print("New user's id: ${result.insertId}");
+	}
+
+Use a transaction:
+
+	pool.startTransaction().then((trans) {
+		pool.query('...').then((result) {
+			trans.commit().then(() {...});
+		});
+	});
+
+Development
+-----------
+
+To run the examples and tests, you'll need to create a 'connection.options' file by
 copying 'connection.options.example' and modifying the settings.
 
 Licence
@@ -41,6 +85,7 @@ Things to do
 
 * Implement the rest of mysql's commands
 * Improve performance where possible
+* Better handling of various data types
 * More unit testing
 * More integration tests
 * DartDoc
