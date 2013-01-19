@@ -172,6 +172,9 @@ class Query {
     }
   }
 
+  /**
+   * Attempt to reuse a connection for a queued operation
+   */
   reuseConnection(_Connection cnx) {
     if (!_inTransaction) {
       _pool.reuseConnection(cnx);

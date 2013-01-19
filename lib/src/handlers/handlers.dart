@@ -99,11 +99,11 @@ abstract class Handler {
   dynamic checkResponse(Buffer response, [bool prepareStmt=false]) {
     if (response[0] == PACKET_OK) {
       if (prepareStmt) {
-        PrepareOkPacket okPacket = new PrepareOkPacket(response);
+        var okPacket = new PrepareOkPacket(response);
         log.fine(okPacket.toString());
         return okPacket;
       } else {
-        OkPacket okPacket = new OkPacket(response);
+        var okPacket = new OkPacket(response);
         log.fine(okPacket.toString());
         return okPacket;
       }
@@ -127,7 +127,7 @@ class UseDbHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(_dbName.length + 1);
+    var buffer = new Buffer(_dbName.length + 1);
     buffer.writeByte(COM_INIT_DB);
     buffer.writeString(_dbName);
     return buffer;
@@ -145,7 +145,7 @@ class PingHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(1);
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_PING);
     return buffer;
   }
@@ -162,7 +162,7 @@ class DebugHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(1);
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_DEBUG);
     return buffer;
   }
@@ -179,7 +179,7 @@ class QuitHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(1);
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_QUIT);
     return buffer;
   }

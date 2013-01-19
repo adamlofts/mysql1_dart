@@ -84,8 +84,8 @@ class StandardDataPacket implements DataPacket {
   
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) :
       _values = new List<dynamic>(fieldPackets.length) {
-    for (int i = 0; i < fieldPackets.length; i++) {
-      String s = buffer.readLengthCodedString();
+    for (var i = 0; i < fieldPackets.length; i++) {
+      var s = buffer.readLengthCodedString();
       if (s == null) {
         _values[i] = null;
         continue;
@@ -114,7 +114,7 @@ class StandardDataPacket implements DataPacket {
           _values[i] = new Date.fromString(s);
           break;
         case FIELD_TYPE_TIME: // time
-          List<String> parts = s.split(":");
+          var parts = s.split(":");
           _values[i] = new Duration(days: 0, hours: int.parse(parts[0]),
             minutes: int.parse(parts[1]), seconds: int.parse(parts[2]), 
             milliseconds: 0);
@@ -127,7 +127,7 @@ class StandardDataPacket implements DataPacket {
           _values[i] = s;
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
-          Uint8List b = new Uint8List(s.length);
+          var b = new Uint8List(s.length);
           b.setRange(0, s.length, s.charCodes);
           _values[i] = b;
           break;
@@ -160,7 +160,7 @@ class QueryHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(_sql.length + 1);
+    var buffer = new Buffer(_sql.length + 1);
     buffer.writeByte(COM_QUERY);
     buffer.writeString(_sql);
     return buffer;
@@ -186,12 +186,12 @@ class QueryHandler extends Handler {
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
-          Field fieldPacket = new Field(response);
+          var fieldPacket = new Field(response);
           log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          DataPacket dataPacket = new StandardDataPacket(response, _fieldPackets);
+          var dataPacket = new StandardDataPacket(response, _fieldPackets);
           log.fine(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;

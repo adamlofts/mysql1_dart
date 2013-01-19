@@ -21,12 +21,12 @@ void main() {
     print("${r.time}: ${r.message}");
   });
 
-  OptionsFile options = new OptionsFile('connection.options');
-  String user = options.getString('user');
-  String password = options.getString('password');
-  int port = options.getInt('port', 3306);
-  String db = options.getString('db');
-  String host = options.getString('host', 'localhost');
+  var options = new OptionsFile('connection.options');
+  var user = options.getString('user');
+  var password = options.getString('password');
+  var port = options.getInt('port', 3306);
+  var db = options.getString('db');
+  var host = options.getString('host', 'localhost');
   
   runIntTests(user, password, db, port, host);
 }

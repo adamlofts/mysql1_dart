@@ -187,8 +187,8 @@ class _Connection {
   }
   
   /**
-   * The future returned by [whenReady] fires when there is nothing
-   * in the queue.
+   * The future returned by [whenReady] fires when all queued operations in the pool
+   * have completed, and this connection is free to be used again.
    */
   Future<_Connection> whenReady() {
     var c = new Completer<_Connection>();
@@ -196,7 +196,7 @@ class _Connection {
       use();
       c.complete(this);
     } else {
-      _pool.addPendingConnection(c);
+      _pool._addPendingConnection(c);
     }
     return c.future;
   }

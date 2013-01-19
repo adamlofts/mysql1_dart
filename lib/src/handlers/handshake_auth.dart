@@ -38,7 +38,7 @@ class HandshakeHandler extends Handler {
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
     threadId = response.readInt32();
-    List<int> scrambleBuffer1 = response.readList(8);
+    var scrambleBuffer1 = response.readList(8);
     response.skip(1);
     serverCapabilities = response.readInt16();
     serverLanguage = response.readByte();
@@ -46,7 +46,7 @@ class HandshakeHandler extends Handler {
     serverCapabilities += (response.readInt16() << 0x10);
     scrambleLength = response.readByte();
     response.skip(10);
-    List<int> scrambleBuffer2 = response.readNullTerminatedList();
+    var scrambleBuffer2 = response.readNullTerminatedList();
     scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
     scrambleBuffer.setRange(0, 8, scrambleBuffer1);
     scrambleBuffer.setRange(8, scrambleBuffer2.length, scrambleBuffer2);
@@ -86,33 +86,33 @@ class AuthHandler extends Handler {
     if (_password == null) {
       hash = <int>[];
     } else {
-      hash:Hash hasher = new SHA1();
+      var hasher = new SHA1();
       hasher.add(_password.charCodes);
-      List<int> hashedPassword = hasher.close();
+      var hashedPassword = hasher.close();
       
       hasher = new SHA1();
       hasher.add(hashedPassword);
-      List<int> doubleHashedPassword = hasher.close();
+      var doubleHashedPassword = hasher.close();
       
       hasher = new SHA1();
       hasher.add(_scrambleBuffer);
       hasher.add(doubleHashedPassword);
-      List<int> hashedSaltedPassword = hasher.close();
+      var hashedSaltedPassword = hasher.close();
       
       hash = new List<int>(hashedSaltedPassword.length);
-      for (int i = 0; i < hash.length; i++) {
+      for (var i = 0; i < hash.length; i++) {
         hash[i] = hashedSaltedPassword[i] ^ hashedPassword[i];
       }
     }
 
-    int size = hash.length + _username.length + 2 + 32;
+    var size = hash.length + _username.length + 2 + 32;
     var clientFlags = _clientFlags;
     if (_db != null) {
       size += _db.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
     
-    Buffer buffer = new Buffer(size);
+    var buffer = new Buffer(size);
     buffer.seekWrite(0);
     buffer.writeInt32(clientFlags);
     buffer.writeInt32(_maxPacketSize);

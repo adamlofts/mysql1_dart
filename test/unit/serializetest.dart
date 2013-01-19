@@ -35,22 +35,22 @@ String bufferToHexString(Buffer list, [bool reverse=false]) {
 void runSerializationTests() {
   group('serialization:', () {
     test('can write zero float', () {
-      Buffer buffer = new Buffer(4);
-      double n = 0.0;
+      var buffer = new Buffer(4);
+      var n = 0.0;
       buffer.writeFloat(n);
       expect(bufferToHexString(buffer, true), equals("00000000"));
     });
   
     test('can write zero double', () {
-      Buffer buffer = new Buffer(8);
-      double n = 0.0;
+      var buffer = new Buffer(8);
+      var n = 0.0;
       buffer.writeDouble(n);
       expect(bufferToHexString(buffer, true), equals("0000000000000000"));
     });
   
     test('can write one or greater float', () {
-      Buffer buffer = new Buffer(4);
-      double n = 1.0;
+      var buffer = new Buffer(4);
+      var n = 1.0;
       buffer.writeFloat(n);
       expect(bufferToHexString(buffer, true), equals("3F800000"));
       
@@ -73,8 +73,8 @@ void runSerializationTests() {
     });
   
     test('can write one or greater double', () {
-      Buffer buffer = new Buffer(8);
-      double n = 1.0;
+      var buffer = new Buffer(8);
+      var n = 1.0;
       buffer.writeDouble(n);
       expect(bufferToHexString(buffer, true), equals("3FF0000000000000"));
       
@@ -97,9 +97,9 @@ void runSerializationTests() {
     });
   
     test('can write less than one float', () {
-      Buffer buffer = new Buffer(4);
+      var buffer = new Buffer(4);
       
-      double n = 0.1;
+      var n = 0.1;
       buffer.writeFloat(n);
       expect(bufferToHexString(buffer, true), equals("3DCCCCCD"));
       
@@ -121,9 +121,9 @@ void runSerializationTests() {
     });
   
     test('can write less than one double', () {
-      Buffer buffer = new Buffer(8);
+      var buffer = new Buffer(8);
       
-      double n = 0.1;
+      var n = 0.1;
       buffer.writeDouble(n);
       expect(bufferToHexString(buffer, true), equals("3FB999999999999A"));
       
@@ -140,9 +140,9 @@ void runSerializationTests() {
     });
   
     test('can write non numbers float', () {
-      Buffer buffer = new Buffer(4);
+      var buffer = new Buffer(4);
       
-      double n = 1.0/0.0;
+      var n = 1.0/0.0;
       buffer.writeFloat(n);
       expect(bufferToHexString(buffer, true), equals("7F800000"));
   
@@ -158,9 +158,9 @@ void runSerializationTests() {
     });
   
     test('can write non numbers double', () {
-      Buffer buffer = new Buffer(8);
+      var buffer = new Buffer(8);
       
-      double n = 1.0/0.0;
+      var n = 1.0/0.0;
       buffer.writeDouble(n);
       expect(bufferToHexString(buffer, true), equals("7FF0000000000000"));
   

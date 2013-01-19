@@ -59,7 +59,7 @@ class PrepareHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(_sql.length + 1);
+    var buffer = new Buffer(_sql.length + 1);
     buffer.writeByte(COM_STMT_PREPARE);
     buffer.writeString(_sql);
     return buffer;
@@ -77,7 +77,7 @@ class PrepareHandler extends Handler {
             throw "Unexpected EOF packet";
           }
         } else {
-          Field fieldPacket = new Field(response);
+          var fieldPacket = new Field(response);
           log.fine("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] = fieldPacket;
         }
@@ -89,7 +89,7 @@ class PrepareHandler extends Handler {
             throw "Unexpected EOF packet";
           }
         } else {
-          Field fieldPacket = new Field(response);
+          var fieldPacket = new Field(response);
           log.fine("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
@@ -126,7 +126,7 @@ class CloseStatementHandler extends Handler {
   }
   
   Buffer createRequest() {
-    Buffer buffer = new Buffer(5);
+    var buffer = new Buffer(5);
     buffer.writeByte(COM_STMT_CLOSE);
     buffer.writeInt32(_handle);
     return buffer;
@@ -162,11 +162,11 @@ class ExecuteQueryHandler extends Handler {
   }
   
   Buffer createRequest() {
-    int bytes = ((_values.length + 7) / 8).floor().toInt();
-    List<int> nullMap = new List<int>(bytes);
-    int byte = 0;
-    int bit = 0;
-    for (int i = 0; i < _values.length; i++) {
+    var bytes = ((_values.length + 7) / 8).floor().toInt();
+    var nullMap = new List<int>(bytes);
+    var byte = 0;
+    var bit = 0;
+    for (var i = 0; i < _values.length; i++) {
       if (nullMap[byte] == null) {
         nullMap[byte] = 0;
       }
@@ -181,9 +181,9 @@ class ExecuteQueryHandler extends Handler {
     };
     
     //TODO do this properly
-    List<int> types = <int>[];
-    List<int> values = <int>[];
-    for (int i = 0; i < _values.length; i++) {
+    var types = <int>[];
+    var values = <int>[];
+    for (var i = 0; i < _values.length; i++) {
       log.fine("field $i ${_preparedQuery.parameters[i].type}");
       var value = _values[i];
       if (value != null) {
@@ -209,7 +209,7 @@ class ExecuteQueryHandler extends Handler {
         } else if (value is double) {
           log.fine("DOUBLE: $value");
 
-          String s = value.toString();
+          var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
           values.add(s.length);
@@ -231,7 +231,7 @@ class ExecuteQueryHandler extends Handler {
           values.add(value.hour);
           values.add(value.minute);
           values.add(value.second);
-          int billionths = value.millisecond * 1000000;
+          var billionths = value.millisecond * 1000000;
           values.add(billionths >> 0x00 & 0xFF); 
           values.add(billionths >> 0x08 & 0xFF); 
           values.add(billionths >> 0x10 & 0xFF); 
@@ -249,7 +249,7 @@ class ExecuteQueryHandler extends Handler {
           values.addAll(value);
         } else {
           log.fine("STRING: $value");
-          String s = value.toString();
+          var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
           values.add(s.length);
@@ -258,7 +258,7 @@ class ExecuteQueryHandler extends Handler {
       }
     }
     
-    Buffer buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
+    var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
     buffer.writeByte(COM_STMT_EXECUTE);
     buffer.writeInt32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
@@ -300,13 +300,13 @@ class ExecuteQueryHandler extends Handler {
           break;
         case STATE_FIELD_PACKETS:
           log.fine('Got a field packet');
-          Field fieldPacket = new Field(response);
+          var fieldPacket = new Field(response);
           log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
           log.fine('Got a row packet');
-          BinaryDataPacket dataPacket = new BinaryDataPacket(response, _fieldPackets);
+          var dataPacket = new BinaryDataPacket(response, _fieldPackets);
           log.fine(dataPacket.toString());
           _dataPackets.add(dataPacket);
           break;
@@ -332,13 +332,13 @@ class BinaryDataPacket implements DataPacket {
   BinaryDataPacket(Buffer buffer, List<Field> fields) :
       log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
-    List<int> nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
+    var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
-    List<bool> nullMap = new List<bool>(fields.length);
-    int shift = 2;
-    int byte = 0;
-    for (int i = 0; i < fields.length; i++) {
-      int mask = 1 << shift;
+    var nullMap = new List<bool>(fields.length);
+    var shift = 2;
+    var byte = 0;
+    for (var i = 0; i < fields.length; i++) {
+      var mask = 1 << shift;
       nullMap[i] = (nulls[byte] & mask) != 0;
       shift++;
       if (shift > 7) {
@@ -348,7 +348,7 @@ class BinaryDataPacket implements DataPacket {
     }
     
     _values = new List<dynamic>(fields.length);
-    for (int i = 0; i < fields.length; i++) {
+    for (var i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {
         log.fine("Value: null");
@@ -358,7 +358,7 @@ class BinaryDataPacket implements DataPacket {
       switch (fields[i].type) {
         case FIELD_TYPE_BLOB:
           log.fine("BLOB");
-          int len = buffer.readByte();
+          var len = buffer.readByte();
           _values[i] = buffer.readList(len);
           log.fine("Value: ${_values[i]}");
           break;
@@ -389,8 +389,8 @@ class BinaryDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_NEWDECIMAL:
           log.fine("NEWDECIMAL");
-          int len = buffer.readByte();
-          String num = buffer.readString(len);
+          var len = buffer.readByte();
+          var num = buffer.readString(len);
            _values[i] = double.parse(num);
           log.fine("Value: ${_values[i]}");
           break;
@@ -406,7 +406,7 @@ class BinaryDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_BIT:
           log.fine("BIT");
-          int len = buffer.readByte();
+          var len = buffer.readByte();
           // TODO should this be returned as a list, or an arbitrarily long number?
           _values[i] = buffer.readList(len);
           log.fine("Value: ${_values[i]}");
@@ -415,15 +415,15 @@ class BinaryDataPacket implements DataPacket {
         case FIELD_TYPE_DATE:
         case FIELD_TYPE_TIMESTAMP:
           log.fine("DATE/DATETIME");
-          int len = buffer.readByte();
-          List<int> date = buffer.readList(len);
-          int year = 0;
-          int month = 0;
-          int day = 0;
-          int hours = 0;
-          int minutes = 0;
-          int seconds = 0;
-          int billionths = 0;
+          var len = buffer.readByte();
+          var date = buffer.readList(len);
+          var year = 0;
+          var month = 0;
+          var day = 0;
+          var hours = 0;
+          var minutes = 0;
+          var seconds = 0;
+          var billionths = 0;
           
           if (date.length > 0) {
             year = date[0] + (date[1] << 0x08);
@@ -445,15 +445,15 @@ class BinaryDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_TIME:
           log.fine("TIME");
-          int len = buffer.readByte();
-          List<int> time = buffer.readList(len);
+          var len = buffer.readByte();
+          var time = buffer.readList(len);
           
-          int sign = 1;
-          int days = 0;
-          int hours = 0;
-          int minutes = 0;
-          int seconds = 0;
-          int billionths = 0;
+          var sign = 1;
+          var days = 0;
+          var hours = 0;
+          var minutes = 0;
+          var seconds = 0;
+          var billionths = 0;
           
           log.fine("time: $time");
           if (time.length > 0) {
@@ -486,7 +486,7 @@ class BinaryDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_GEOMETRY:
           log.fine("GEOMETRY - not implemented");
-          int len = buffer.readByte();
+          var len = buffer.readByte();
           //TODO
           _values[i] = buffer.readList(len);
           break;

@@ -1,11 +1,5 @@
 part of sqljocky;
 
-class ConnectionRequest {
-  final Completer<_Connection> c;
-  
-  ConnectionRequest(this.c);
-}
-
 class ConnectionPool {
   final Logger log;
 
@@ -16,17 +10,22 @@ class ConnectionPool {
   final String _db;
   
   int _max;
-  
-  final Queue<ConnectionRequest> _pendingConnections;
+
+  /*
+   * The pool maintains a queue of connection requests. When a connection completes, if there
+   * is a connection in the queue then it is 'activated' - that is, the future returned 
+   * by _getConnection() completes.
+   */
+  final Queue<Completer<_Connection>> _pendingConnections;
   final List<_Connection> _pool;
   
-  addPendingConnection(Completer<_Connection> pendingConnection) {
-    _pendingConnections.add(new ConnectionRequest(pendingConnection));
+  _addPendingConnection(Completer<_Connection> pendingConnection) {
+    _pendingConnections.add(pendingConnection);
   }
 
   ConnectionPool({String host: 'localhost', int port: 3306, String user, 
       String password, String db, int max: 5}) :
-        _pendingConnections = new Queue<ConnectionRequest>(),
+        _pendingConnections = new Queue<Completer<_Connection>>(),
         _pool = new List<_Connection>(),
         _host = host,
         _port = port,
@@ -59,7 +58,7 @@ class ConnectionPool {
     
     if (_pool.length < _max) {
       log.finest("Creating new pooled cnx#${_pool.length}");
-      _Connection cnx = new _Connection(this, _pool.length);
+      var cnx = new _Connection(this, _pool.length);
       cnx.use();
       var future = cnx.connect(
           host: _host, 
@@ -75,7 +74,7 @@ class ConnectionPool {
       handleFutureException(future, c, cnx);
     } else {
       log.finest("Waiting for an available connection");
-      addPendingConnection(c);
+      _addPendingConnection(c);
     }
     return c.future;
   }
@@ -85,6 +84,17 @@ class ConnectionPool {
     log.finest("Finished with cnx#${cnx.number}: marked as not in use");
   }
   
+  /**
+   * Attempts to continue using a connection. If the connection isn't managed
+   * by this pool, or if the connection is already in use, nothing happens.
+   * 
+   * If there are operations which have been queued in this pool, starts
+   * to execute that operation. 
+   * 
+   * Otherwise, nothing happens.
+   * 
+   * //TODO rename to something like processQueuedOperations??
+   */
   reuseConnection(_Connection cnx) {
     if (!_pool.contains(cnx)) {
       log.warning("reuseConnection called for unmanaged connection");
@@ -98,9 +108,9 @@ class ConnectionPool {
     
     if (_pendingConnections.length > 0) {
       log.finest("Reusing cnx#${cnx.number} for a queued operation");
-      var request = _pendingConnections.removeFirst();
+      var c = _pendingConnections.removeFirst();
       cnx.use();
-      request.c.complete(cnx);
+      c.complete(cnx);
     }
   }
   
@@ -262,13 +272,13 @@ class ConnectionPool {
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     var c = new Completer<Results>();
-    Future<Query> future = prepare(sql);
-    future.then((Query q) {
+    var future = prepare(sql);
+    future.then((q) {
       for (int i = 0; i < parameters.length; i++) {
         q[i] = parameters[i];
       }
       var future = q.execute();
-      future.then((Results results) {
+      future.then((results) {
         c.complete(results);
       });
       handleFutureException(future, c);

@@ -12,10 +12,10 @@ void runIntTests(String user, String password, String db, int port, String host)
       var tables = ["test1"];
 
       void dropTables() {
-        String table = tables.last;
+        var table = tables.last;
         tables.removeLast();
 //        print("drop table $table");
-        Future future = pool.query("drop table $table");
+        var future = pool.query("drop table $table");
         future.catchError((exception) {
           if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
 //            print("no table to delete");
@@ -62,7 +62,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     asyncTest('show tables', 1, () {
       pool.query("show tables").then((Results results) {
         print("tables");
-        for (List<dynamic> row in results) {
+        for (var row in results) {
           print(row);
         }
         callbackDone();
@@ -133,7 +133,7 @@ void runIntTests(String user, String password, String db, int port, String host)
                  
           print("executing");
           return query.execute();
-        }).then((Results results) {
+        }).then((results) {
           expect(results.affectedRows, equals(1));
           print("updated ${results.affectedRows} ${results.insertId}");
           callbackDone();
@@ -141,7 +141,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('select everything', 1, () {
-      pool.query('select * from test1').then((Results results) {
+      pool.query('select * from test1').then((results) {
         expect(results.count, equals(1));
         callbackDone();
       });
@@ -149,22 +149,22 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     asyncTest('update', 1, () {
       Query preparedQuery;
-      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((Query query) {
+      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
         preparedQuery = query;
         query[0] = 127;
         query[1] = "123456789.987654321";
         return query.execute();
-      }).then((Results results) {
+      }).then((results) {
         preparedQuery.close();
         callbackDone();
       });
     });
     
     asyncTest('select stuff', 1, () {
-      pool.query("select atinyint, adecimal from test1").then((Results results) {
+      pool.query("select atinyint, adecimal from test1").then((results) {
         var it = results.iterator;
         it.moveNext();
-        List row = it.current;
+        var row = it.current;
         Expect.equals(127, row[0]);
         Expect.equals(123456789.987654321, row[1]);
         callbackDone();
@@ -172,7 +172,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('prepare execute', 1, () {
-      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((Results results) {
+      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((results) {
         Expect.equals(1, results.affectedRows);
         callbackDone();
       });
@@ -182,14 +182,14 @@ void runIntTests(String user, String password, String db, int port, String host)
     List<dynamic> values;
     
     asyncTest('data types (prepared)', 1, () {
-      pool.prepareExecute('select * from test1', []).then((Results results) {
+      pool.prepareExecute('select * from test1', []).then((results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
         var it = results.iterator;
         it.moveNext();
         values = it.current;
-        for (int i = 0; i < results.fields.length; i++) {
-          Field field = results.fields[i];
+        for (var i = 0; i < results.fields.length; i++) {
+          var field = results.fields[i];
           print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
         }
         callbackDone();
@@ -197,13 +197,13 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     asyncTest('data types (query)', 1, () {
-      pool.query('select * from test1').then((Results results) {
+      pool.query('select * from test1').then((results) {
         print("----------- query results ---------------");
         var it = results.iterator;
         it.moveNext();
-        List row = it.current;
-        for (int i = 0; i < results.fields.length; i++) {
-          Field field = results.fields[i];
+        var row = it.current;
+        for (var i = 0; i < results.fields.length; i++) {
+          var field = results.fields[i];
           
           // make sure field types returned by both queries are the same
           expect(field.type, equals(preparedFields[i].type));
@@ -225,15 +225,15 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('multi queries', 1, () {
-      pool.startTransaction().then((Transaction trans) {
-        Date start = new Date.now();
-        trans.prepare('insert into test1 (aint) values (?)').then((Query query) {
+      pool.startTransaction().then((trans) {
+        var start = new Date.now();
+        trans.prepare('insert into test1 (aint) values (?)').then((query) {
           var params = [];
-          for (int i = 0; i < 50; i++) {
+          for (var i = 0; i < 50; i++) {
             params.add([i]);
           }
-          query.executeMulti(params).then((List<Results> resultList) {
-            Date end = new Date.now();
+          query.executeMulti(params).then((resultList) {
+            var end = new Date.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
             trans.commit().then((x) {
@@ -251,12 +251,12 @@ void runIntTests(String user, String password, String db, int port, String host)
 }
 
 void showResults(Results results) {
-  List<String> fieldNames = <String>[];
-  for (Field field in results.fields) {
+  var fieldNames = <String>[];
+  for (var field in results.fields) {
     fieldNames.add("${field.name}:${field.type}");
   }
   print(fieldNames);
-  for (List<dynamic> row in results) {
+  for (var row in results) {
     print(row);
   }
 }
