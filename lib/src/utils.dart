@@ -15,27 +15,23 @@ class TableDropper {
   TableDropper(this.pool, this.tables);
   
   void _dropTables(Completer c) {
-    var table = _tables[0];
-    _tables.removeRange(0, 1);
-    var future = pool.query('drop table $table');
-    future.catchError((exception) {
-      if (exception is MySqlError && (exception as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE) {
-        if (_tables.length == 0) {
-          c.complete(null);
-        } else {
-          _dropTables(c);
-        }
-        return true;
-      }
-      c.completeError(exception);
-      return true;
-    });
-    future.then((x) {
+    afterDrop() {
       if (_tables.length == 0) {
         c.complete(null);
       } else {
         _dropTables(c);
       }
+    }
+    
+    var table = _tables.removeAt(0);
+    var future = pool.query('drop table $table');
+    // if it's an unknown table, ignore the error and continue
+    future.catchError((exception) {
+      afterDrop();
+      return true;
+    }, test: (e) => e is MySqlError && (e as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE);
+    future.then((x) {
+      afterDrop();
     });
   }
 
@@ -43,13 +39,15 @@ class TableDropper {
    * Drops the tables this [TableDropper] was created with. The 
    * returned [Future] completes when all the tables have been dropped.
    * If a table doesn't exist, it is ignored.
+   * 
+   * Do not run this a second time until the future has completed.
    */
   Future dropTables() {
-    var dropCompleter = new Completer();
+    var c = new Completer();
     _tables.clear();
     _tables.addAll(tables);
-    _dropTables(dropCompleter);
-    return dropCompleter.future;
+    _dropTables(c);
+    return c.future;
   }
 }
 
@@ -69,8 +67,7 @@ class QueryRunner {
   QueryRunner(this.pool, this.queries);
   
   Future _executeQueries(Completer c) {
-    var query = _queries[0];
-    _queries.removeRange(0, 1);
+    var query = _queries.removeAt(0);
     pool.query(query).then((result) {
       if (_queries.length == 0) {
         c.complete(null);
@@ -84,12 +81,14 @@ class QueryRunner {
    * Executes the queries this [QueryRunner] was created with. The
    * returned [Future] completes when all the queries have been executed.
    * Results are ignored.
+   * 
+   * Do not run this a second time until the future has completed.
    */
   Future executeQueries() {
-    var completer = new Completer();
+    var c = new Completer();
     _queries.clear();
     _queries.addAll(queries);
-    _executeQueries(completer);
-    return completer.future;
+    _executeQueries(c);
+    return c.future;
   }
 }
