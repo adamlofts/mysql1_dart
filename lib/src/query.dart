@@ -3,13 +3,11 @@ part of sqljocky;
 class Query {
   final ConnectionPool _pool;
   final _Connection _cnx;
-  List<dynamic> _values;
   final String sql;
-  bool _executed = false;
   final Logger log;
   final _inTransaction;
-  
-//  int get statementId => _preparedQuery.statementHandlerId;
+  List<dynamic> _values;
+  bool _executed = false;
   
   Query._internal(this._pool, this.sql) :
       _cnx = null,
@@ -37,33 +35,48 @@ class Query {
     var cnxFuture = _getConnection();
     cnxFuture.then((cnx) {
       log.fine("Got cnx#${cnx.number}");
-      var preparedQuery = cnx.getPreparedQueryFromCache(sql);
-      if (preparedQuery != null) {
-        log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
-        if (_values == null) {
-          _values = new List<dynamic>(preparedQuery.parameters.length);
-        }
-        c.complete(preparedQuery);
-        return;
+      if (!_useCachedQuery(cnx, c)) {
+        _prepareAndCacheQuery(cnx, c);
       }
-      
-      log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
-      var handler = new PrepareHandler(sql);
-      cnx.use();
-      Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
-      queryFuture.then((preparedQuery) {
-        log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
-        preparedQuery.cnx = cnx;
-        cnx.putPreparedQueryInCache(sql, preparedQuery);
-        if (_values == null) {
-          _values = new List<dynamic>(preparedQuery.parameters.length);
-        }
-        c.complete(preparedQuery);
-      });
-      handleFutureException(queryFuture, c, cnx);
     });
     handleFutureException(cnxFuture, c);
     return c.future;
+  }
+  
+  /**
+   * Returns true if there was already a cached query which has been used.
+   */
+  bool _useCachedQuery(_Connection cnx, Completer c) {
+    var preparedQuery = cnx.getPreparedQueryFromCache(sql);
+    if (preparedQuery == null) {
+      return false;
+    }
+
+    log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
+    _setUpValues(preparedQuery);
+    c.complete(preparedQuery);
+    return true;
+  }
+  
+  void _prepareAndCacheQuery(_Connection cnx, Completer c) {
+    log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
+    var handler = new PrepareHandler(sql);
+    cnx.use();
+    Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
+    queryFuture.then((preparedQuery) {
+      log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
+      preparedQuery.cnx = cnx;
+      cnx.putPreparedQueryInCache(sql, preparedQuery);
+      _setUpValues(preparedQuery);
+      c.complete(preparedQuery);
+    });
+    handleFutureException(queryFuture, c, cnx);
+  }
+  
+  _setUpValues(PreparedQuery preparedQuery) {
+    if (_values == null) {
+      _values = new List<dynamic>(preparedQuery.parameters.length);
+    }
   }
       
   handleFutureException(Future f, Completer c, [_Connection cnx]) {
@@ -80,7 +93,6 @@ class Query {
   void close() {
     _pool._closeQuery(this, _inTransaction);
   }
-  
   
   //TODO: maybe have execute(Transaction) and execute(ConnectionPool)
   Future<Results> execute() {
@@ -118,7 +130,8 @@ class Query {
     future.then((preparedQuery) {
       log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
       var resultList = new List<Results>();
-      exec(int i) {
+      
+      executeQuery(int i) {
         log.fine("Executing query, loop $i");
         _values.setRange(0, _values.length, parameters[i]);
         var future = _execute(preparedQuery);
@@ -126,7 +139,7 @@ class Query {
           log.fine("Got results, loop $i");
           resultList.add(results);
           if (i < parameters.length - 1) {
-            exec(i + 1);
+            executeQuery(i + 1);
           } else {
             releaseConnection(preparedQuery.cnx);
             c.complete(resultList);
@@ -135,7 +148,8 @@ class Query {
         });
         handleFutureException(future, c, preparedQuery.cnx);
       }
-      exec(0);
+      
+      executeQuery(0);
     });
     handleFutureException(future, c);
     return c.future;
