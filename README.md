@@ -8,15 +8,15 @@ in the near future.
 News
 ----
 
-v0.2.0: Support for the new SDK. 
-v0.1.3: SQLJocky now uses a connection pooling model, so the API has changed somewhat.
+* v0.2.0: Support for the new SDK. 
+* v0.1.3: SQLJocky now uses a connection pooling model, so the API has changed somewhat.
 
 Usage
 -----
 
 Create a connection pool:
 
-	var pool = new ConnectionPool(host: 'localhost', port: 3306, user: 'bob', password: 'wibble', db: 'stuff');
+	var pool = new ConnectionPool(host: 'localhost', port: 3306, user: 'bob', password: 'wibble', db: 'stuff', max: 5);
 
 Execute a query:
 
