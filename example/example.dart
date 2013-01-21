@@ -49,7 +49,7 @@ class Example {
                                         
                                         'create table pets (id integer not null auto_increment, '
                                         'name varchar(255), '
-                                        'species varchar(255), '
+                                        'species text, '
                                         'owner_id integer, '
                                         'primary key (id),'
                                         'foreign key (owner_id) references people (id))'
@@ -77,6 +77,7 @@ class Example {
           ["Rover", "Dog", 1],
           ["Daisy", "Cow", 2],
           ["Spot", "Dog", 2]];
+//          ["Spot", "D\u0000og", 2]];
       return query.executeMulti(parameters);
     }).then((results) {
       print("executed query 2");
@@ -88,6 +89,11 @@ class Example {
   Future readData() {
     var completer = new Completer();
     print("querying");
+//    pool.prepare('select p.id, p.name, p.age, t.name, t.species '
+//        'from people p '
+//        'left join pets t on t.owner_id = p.id').then((query) {
+//        return query.execute();
+//    }).then((result) {
     pool.query('select p.id, p.name, p.age, t.name, t.species '
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {

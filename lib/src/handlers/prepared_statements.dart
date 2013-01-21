@@ -359,7 +359,7 @@ class BinaryDataPacket implements DataPacket {
         case FIELD_TYPE_BLOB:
           log.fine("BLOB");
           var len = buffer.readByte();
-          _values[i] = buffer.readList(len);
+          _values[i] = new Blob.fromBytes(buffer.readList(len));
           log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TINY:

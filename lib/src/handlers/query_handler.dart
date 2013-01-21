@@ -129,7 +129,7 @@ class StandardDataPacket implements DataPacket {
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
           var b = new Uint8List(s.length);
           b.setRange(0, s.length, s.charCodes);
-          _values[i] = b;
+          _values[i] = new Blob.fromString(s);
           break;
         case FIELD_TYPE_GEOMETRY: // geometry
           _values[i] = s;

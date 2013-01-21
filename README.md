@@ -83,9 +83,9 @@ darts player. (Hence the lack of an 'e' in Jocky.)
 Things to do
 ------------
 
+* Better handling of various data types, especially BLOBs, which behave differently when using straight queries and prepared queries.
 * Implement the rest of mysql's commands
 * Improve performance where possible
-* Better handling of various data types
 * More unit testing
 * More integration tests
 * DartDoc
