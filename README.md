@@ -55,7 +55,7 @@ Use the list of results:
 Use a transaction:
 
 	pool.startTransaction().then((trans) {
-		pool.query('...').then((result) {
+		trans.query('...').then((result) {
 			trans.commit().then(() {...});
 		});
 	});
