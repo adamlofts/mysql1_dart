@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:scalarlist';
+import 'package:sqljocky/utils.dart';
 
 part 'integration/one.dart';
 

@@ -9,38 +9,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     asyncTest('dropTables', 1, () {
-      var tables = ["test1"];
-
-      void dropTables() {
-        var table = tables.last;
-        tables.removeLast();
-//        print("drop table $table");
-        var future = pool.query("drop table $table");
-        future.catchError((exception) {
-          if (exception is MySqlError && (exception as MySqlError).errorNumber == 1051) {
-//            print("no table to delete");
-            if (tables.length == 0) {
-              callbackDone();
-            } else {
-              dropTables();
-            }
-            return true;
-          } else {
-            print(exception);
-            return false;
-          }
-        });
-        future.then((x) {
-//          print("deleted");
-          if (tables.length == 0) {
-            callbackDone();
-          } else {
-            dropTables();
-          }
-        });
-      }
-      
-      dropTables();
+      new TableDropper(pool, ["test1"]).dropTables().then((x) {
+        callbackDone();
+      });
     });
     
     asyncTest('create tables', 1, () {
