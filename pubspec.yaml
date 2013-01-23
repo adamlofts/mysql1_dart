@@ -1,12 +1,10 @@
 name: sqljocky
-version: 0.2.0
+version: 0.2.1
 description: >
   A MySQL connector
 author: James Ots <code@jamesots.com>
 homepage: https://github.com/jamesots/sqljocky
 dependencies:
-  options_file: ">=0.9.8"
-  unittest: 
-    sdk: unittest
-  logging: 
-    sdk: logging
+  options_file: ">=0.9.9"
+  unittest: ">=0.3.1+1"
+  logging: ">=0.3.1+1"
