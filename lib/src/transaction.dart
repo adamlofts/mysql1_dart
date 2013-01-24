@@ -7,13 +7,6 @@ class Transaction {
   
   // TODO: maybe give the connection a link to its transaction?
 
-  handleFutureException(Future f, Completer c) {
-    f.catchError((e) {
-      c.completeError(e);
-      return true;
-    });
-  }
-  
   Transaction._internal(this.cnx, this._pool) : _finished = false;
   
   Future commit() {
@@ -22,13 +15,15 @@ class Transaction {
     var c = new Completer();
   
     var handler = new QueryHandler("commit");
-    var queryFuture = cnx.processHandler(handler);
-    queryFuture.then((results) {
-      _pool.releaseConnection(cnx);
-      c.complete(results);
-      _pool.reuseConnection(cnx);
-    });
-    handleFutureException(queryFuture, c);
+    cnx.processHandler(handler)
+      .then((results) {
+        _pool.releaseConnection(cnx);
+        c.complete(results);
+        _pool.reuseConnection(cnx);
+      })
+      .catchError((e) {
+        c.completeError(e);
+      });
 
     return c.future;
   }
@@ -39,13 +34,15 @@ class Transaction {
     var c = new Completer();
   
     var handler = new QueryHandler("rollback");
-    var queryFuture = cnx.processHandler(handler);
-    queryFuture.then((results) {
-      _pool.releaseConnection(cnx);
-      c.complete(results);
-      _pool.reuseConnection(cnx);
-    });
-    handleFutureException(queryFuture, c);
+    cnx.processHandler(handler)
+      .then((results) {
+        _pool.releaseConnection(cnx);
+        c.complete(results);
+        _pool.reuseConnection(cnx);
+      })
+      .catchError((e) {
+        c.completeError(e);
+      });
 
     return c.future;
   }
@@ -55,11 +52,13 @@ class Transaction {
     var c = new Completer<Results>();
     
     var handler = new QueryHandler(sql);
-    var queryFuture = cnx.processHandler(handler);
-    queryFuture.then((results) {
-      c.complete(results);
-    });
-    handleFutureException(queryFuture, c);
+    cnx.processHandler(handler)
+      .then((results) {
+        c.complete(results);
+      })
+      .catchError((e) {
+        c.completeError(e);
+      });
 
     return c.future;
   }
@@ -70,27 +69,33 @@ class Transaction {
     _checkFinished();
     var query = new Query._forTransaction(new _TransactionPool(cnx), cnx, sql);
     var c = new Completer<Query>();
-    var future = query._prepare();
-    future.then((preparedQuery) {
-      c.complete(query);
-    });
-    handleFutureException(future, c);
+    query._prepare()
+      .then((preparedQuery) {
+        c.complete(query);
+      })
+      .catchError((e) {
+        c.completeError(e);
+      });
     return c.future;
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     _checkFinished();
     var c = new Completer<Results>();
-    var f = prepare(sql);
-    f.then((query) {
-      var f = query.execute();
-      f.then((results) {
-        query.close();
-        c.complete(results);
+    prepare(sql)
+      .then((query) {
+        query.execute()
+          .then((results) {
+            query.close();
+            c.complete(results);
+          })
+          .catchError((e) {
+            c.completeError(e);
+          });
+      })
+      .catchError((e) {
+        c.completeError(e);
       });
-      handleFutureException(f, c);
-    });
-    handleFutureException(f, c);
     return c.future;
   }
 

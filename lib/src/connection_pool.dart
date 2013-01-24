@@ -67,11 +67,14 @@ class ConnectionPool {
           password: _password, 
           db: _db);
       _pool.add(cnx);
-      future.then((x) {
-        log.finest("Logged in on cnx#${cnx.number}");
-        c.complete(cnx);
-      });
-      handleFutureException(future, c, cnx);
+      future
+        .then((x) {
+          log.finest("Logged in on cnx#${cnx.number}");
+          c.complete(cnx);
+        })
+        .catchError((e) {
+          handleException(e, c, cnx);
+        });
     } else {
       log.finest("Waiting for an available connection");
       _addPendingConnection(c);
@@ -142,20 +145,23 @@ class ConnectionPool {
     log.info("Running query: ${sql}");
     var c = new Completer<Results>();
     
-    var cnxFuture = _getConnection();
-    cnxFuture.then((cnx) {
-      log.fine("Got cnx#${cnx.number} for query");
-      var handler = new QueryHandler(sql);
-      var queryFuture = cnx.processHandler(handler);
-      queryFuture.then((results) {
-        log.fine("Got query results on #${cnx.number} for: ${sql}");
-        releaseConnection(cnx);
-        c.complete(results);
-        reuseConnection(cnx);
+    _getConnection()
+      .then((cnx) {
+        log.fine("Got cnx#${cnx.number} for query");
+        cnx.processHandler(new QueryHandler(sql))
+          .then((results) {
+            log.fine("Got query results on #${cnx.number} for: ${sql}");
+            releaseConnection(cnx);
+            c.complete(results);
+            reuseConnection(cnx);
+          })
+          .catchError((e) {
+            handleException(e, c, cnx);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(queryFuture, c, cnx);
-    });
-    handleFutureException(cnxFuture, c);
 
     return c.future;
   }
@@ -167,19 +173,22 @@ class ConnectionPool {
     log.info("Pinging server");
     var c = new Completer<Results>();
     
-    var cnxFuture = _getConnection();
-    cnxFuture.then((cnx) {
-      var handler = new PingHandler();
-      var future = cnx.processHandler(handler);
-      future.then((x) {
-        log.fine("Pinged");
-        releaseConnection(cnx);
-        c.complete(x);
-        reuseConnection(cnx);
+    _getConnection()
+      .then((cnx) {
+        cnx.processHandler(new PingHandler())
+          .then((x) {
+            log.fine("Pinged");
+            releaseConnection(cnx);
+            c.complete(x);
+            reuseConnection(cnx);
+          })
+          .catchError((e) {
+            handleException(e, c);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(future, c);
-    });
-    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
@@ -188,18 +197,21 @@ class ConnectionPool {
     log.info("Sending debug message");
     var c = new Completer<Results>();
     
-    var cnxFuture = _getConnection();
-    cnxFuture.then((cnx) {
-      var handler = new DebugHandler();
-      var future = cnx.processHandler(handler);
-      future.then((x) {
-        log.fine("Message sent");
-        c.complete(x);
-        releaseConnection(cnx);
+    _getConnection()
+      .then((cnx) {
+        cnx.processHandler(new DebugHandler())
+          .then((x) {
+            log.fine("Message sent");
+            c.complete(x);
+            releaseConnection(cnx);
+          })
+          .catchError((e) {
+            handleException(e, c, cnx);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(future, c, cnx);
-    });
-    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
@@ -212,19 +224,19 @@ class ConnectionPool {
         cnx.whenReady().then((x) {
           log.finest("Connection ready - closing query: ${q.sql}");
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
-          var future = cnx.processHandler(handler, noResponse: true);
-          future.then((x) {
-            if (!retain) {
-              releaseConnection(cnx);
-              reuseConnection(cnx);
-            }
-          });
-          future.catchError((e) {
-            if (!retain) {
-              releaseConnection(cnx);
-              reuseConnection(cnx);
-            }
-          });
+          cnx.processHandler(handler, noResponse: true)
+            .then((x) {
+              if (!retain) {
+                releaseConnection(cnx);
+                reuseConnection(cnx);
+              }
+            })
+            .catchError((e) {
+              if (!retain) {
+                releaseConnection(cnx);
+                reuseConnection(cnx);
+              }
+            });
         });
       }
     }
@@ -233,14 +245,16 @@ class ConnectionPool {
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
     var c = new Completer<Query>();
-    var future = query._prepare();
-    future.then((preparedQuery) {
-      log.info("Got value count");
-      releaseConnection(preparedQuery.cnx);
-      c.complete(query);
-      reuseConnection(preparedQuery.cnx);
-    });
-    handleFutureException(future, c); //TODO release connection here?
+    query._prepare()
+      .then((preparedQuery) {
+        log.info("Got value count");
+        releaseConnection(preparedQuery.cnx);
+        c.complete(query);
+        reuseConnection(preparedQuery.cnx);
+      })
+      .catchError((e) {
+        handleException(e, c);
+      });
     return c.future;
   }
   
@@ -248,56 +262,60 @@ class ConnectionPool {
     log.info("Starting transaction");
     var c = new Completer<Transaction>();
     
-    var cnxFuture = _getConnection();
-    cnxFuture.then((cnx) {
-      var sql;
-      if (consistent) {
-        sql = "start transaction with consistent snapshot";
-      } else {
-        sql = "start transaction";
-      }
-      var handler = new QueryHandler(sql);
-      var queryFuture = cnx.processHandler(handler);
-      queryFuture.then((results) {
-        log.fine("Transaction started on cnx#${cnx.number}");
-        var transaction = new Transaction._internal(cnx, this);
-        c.complete(transaction);
+    _getConnection()
+      .then((cnx) {
+        var sql;
+        if (consistent) {
+          sql = "start transaction with consistent snapshot";
+        } else {
+          sql = "start transaction";
+        }
+        cnx.processHandler(new QueryHandler(sql))
+          .then((results) {
+            log.fine("Transaction started on cnx#${cnx.number}");
+            var transaction = new Transaction._internal(cnx, this);
+            c.complete(transaction);
+          })
+          .catchError((e) {
+            handleException(e, c, cnx);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(queryFuture, c, cnx);
-    });
-    handleFutureException(cnxFuture, c);
     
     return c.future;
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     var c = new Completer<Results>();
-    var future = prepare(sql);
-    future.then((q) {
-      for (int i = 0; i < parameters.length; i++) {
-        q[i] = parameters[i];
-      }
-      var future = q.execute();
-      future.then((results) {
-        c.complete(results);
+    prepare(sql)
+      .then((q) {
+        for (int i = 0; i < parameters.length; i++) {
+          q[i] = parameters[i];
+        }
+        q.execute()
+          .then((results) {
+            c.complete(results);
+          })
+          .catchError((e) {
+            handleException(e, c);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(future, c);
-    });
-    handleFutureException(future, c);
     return c.future;
   }
   
-  handleFutureException(Future f, Completer c, [_Connection cnx]) {
-    f.catchError((e) {
-      c.completeError(e);
-      if (cnx != null) {
-        releaseConnection(cnx);
-        reuseConnection(cnx);
-      }
-      return true;
-    });
+  handleException(dynamic error, Completer c, [_Connection cnx]) {
+    c.completeError(error);
+    if (cnx != null) {
+      releaseConnection(cnx);
+      reuseConnection(cnx);
+    }
   }
-
+  
 //  dynamic fieldList(String table, [String column]);
 //  dynamic refresh(bool grant, bool log, bool tables, bool hosts,
 //                  bool status, bool threads, bool slave, bool master);

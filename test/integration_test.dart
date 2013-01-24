@@ -19,7 +19,14 @@ void main() {
   new Logger("Query").level = Level.ALL;
   var loggerHandlerList = new LoggerHandlerList(Logger.root);
   loggerHandlerList.add((LogRecord r) {
-    print("${r.time}: ${r.message}");
+    var name = r.loggerName;
+    if (name.length > 15) {
+      name = name.substring(0, 15);
+    }
+    while (name.length < 15) {
+      name = "$name ";
+    }
+    print("${r.time}: $name: ${r.message}");
   });
 
   var options = new OptionsFile('connection.options');

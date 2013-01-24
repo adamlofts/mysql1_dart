@@ -24,15 +24,14 @@ class TableDropper {
     }
     
     var table = _tables.removeAt(0);
-    var future = pool.query('drop table $table');
-    // if it's an unknown table, ignore the error and continue
-    future.catchError((exception) {
-      afterDrop();
-      return true;
-    }, test: (e) => e is MySqlError && (e as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE);
-    future.then((x) {
-      afterDrop();
-    });
+    pool.query('drop table $table')
+      // if it's an unknown table, ignore the error and continue
+      .then((x) {
+        afterDrop();
+      })
+      .catchError((e) {
+        afterDrop();
+      }, test: (e) => e is MySqlError && (e as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE);
   }
 
   /**

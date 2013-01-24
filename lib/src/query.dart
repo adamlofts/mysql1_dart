@@ -32,14 +32,16 @@ class Query {
     log.fine("Getting prepared query for: $sql");
     var c = new Completer<PreparedQuery>();
     
-    var cnxFuture = _getConnection();
-    cnxFuture.then((cnx) {
-      log.fine("Got cnx#${cnx.number}");
-      if (!_useCachedQuery(cnx, c)) {
-        _prepareAndCacheQuery(cnx, c);
-      }
-    });
-    handleFutureException(cnxFuture, c);
+    _getConnection()
+      .then((cnx) {
+        log.fine("Got cnx#${cnx.number}");
+        if (!_useCachedQuery(cnx, c)) {
+          _prepareAndCacheQuery(cnx, c);
+        }
+      })
+      .catchError((e) {
+        handleException(e, c);
+      });
     return c.future;
   }
   
@@ -62,15 +64,17 @@ class Query {
     log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new PrepareHandler(sql);
     cnx.use();
-    Future<PreparedQuery> queryFuture = cnx.processHandler(handler);
-    queryFuture.then((preparedQuery) {
-      log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
-      preparedQuery.cnx = cnx;
-      cnx.putPreparedQueryInCache(sql, preparedQuery);
-      _setUpValues(preparedQuery);
-      c.complete(preparedQuery);
-    });
-    handleFutureException(queryFuture, c, cnx);
+    cnx.processHandler(handler)
+      .then((preparedQuery) {
+        log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
+        preparedQuery.cnx = cnx;
+        cnx.putPreparedQueryInCache(sql, preparedQuery);
+        _setUpValues(preparedQuery);
+        c.complete(preparedQuery);
+      })
+      .catchError((e) {
+        handleException(e, c, cnx);
+      });
   }
   
   _setUpValues(PreparedQuery preparedQuery) {
@@ -79,15 +83,12 @@ class Query {
     }
   }
       
-  handleFutureException(Future f, Completer c, [_Connection cnx]) {
-    f.catchError((e) {
-      c.completeError(e);
-      if (cnx != null) {
-        releaseConnection(cnx);
-        reuseConnection(cnx);
-      }
-      return true;
-    });
+  handleException(dynamic error, Completer c, [_Connection cnx]) {
+    c.completeError(error);
+    if (cnx != null) {
+      releaseConnection(cnx);
+      reuseConnection(cnx);
+    }
   }
 
   void close() {
@@ -97,17 +98,21 @@ class Query {
   //TODO: maybe have execute(Transaction) and execute(ConnectionPool)
   Future<Results> execute() {
     var c = new Completer<Results>();
-    var future = _prepare();
-    future.then((preparedQuery) {
-      var future = _execute(preparedQuery);
-      future.then((Results results) {
-        releaseConnection(preparedQuery.cnx);
-        c.complete(results);
-        reuseConnection(preparedQuery.cnx);
+    _prepare()
+      .then((preparedQuery) {
+        _execute(preparedQuery)
+          .then((Results results) {
+            releaseConnection(preparedQuery.cnx);
+            c.complete(results);
+            reuseConnection(preparedQuery.cnx);
+          })
+          .catchError((e) {
+            handleException(e, c);
+          });
+      })
+      .catchError((e) {
+        handleException(e, c);
       });
-      handleFutureException(future, c);
-    });
-    handleFutureException(future, c);
     return c.future;
   }
   
@@ -115,43 +120,49 @@ class Query {
     log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
-    var handlerFuture = preparedQuery.cnx.processHandler(handler);
-    handlerFuture.then((results) {
-      log.finest("Prepared query got results");
-      c.complete(results);
-    });
-    handleFutureException(handlerFuture, c, preparedQuery.cnx);
+    preparedQuery.cnx.processHandler(handler)
+      .then((results) {
+        log.finest("Prepared query got results");
+        c.complete(results);
+      })
+      .catchError((e) {
+        handleException(e, c, preparedQuery.cnx);
+      });
     return c.future;
   }
   
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
     var c = new Completer<List<Results>>();
-    var future = _prepare();
-    future.then((preparedQuery) {
-      log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
-      var resultList = new List<Results>();
-      
-      executeQuery(int i) {
-        log.fine("Executing query, loop $i");
-        _values.setRange(0, _values.length, parameters[i]);
-        var future = _execute(preparedQuery);
-        future.then((Results results) {
-          log.fine("Got results, loop $i");
-          resultList.add(results);
-          if (i < parameters.length - 1) {
-            executeQuery(i + 1);
-          } else {
-            releaseConnection(preparedQuery.cnx);
-            c.complete(resultList);
-            reuseConnection(preparedQuery.cnx);
-          }
-        });
-        handleFutureException(future, c, preparedQuery.cnx);
-      }
-      
-      executeQuery(0);
-    });
-    handleFutureException(future, c);
+    _prepare()
+      .then((preparedQuery) {
+        log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
+        var resultList = new List<Results>();
+        
+        executeQuery(int i) {
+          log.fine("Executing query, loop $i");
+          _values.setRange(0, _values.length, parameters[i]);
+          _execute(preparedQuery)
+            .then((Results results) {
+              log.fine("Got results, loop $i");
+              resultList.add(results);
+              if (i < parameters.length - 1) {
+                executeQuery(i + 1);
+              } else {
+                releaseConnection(preparedQuery.cnx);
+                c.complete(resultList);
+                reuseConnection(preparedQuery.cnx);
+              }
+            })
+            .catchError((e) {
+              handleException(e, c, preparedQuery.cnx);
+            });
+        }
+        
+        executeQuery(0);
+      })
+      .catchError((e) {
+        handleException(e, c);
+      });
     return c.future;
   } 
   
