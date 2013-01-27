@@ -2,6 +2,7 @@ import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
+import 'package:unittest/unittest.dart';
 
 import 'dart:async';
 import 'dart:math';
@@ -187,25 +188,36 @@ void main() {
     print("${r.time}: ${r.loggerName}: ${r.message}");
   });
 
-  var options = new OptionsFile('connection.options');
-  var user = options.getString('user');
-  var password = options.getString('password');
-  var port = options.getInt('port', 3306);
-  var db = options.getString('db');
-  var host = options.getString('host', 'localhost');
+  var log = new Logger("Interleave");
+  log.level = Level.ALL;
+  
+  group('interleave', () {
+    asyncTest('should complete interleaved operations', 1, () {
 
-  // create a connection
-  print("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user, 
-      password: password, db: db, max: 5);
-  print("connection open");
-  // create an example class
-  var example = new Example(pool);
-  // run the example
-  print("running example");
-  example.run().then((x) {
-    // finally, close the connection
-    print("closing");
-    pool.close();
+      var options = new OptionsFile('connection.options');
+      var user = options.getString('user');
+      var password = options.getString('password');
+      var port = options.getInt('port', 3306);
+      var db = options.getString('db');
+      var host = options.getString('host', 'localhost');
+
+      // create a connection
+      log.fine("opening connection");
+      var pool = new ConnectionPool(host: host, port: port, user: user,
+          password: password, db: db, max: 5);
+      log.fine("connection open");
+      // create an example class
+      var example = new Example(pool);
+      // run the example
+      log.fine("running example");
+      example.run().then((x) {
+        // finally, close the connection
+        log.fine("closing");
+        pool.close();
+        // not much of a test, is it?
+        expect(true, isTrue);
+        callbackDone();
+      });
+    });
   });
 }
