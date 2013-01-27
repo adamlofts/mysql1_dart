@@ -1,10 +1,10 @@
-library test_types;
+library types_test;
 
 import 'package:sqljocky/src/types.dart';
 import 'package:unittest/unittest.dart';
 import 'dart:scalarlist';
 
-void main() {
+void runTypesTests() {
   group('types:', () {
     test('can create blob from string', () {
       var blob = new Blob.fromString("Hello");

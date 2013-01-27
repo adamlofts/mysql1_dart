@@ -1,4 +1,7 @@
-part of unittests;
+library buffer_test;
+
+import 'package:sqljocky/buffer.dart';
+import 'package:unittest/unittest.dart';
 
 void runBufferTests() {
   group('buffer:', () {
