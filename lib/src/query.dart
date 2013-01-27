@@ -1,5 +1,9 @@
 part of sqljocky;
 
+/**
+ * Query is created by ConnectionPool.prepare(sql) and Transaction.prepare(sql). It holds
+ * a prepared query. Set parameters on it using the square bracket operators.
+ */
 class Query {
   final ConnectionPool _pool;
   final _Connection _cnx;
@@ -81,7 +85,7 @@ class Query {
   
   _setUpValues(PreparedQuery preparedQuery) {
     if (_values == null) {
-      _values = new List<dynamic>(preparedQuery.parameters.length);
+      _values = new List<dynamic>.fixedLength(preparedQuery.parameters.length);
     }
   }
       
@@ -89,7 +93,10 @@ class Query {
     _pool._closeQuery(this, _inTransaction);
   }
   
-  //TODO: maybe have execute(Transaction) and execute(ConnectionPool)
+  //TODO: maybe have execute(Transaction) and execute(ConnectionPool)/**
+  /**
+   * Executes the query, returning a future [Results] object.
+   */
   Future<Results> execute() {
     var c = new Completer<Results>();
     _prepare()
@@ -126,7 +133,11 @@ class Query {
       });
     return c.future;
   }
-  
+
+  /**
+   * Executes the query once for each set of [parameters], and returns a future list
+   * of results.
+   */
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
     var c = new Completer<List<Results>>();
     _prepare()
@@ -162,14 +173,16 @@ class Query {
         c.completeError(e);
       });
     return c.future;
-  } 
-  
-  Future<int> executeUpdate() {
-    
   }
 
+  /**
+   * Get a current parameter value.
+   */
   dynamic operator [](int pos) => _values[pos];
-  
+
+  /**
+   * Set a parameter value.
+   */
   void operator []=(int index, dynamic value) {
     _values[index] = value;
     _executed = false;

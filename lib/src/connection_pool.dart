@@ -166,23 +166,6 @@ class ConnectionPool {
     return c.future;
   }
 
-  /**
-   * Executes a query, returning only the inserted id (for insert statements)
-   * or the number of affected rows (for other queries).
-   */
-//TODO: is there any need for this? Why not just call query?
-  Future<int> update(String sql) {
-    var c = new Completer<int>();
-    query(sql)
-      .then((results) {
-        c.complete(results.affectedRows);
-      })
-      .catchError((e) {
-        c.completeError(e);
-      });
-    return c.future;
-  }
-  
   Future ping() {
     log.info("Pinging server");
     var c = new Completer<Results>();

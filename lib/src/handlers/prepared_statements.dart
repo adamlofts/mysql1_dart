@@ -100,8 +100,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = new List<Field>(_parametersToRead);
-      _columns = new List<Field>(_columnsToRead);
+      _parameters = new List<Field>.fixedLength(_parametersToRead);
+      _columns = new List<Field>.fixedLength(_columnsToRead);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }
@@ -163,7 +163,7 @@ class ExecuteQueryHandler extends Handler {
   
   Buffer createRequest() {
     var bytes = ((_values.length + 7) / 8).floor().toInt();
-    var nullMap = new List<int>(bytes);
+    var nullMap = new List<int>.fixedLength(bytes);
     var byte = 0;
     var bit = 0;
     for (var i = 0; i < _values.length; i++) {
@@ -334,7 +334,7 @@ class BinaryDataPacket implements DataPacket {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
-    var nullMap = new List<bool>(fields.length);
+    var nullMap = new List<bool>.fixedLength(fields.length);
     var shift = 2;
     var byte = 0;
     for (var i = 0; i < fields.length; i++) {
@@ -347,7 +347,7 @@ class BinaryDataPacket implements DataPacket {
       }
     }
     
-    _values = new List<dynamic>(fields.length);
+    _values = new List<dynamic>.fixedLength(fields.length);
     for (var i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {

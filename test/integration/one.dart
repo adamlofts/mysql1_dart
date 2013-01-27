@@ -118,21 +118,6 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
     });
 
-//TODO: Should this behave predictably, even though it's a silly thing to do?
-//    asyncTest('select everything using update()', 1, () {
-//      pool.update('select * from test1').then((result) {
-//        expect(result, equals(0));
-//        callbackDone();
-//      });
-//    });
-
-    asyncTest('update using update()', 1, () {
-      pool.update('update test1 set atinyint = 3').then((result) {
-        expect(result, equals(1));
-        callbackDone();
-      });
-    });
-
     asyncTest('update', 1, () {
       Query preparedQuery;
       pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
