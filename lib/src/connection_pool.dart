@@ -19,11 +19,7 @@ class ConnectionPool {
   final Queue<Completer<_Connection>> _pendingConnections;
   final List<_Connection> _pool;
   
-  _addPendingConnection(Completer<_Connection> pendingConnection) {
-    _pendingConnections.add(pendingConnection);
-  }
-
-  ConnectionPool({String host: 'localhost', int port: 3306, String user, 
+  ConnectionPool({String host: 'localhost', int port: 3306, String user,
       String password, String db, int max: 5}) :
         _pendingConnections = new Queue<Completer<_Connection>>(),
         _pool = new List<_Connection>(),
@@ -77,7 +73,7 @@ class ConnectionPool {
         });
     } else {
       log.finest("Waiting for an available connection");
-      _addPendingConnection(c);
+      _pendingConnections.add(c);
     }
     return c.future;
   }
@@ -235,7 +231,7 @@ class ConnectionPool {
     for (var cnx in _pool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
       if (preparedQuery != null) {
-        cnx.whenReady().then((x) {
+        _waitUntilReady(cnx).then((x) {
           log.finest("Connection ready - closing query: ${q.sql}");
           var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx.processHandler(handler, noResponse: true)
@@ -255,7 +251,22 @@ class ConnectionPool {
       }
     }
   }
-  
+
+/**
+   * The future returned by [whenReady] fires when all queued operations in the pool
+   * have completed, and the connection is free to be used again.
+   */
+  Future<_Connection> _waitUntilReady(_Connection cnx) {
+    var c = new Completer<_Connection>();
+    if (!cnx.inUse) {
+      cnx.use();
+      c.complete(cnx);
+    } else {
+      _pendingConnections.add(c);
+    }
+    return c.future;
+  }
+
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
     var c = new Completer<Query>();

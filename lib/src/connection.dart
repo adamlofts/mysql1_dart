@@ -126,24 +126,19 @@ class _Connection {
         var result;
         try {
           result = _handler.processResponse(_dataBuffer);
+          if (result is Handler) {
+            // if handler.processResponse() returned a Handler, pass control to that handler now
+            _handler = result;
+            _sendBuffer(_handler.createRequest());
+          } else if (_handler.finished) {
+            // otherwise, complete using the result, and that result will be  passed back to the future.
+            _handler = null;
+            _completer.complete(result);
+          }
         } catch (e) {
           _handler = null;
           log.fine("completing with exception: $e");
           _completer.completeError(e);
-//          _finished();
-          return;
-        }
-        if (result is Handler) {
-          // if handler.processResponse() returned a Handler, pass control to that
-          // handler now
-          _handler = result;
-          _sendBuffer(_handler.createRequest());
-        } else if (_handler.finished) {
-          // otherwise, complete using the result, and that result will be
-          // passed back to the future.
-          _handler = null;
-          _completer.complete(result);
-//          _finished();
         }
       }
       break;
@@ -184,21 +179,6 @@ class _Connection {
   
   putPreparedQueryInCache(String sql, PreparedQuery preparedQuery) {
     _preparedQueryCache[sql] = preparedQuery;
-  }
-  
-  /**
-   * The future returned by [whenReady] fires when all queued operations in the pool
-   * have completed, and this connection is free to be used again.
-   */
-  Future<_Connection> whenReady() {
-    var c = new Completer<_Connection>();
-    if (!_inUse) {
-      use();
-      c.complete(this);
-    } else {
-      _pool._addPendingConnection(c);
-    }
-    return c.future;
   }
 }
 

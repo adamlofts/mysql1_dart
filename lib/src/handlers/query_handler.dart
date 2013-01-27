@@ -167,7 +167,7 @@ class QueryHandler extends Handler {
   }
   
   dynamic processResponse(Buffer response) {
-    log.fine("Query processing response");
+    log.fine("Processing query response");
     var packet = checkResponse(response);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
