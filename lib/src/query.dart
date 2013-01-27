@@ -40,7 +40,7 @@ class Query {
         }
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     return c.future;
   }
@@ -73,7 +73,9 @@ class Query {
         c.complete(preparedQuery);
       })
       .catchError((e) {
-        handleException(e, c, cnx);
+        c.completeError(e);
+        releaseConnection(cnx);
+        reuseConnection(cnx);
       });
   }
   
@@ -83,14 +85,6 @@ class Query {
     }
   }
       
-  handleException(dynamic error, Completer c, [_Connection cnx]) {
-    c.completeError(error);
-    if (cnx != null) {
-      releaseConnection(cnx);
-      reuseConnection(cnx);
-    }
-  }
-
   void close() {
     _pool._closeQuery(this, _inTransaction);
   }
@@ -107,11 +101,11 @@ class Query {
             reuseConnection(preparedQuery.cnx);
           })
           .catchError((e) {
-            handleException(e, c);
+            c.completeError(e);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     return c.future;
   }
@@ -126,7 +120,9 @@ class Query {
         c.complete(results);
       })
       .catchError((e) {
-        handleException(e, c, preparedQuery.cnx);
+        c.completeError(e);
+        releaseConnection(preparedQuery.cnx);
+        reuseConnection(preparedQuery.cnx);
       });
     return c.future;
   }
@@ -154,14 +150,16 @@ class Query {
               }
             })
             .catchError((e) {
-              handleException(e, c, preparedQuery.cnx);
+              c.completeError(e);
+              releaseConnection(preparedQuery.cnx);
+              reuseConnection(preparedQuery.cnx);
             });
         }
         
         executeQuery(0);
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     return c.future;
   } 

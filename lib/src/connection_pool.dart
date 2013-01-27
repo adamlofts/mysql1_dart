@@ -69,7 +69,9 @@ class ConnectionPool {
           c.complete(cnx);
         })
         .catchError((e) {
-          handleException(e, c, cnx);
+          c.completeError(e);
+          releaseConnection(cnx);
+          reuseConnection(cnx);
         });
     } else {
       log.finest("Waiting for an available connection");
@@ -152,11 +154,13 @@ class ConnectionPool {
             reuseConnection(cnx);
           })
           .catchError((e) {
-            handleException(e, c, cnx);
+            c.completeError(e);
+            releaseConnection(cnx);
+            reuseConnection(cnx);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
 
     return c.future;
@@ -193,11 +197,11 @@ class ConnectionPool {
             reuseConnection(cnx);
           })
           .catchError((e) {
-            handleException(e, c);
+            c.completeError(e);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     
     return c.future;
@@ -216,11 +220,13 @@ class ConnectionPool {
             releaseConnection(cnx);
           })
           .catchError((e) {
-            handleException(e, c, cnx);
+            c.completeError(e);
+            releaseConnection(cnx);
+            reuseConnection(cnx);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     
     return c.future;
@@ -278,7 +284,7 @@ class ConnectionPool {
         reuseConnection(preparedQuery.cnx);
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     return c.future;
   }
@@ -302,11 +308,13 @@ class ConnectionPool {
             c.complete(transaction);
           })
           .catchError((e) {
-            handleException(e, c, cnx);
+            c.completeError(e);
+            releaseConnection(cnx);
+            reuseConnection(cnx);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     
     return c.future;
@@ -324,21 +332,13 @@ class ConnectionPool {
             c.complete(results);
           })
           .catchError((e) {
-            handleException(e, c);
+            c.completeError(e);
           });
       })
       .catchError((e) {
-        handleException(e, c);
+        c.completeError(e);
       });
     return c.future;
-  }
-  
-  handleException(dynamic error, Completer c, [_Connection cnx]) {
-    c.completeError(error);
-    if (cnx != null) {
-      releaseConnection(cnx);
-      reuseConnection(cnx);
-    }
   }
   
 //  dynamic fieldList(String table, [String column]);
