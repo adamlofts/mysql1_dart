@@ -215,6 +215,33 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
     });
 
+    asyncTest('blobs with nulls', 1, () {
+      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then((results) {
+        return pool.query("select atext from test1 where aint = 12345");
+      }).then((results) {
+        expect(results.count, equals(1));
+        var it = results.iterator;
+        it.moveNext();
+        values = it.current;
+        expect(values[0].toString(), equals("ABC\u0000DEF"));
+
+        return pool.query("delete from test1 where aint = 12345");
+      }).then((results) {
+        var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
+        return pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
+      }).then((results) {
+        return pool.prepareExecute("select atext from test1 where aint = 12345", []);
+      }).then((results) {
+        expect(results.count, equals(1));
+        var it = results.iterator;
+        it.moveNext();
+        values = it.current;
+        expect(values[0].toString(), equals("ABC\u0000DEF"));
+
+        callbackDone();
+      });
+    });
+
     test('close connection', () {
       pool.close();
     });
