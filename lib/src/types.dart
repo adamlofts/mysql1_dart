@@ -5,6 +5,7 @@ import 'dart:scalarlist';
 class Blob {
   String _string;
   Uint8List _bytes;
+  int _hashcode;
   
   Blob.fromString(String string) {
     this._string = string;
@@ -29,10 +30,14 @@ class Blob {
   }
   
   int get hashCode {
-    if (_string != null) {
-      return _string.hashCode;
+    if (_hashcode == null) {
+      if (_string != null) {
+        _hashcode = _string.hashCode;
+      } else {
+        _hashcode = new String.fromCharCodes(_bytes).hashCode;
+      }
     }
-    return new String.fromCharCodes(_bytes).hashCode;
+    return _hashcode;
   }
   
   bool operator ==(other) {
