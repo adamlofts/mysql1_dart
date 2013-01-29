@@ -247,6 +247,13 @@ class ExecuteQueryHandler extends Handler {
           types.add(0);
           values.add(value.length);
           values.addAll(value);
+        } else if (value is Blob) {
+          log.fine("BLOB: $value");
+          var bytes = (value as Blob).toBytes();
+          types.add(FIELD_TYPE_BLOB);
+          types.add(0);
+          values.add(bytes.length);
+          values.addAll(bytes);
         } else {
           log.fine("STRING: $value");
           var s = value.toString();

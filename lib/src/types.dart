@@ -4,14 +4,14 @@ import 'dart:scalarlist';
 
 class Blob {
   String _string;
-  Uint8List _bytes;
+  List<int> _bytes;
   int _hashcode;
   
   Blob.fromString(String string) {
     this._string = string;
   }
   
-  Blob.fromBytes(Uint8List bytes) {
+  Blob.fromBytes(List<int> bytes) {
     this._bytes = bytes;
   }
   
@@ -22,7 +22,7 @@ class Blob {
     return new String.fromCharCodes(_bytes);
   }
   
-  Uint8List toBytes() {
+  List<int> toBytes() {
     if (_bytes != null) {
       return _bytes;
     }
