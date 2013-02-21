@@ -3,18 +3,18 @@ part of integrationtests;
 void runIntTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('some tests:', () {
-    asyncTest('connect', 1, () {
+    test('create pool', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host);
-      callbackDone();
+      expect(pool, isNotNull);
     });
     
-    asyncTest('dropTables', 1, () {
-      new TableDropper(pool, ["test1"]).dropTables().then((x) {
-        callbackDone();
-      });
+    test('dropTables', () {
+      new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((x) {
+        expect(1, equals(1)); // not quite sure of the async testing stuff yet
+      }));
     });
     
-    asyncTest('create tables', 1, () {
+    test('create tables', () {
       pool.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
         "adecimal decimal(20,10), afloat float, adouble double, areal real, "
@@ -24,31 +24,30 @@ void runIntTests(String user, String password, String db, int port, String host)
         "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
         "abinary binary(10), avarbinary varbinary(10), "
         "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then((Results results) {
-//          expect(1).equals(results.affectedRows);
-          callbackDone();
-        });
+        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then(expectAsync1((Results results) {
+          expect(results.count, equals(0));
+        }));
     });
     
-    asyncTest('show tables', 1, () {
-      pool.query("show tables").then((Results results) {
+    test('show tables', () {
+      pool.query("show tables").then(expectAsync1((Results results) {
         print("tables");
         for (var row in results) {
           print(row);
         }
-        callbackDone();
-      });
+        expect(1, equals(1)); // put some real expectations here
+      }));
     });
     
-    asyncTest('describe stuff', 1, () {
-      pool.query("describe test1").then((Results results) {
+    test('describe stuff', () {
+      pool.query("describe test1").then(expectAsync1((Results results) {
         print("table test1");
         showResults(results);
-        callbackDone();
-      });
+        expect(1, equals(1)); // put some real expectations here
+      }));
     });
     
-    asyncTest('insert stuff', 1, () {
+    test('insert stuff', () {
       print("insert stuff test");
       pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
@@ -63,7 +62,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)").then((Query query) {
+        "?, ?)").then(expectAsync1((Query query) {
           query[0] = 126;
           query[1] = 164;
           query[2] = 165;
@@ -103,57 +102,55 @@ void runIntTests(String user, String password, String db, int port, String host)
           query[30] = "a,b";
                  
           print("executing");
+          expect(1, equals(1)); // put some real expectations here
           return query.execute();
-        }).then((results) {
-          expect(results.affectedRows, equals(1));
+        })).then(expectAsync1((results) {
           print("updated ${results.affectedRows} ${results.insertId}");
-          callbackDone();
-        });
+          expect(results.affectedRows, equals(1));
+        }));
     });
     
-    asyncTest('select everything', 1, () {
-      pool.query('select * from test1').then((results) {
+    test('select everything', () {
+      pool.query('select * from test1').then(expectAsync1((results) {
         expect(results.count, equals(1));
-        callbackDone();
-      });
+      }));
     });
 
-    asyncTest('update', 1, () {
+    test('update', () {
       Query preparedQuery;
-      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
+      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then(expectAsync1((query) {
         preparedQuery = query;
         query[0] = 127;
         query[1] = "123456789.987654321";
+        expect(1, equals(1)); // put some real expectations here
         return query.execute();
-      }).then((results) {
+      })).then(expectAsync1((results) {
         preparedQuery.close();
-        callbackDone();
-      });
+        expect(1, equals(1)); // put some real expectations here
+      }));
     });
     
-    asyncTest('select stuff', 1, () {
-      pool.query("select atinyint, adecimal from test1").then((results) {
+    test('select stuff', () {
+      pool.query("select atinyint, adecimal from test1").then(expectAsync1((results) {
         var it = results.iterator;
         it.moveNext();
         var row = it.current;
-        Expect.equals(127, row[0]);
-        Expect.equals(123456789.987654321, row[1]);
-        callbackDone();
-      });
+        expect(row[0], equals(127));
+        expect(row[1], equals(123456789.987654321));
+      }));
     });
     
-    asyncTest('prepare execute', 1, () {
-      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((results) {
-        Expect.equals(1, results.affectedRows);
-        callbackDone();
-      });
+    test('prepare execute', () {
+      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then(expectAsync1((results) {
+        expect(results.affectedRows, equals(1));
+      }));
     });
     
     List<Field> preparedFields;
     List<dynamic> values;
     
-    asyncTest('data types (prepared)', 1, () {
-      pool.prepareExecute('select * from test1', []).then((results) {
+    test('data types (prepared)', () {
+      pool.prepareExecute('select * from test1', []).then(expectAsync1((results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
         var it = results.iterator;
@@ -163,12 +160,12 @@ void runIntTests(String user, String password, String db, int port, String host)
           var field = results.fields[i];
           print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
         }
-        callbackDone();
-      });
+        expect(1, equals(1)); // put some real expectations here
+      }));
     });
 
-    asyncTest('data types (query)', 1, () {
-      pool.query('select * from test1').then((results) {
+    test('data types (query)', () {
+      pool.query('select * from test1').then(expectAsync1((results) {
         print("----------- query results ---------------");
         var it = results.iterator;
         it.moveNext();
@@ -191,12 +188,11 @@ void runIntTests(String user, String password, String db, int port, String host)
           }
           print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
         }
-        callbackDone();
-      });
+      }));
     });
     
-    asyncTest('multi queries', 1, () {
-      pool.startTransaction().then((trans) {
+    test('multi queries', () {
+      pool.startTransaction().then(expectAsync1((trans) {
         var start = new Date.now();
         trans.prepare('insert into test1 (aint) values (?)').then((query) {
           var params = [];
@@ -207,33 +203,33 @@ void runIntTests(String user, String password, String db, int port, String host)
             var end = new Date.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
-            trans.commit().then((x) {
-              callbackDone();
-            });
+            trans.commit().then(expectAsync1((x) {
+              expect(1, equals(1)); // put some real expectations here
+            }));
           });
         });
-      });
+      }));
     });
 
-    asyncTest('blobs in prepared queries', 1, () {
+    test('blobs in prepared queries', () {
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
-      pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]).then((results) {
+      pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]).then(expectAsync1((results) {
+        expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12344", []);
-      }).then((results) {
+      })).then(expectAsync1((results) {
         expect(results.count, equals(1));
         var it = results.iterator;
         it.moveNext();
         values = it.current;
         expect(values[0].toString(), equals("ABC\u0000DEF"));
-
-        callbackDone();
-      });
+      }));
     });
 
-    asyncTest('blobs with nulls', 1, () {
-      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then((results) {
+    test('blobs with nulls', () {
+      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then(expectAsync1((results) {
+        expect(1, equals(1)); // put some real expectations here
         return pool.query("select atext from test1 where aint = 12345");
-      }).then((results) {
+      })).then(expectAsync1((results) {
         expect(results.count, equals(1));
         var it = results.iterator;
         it.moveNext();
@@ -241,20 +237,20 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(values[0].toString(), equals("ABC\u0000DEF"));
 
         return pool.query("delete from test1 where aint = 12345");
-      }).then((results) {
+      })).then(expectAsync1((results) {
         var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
+        expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
-      }).then((results) {
+      })).then(expectAsync1((results) {
+        expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12345", []);
-      }).then((results) {
+      })).then(expectAsync1((results) {
         expect(results.count, equals(1));
         var it = results.iterator;
         it.moveNext();
         values = it.current;
         expect(values[0].toString(), equals("ABC\u0000DEF"));
-
-        callbackDone();
-      });
+      }));
     });
 
     test('close connection', () {
