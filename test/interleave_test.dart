@@ -192,7 +192,7 @@ void main() {
   log.level = Level.ALL;
   
   group('interleave', () {
-    asyncTest('should complete interleaved operations', 1, () {
+    test('should complete interleaved operations', () {
 
       var options = new OptionsFile('connection.options');
       var user = options.getString('user');
@@ -210,14 +210,13 @@ void main() {
       var example = new Example(pool);
       // run the example
       log.fine("running example");
-      example.run().then((x) {
+      example.run().then(expectAsync1((x) {
         // finally, close the connection
         log.fine("closing");
         pool.close();
         // not much of a test, is it?
         expect(true, isTrue);
-        callbackDone();
-      });
+      }));
     });
   });
 }
