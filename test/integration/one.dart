@@ -78,10 +78,10 @@ void runIntTests(String user, String password, String db, int port, String host)
           query[10] = [1, 2, 3];
           query[11] = 123;
           
-          query[12] = new Date.now();
-          query[13] = new Date.now();
-          query[14] = new Date.now();
-          query[15] = new Date.now();
+          query[12] = new DateTime.now();
+          query[13] = new DateTime.now();
+          query[14] = new DateTime.now();
+          query[15] = new DateTime.now();
           query[16] = 2012;
           
           query[17] = "Hello";
@@ -193,14 +193,14 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     test('multi queries', () {
       pool.startTransaction().then(expectAsync1((trans) {
-        var start = new Date.now();
+        var start = new DateTime.now();
         trans.prepare('insert into test1 (aint) values (?)').then((query) {
           var params = [];
           for (var i = 0; i < 50; i++) {
             params.add([i]);
           }
           query.executeMulti(params).then((resultList) {
-            var end = new Date.now();
+            var end = new DateTime.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
             trans.commit().then(expectAsync1((x) {
@@ -277,7 +277,7 @@ String typeof(dynamic item) {
     return "int";
   } else if (item is double) {
     return "double";
-  } else if (item is Date) {
+  } else if (item is DateTime) {
     return "Date";
   } else if (item is Uint8List) {
     return "Uint8List";

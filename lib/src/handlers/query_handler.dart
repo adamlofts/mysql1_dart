@@ -111,7 +111,7 @@ class StandardDataPacket implements DataPacket {
         case FIELD_TYPE_DATE: // date
         case FIELD_TYPE_DATETIME: // datetime
         case FIELD_TYPE_TIMESTAMP: // timestamp
-          _values[i] = new Date.fromString(s);
+          _values[i] = DateTime.parse(s);
           break;
         case FIELD_TYPE_TIME: // time
           var parts = s.split(":");

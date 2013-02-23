@@ -374,9 +374,9 @@ class Buffer {
     var result = new StringBuffer();
     for (final e in list) {
       if (e >= 32 && e < 127) {
-        result.add(new String.fromCharCodes([e]));
+        result.write(new String.fromCharCodes([e]));
       } else {
-        result.add('?');
+        result.write('?');
       }
     }
     return result.toString();
