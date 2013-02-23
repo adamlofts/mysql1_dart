@@ -219,7 +219,7 @@ class ExecuteQueryHandler extends Handler {
 //          types.add(FIELD_TYPE_FLOAT);
 //          types.add(0);
 //          values.addAll(doubleToList(value));
-        } else if (value is DateTime) {
+        } else if (value is DateTime || value is Date) { // TODO remove Date eventually
           log.fine("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
