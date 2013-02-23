@@ -26,3 +26,7 @@ void runBufferTests() {
     });
   });
 }
+
+void main() {
+  runBufferTests();
+}

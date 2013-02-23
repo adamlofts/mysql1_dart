@@ -180,3 +180,6 @@ void runSerializationTests() {
   });
 }
 
+void main() {
+  runSerializationTests();
+}
