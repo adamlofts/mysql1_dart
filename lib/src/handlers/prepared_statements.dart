@@ -219,7 +219,7 @@ class ExecuteQueryHandler extends Handler {
 //          types.add(FIELD_TYPE_FLOAT);
 //          types.add(0);
 //          values.addAll(doubleToList(value));
-        } else if (value is Date) {
+        } else if (value is DateTime) {
           log.fine("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
@@ -447,7 +447,7 @@ class BinaryDataPacket implements DataPacket {
             }
           }
           
-          _values[i] = new Date(year, month, day, hours, minutes, seconds, (billionths / 1000000).toInt());
+          _values[i] = new DateTime(year, month, day, hours, minutes, seconds, billionths ~/ 1000000);
           log.fine("Value: ${_values[i]}");
           break;
         case FIELD_TYPE_TIME:
@@ -474,7 +474,7 @@ class BinaryDataPacket implements DataPacket {
             }
           }
           _values[i] = new Duration(days: days * sign, hours: hours * sign, minutes: minutes * sign, 
-              seconds: seconds * sign, milliseconds: (billionths / 1000000).toInt() * sign);
+              seconds: seconds * sign, milliseconds: (billionths ~/ 1000000) * sign);
           break;
         case FIELD_TYPE_YEAR:
           log.fine("YEAR");
