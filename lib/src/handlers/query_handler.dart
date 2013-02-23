@@ -44,7 +44,9 @@ class Field {
   int get flags => _flags;
   int get decimals => _decimals;
   int get defaultValue => _defaultValue;
-  
+
+  Field._forTests(this._type);
+
   Field(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
     _db = buffer.readLengthCodedString();
@@ -104,9 +106,11 @@ class StandardDataPacket implements DataPacket {
           _values[i] = double.parse(s);
           break;
         case FIELD_TYPE_BIT: // bit
-          Uint8List b = new Uint8List(s.length);
-          b.setRange(0, s.length, s.charCodes);
-          _values[i] = b;
+          var value = 0;
+          for (var num in s.charCodes) {
+            value = (value << 8) + num;
+          }
+          _values[i] = value;
           break;
         case FIELD_TYPE_DATE: // date
         case FIELD_TYPE_DATETIME: // datetime

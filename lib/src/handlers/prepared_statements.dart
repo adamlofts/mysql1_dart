@@ -335,7 +335,9 @@ class BinaryDataPacket implements DataPacket {
   final Logger log;
   
   List<dynamic> get values => _values;
-  
+
+  BinaryDataPacket._forTests() : log = new Logger("BinaryDataPacket");
+
   BinaryDataPacket(Buffer buffer, List<Field> fields) :
       log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
@@ -362,160 +364,173 @@ class BinaryDataPacket implements DataPacket {
         _values[i] = null;
         continue;
       }
-      switch (fields[i].type) {
-        case FIELD_TYPE_BLOB:
-          log.fine("BLOB");
-          var len = buffer.readByte();
-          _values[i] = new Blob.fromBytes(buffer.readList(len));
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_TINY:
-          log.fine("TINY");
-          _values[i] = buffer.readByte();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_SHORT:
-          log.fine("SHORT");
-          _values[i] = buffer.readInt16();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_INT24:
-          log.fine("INT24");
-          _values[i] = buffer.readInt32();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_LONG:
-          log.fine("LONG");
-          _values[i] = buffer.readInt32();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_LONGLONG:
-          log.fine("LONGLONG");
-          _values[i] = buffer.readInt64();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_NEWDECIMAL:
-          log.fine("NEWDECIMAL");
-          var len = buffer.readByte();
-          var num = buffer.readString(len);
-           _values[i] = double.parse(num);
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_FLOAT:
-          log.fine("FLOAT");
-          _values[i] = buffer.readFloat();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_DOUBLE:
-          log.fine("DOUBLE");
-          _values[i] = buffer.readDouble();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_BIT:
-          log.fine("BIT");
-          var len = buffer.readByte();
-          // TODO should this be returned as a list, or an arbitrarily long number?
-          _values[i] = buffer.readList(len);
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_DATETIME:
-        case FIELD_TYPE_DATE:
-        case FIELD_TYPE_TIMESTAMP:
-          log.fine("DATE/DATETIME");
-          var len = buffer.readByte();
-          var date = buffer.readList(len);
-          var year = 0;
-          var month = 0;
-          var day = 0;
-          var hours = 0;
-          var minutes = 0;
-          var seconds = 0;
-          var billionths = 0;
-          
-          if (date.length > 0) {
-            year = date[0] + (date[1] << 0x08);
-            month = date[2];
-            day = date[3];
-            if (date.length > 4) {
-              hours = date[4];
-              minutes = date[5];
-              seconds = date[6];
-              if (date.length > 7) {
-                billionths = date[7] + (date[8] << 0x08)
-                    + (date[9] << 0x10) + (date[10] << 0x18);
-              }
-            }
-          }
-          
-          _values[i] = new DateTime(year, month, day, hours, minutes, seconds, billionths ~/ 1000000);
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_TIME:
-          log.fine("TIME");
-          var len = buffer.readByte();
-          var time = buffer.readList(len);
-          
-          var sign = 1;
-          var days = 0;
-          var hours = 0;
-          var minutes = 0;
-          var seconds = 0;
-          var billionths = 0;
-          
-          log.fine("time: $time");
-          if (time.length > 0) {
-            sign = time[0] == 1 ? -1 : 1;
-            days = time[1] + (time[2] << 0x08) + (time[3] << 0x10) + (time[4] << 0x18);
-            hours = time[5];
-            minutes = time[6];
-            seconds = time[7];
-            if (time.length > 8) {
-              billionths = time[8] + (time[9] << 0x08) + (time[10] << 0x10) + (time[11] << 0x18);
-            }
-          }
-          _values[i] = new Duration(days: days * sign, hours: hours * sign, minutes: minutes * sign, 
-              seconds: seconds * sign, milliseconds: (billionths ~/ 1000000) * sign);
-          break;
-        case FIELD_TYPE_YEAR:
-          log.fine("YEAR");
-          _values[i] = buffer.readInt16();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_STRING:
-          log.fine("STRING");
-          _values[i] = buffer.readLengthCodedString();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_VAR_STRING:
-          log.fine("STRING");
-          _values[i] = buffer.readLengthCodedString();
-          log.fine("Value: ${_values[i]}");
-          break;
-        case FIELD_TYPE_GEOMETRY:
-          log.fine("GEOMETRY - not implemented");
-          var len = buffer.readByte();
-          //TODO
-          _values[i] = buffer.readList(len);
-          break;
-        case FIELD_TYPE_NEWDATE:
-        case FIELD_TYPE_DECIMAL:
-          //TODO pre 5.0.3 will return old decimal values
-        case FIELD_TYPE_SET:
-        case FIELD_TYPE_ENUM:
-        case FIELD_TYPE_TINY_BLOB:
-        case FIELD_TYPE_MEDIUM_BLOB:
-        case FIELD_TYPE_LONG_BLOB:
-        case FIELD_TYPE_VARCHAR:
-          //Are there any other types a mysql server can return?
-          log.fine("Field type not implemented yet ${fields[i].type}");
-          log.fine(buffer.readList(8).toString());
-          break;
-        default:
-          log.fine("Unsupported field type ${fields[i].type}");
-          break;
-      }
+      var field = fields[i];
+      _values[i] = _readField(field, buffer);
     }
   }
-  
+
+  _readField(Field field, Buffer buffer) {
+    switch (field.type) {
+      case FIELD_TYPE_BLOB:
+        log.fine("BLOB");
+        var len = buffer.readByte();
+        var value = new Blob.fromBytes(buffer.readList(len));
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_TINY:
+        log.fine("TINY");
+        var value = buffer.readByte();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_SHORT:
+        log.fine("SHORT");
+        var value = buffer.readInt16();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_INT24:
+        log.fine("INT24");
+        var value = buffer.readInt32();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_LONG:
+        log.fine("LONG");
+        var value = buffer.readInt32();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_LONGLONG:
+        log.fine("LONGLONG");
+        var value = buffer.readInt64();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_NEWDECIMAL:
+        log.fine("NEWDECIMAL");
+        var len = buffer.readByte();
+        var num = buffer.readString(len);
+        var value = double.parse(num);
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_FLOAT:
+        log.fine("FLOAT");
+        var value = buffer.readFloat();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_DOUBLE:
+        log.fine("DOUBLE");
+        var value = buffer.readDouble();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_BIT:
+        log.fine("BIT");
+        var len = buffer.readByte();
+        var list = buffer.readList(len);
+        var value = 0;
+        for (var num in list) {
+          value = (value << 8) + num;
+        }
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_DATETIME:
+      case FIELD_TYPE_DATE:
+      case FIELD_TYPE_TIMESTAMP:
+        log.fine("DATE/DATETIME");
+        var len = buffer.readByte();
+        var date = buffer.readList(len);
+        var year = 0;
+        var month = 0;
+        var day = 0;
+        var hours = 0;
+        var minutes = 0;
+        var seconds = 0;
+        var billionths = 0;
+
+        if (date.length > 0) {
+          year = date[0] + (date[1] << 0x08);
+          month = date[2];
+          day = date[3];
+          if (date.length > 4) {
+            hours = date[4];
+            minutes = date[5];
+            seconds = date[6];
+            if (date.length > 7) {
+              billionths = date[7] + (date[8] << 0x08)
+                  + (date[9] << 0x10) + (date[10] << 0x18);
+            }
+          }
+        }
+
+        var value = new DateTime(year, month, day, hours, minutes, seconds, billionths ~/ 1000000);
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_TIME:
+        log.fine("TIME");
+        var len = buffer.readByte();
+        var time = buffer.readList(len);
+
+        var sign = 1;
+        var days = 0;
+        var hours = 0;
+        var minutes = 0;
+        var seconds = 0;
+        var billionths = 0;
+
+        log.fine("time: $time");
+        if (time.length > 0) {
+          sign = time[0] == 1 ? -1 : 1;
+          days = time[1] + (time[2] << 0x08) + (time[3] << 0x10) + (time[4] << 0x18);
+          hours = time[5];
+          minutes = time[6];
+          seconds = time[7];
+          if (time.length > 8) {
+            billionths = time[8] + (time[9] << 0x08) + (time[10] << 0x10) + (time[11] << 0x18);
+          }
+        }
+        var value = new Duration(
+            days: days * sign,
+            hours: hours * sign,
+            minutes: minutes * sign,
+            seconds: seconds * sign,
+            milliseconds: (billionths ~/ 1000000) * sign);
+        return value;
+      case FIELD_TYPE_YEAR:
+        log.fine("YEAR");
+        var value = buffer.readInt16();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_STRING:
+        log.fine("STRING");
+        var value = buffer.readLengthCodedString();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_VAR_STRING:
+        log.fine("STRING");
+        var value = buffer.readLengthCodedString();
+        log.fine("Value: ${value}");
+        return value;
+      case FIELD_TYPE_GEOMETRY:
+        log.fine("GEOMETRY - not implemented");
+        var len = buffer.readByte();
+        //TODO
+        var value = buffer.readList(len);
+        return value;
+      case FIELD_TYPE_NEWDATE:
+      case FIELD_TYPE_DECIMAL:
+        //TODO pre 5.0.3 will return old decimal values
+      case FIELD_TYPE_SET:
+      case FIELD_TYPE_ENUM:
+      case FIELD_TYPE_TINY_BLOB:
+      case FIELD_TYPE_MEDIUM_BLOB:
+      case FIELD_TYPE_LONG_BLOB:
+      case FIELD_TYPE_VARCHAR:
+        //Are there any other types a mysql server can return?
+        log.fine("Field type not implemented yet ${field.type}");
+        log.fine(buffer.readList(8).toString());
+        break;
+      default:
+        log.fine("Unsupported field type ${field.type}");
+        break;
+    }
+    return null;
+  }
+
   String toString() => "Value: $_values";
 }

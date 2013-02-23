@@ -34,7 +34,7 @@ class Buffer {
    */
   Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Logger("Buffer") {
-    _list.addAll(list);
+    _list.setRange(0, list.length, list);
   }
   
   /**
