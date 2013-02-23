@@ -17,7 +17,7 @@ part '../../lib/src/handlers/prepared_statements.dart';
 part '../../lib/src/handlers/query_handler.dart';
 part '../../lib/src/handlers/results.dart';
 
-void runTests() {
+void runPreparedStatementTests() {
   group('read fields:', () {
     test('can read a tiny BLOB', () {
       var dataPacket = new BinaryDataPacket._forTests();
@@ -196,5 +196,5 @@ void runTests() {
 }
 
 void main() {
-  runTests();
+  runPreparedStatementTests();
 }
