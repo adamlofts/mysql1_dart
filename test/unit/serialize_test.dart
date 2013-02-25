@@ -28,9 +28,9 @@ String bufferToHexString(Buffer list, [bool reverse=false]) {
   for (int i = 0; i < list.length; i++) {
     var x = list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
     if (x.length == 1) {
-      s.add("0");
+      s.write("0");
     }
-    s.add(x);
+    s.write(x);
   }
   return s.toString();
 }
@@ -180,3 +180,6 @@ void runSerializationTests() {
   });
 }
 
+void main() {
+  runSerializationTests();
+}

@@ -106,3 +106,6 @@ void runTypesTests() {
   });
 }
 
+void main() {
+  runTypesTests();
+}

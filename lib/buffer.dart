@@ -34,7 +34,7 @@ class Buffer {
    */
   Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Logger("Buffer") {
-    _list.addAll(list);
+    _list.setRange(0, list.length, list);
   }
   
   /**
@@ -374,9 +374,9 @@ class Buffer {
     var result = new StringBuffer();
     for (final e in list) {
       if (e >= 32 && e < 127) {
-        result.add(new String.fromCharCodes([e]));
+        result.write(new String.fromCharCodes([e]));
       } else {
-        result.add('?');
+        result.write('?');
       }
     }
     return result.toString();
