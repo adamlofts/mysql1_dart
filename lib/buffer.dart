@@ -18,7 +18,7 @@ class Buffer {
   final Logger log;
   int _writePos = 0;
   int _readPos = 0;
-  
+
   final Uint8List _list;
   
   Uint8List get list => _list;
@@ -46,34 +46,46 @@ class Buffer {
    * Reads up to [count] bytes from the [socket] into the buffer.
    * Returns the number of bytes read.
    */
-  int readFrom(Socket socket, int count) {
-    int bytesRead = socket.readList(_list, _writePos, count);
+  int readFrom(RawSocket socket, int count) {
+    List<int> bytes = socket.read(count);
+    int bytesRead = bytes.length;
+    _list.setRange(_writePos, bytesRead, bytes);
     _writePos += bytesRead;
     return bytesRead;
   }
-  
+
   /**
    * Writes up to [count] bytes to the [socket] from the buffer.
    *
    * Returns true if the data could be written immediately. Otherwise data is buffered
    * and sent as soon as possible (as per [OutputStream.write()])
    */
-  bool writeTo(Socket socket, int count) {
+  bool writeTo(RawSocket socket, int count) {
     return _writeAsync(socket, _readPos, count);
   }
   
-  bool _writeAsync(Socket socket, int start, int count) {
+  bool _writeAsync(RawSocket socket, int start, int count) {
     log.fine("writing $count of $_list from $start");
     log.fine("writing $count of [${Buffer.listChars(_list)}] from $start");
-    int written = socket.writeList(_list, start, count);
+
+    var write = count;
+// pretend everything didn't write
+//    if (count > 1) {
+//      count = count - 1;
+//    }
+
+    int written = socket.write(_list, start, write);
     if (written == count) {
       return true;
     } else {
-      // TODO: shouldn't we copy _list before doing this,
-      // so it isn't overwritten?
-      socket.onWrite = () {
-        _writeAsync(socket, start + written, count - written);
-      };
+      throw "Not implemented properly yet...";
+      // TODO: shouldn't we copy _list before doing this, so it isn't overwritten?
+//      _writeMoreSubscription = socket.listen((RawSocketEvent event) {
+//        if (event == RawSocketEvent.WRITE) {
+//          _writeAsync(socket, start + written, count - written);
+//          _writeMoreSubscription.cancel();
+//        }
+//      });
     }
     return false;
   }    
@@ -84,7 +96,7 @@ class Buffer {
    * Returns true if the data could be written immediately. Otherwise data is buffered
    * and sent as soon as possible (as per [OutputStream.write()])
    */
-  bool writeAllTo(Socket socket) {
+  bool writeAllTo(RawSocket socket) {
     reset();
     return writeTo(socket, _list.length);
   }

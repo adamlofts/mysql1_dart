@@ -13,7 +13,7 @@ class _Connection {
   Handler _handler;
   Completer<dynamic> _completer;
   
-  Socket _socket;
+  RawSocket _socket;
 
   final Buffer _headerBuffer;
   Buffer _dataBuffer;
@@ -66,23 +66,17 @@ class _Connection {
     
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
-    _socket = new Socket(host, port);
-    _socket.onClosed = () {
-      release();
-      log.fine("closed");
-    };
-    _socket.onConnect = () {
-      log.fine("connected");
-    };
-    _socket.onData = _onData;
-    _socket.onError = (Exception e) {
-      log.fine("exception $e");
-      release();
-      _completer.completeError(e);
-    };
-    _socket.onWrite = () {
-      log.fine("write");
-    };
+    RawSocket.connect(host, port).then((socket) {
+      _socket = socket;
+      socket.listen(_onData, onError: (error) {
+        log.fine("error $error");
+        release();
+        _completer.completeError(error);
+      }, onDone: () {
+        release();
+        log.fine("done");
+      }, unsubscribeOnError: true);
+    });
     return _completer.future;
   }
   
@@ -96,7 +90,25 @@ class _Connection {
     buffer.writeAllTo(_socket);
   }
 
-  void _onData() {
+  void _onData(RawSocketEvent event) {
+    if (event == RawSocketEvent.READ) {
+      _onRead();
+    } else if (event == RawSocketEvent.WRITE) {
+      _onWrite();
+    } else if (event == RawSocketEvent.READ_CLOSED) {
+      _onReadClosed();
+    }
+  }
+
+  void _onWrite() {
+
+  }
+
+  void _onReadClosed() {
+
+  }
+
+  void _onRead() {
     log.fine("got data");
     switch (_packetState) {
     case _Connection.STATE_PACKET_HEADER:

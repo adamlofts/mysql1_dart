@@ -8,7 +8,7 @@ in the near future.
 News
 ----
 
-* v0.3.0: Support for M3. Bit fields are now numbers, not lists. Dates now use the DateTime class instead of the Date class.
+* v0.3.0: Support for M3. Bit fields are now numbers, not lists. Dates now use the DateTime class instead of the Date class. Use new IO classes.
 * v0.2.0: Support for the new SDK. 
 * v0.1.3: SQLJocky now uses a connection pooling model, so the API has changed somewhat.
 
