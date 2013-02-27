@@ -10,6 +10,7 @@ import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'src/handlers/handlers_lib.dart';
 import 'src/types.dart';
+import 'src/buffered_socket.dart';
 export 'src/types.dart' show Blob;
 import 'buffer.dart';
 import 'constants.dart';

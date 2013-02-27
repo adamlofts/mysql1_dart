@@ -46,7 +46,7 @@ class Buffer {
    * Reads up to [count] bytes from the [socket] into the buffer.
    * Returns the number of bytes read.
    */
-  int readFrom(RawSocket socket, int count) {
+  int readFromSocket(RawSocket socket, int count) {
     List<int> bytes = socket.read(count);
     int bytesRead = bytes.length;
     _list.setRange(_writePos, bytesRead, bytes);
@@ -56,49 +56,10 @@ class Buffer {
 
   /**
    * Writes up to [count] bytes to the [socket] from the buffer.
-   *
-   * Returns true if the data could be written immediately. Otherwise data is buffered
-   * and sent as soon as possible (as per [OutputStream.write()])
+   * Returns the number of bytes written.
    */
-  bool writeTo(RawSocket socket, int count) {
-    return _writeAsync(socket, _readPos, count);
-  }
-  
-  bool _writeAsync(RawSocket socket, int start, int count) {
-    log.fine("writing $count of $_list from $start");
-    log.fine("writing $count of [${Buffer.listChars(_list)}] from $start");
-
-    var write = count;
-// pretend everything didn't write
-//    if (count > 1) {
-//      count = count - 1;
-//    }
-
-    int written = socket.write(_list, start, write);
-    if (written == count) {
-      return true;
-    } else {
-      throw "Not implemented properly yet...";
-      // TODO: shouldn't we copy _list before doing this, so it isn't overwritten?
-//      _writeMoreSubscription = socket.listen((RawSocketEvent event) {
-//        if (event == RawSocketEvent.WRITE) {
-//          _writeAsync(socket, start + written, count - written);
-//          _writeMoreSubscription.cancel();
-//        }
-//      });
-    }
-    return false;
-  }    
-  
-  /**
-   * Write all of the buffer to the [socket].
-   *
-   * Returns true if the data could be written immediately. Otherwise data is buffered
-   * and sent as soon as possible (as per [OutputStream.write()])
-   */
-  bool writeAllTo(RawSocket socket) {
-    reset();
-    return writeTo(socket, _list.length);
+  int writeToSocket(RawSocket socket, int start, int count) {
+    return socket.write(_list, start, count);
   }
   
   /**
