@@ -160,7 +160,7 @@ class Buffer {
    * The given [string] does not need to contain the terminating null.
    */
   void writeNullTerminatedString(String string) {
-    writeNullTerminatedList(string.charCodes);
+    writeNullTerminatedList(string.codeUnits);
   }
   
   /**
@@ -174,7 +174,7 @@ class Buffer {
    * terminating nulls.
    */  
   void writeString(String string) {
-    writeList(string.charCodes);
+    writeList(string.codeUnits);
   }
   
   /**

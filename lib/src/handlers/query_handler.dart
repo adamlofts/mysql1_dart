@@ -107,7 +107,7 @@ class StandardDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_BIT: // bit
           var value = 0;
-          for (var num in s.charCodes) {
+          for (var num in s.codeUnits) {
             value = (value << 8) + num;
           }
           _values[i] = value;
@@ -132,7 +132,7 @@ class StandardDataPacket implements DataPacket {
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
           var b = new Uint8List(s.length);
-          b.setRange(0, s.length, s.charCodes);
+          b.setRange(0, s.length, s.codeUnits);
           _values[i] = new Blob.fromString(s);
           break;
         case FIELD_TYPE_GEOMETRY: // geometry

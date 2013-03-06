@@ -87,7 +87,7 @@ class AuthHandler extends Handler {
       hash = <int>[];
     } else {
       var hasher = new SHA1();
-      hasher.add(_password.charCodes);
+      hasher.add(_password.codeUnits);
       var hashedPassword = hasher.close();
       
       hasher = new SHA1();

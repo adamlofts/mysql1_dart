@@ -26,7 +26,7 @@ class Blob {
     if (_bytes != null) {
       return _bytes;
     }
-    return _string.charCodes;
+    return _string.codeUnits;
   }
   
   int get hashCode {
