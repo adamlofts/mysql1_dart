@@ -84,16 +84,15 @@ class _Connection {
     _socket.readBuffer(_headerBuffer).then((x) {
       _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
       _packetNumber = _headerBuffer[3];
-      log.fine("about to read $_dataSize bytes for packet ${_headerBuffer[3]}");
+      log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
       _dataBuffer = new Buffer(_dataSize);
       _socket.readBuffer(_dataBuffer).then((xx) {
         //log.fine("read all data: ${_dataBuffer._list}");
         //log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
         _headerBuffer.reset();
 
-        var result;
         try {
-          result = _handler.processResponse(_dataBuffer);
+          var result = _handler.processResponse(_dataBuffer);
           if (result is Handler) {
             // if handler.processResponse() returned a Handler, pass control to that handler now
             _handler = result;
