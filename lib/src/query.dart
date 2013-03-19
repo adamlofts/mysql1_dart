@@ -85,7 +85,7 @@ class Query {
   
   _setUpValues(PreparedQuery preparedQuery) {
     if (_values == null) {
-      _values = new List<dynamic>.fixedLength(preparedQuery.parameters.length);
+      _values = new List<dynamic>(preparedQuery.parameters.length);
     }
   }
       

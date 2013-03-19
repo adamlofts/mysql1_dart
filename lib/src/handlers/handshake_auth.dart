@@ -99,7 +99,7 @@ class AuthHandler extends Handler {
       hasher.add(doubleHashedPassword);
       var hashedSaltedPassword = hasher.close();
       
-      hash = new List<int>.fixedLength(hashedSaltedPassword.length);
+      hash = new List<int>(hashedSaltedPassword.length);
       for (var i = 0; i < hash.length; i++) {
         hash[i] = hashedSaltedPassword[i] ^ hashedPassword[i];
       }

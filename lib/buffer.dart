@@ -181,7 +181,7 @@ class Buffer {
    * Reads a string of the given [length] from the buffer.
    */
   String readString(int length) {
-    String s = new String.fromCharCodes(_list.getRange(_readPos, length));
+    String s = new String.fromCharCodes(_list.sublist(_readPos, _readPos + length));
     _readPos += length;
     return s;
   }
@@ -308,7 +308,7 @@ class Buffer {
    * Returns a list of the given [numberOfBytes], read from the buffer.
    */
   List<int> readList(int numberOfBytes) {
-    List<int> list = _list.getRange(_readPos, numberOfBytes);
+    List<int> list = _list.sublist(_readPos, _readPos + numberOfBytes);
     _readPos += numberOfBytes;
     return list;
   }
