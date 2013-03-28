@@ -1,6 +1,6 @@
 library buffer;
 
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'package:logging/logging.dart';
 import 'dart:io';
 
@@ -20,6 +20,7 @@ class Buffer {
   int _readPos = 0;
 
   final Uint8List _list;
+  ByteData _data;
   
   Uint8List get list => _list;
   
@@ -27,7 +28,9 @@ class Buffer {
    * Creates a [Buffer] of the given [size]
    */
   Buffer(int size) : _list = new Uint8List(size),
-                     log = new Logger("Buffer");
+                     log = new Logger("Buffer") {
+    _data = new ByteData.view(_list.buffer);
+  }
   
   /**
    * Creates a [Buffer] with the given [list] as backing storage
@@ -35,12 +38,13 @@ class Buffer {
   Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Logger("Buffer") {
     _list.setRange(0, list.length, list);
+    _data = new ByteData.view(_list.buffer);
   }
   
   /**
    * Returns true if more data can be read from the buffer, false otherwise.
    */
-  bool canReadMore() => _readPos < _list.lengthInBytes();
+  bool canReadMore() => _readPos < _list.lengthInBytes;
   
   /**
    * Reads up to [count] bytes from the [socket] into the buffer.
@@ -235,14 +239,14 @@ class Buffer {
    * Writes a single [byte] to the buffer.
    */ 
   void writeByte(int byte) {
-    _list.asByteArray().setInt8(_writePos++, byte);
+    _data.setInt8(_writePos++, byte);
   }
   
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
   int readInt16() {
-    int result = _list.asByteArray().getInt16(_readPos);
+    int result = _data.getInt16(_readPos);
     _readPos += 2;
     return result;
   }
@@ -251,7 +255,7 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
-    _list.asByteArray().setInt16(_writePos, integer);
+    _data.setInt16(_writePos, integer);
     _writePos += 2;
   }
 
@@ -274,7 +278,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    int val = _list.asByteArray().getInt32(_readPos);
+    int val = _data.getInt32(_readPos);
     _readPos += 4;
     return val;
   }
@@ -283,7 +287,7 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
-    _list.asByteArray().setInt32(_writePos, integer);
+    _data.setInt32(_writePos, integer);
     _writePos += 4;
   }
 
@@ -291,7 +295,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    int val = _list.asByteArray().getInt64(_readPos);
+    int val = _data.getInt64(_readPos);
     _readPos += 8;
     return val;
   }
@@ -300,7 +304,7 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
-    _list.asByteArray().setInt64(_writePos, integer);
+    _data.setInt64(_writePos, integer);
     _writePos += 8;
   }
 
@@ -322,24 +326,24 @@ class Buffer {
   }
   
   double readFloat() {
-    double val = _list.asByteArray().getFloat32(_readPos);
+    double val = _data.getFloat32(_readPos);
     _readPos += 4;
     return val;
   }
   
   void writeFloat(double value) {
-    _list.asByteArray().setFloat32(_writePos, value);
+    _data.setFloat32(_writePos, value);
     _writePos += 4;
   }
   
   double readDouble() {
-    double val = _list.asByteArray().getFloat64(_readPos);
+    double val = _data.getFloat64(_readPos);
     _readPos += 8;
     return val;
   }
   
   void writeDouble(double value) {
-    _list.asByteArray().setFloat64(_writePos, value);
+    _data.setFloat64(_writePos, value);
     _writePos += 8;
   }
   

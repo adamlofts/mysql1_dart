@@ -7,14 +7,14 @@ import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'package:sqljocky/utils.dart';
 
 part 'integration/one.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.OFF;
+  Logger.root.level = Level.ALL;
   new Logger("ConnectionPool").level = Level.ALL;
   new Logger("Query").level = Level.ALL;
   var loggerHandlerList = new LoggerHandlerList(Logger.root);

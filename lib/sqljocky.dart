@@ -5,7 +5,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:crypto';
 import 'dart:math' as Math;
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'src/handlers/handlers_lib.dart';

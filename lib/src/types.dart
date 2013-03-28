@@ -1,6 +1,6 @@
 library types;
 
-import 'dart:scalarlist';
+import 'dart:typeddata';
 
 class Blob {
   String _string;

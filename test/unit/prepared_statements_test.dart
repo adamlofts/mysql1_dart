@@ -8,7 +8,7 @@ import 'package:sqljocky/src/types.dart';
 import 'dart:io';
 import 'dart:crypto';
 import 'dart:math' as Math;
-import 'dart:scalarlist';
+import 'dart:typeddata';
 import 'package:logging/logging.dart';
 
 part '../../lib/src/handlers/handlers.dart';
