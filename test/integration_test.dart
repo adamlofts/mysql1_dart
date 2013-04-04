@@ -17,8 +17,7 @@ void main() {
   Logger.root.level = Level.ALL;
   new Logger("ConnectionPool").level = Level.ALL;
   new Logger("Query").level = Level.ALL;
-  var loggerHandlerList = new LoggerHandlerList(Logger.root);
-  loggerHandlerList.add((LogRecord r) {
+  Logger.root.onRecord.listen((LogRecord r) {
     var name = r.loggerName;
     if (name.length > 15) {
       name = name.substring(0, 15);

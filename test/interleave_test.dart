@@ -183,8 +183,7 @@ void main() {
 //  new Logger("ConnectionPool").level = Level.ALL;
 //  new Logger("Connection.Lifecycle").level = Level.ALL;
 //  new Logger("Query").level = Level.ALL;
-  var loggerHandlerList = new LoggerHandlerList(Logger.root);
-  loggerHandlerList.add((LogRecord r) {
+  Logger.root.onRecord.listen((LogRecord r) {
     print("${r.time}: ${r.loggerName}: ${r.message}");
   });
 

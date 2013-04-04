@@ -1,7 +1,5 @@
 part of sqljocky;
 
-typedef void Callback();
-
 class _Connection {
   static const int HEADER_SIZE = 4;
   static const int STATE_PACKET_HEADER = 0;
