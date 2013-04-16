@@ -32,9 +32,9 @@ class Query {
     return _pool._getConnection();
   }
 
-  Future<PreparedQuery> _prepare() {
+  Future<_PreparedQuery> _prepare() {
     log.fine("Getting prepared query for: $sql");
-    var c = new Completer<PreparedQuery>();
+    var c = new Completer<_PreparedQuery>();
     
     _getConnection()
       .then((cnx) {
@@ -66,7 +66,7 @@ class Query {
   
   void _prepareAndCacheQuery(_Connection cnx, Completer c) {
     log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
-    var handler = new PrepareHandler(sql);
+    var handler = new _PrepareHandler(sql);
     cnx.use();
     cnx.processHandler(handler)
       .then((preparedQuery) {
@@ -78,12 +78,12 @@ class Query {
       })
       .catchError((e) {
         c.completeError(e);
-        releaseConnection(cnx);
-        reuseConnection(cnx);
+        _releaseConnection(cnx);
+        _reuseConnection(cnx);
       });
   }
   
-  _setUpValues(PreparedQuery preparedQuery) {
+  _setUpValues(_PreparedQuery preparedQuery) {
     if (_values == null) {
       _values = new List<dynamic>(preparedQuery.parameters.length);
     }
@@ -103,9 +103,9 @@ class Query {
       .then((preparedQuery) {
         _execute(preparedQuery)
           .then((Results results) {
-            releaseConnection(preparedQuery.cnx);
+            _releaseConnection(preparedQuery.cnx);
             c.complete(results);
-            reuseConnection(preparedQuery.cnx);
+            _reuseConnection(preparedQuery.cnx);
           })
           .catchError((e) {
             c.completeError(e);
@@ -117,10 +117,10 @@ class Query {
     return c.future;
   }
   
-  Future<Results> _execute(PreparedQuery preparedQuery) {
+  Future<Results> _execute(_PreparedQuery preparedQuery) {
     log.finest("About to execute");
     var c = new Completer<Results>();
-    var handler = new ExecuteQueryHandler(preparedQuery, _executed, _values);
+    var handler = new _ExecuteQueryHandler(preparedQuery, _executed, _values);
     preparedQuery.cnx.processHandler(handler)
       .then((results) {
         log.finest("Prepared query got results");
@@ -128,8 +128,8 @@ class Query {
       })
       .catchError((e) {
         c.completeError(e);
-        releaseConnection(preparedQuery.cnx);
-        reuseConnection(preparedQuery.cnx);
+        _releaseConnection(preparedQuery.cnx);
+        _reuseConnection(preparedQuery.cnx);
       });
     return c.future;
   }
@@ -155,15 +155,15 @@ class Query {
               if (i < parameters.length - 1) {
                 executeQuery(i + 1);
               } else {
-                releaseConnection(preparedQuery.cnx);
+                _releaseConnection(preparedQuery.cnx);
                 c.complete(resultList);
-                reuseConnection(preparedQuery.cnx);
+                _reuseConnection(preparedQuery.cnx);
               }
             })
             .catchError((e) {
               c.completeError(e);
-              releaseConnection(preparedQuery.cnx);
-              reuseConnection(preparedQuery.cnx);
+              _releaseConnection(preparedQuery.cnx);
+              _reuseConnection(preparedQuery.cnx);
             });
         }
         
@@ -188,18 +188,18 @@ class Query {
     _executed = false;
   }
 
-  releaseConnection(_Connection cnx) {
+  _releaseConnection(_Connection cnx) {
     if (!_inTransaction) {
-      _pool.releaseConnection(cnx);
+      _pool._releaseConnection(cnx);
     }
   }
 
   /**
    * Attempt to reuse a connection for a queued operation
    */
-  reuseConnection(_Connection cnx) {
+  _reuseConnection(_Connection cnx) {
     if (!_inTransaction) {
-      _pool.reuseConnection(cnx);
+      _pool._reuseConnection(cnx);
     }
   }
 //  dynamic longData(int index, data);

@@ -1,25 +1,25 @@
 part of sqljocky;
 
 class Transaction {
-  _Connection cnx;
+  _Connection _cnx;
   ConnectionPool _pool;
   bool _finished;
   
   // TODO: maybe give the connection a link to its transaction?
 
-  Transaction._internal(this.cnx, this._pool) : _finished = false;
+  Transaction._internal(this._cnx, this._pool) : _finished = false;
   
   Future commit() {
     _checkFinished();
     _finished = true;
     var c = new Completer();
   
-    var handler = new QueryHandler("commit");
-    cnx.processHandler(handler)
+    var handler = new _QueryHandler("commit");
+    _cnx.processHandler(handler)
       .then((results) {
-        _pool.releaseConnection(cnx);
+        _pool._releaseConnection(_cnx);
         c.complete(results);
-        _pool.reuseConnection(cnx);
+        _pool._reuseConnection(_cnx);
       })
       .catchError((e) {
         c.completeError(e);
@@ -33,12 +33,12 @@ class Transaction {
     _finished = true;
     var c = new Completer();
   
-    var handler = new QueryHandler("rollback");
-    cnx.processHandler(handler)
+    var handler = new _QueryHandler("rollback");
+    _cnx.processHandler(handler)
       .then((results) {
-        _pool.releaseConnection(cnx);
+        _pool._releaseConnection(_cnx);
         c.complete(results);
-        _pool.reuseConnection(cnx);
+        _pool._reuseConnection(_cnx);
       })
       .catchError((e) {
         c.completeError(e);
@@ -51,8 +51,8 @@ class Transaction {
     _checkFinished();
     var c = new Completer<Results>();
     
-    var handler = new QueryHandler(sql);
-    cnx.processHandler(handler)
+    var handler = new _QueryHandler(sql);
+    _cnx.processHandler(handler)
       .then((results) {
         c.complete(results);
       })
@@ -67,7 +67,7 @@ class Transaction {
   //TODO: it isn't valid any more, at least
   Future<Query> prepare(String sql) {
     _checkFinished();
-    var query = new Query._forTransaction(new _TransactionPool(cnx), cnx, sql);
+    var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
     var c = new Completer<Query>();
     query._prepare()
       .then((preparedQuery) {
@@ -117,9 +117,9 @@ class _TransactionPool extends ConnectionPool {
     return c.future;
   }
   
-  releaseConnection(_Connection cnx) {
+  _releaseConnection(_Connection cnx) {
   }
   
-  reuseConnection(_Connection cnx) {
+  _reuseConnection(_Connection cnx) {
   }
 }

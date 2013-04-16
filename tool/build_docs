@@ -1,0 +1,5 @@
+#!/bin/sh
+SCRIPT=$(readlink -f $0)
+SCRIPTPATH=$(dirname $SCRIPT)
+cd $SCRIPTPATH/..
+dartdoc --link-api --out docs --mode static --package-root packages --exclude-lib logging lib/sqljocky.dart lib/constants.dart lib/utils.dart

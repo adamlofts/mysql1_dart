@@ -1,6 +1,4 @@
-library types;
-
-import 'dart:typeddata';
+part of sqljocky;
 
 class Blob {
   String _string;

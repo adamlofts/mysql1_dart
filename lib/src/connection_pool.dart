@@ -70,8 +70,8 @@ class ConnectionPool {
         })
         .catchError((e) {
           c.completeError(e);
-          releaseConnection(cnx);
-          reuseConnection(cnx);
+          _releaseConnection(cnx);
+          _reuseConnection(cnx);
         });
     } else {
       log.finest("Waiting for an available connection");
@@ -80,7 +80,7 @@ class ConnectionPool {
     return c.future;
   }
   
-  releaseConnection(_Connection cnx) {
+  _releaseConnection(_Connection cnx) {
     cnx.release();
     log.finest("Finished with cnx#${cnx.number}: marked as not in use");
   }
@@ -96,7 +96,7 @@ class ConnectionPool {
    * 
    * //TODO rename to something like processQueuedOperations??
    */
-  reuseConnection(_Connection cnx) {
+  _reuseConnection(_Connection cnx) {
     if (!_pool.contains(cnx)) {
       log.warning("reuseConnection called for unmanaged connection");
       return;
@@ -146,17 +146,17 @@ class ConnectionPool {
     _getConnection()
       .then((cnx) {
         log.fine("Got cnx#${cnx.number} for query");
-        cnx.processHandler(new QueryHandler(sql))
+        cnx.processHandler(new _QueryHandler(sql))
           .then((results) {
             log.fine("Got query results on #${cnx.number} for: ${sql}");
-            releaseConnection(cnx);
+            _releaseConnection(cnx);
             c.complete(results);
-            reuseConnection(cnx);
+            _reuseConnection(cnx);
           })
           .catchError((e) {
             c.completeError(e);
-            releaseConnection(cnx);
-            reuseConnection(cnx);
+            _releaseConnection(cnx);
+            _reuseConnection(cnx);
           });
       })
       .catchError((e) {
@@ -172,12 +172,12 @@ class ConnectionPool {
     
     _getConnection()
       .then((cnx) {
-        cnx.processHandler(new PingHandler())
+        cnx.processHandler(new _PingHandler())
           .then((x) {
             log.fine("Pinged");
-            releaseConnection(cnx);
+            _releaseConnection(cnx);
             c.complete(x);
-            reuseConnection(cnx);
+            _reuseConnection(cnx);
           })
           .catchError((e) {
             c.completeError(e);
@@ -196,16 +196,16 @@ class ConnectionPool {
     
     _getConnection()
       .then((cnx) {
-        cnx.processHandler(new DebugHandler())
+        cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
             c.complete(x);
-            releaseConnection(cnx);
+            _releaseConnection(cnx);
           })
           .catchError((e) {
             c.completeError(e);
-            releaseConnection(cnx);
-            reuseConnection(cnx);
+            _releaseConnection(cnx);
+            _reuseConnection(cnx);
           });
       })
       .catchError((e) {
@@ -222,18 +222,18 @@ class ConnectionPool {
       if (preparedQuery != null) {
         _waitUntilReady(cnx).then((x) {
           log.finest("Connection ready - closing query: ${q.sql}");
-          var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
+          var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx.processHandler(handler, noResponse: true)
             .then((x) {
               if (!retain) {
-                releaseConnection(cnx);
-                reuseConnection(cnx);
+                _releaseConnection(cnx);
+                _reuseConnection(cnx);
               }
             })
             .catchError((e) {
               if (!retain) {
-                releaseConnection(cnx);
-                reuseConnection(cnx);
+                _releaseConnection(cnx);
+                _reuseConnection(cnx);
               }
             });
         });
@@ -262,9 +262,9 @@ class ConnectionPool {
     query._prepare()
       .then((preparedQuery) {
         log.info("Got value count");
-        releaseConnection(preparedQuery.cnx);
+        _releaseConnection(preparedQuery.cnx);
         c.complete(query);
-        reuseConnection(preparedQuery.cnx);
+        _reuseConnection(preparedQuery.cnx);
       })
       .catchError((e) {
         c.completeError(e);
@@ -284,7 +284,7 @@ class ConnectionPool {
         } else {
           sql = "start transaction";
         }
-        cnx.processHandler(new QueryHandler(sql))
+        cnx.processHandler(new _QueryHandler(sql))
           .then((results) {
             log.fine("Transaction started on cnx#${cnx.number}");
             var transaction = new Transaction._internal(cnx, this);
@@ -292,8 +292,8 @@ class ConnectionPool {
           })
           .catchError((e) {
             c.completeError(e);
-            releaseConnection(cnx);
-            reuseConnection(cnx);
+            _releaseConnection(cnx);
+            _reuseConnection(cnx);
           });
       })
       .catchError((e) {

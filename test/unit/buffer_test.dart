@@ -1,6 +1,6 @@
 library buffer_test;
 
-import 'package:sqljocky/buffer.dart';
+import 'package:sqljocky/sqljocky.dart';
 import 'package:unittest/unittest.dart';
 
 void runBufferTests() {

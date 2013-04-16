@@ -8,10 +8,10 @@ class _Connection {
   final Logger lifecycleLog;
 
   ConnectionPool _pool;
-  Handler _handler;
+  _Handler _handler;
   Completer<dynamic> _completer;
   
-  BufferedSocket _socket;
+  _BufferedSocket _socket;
 
   final Buffer _headerBuffer;
   Buffer _dataBuffer;
@@ -25,13 +25,13 @@ class _Connection {
   final int number;
   
   bool _inUse;
-  final Map<String, PreparedQuery> _preparedQueryCache;
+  final Map<String, _PreparedQuery> _preparedQueryCache;
 
   _Connection(this._pool, this.number) :
       log = new Logger("Connection"),
       lifecycleLog = new Logger("Connection.Lifecycle"),
       _headerBuffer = new Buffer(HEADER_SIZE),
-      _preparedQueryCache = new Map<String, PreparedQuery>(),
+      _preparedQueryCache = new Map<String, _PreparedQuery>(),
       _inUse = false;
   
   void close() {
@@ -58,11 +58,11 @@ class _Connection {
     
     _user = user;
     _password = password;
-    _handler = new HandshakeHandler(user, password, db);
+    _handler = new _HandshakeHandler(user, password, db);
     
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
-    BufferedSocket.connect(host, port,
+    _BufferedSocket.connect(host, port,
       onDataReady: _readPacket,
       onDone: () {
         release();
@@ -91,7 +91,7 @@ class _Connection {
 
         try {
           var result = _handler.processResponse(_dataBuffer);
-          if (result is Handler) {
+          if (result is _Handler) {
             // if handler.processResponse() returned a Handler, pass control to that handler now
             _handler = result;
             _sendBuffer(_handler.createRequest());
@@ -126,7 +126,7 @@ class _Connection {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(Handler handler, {bool noResponse:false}) {
+  Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) {
     if (_handler != null) {
       throw "request already in progress";
     }
@@ -139,7 +139,7 @@ class _Connection {
     return _completer.future;
   }
   
-  PreparedQuery removePreparedQueryFromCache(String sql) {
+  _PreparedQuery removePreparedQueryFromCache(String sql) {
     var preparedQuery = null;
     if (_preparedQueryCache.containsKey(sql)) {
       preparedQuery = _preparedQueryCache[sql];
@@ -148,11 +148,11 @@ class _Connection {
     return preparedQuery;
   }
   
-  PreparedQuery getPreparedQueryFromCache(String sql) {
+  _PreparedQuery getPreparedQueryFromCache(String sql) {
     return _preparedQueryCache[sql];
   }
   
-  putPreparedQueryInCache(String sql, PreparedQuery preparedQuery) {
+  putPreparedQueryInCache(String sql, _PreparedQuery preparedQuery) {
     _preparedQueryCache[sql] = preparedQuery;
   }
 }

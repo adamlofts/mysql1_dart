@@ -1,6 +1,6 @@
 library types_test;
 
-import 'package:sqljocky/src/types.dart';
+import 'package:sqljocky/sqljocky.dart';
 import 'package:unittest/unittest.dart';
 import 'dart:typeddata';
 

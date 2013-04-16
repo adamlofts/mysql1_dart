@@ -1,23 +1,18 @@
-library buffered_socket;
+part of sqljocky;
 
-import 'package:logging/logging.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:sqljocky/buffer.dart';
+typedef _ErrorHandler(AsyncError);
+typedef _DoneHandler();
+typedef _DataReadyHandler();
 
-typedef ErrorHandler(AsyncError);
-typedef DoneHandler();
-typedef DataReadyHandler();
-
-class BufferedSocket {
+class _BufferedSocket {
   final Logger log;
 
   RawSocket _socket;
-  ErrorHandler onError;
-  DoneHandler onDone;
-  DataReadyHandler onDataReady;
+  _ErrorHandler onError;
+  _DoneHandler onDone;
+  _DataReadyHandler onDataReady;
 
-  BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
+  _BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
     _socket.listen(_onData, onError: (error) {
       if (onError != null) {
@@ -30,11 +25,11 @@ class BufferedSocket {
     }, cancelOnError: true);
   }
 
-  static Future<BufferedSocket> connect(String host, int port, {DataReadyHandler onDataReady,
-      DoneHandler onDone, ErrorHandler onError}) {
-    var c = new Completer<BufferedSocket>();
+  static Future<_BufferedSocket> connect(String host, int port, {_DataReadyHandler onDataReady,
+      _DoneHandler onDone, _ErrorHandler onError}) {
+    var c = new Completer<_BufferedSocket>();
     RawSocket.connect(host, port).then((socket) {
-      c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError));
+      c.complete(new _BufferedSocket._internal(socket, onDataReady, onDone, onError));
     });
     return c.future;
   }

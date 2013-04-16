@@ -1,8 +1,4 @@
-library buffer;
-
-import 'dart:typeddata';
-import 'package:logging/logging.dart';
-import 'dart:io';
+part of sqljocky;
 
 /**
  * The class [Buffer] provides methods to read and write strings, lists and

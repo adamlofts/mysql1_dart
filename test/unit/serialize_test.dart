@@ -1,6 +1,6 @@
 library serialize_test;
 
-import 'package:sqljocky/buffer.dart';
+import 'package:sqljocky/sqljocky.dart';
 import 'package:unittest/unittest.dart';
 
 final double SMALLEST_POSITIVE_SUBNORMAL_FLOAT = 1.4012984643248170E-45;

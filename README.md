@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.4.1: Major refactoring so that only the parts of sqljocky which are supposed to be exposed are.
 * v0.4.0: Support for M4.
 * v0.3.0: Support for M3. Bit fields are now numbers, not lists. Dates now use the DateTime class instead of the Date class. Use new IO classes.
 * v0.2.0: Support for the new SDK. 
