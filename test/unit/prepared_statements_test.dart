@@ -10,7 +10,7 @@ import 'dart:typeddata';
 import 'package:logging/logging.dart';
 
 part '../../lib/src/buffer.dart';
-part '../../lib/src/types.dart';
+part '../../lib/src/blob.dart';
 part '../../lib/src/query/data_packet.dart';
 part '../../lib/src/prepared_statements/binary_data_packet.dart';
 part '../../lib/src/query/field.dart';

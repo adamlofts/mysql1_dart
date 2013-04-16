@@ -1,5 +1,10 @@
 part of sqljocky;
 
+/**
+ * Maintains a pool of database connections. When queries are executed, if there is
+ * a free connection it will be used, otherwise the query is queued until a connection is
+ * free. 
+ */
 class ConnectionPool {
   final Logger log;
 
@@ -19,6 +24,11 @@ class ConnectionPool {
   final Queue<Completer<_Connection>> _pendingConnections;
   final List<_Connection> _pool;
   
+  /**
+   * Creates a [ConnectionPool]. When connections are required they will connect to the
+   * [db] on the given [host] and [port], using the [user] and [password]. The [max] number
+   * of simultaneous connections can also be specified.
+   */
   ConnectionPool({String host: 'localhost', int port: 3306, String user,
       String password, String db, int max: 5}) :
         _pendingConnections = new Queue<Completer<_Connection>>(),
@@ -133,12 +143,21 @@ class ConnectionPool {
 //    return completer.future;
 //  }
   
+  /**
+   * Closes all open connections. 
+   * 
+   * WARNING: this will probably break things.
+   */
   void close() {
     for (_Connection cnx in _pool) {
       cnx.close();
     }
   }
 
+  /**
+   * Executes the [sql] query as soon as a connection is available, returning
+   * a [Future<Results>] that completes when the results are available.
+   */
   Future<Results> query(String sql) {
     log.info("Running query: ${sql}");
     var c = new Completer<Results>();
@@ -166,6 +185,9 @@ class ConnectionPool {
     return c.future;
   }
 
+  /**
+   * Pings the server. Returns a [Future] that completes when the server replies.
+   */
   Future ping() {
     log.info("Pinging server");
     var c = new Completer<Results>();
@@ -190,6 +212,10 @@ class ConnectionPool {
     return c.future;
   }
   
+  /**
+   * Sends a debug message to the server. Returns a [Future] that completes
+   * when the server replies.
+   */
   Future debug() {
     log.info("Sending debug message");
     var c = new Completer<Results>();
@@ -241,7 +267,7 @@ class ConnectionPool {
     }
   }
 
-/**
+  /**
    * The future returned by [whenReady] fires when all queued operations in the pool
    * have completed, and the connection is free to be used again.
    */
@@ -256,6 +282,10 @@ class ConnectionPool {
     return c.future;
   }
 
+  /**
+   * Prepares a query with the given [sql]. Returns a [Future<Query>] that
+   * completes when the query has been prepared.
+   */
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
     var c = new Completer<Query>();
@@ -272,6 +302,11 @@ class ConnectionPool {
     return c.future;
   }
   
+  /**
+   * Starts a transaction. Returns a [Future<Transaction>] that completes
+   * when the transaction has been started. If [consistent] is true, the
+   * transaction is started with consistent snapshot.
+   */
   Future<Transaction> startTransaction({bool consistent: false}) {
     log.info("Starting transaction");
     var c = new Completer<Transaction>();
@@ -303,6 +338,11 @@ class ConnectionPool {
     return c.future;
   }
   
+  /**
+   * Prepares and executes the [sql] with the given list of [parameters].
+   * Returns a [Future<Results>] that completes when the query has been
+   * executed.
+   */
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     var c = new Completer<Results>();
     prepare(sql)

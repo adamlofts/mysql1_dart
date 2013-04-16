@@ -29,7 +29,7 @@ class Field {
 
   Field._forTests(this._type);
 
-  Field._(Buffer buffer) {
+  Field._(_Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
     _db = buffer.readLengthCodedString();
     _table = buffer.readLengthCodedString();

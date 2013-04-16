@@ -12,7 +12,7 @@ class _ParameterPacket {
   int get decimals => _decimals;
   int get length => _length;
   
-  _ParameterPacket(Buffer buffer) {
+  _ParameterPacket(_Buffer buffer) {
     _type = buffer.readInt16();
     _flags = buffer.readInt16();
     _decimals = buffer.readByte();

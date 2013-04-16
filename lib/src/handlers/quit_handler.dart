@@ -5,13 +5,13 @@ class _QuitHandler extends _Handler {
     log = new Logger("QuitHandler");
   }
   
-  Buffer createRequest() {
-    var buffer = new Buffer(1);
+  _Buffer createRequest() {
+    var buffer = new _Buffer(1);
     buffer.writeByte(COM_QUIT);
     return buffer;
   }
   
-  dynamic processResponse(Buffer response) {
+  dynamic processResponse(_Buffer response) {
     throw "No response expected";
   }
 }

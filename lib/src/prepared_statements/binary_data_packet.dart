@@ -8,7 +8,7 @@ class _BinaryDataPacket implements _DataPacket {
 
   _BinaryDataPacket._forTests() : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(Buffer buffer, List<Field> fields) :
+  _BinaryDataPacket(_Buffer buffer, List<Field> fields) :
       log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
@@ -39,7 +39,7 @@ class _BinaryDataPacket implements _DataPacket {
     }
   }
 
-  _readField(Field field, Buffer buffer) {
+  _readField(Field field, _Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");

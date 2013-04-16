@@ -5,7 +5,7 @@ class _StandardDataPacket implements _DataPacket {
   
   List<dynamic> get values => _values;
   
-  _StandardDataPacket(Buffer buffer, List<Field> fieldPackets) :
+  _StandardDataPacket(_Buffer buffer, List<Field> fieldPackets) :
       _values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
       var s = buffer.readLengthCodedString();

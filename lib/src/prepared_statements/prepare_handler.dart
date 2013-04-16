@@ -17,14 +17,14 @@ class _PrepareHandler extends _Handler {
     log = new Logger("PrepareHandler");
   }
   
-  Buffer createRequest() {
-    var buffer = new Buffer(_sql.length + 1);
+  _Buffer createRequest() {
+    var buffer = new _Buffer(_sql.length + 1);
     buffer.writeByte(COM_STMT_PREPARE);
     buffer.writeString(_sql);
     return buffer;
   }
   
-  dynamic processResponse(Buffer response) {
+  dynamic processResponse(_Buffer response) {
     log.fine("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {

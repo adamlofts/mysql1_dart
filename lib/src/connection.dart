@@ -13,8 +13,8 @@ class _Connection {
   
   _BufferedSocket _socket;
 
-  final Buffer _headerBuffer;
-  Buffer _dataBuffer;
+  final _Buffer _headerBuffer;
+  _Buffer _dataBuffer;
   
   int _packetNumber = 0;
 
@@ -30,7 +30,7 @@ class _Connection {
   _Connection(this._pool, this.number) :
       log = new Logger("Connection"),
       lifecycleLog = new Logger("Connection.Lifecycle"),
-      _headerBuffer = new Buffer(HEADER_SIZE),
+      _headerBuffer = new _Buffer(HEADER_SIZE),
       _preparedQueryCache = new Map<String, _PreparedQuery>(),
       _inUse = false;
   
@@ -83,7 +83,7 @@ class _Connection {
       _dataSize = _headerBuffer[0] + (_headerBuffer[1] << 8) + (_headerBuffer[2] << 16);
       _packetNumber = _headerBuffer[3];
       log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
-      _dataBuffer = new Buffer(_dataSize);
+      _dataBuffer = new _Buffer(_dataSize);
       _socket.readBuffer(_dataBuffer).then((xx) {
         //log.fine("read all data: ${_dataBuffer._list}");
         //log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
@@ -109,7 +109,7 @@ class _Connection {
     });
   }
   
-  void _sendBuffer(Buffer buffer) {
+  void _sendBuffer(_Buffer buffer) {
     _headerBuffer[0] = buffer.length & 0xFF;
     _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;

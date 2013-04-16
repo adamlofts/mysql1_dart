@@ -1,7 +1,7 @@
 part of sqljocky;
 
 /**
- * The class [Buffer] provides methods to read and write strings, lists and
+ * This provides methods to read and write strings, lists and
  * various sized integers on a buffer (implemented as an integer list).
  *
  * The ints in the backing list must all be 8-bit values. If larger values are
@@ -10,7 +10,7 @@ part of sqljocky;
  * As per mysql spec, numbers here are all unsigned.
  * Which makes things much easier.
  */
-class Buffer {
+class _Buffer {
   final Logger log;
   int _writePos = 0;
   int _readPos = 0;
@@ -23,7 +23,7 @@ class Buffer {
   /**
    * Creates a [Buffer] of the given [size]
    */
-  Buffer(int size) : _list = new Uint8List(size),
+  _Buffer(int size) : _list = new Uint8List(size),
                      log = new Logger("Buffer") {
     _data = new ByteData.view(_list.buffer);
   }
@@ -31,7 +31,7 @@ class Buffer {
   /**
    * Creates a [Buffer] with the given [list] as backing storage
    */
-  Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
+  _Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Logger("Buffer") {
     _list.setRange(0, list.length, list);
     _data = new ByteData.view(_list.buffer);

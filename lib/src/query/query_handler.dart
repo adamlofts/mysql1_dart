@@ -18,14 +18,14 @@ class _QueryHandler extends _Handler {
     _dataPackets = <_DataPacket>[];
   }
   
-  Buffer createRequest() {
-    var buffer = new Buffer(_sql.length + 1);
+  _Buffer createRequest() {
+    var buffer = new _Buffer(_sql.length + 1);
     buffer.writeByte(COM_QUERY);
     buffer.writeString(_sql);
     return buffer;
   }
   
-  dynamic processResponse(Buffer response) {
+  dynamic processResponse(_Buffer response) {
     log.fine("Processing query response");
     var packet = checkResponse(response);
     if (packet == null) {

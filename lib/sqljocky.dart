@@ -11,7 +11,7 @@ import 'package:logging/logging.dart';
 import 'constants.dart';
 
 part 'src/buffer.dart';
-part 'src/types.dart';
+part 'src/blob.dart';
 part 'src/buffered_socket.dart';
 
 part 'src/connection_pool.dart';

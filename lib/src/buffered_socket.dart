@@ -57,11 +57,11 @@ class _BufferedSocket {
     }
   }
 
-  Buffer _writingBuffer;
+  _Buffer _writingBuffer;
   int _writeOffset;
   Completer _writeCompleter;
 
-  Future writeBuffer(Buffer buffer) {
+  Future writeBuffer(_Buffer buffer) {
     if (_writingBuffer != null) {
       throw "Already writing";
     }
@@ -84,11 +84,11 @@ class _BufferedSocket {
     }
   }
 
-  Buffer _readingBuffer;
+  _Buffer _readingBuffer;
   int _readOffset;
   Completer _readCompleter;
 
-  Future readBuffer(Buffer buffer) {
+  Future readBuffer(_Buffer buffer) {
     if (_readingBuffer != null) {
       throw "Already reading";
     }

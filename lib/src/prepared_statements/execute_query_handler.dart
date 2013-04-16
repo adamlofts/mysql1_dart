@@ -23,7 +23,7 @@ class _ExecuteQueryHandler extends _Handler {
     log = new Logger("ExecuteQueryHandler");
   }
   
-  Buffer createRequest() {
+  _Buffer createRequest() {
     var bytes = ((_values.length + 7) / 8).floor().toInt();
     var nullMap = new List<int>(bytes);
     var byte = 0;
@@ -127,7 +127,7 @@ class _ExecuteQueryHandler extends _Handler {
       }
     }
     
-    var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
+    var buffer = new _Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
     buffer.writeByte(COM_STMT_EXECUTE);
     buffer.writeInt32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
@@ -144,7 +144,7 @@ class _ExecuteQueryHandler extends _Handler {
     return buffer;
   }
   
-  dynamic processResponse(Buffer response) {
+  dynamic processResponse(_Buffer response) {
     var packet;
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);

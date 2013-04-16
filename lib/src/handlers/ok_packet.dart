@@ -11,7 +11,7 @@ class _OkPacket {
   int get serverStatus => _serverStatus;
   String get message => _message;
   
-  _OkPacket(Buffer buffer) {
+  _OkPacket(_Buffer buffer) {
     buffer.seek(1);
     _affectedRows = buffer.readLengthCodedBinary();
     _insertId = buffer.readLengthCodedBinary();

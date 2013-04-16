@@ -12,7 +12,7 @@ class MySqlError {
   /**
    * Create a [MySqlError] based on an error response from the mysql server
    */
-  MySqlError(Buffer buffer) {
+  MySqlError._(_Buffer buffer) {
     buffer.seek(1);
     _errorNumber = buffer.readInt16();
     buffer.skip(1);

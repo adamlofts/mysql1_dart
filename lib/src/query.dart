@@ -136,7 +136,7 @@ class Query {
 
   /**
    * Executes the query once for each set of [parameters], and returns a future list
-   * of results.
+   * of results, one for each set of parameters, that completes when the query has been executed.
    */
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
     var c = new Completer<List<Results>>();

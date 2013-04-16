@@ -14,7 +14,7 @@ abstract class _Handler {
   /**
    * Returns a [Buffer] containing the command packet.
    */
-  Buffer createRequest();
+  _Buffer createRequest();
   
   /**
    * Parses a [Buffer] containing the response to the command.
@@ -23,7 +23,7 @@ abstract class _Handler {
    * result is returned in the [Future], either in one of the
    * Connection methods, or Transport.connect() 
    */
-  dynamic processResponse(Buffer response);
+  dynamic processResponse(_Buffer response);
   
   /**
    * Parses the response packet to recognise Ok and Error packets.
@@ -31,7 +31,7 @@ abstract class _Handler {
    * a [MySqlError] if it was an Error packet, or returns [:null:] 
    * if the packet has not been handled by this method.
    */
-  dynamic checkResponse(Buffer response, [bool prepareStmt=false]) {
+  dynamic checkResponse(_Buffer response, [bool prepareStmt=false]) {
     if (response[0] == PACKET_OK) {
       if (prepareStmt) {
         var okPacket = new _PrepareOkPacket(response);
@@ -43,7 +43,7 @@ abstract class _Handler {
         return okPacket;
       }
     } else if (response[0] == PACKET_ERROR) {
-      throw new MySqlError(response);
+      throw new MySqlError._(response);
     }
     return null;
   }
