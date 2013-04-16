@@ -49,7 +49,7 @@ class HandshakeHandler extends Handler {
     var scrambleBuffer2 = response.readNullTerminatedList();
     scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
     scrambleBuffer.setRange(0, 8, scrambleBuffer1);
-    scrambleBuffer.setRange(8, scrambleBuffer2.length, scrambleBuffer2);
+    scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
     
     _finished = true;
     

@@ -181,8 +181,8 @@ void runIntTests(String user, String password, String db, int port, String host)
           if (row[i] is double) {
             // or at least close
             expect(row[i], closeTo(values[i], 0.1));
-          } else if (row[i] is Collection) {
-            expect(row[i], equals(values[i]));
+//          } else if (row[i] is Collection) {
+//            expect(row[i], equals(values[i]));
           } else {
             expect(row[i], equals(values[i]));
           }

@@ -27,7 +27,7 @@ class BufferedSocket {
       if (onDone != null) {
         onDone();
       }
-    }, unsubscribeOnError: true);
+    }, cancelOnError: true);
   }
 
   static Future<BufferedSocket> connect(String host, int port, {DataReadyHandler onDataReady,
