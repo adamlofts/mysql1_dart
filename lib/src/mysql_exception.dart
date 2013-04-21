@@ -1,20 +1,24 @@
 part of sqljocky;
 
 class MySqlException implements Exception {
-  final int errorNumber;
-  final String sqlState;
-  final String message;
+  int _errorNumber;
+  String _sqlState;
+  String _message;
+  
+  int get errorNumber => _errorNumber;
+  String get sqlState => _sqlState;
+  String get message => _message;
   
   /**
    * Create a [MySqlException] based on an error response from the mysql server
    */
   MySqlException._(_Buffer buffer) {
     buffer.seek(1);
-    errorNumber = buffer.readInt16();
+    _errorNumber = buffer.readInt16();
     buffer.skip(1);
-    sqlState = buffer.readString(5);
-    message = buffer.readStringToEnd();
+    _sqlState = buffer.readString(5);
+    _message = buffer.readStringToEnd();
   }
   
-  String toString() => "Error $errorNumber ($sqlState): $message";
+  String toString() => "Error $_errorNumber ($_sqlState): $_message";
 }
