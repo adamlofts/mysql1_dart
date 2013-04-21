@@ -30,7 +30,7 @@ class _BufferedSocket {
     var c = new Completer<_BufferedSocket>();
     RawSocket.connect(host, port).then((socket) {
       c.complete(new _BufferedSocket._internal(socket, onDataReady, onDone, onError));
-    });
+    }, onError: onError);
     return c.future;
   }
 
@@ -44,8 +44,9 @@ class _BufferedSocket {
         int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
         _readOffset += bytesRead;
         if (_readOffset == _readingBuffer.length) {
+          var buffer = _readingBuffer;
           _readingBuffer = null;
-          _readCompleter.complete(null);
+          _readCompleter.complete(buffer);
         }
       }
     } else if (event == RawSocketEvent.READ_CLOSED) {
@@ -59,14 +60,18 @@ class _BufferedSocket {
 
   _Buffer _writingBuffer;
   int _writeOffset;
-  Completer _writeCompleter;
+  Completer<_Buffer> _writeCompleter;
 
-  Future writeBuffer(_Buffer buffer) {
+  /**
+   * Writes [buffer] to the socket, and returns the same buffer in a [Future] which
+   * completes when it has all been written.
+   */
+  Future<_Buffer> writeBuffer(_Buffer buffer) {
     if (_writingBuffer != null) {
       throw "Already writing";
     }
     _writingBuffer = buffer;
-    _writeCompleter = new Completer();
+    _writeCompleter = new Completer<_Buffer>();
     _writeOffset = 0;
 
     _writeBuffer();
@@ -79,22 +84,27 @@ class _BufferedSocket {
     log.fine("Wrote $bytesWritten bytes");
     _writeOffset += bytesWritten;
     if (_writeOffset == _writingBuffer.length) {
+      var buffer = _writingBuffer;
       _writingBuffer = null;
-      _writeCompleter.complete(null);
+      _writeCompleter.complete(buffer);
     }
   }
 
   _Buffer _readingBuffer;
   int _readOffset;
-  Completer _readCompleter;
+  Completer<_Buffer> _readCompleter;
 
-  Future readBuffer(_Buffer buffer) {
+  /**
+   * Reads into [buffer] from the socket, and returns the same buffer in a [Future] which
+   * completes when enough bytes have been read to fill the buffer. 
+   */
+  Future<_Buffer> readBuffer(_Buffer buffer) {
     if (_readingBuffer != null) {
       throw "Already reading";
     }
     _readingBuffer = buffer;
     _readOffset = 0;
-    _readCompleter = new Completer();
+    _readCompleter = new Completer<_Buffer>();
     return _readCompleter.future;
   }
 
