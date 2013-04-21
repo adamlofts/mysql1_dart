@@ -18,11 +18,13 @@ part 'src/connection_pool.dart';
 part 'src/connection.dart';
 part 'src/transaction.dart';
 part 'src/query.dart';
+part 'src/mysql_exception.dart';
+part 'src/mysql_protocol_error.dart';
+part 'src/mysql_client_error.dart';
 
 //general handlers
 part 'src/handlers/parameter_packet.dart';
 part 'src/handlers/ok_packet.dart';
-part 'src/handlers/mysql_error.dart';
 part 'src/handlers/handler.dart';
 part 'src/handlers/use_db_handler.dart';
 part 'src/handlers/ping_handler.dart';

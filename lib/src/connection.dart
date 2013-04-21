@@ -59,7 +59,7 @@ class _Connection {
   Future connect({String host, int port, String user, 
       String password, String db}) {
     if (_socket != null) {
-      throw "connection already open";
+      throw new MySqlClientError._("Cannot connect to server while a connection is already open");
     }
     
     _user = user;
@@ -138,7 +138,7 @@ class _Connection {
    */
   Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) {
     if (_handler != null) {
-      throw "request already in progress";
+      throw new MySqlClientError._("Cannot process a request while a request is already in progress");
     }
     _packetNumber = -1;
     _completer = new Completer<dynamic>();

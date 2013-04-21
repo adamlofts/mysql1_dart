@@ -28,7 +28,7 @@ abstract class _Handler {
   /**
    * Parses the response packet to recognise Ok and Error packets.
    * Returns an [OkPacket] if the packet was an Ok packet, throws
-   * a [MySqlError] if it was an Error packet, or returns [:null:] 
+   * a [MySqlException] if it was an Error packet, or returns [:null:] 
    * if the packet has not been handled by this method.
    */
   dynamic checkResponse(_Buffer response, [bool prepareStmt=false]) {
@@ -43,7 +43,7 @@ abstract class _Handler {
         return okPacket;
       }
     } else if (response[0] == PACKET_ERROR) {
-      throw new MySqlError._(response);
+      throw new MySqlException._(response);
     }
     return null;
   }

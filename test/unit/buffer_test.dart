@@ -6,6 +6,7 @@ import 'dart:typeddata';
 import 'dart:io';
 
 part '../../lib/src/buffer.dart';
+part '../../lib/src/mysql_client_error.dart';
 
 void runBufferTests() {
   group('buffer:', () {

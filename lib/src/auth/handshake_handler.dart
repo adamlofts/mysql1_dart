@@ -23,7 +23,7 @@ class _HandshakeHandler extends _Handler {
    * so a request will never be created.
    */
   _Buffer createRequest() {
-    throw "Cannot create a handshake request"; 
+    throw new MySqlClientError._("Cannot create a handshake request"); 
   }
   
   /**
@@ -54,7 +54,7 @@ class _HandshakeHandler extends _Handler {
     _finished = true;
     
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-      throw "Unsupported protocol (must be 4.1 or newer";
+      throw new MySqlClientError._("Unsupported protocol (must be 4.1 or newer");
     }
     
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD

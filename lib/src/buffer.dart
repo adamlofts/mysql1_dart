@@ -212,7 +212,7 @@ class _Buffer {
    * Will write a length coded binary value, once implemented!
    */
   void writeLengthCodedBinary(int value) {
-    throw "not implemented writeLengthCodedBinary yet";
+    throw new MySqlClientError._("not implemented writeLengthCodedBinary yet");
   }
 
   /**

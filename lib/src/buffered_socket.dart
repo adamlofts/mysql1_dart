@@ -68,7 +68,7 @@ class _BufferedSocket {
    */
   Future<_Buffer> writeBuffer(_Buffer buffer) {
     if (_writingBuffer != null) {
-      throw "Already writing";
+      throw new MySqlClientError._("Cannot write to socket, already writing");
     }
     _writingBuffer = buffer;
     _writeCompleter = new Completer<_Buffer>();
@@ -100,7 +100,7 @@ class _BufferedSocket {
    */
   Future<_Buffer> readBuffer(_Buffer buffer) {
     if (_readingBuffer != null) {
-      throw "Already reading";
+      throw new MySqlClientError._("Cannot read from socket, already reading");
     }
     _readingBuffer = buffer;
     _readOffset = 0;

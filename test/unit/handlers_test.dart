@@ -10,7 +10,8 @@ import 'dart:io';
 part '../../lib/src/auth/auth_handler.dart';
 part '../../lib/src/handlers/handler.dart';
 part '../../lib/src/handlers/ok_packet.dart';
-part '../../lib/src/handlers/mysql_error.dart';
+part '../../lib/src/mysql_exception.dart';
+part '../../lib/src/mysql_client_error.dart';
 part '../../lib/src/prepared_statements/prepare_ok_packet.dart';
 part '../../lib/src/buffer.dart';
 

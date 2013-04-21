@@ -31,7 +31,7 @@ class TableDropper {
       })
       .catchError((e) {
         afterDrop();
-      }, test: (e) => e is MySqlError && (e as MySqlError).errorNumber == ERROR_UNKNOWN_TABLE);
+      }, test: (e) => e is MySqlException && (e as MySqlException).errorNumber == ERROR_UNKNOWN_TABLE);
   }
 
   /**
