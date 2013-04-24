@@ -11,7 +11,7 @@ class _PrepareOkPacket {
   int get parameterCount => _parameterCount;
   int get warningCount => _warningCount;
   
-  _PrepareOkPacket(_Buffer buffer) {
+  _PrepareOkPacket(Buffer buffer) {
     buffer.seek(1);
     _statementHandlerId = buffer.readInt32();
     _columnCount = buffer.readInt16();

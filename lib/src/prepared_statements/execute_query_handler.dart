@@ -8,7 +8,7 @@ class _ExecuteQueryHandler extends _Handler {
   int _state = STATE_HEADER_PACKET;
 
   _ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<Field> _fieldPackets;
+  List<_FieldImpl> _fieldPackets;
   List<_BinaryDataPacket> _dataPackets;
 
   final _PreparedQuery _preparedQuery;
@@ -18,12 +18,12 @@ class _ExecuteQueryHandler extends _Handler {
   
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed,
     List<dynamic> this._values) {
-    _fieldPackets = <Field>[];
+    _fieldPackets = <_FieldImpl>[];
     _dataPackets = <_BinaryDataPacket>[];
     log = new Logger("ExecuteQueryHandler");
   }
   
-  _Buffer createRequest() {
+  Buffer createRequest() {
     var bytes = ((_values.length + 7) / 8).floor().toInt();
     var nullMap = new List<int>(bytes);
     var byte = 0;
@@ -127,7 +127,7 @@ class _ExecuteQueryHandler extends _Handler {
       }
     }
     
-    var buffer = new _Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
+    var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
     buffer.writeByte(COM_STMT_EXECUTE);
     buffer.writeInt32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
@@ -144,7 +144,7 @@ class _ExecuteQueryHandler extends _Handler {
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     var packet;
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);
@@ -157,7 +157,7 @@ class _ExecuteQueryHandler extends _Handler {
         } else if (_state == STATE_ROW_PACKETS){
           _finished = true;
           
-          return new Results._(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+          return new _ResultsImpl._(null, null, _fieldPackets, _dataPackets);
         }
       } else {
         switch (_state) {
@@ -169,7 +169,7 @@ class _ExecuteQueryHandler extends _Handler {
           break;
         case STATE_FIELD_PACKETS:
           log.fine('Got a field packet');
-          var fieldPacket = new Field._(response);
+          var fieldPacket = new _FieldImpl._(response);
           log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
@@ -186,7 +186,7 @@ class _ExecuteQueryHandler extends _Handler {
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         _finished = true;
         
-        return new Results._(_okPacket, null, null, null);
+        return new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, null, null);
       }
     }
   }

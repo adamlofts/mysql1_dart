@@ -1,14 +1,12 @@
 part of sqljocky;
 
-class _BinaryDataPacket implements _DataPacket {
-  List<dynamic> _values;
+class _BinaryDataPacket implements Row {
+  List<dynamic> values;
   final Logger log;
-  
-  List<dynamic> get values => _values;
 
   _BinaryDataPacket._forTests() : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(_Buffer buffer, List<Field> fields) :
+  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields) :
       log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
@@ -26,20 +24,20 @@ class _BinaryDataPacket implements _DataPacket {
       }
     }
     
-    _values = new List<dynamic>(fields.length);
+    values = new List<dynamic>(fields.length);
     for (var i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {
         log.fine("Value: null");
-        _values[i] = null;
+        values[i] = null;
         continue;
       }
       var field = fields[i];
-      _values[i] = _readField(field, buffer);
+      values[i] = _readField(field, buffer);
     }
   }
 
-  _readField(Field field, _Buffer buffer) {
+  _readField(_FieldImpl field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");
@@ -202,5 +200,5 @@ class _BinaryDataPacket implements _DataPacket {
     return null;
   }
 
-  String toString() => "Value: $_values";
+  String toString() => "Value: $values";
 }

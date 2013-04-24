@@ -9,19 +9,19 @@ import 'dart:math' as Math;
 import 'dart:typeddata';
 import 'package:logging/logging.dart';
 
-part '../../lib/src/buffer.dart';
+import 'package:sqljocky/src/buffer.dart';
+import 'package:sqljocky/src/results/results.dart';
 part '../../lib/src/mysql_client_error.dart';
 part '../../lib/src/blob.dart';
-part '../../lib/src/query/data_packet.dart';
 part '../../lib/src/prepared_statements/binary_data_packet.dart';
-part '../../lib/src/query/field.dart';
+part '../../lib/src/results/field_impl.dart';
 
 void runPreparedStatementTests() {
   group('read fields:', () {
     test('can read a tiny BLOB', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([3, 65, 66, 67]);
-      var field = new Field._forTests(FIELD_TYPE_BLOB);
+      var buffer = new Buffer.fromList([3, 65, 66, 67]);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals("ABC"));
@@ -29,8 +29,8 @@ void runPreparedStatementTests() {
 
     test('can read a very tiny BLOB', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0]);
-      var field = new Field._forTests(FIELD_TYPE_BLOB);
+      var buffer = new Buffer.fromList([0]);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals(""));
@@ -38,8 +38,8 @@ void runPreparedStatementTests() {
 
     test('can read a several BLOBs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 3, 65, 66, 67, 1, 65, 0, 0, 1, 65]);
-      var field = new Field._forTests(FIELD_TYPE_BLOB);
+      var buffer = new Buffer.fromList([0, 3, 65, 66, 67, 1, 65, 0, 0, 1, 65]);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is Blob));
@@ -68,8 +68,8 @@ void runPreparedStatementTests() {
 
     test('can read TINYs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 3, 65]);
-      var field = new Field._forTests(FIELD_TYPE_TINY);
+      var buffer = new Buffer.fromList([0, 3, 65]);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_TINY);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is num));
@@ -86,10 +86,10 @@ void runPreparedStatementTests() {
 
     test('can read SHORTs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 0,
+      var buffer = new Buffer.fromList([0, 0,
           255, 255,
           255, 0]);
-      var field = new Field._forTests(FIELD_TYPE_SHORT);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_SHORT);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is num));
@@ -106,10 +106,10 @@ void runPreparedStatementTests() {
 
     test('can read INT24s', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 0, 0, 0,
+      var buffer = new Buffer.fromList([0, 0, 0, 0,
           255, 255, 255, 255,
           255, 0, 0, 0]);
-      var field = new Field._forTests(FIELD_TYPE_INT24);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is num));
@@ -126,10 +126,10 @@ void runPreparedStatementTests() {
 
     test('can read LONGs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 0, 0, 0,
+      var buffer = new Buffer.fromList([0, 0, 0, 0,
           255, 255, 255, 255,
           255, 0, 0, 0]);
-      var field = new Field._forTests(FIELD_TYPE_LONG);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_LONG);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is num));
@@ -146,10 +146,10 @@ void runPreparedStatementTests() {
 
     test('can read LONGLONGs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([0, 0, 0, 0, 0, 0, 0, 0,
+      var buffer = new Buffer.fromList([0, 0, 0, 0, 0, 0, 0, 0,
           255, 255, 255, 255, 255, 255, 255, 255,
           255, 0, 0, 0, 0, 0, 0, 0]);
-      var field = new Field._forTests(FIELD_TYPE_LONGLONG);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_LONGLONG);
 
       var value = dataPacket._readField(field, buffer);
       expect(true, equals(value is num));
@@ -166,8 +166,8 @@ void runPreparedStatementTests() {
 
     test('can read NEWDECIMALs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([5, 0x31, 0x33, 0x2E, 0x39, 0x33]);
-      var field = new Field._forTests(FIELD_TYPE_NEWDECIMAL);
+      var buffer = new Buffer.fromList([5, 0x31, 0x33, 0x2E, 0x39, 0x33]);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_NEWDECIMAL);
 
       var value = dataPacket._readField(field, buffer);
       expect(value is num, equals(true));
@@ -179,9 +179,9 @@ void runPreparedStatementTests() {
 
     test('can read BITs', () {
       var dataPacket = new _BinaryDataPacket._forTests();
-      var buffer = new _Buffer.fromList([1, 123, 20, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00,
+      var buffer = new Buffer.fromList([1, 123, 20, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00,
           0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x10]);
-      var field = new Field._forTests(FIELD_TYPE_BIT);
+      var field = new _FieldImpl._forTests(FIELD_TYPE_BIT);
 
       var value = dataPacket._readField(field, buffer);
       expect(value is num, equals(true));

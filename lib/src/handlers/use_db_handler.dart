@@ -7,14 +7,14 @@ class _UseDbHandler extends _Handler {
     log = new Logger("UseDbHandler");
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(_dbName.length + 1);
+  Buffer createRequest() {
+    var buffer = new Buffer(_dbName.length + 1);
     buffer.writeByte(COM_INIT_DB);
     buffer.writeString(_dbName);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }

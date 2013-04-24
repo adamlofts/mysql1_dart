@@ -7,14 +7,14 @@ class _CloseStatementHandler extends _Handler {
     log = new Logger("CloseStatementHandler");
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(5);
+  Buffer createRequest() {
+    var buffer = new Buffer(5);
     buffer.writeByte(COM_STMT_CLOSE);
     buffer.writeInt32(_handle);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }

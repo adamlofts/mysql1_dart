@@ -22,7 +22,7 @@ class _HandshakeHandler extends _Handler {
    * The server initiates the handshake after the client connects,
    * so a request will never be created.
    */
-  _Buffer createRequest() {
+  Buffer createRequest() {
     throw new MySqlClientError._("Cannot create a handshake request"); 
   }
   
@@ -33,7 +33,7 @@ class _HandshakeHandler extends _Handler {
    * Currently, if the client protocol version is not 4.1, an
    * exception is thrown.
    */
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();

@@ -5,13 +5,13 @@ class _PingHandler extends _Handler {
     log = new Logger("PingHandler");
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(1);
+  Buffer createRequest() {
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_PING);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }

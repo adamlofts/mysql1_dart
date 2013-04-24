@@ -1,18 +1,23 @@
-part of sqljocky;
+library buffered_socket;
 
-typedef _ErrorHandler(AsyncError);
-typedef _DoneHandler();
-typedef _DataReadyHandler();
+import 'dart:io';
+import 'dart:async';
+import 'package:logging/logging.dart';
+import 'buffer.dart';
 
-class _BufferedSocket {
+typedef ErrorHandler(AsyncError);
+typedef DoneHandler();
+typedef DataReadyHandler();
+
+class BufferedSocket {
   final Logger log;
 
   RawSocket _socket;
-  _ErrorHandler onError;
-  _DoneHandler onDone;
-  _DataReadyHandler onDataReady;
+  ErrorHandler onError;
+  DoneHandler onDone;
+  DataReadyHandler onDataReady;
 
-  _BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
+  BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
     _socket.listen(_onData, onError: (error) {
       if (onError != null) {
@@ -25,11 +30,11 @@ class _BufferedSocket {
     }, cancelOnError: true);
   }
 
-  static Future<_BufferedSocket> connect(String host, int port, {_DataReadyHandler onDataReady,
-      _DoneHandler onDone, _ErrorHandler onError}) {
-    var c = new Completer<_BufferedSocket>();
+  static Future<BufferedSocket> connect(String host, int port, {DataReadyHandler onDataReady,
+      DoneHandler onDone, ErrorHandler onError}) {
+    var c = new Completer<BufferedSocket>();
     RawSocket.connect(host, port).then((socket) {
-      c.complete(new _BufferedSocket._internal(socket, onDataReady, onDone, onError));
+      c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError));
     }, onError: onError);
     return c.future;
   }
@@ -58,20 +63,20 @@ class _BufferedSocket {
     }
   }
 
-  _Buffer _writingBuffer;
+  Buffer _writingBuffer;
   int _writeOffset;
-  Completer<_Buffer> _writeCompleter;
+  Completer<Buffer> _writeCompleter;
 
   /**
    * Writes [buffer] to the socket, and returns the same buffer in a [Future] which
    * completes when it has all been written.
    */
-  Future<_Buffer> writeBuffer(_Buffer buffer) {
+  Future<Buffer> writeBuffer(Buffer buffer) {
     if (_writingBuffer != null) {
-      throw new MySqlClientError._("Cannot write to socket, already writing");
+      throw new StateError("Cannot write to socket, already writing");
     }
     _writingBuffer = buffer;
-    _writeCompleter = new Completer<_Buffer>();
+    _writeCompleter = new Completer<Buffer>();
     _writeOffset = 0;
 
     _writeBuffer();
@@ -90,21 +95,21 @@ class _BufferedSocket {
     }
   }
 
-  _Buffer _readingBuffer;
+  Buffer _readingBuffer;
   int _readOffset;
-  Completer<_Buffer> _readCompleter;
+  Completer<Buffer> _readCompleter;
 
   /**
    * Reads into [buffer] from the socket, and returns the same buffer in a [Future] which
    * completes when enough bytes have been read to fill the buffer. 
    */
-  Future<_Buffer> readBuffer(_Buffer buffer) {
+  Future<Buffer> readBuffer(Buffer buffer) {
     if (_readingBuffer != null) {
-      throw new MySqlClientError._("Cannot read from socket, already reading");
+      throw new StateError("Cannot read from socket, already reading");
     }
     _readingBuffer = buffer;
     _readOffset = 0;
-    _readCompleter = new Completer<_Buffer>();
+    _readCompleter = new Completer<Buffer>();
     return _readCompleter.future;
   }
 

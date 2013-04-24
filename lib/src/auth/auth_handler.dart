@@ -15,7 +15,7 @@ class _AuthHandler extends _Handler {
     log = new Logger("AuthHandler");
   }
   
-  _Buffer createRequest() {
+  Buffer createRequest() {
     // calculate the mysql password hash
     List<int> hash;
     if (_password == null) {
@@ -47,7 +47,7 @@ class _AuthHandler extends _Handler {
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
     
-    var buffer = new _Buffer(size);
+    var buffer = new Buffer(size);
     buffer.seekWrite(0);
     buffer.writeInt32(clientFlags);
     buffer.writeInt32(_maxPacketSize);
@@ -64,7 +64,7 @@ class _AuthHandler extends _Handler {
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     var result = checkResponse(response);
     _finished = true;
     return result;

@@ -10,9 +10,12 @@ import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'constants.dart';
 
-part 'src/buffer.dart';
+import 'src/buffer.dart';
+import 'src/buffered_socket.dart';
+import 'src/results/results.dart';
+export 'src/results/results.dart';
+
 part 'src/blob.dart';
-part 'src/buffered_socket.dart';
 
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
@@ -45,11 +48,8 @@ part 'src/prepared_statements/binary_data_packet.dart';
 
 //query handlers
 part 'src/query/result_set_header_packet.dart';
-part 'src/query/field.dart';
-part 'src/query/data_packet.dart';
 part 'src/query/standard_data_packet.dart';
 part 'src/query/query_handler.dart';
 
-//results
-part 'src/results/results.dart';
-part 'src/results/results_iterator.dart';
+part 'src/results/results_impl.dart';
+part 'src/results/field_impl.dart';

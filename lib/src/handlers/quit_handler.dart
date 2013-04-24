@@ -5,13 +5,13 @@ class _QuitHandler extends _Handler {
     log = new Logger("QuitHandler");
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(1);
+  Buffer createRequest() {
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_QUIT);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     throw new MySqlProtocolError("Shouldn't have received a response after sending a QUIT message");
   }
 }

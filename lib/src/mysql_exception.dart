@@ -12,7 +12,7 @@ class MySqlException implements Exception {
   /**
    * Create a [MySqlException] based on an error response from the mysql server
    */
-  MySqlException._(_Buffer buffer) {
+  MySqlException._(Buffer buffer) {
     buffer.seek(1);
     _errorNumber = buffer.readInt16();
     buffer.skip(1);

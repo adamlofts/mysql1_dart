@@ -5,13 +5,13 @@ class _DebugHandler extends _Handler {
     log = new Logger("DebugHandler");
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(1);
+  Buffer createRequest() {
+    var buffer = new Buffer(1);
     buffer.writeByte(COM_DEBUG);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     checkResponse(response);
     _finished = true;
   }

@@ -9,33 +9,33 @@ class _QueryHandler extends _Handler {
   
   _OkPacket _okPacket;
   _ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<Field> _fieldPackets;
-  List<_DataPacket> _dataPackets;
+  List<_FieldImpl> _fieldPackets;
+  List<Row> _dataPackets;
   
   _QueryHandler(String this._sql) {
     log = new Logger("QueryHandler");
-    _fieldPackets = <Field>[];
-    _dataPackets = <_DataPacket>[];
+    _fieldPackets = <_FieldImpl>[];
+    _dataPackets = <Row>[];
   }
   
-  _Buffer createRequest() {
-    var buffer = new _Buffer(_sql.length + 1);
+  Buffer createRequest() {
+    var buffer = new Buffer(_sql.length + 1);
     buffer.writeByte(COM_QUERY);
     buffer.writeString(_sql);
     return buffer;
   }
   
-  dynamic processResponse(_Buffer response) {
+  dynamic processResponse(Buffer response) {
     log.fine("Processing query response");
     var packet = checkResponse(response);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
-        } else if (_state == STATE_ROW_PACKETS){
+        } else if (_state == STATE_ROW_PACKETS) {
           _finished = true;
           
-          return new Results._(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+          return new _ResultsImpl._(null, null, _fieldPackets, _dataPackets);
         }
       } else {
         switch (_state) {
@@ -45,7 +45,7 @@ class _QueryHandler extends _Handler {
           _state = STATE_FIELD_PACKETS;
           break;
         case STATE_FIELD_PACKETS:
-          var fieldPacket = new Field._(response);
+          var fieldPacket = new _FieldImpl._(response);
           log.fine(fieldPacket.toString());
           _fieldPackets.add(fieldPacket);
           break;
@@ -62,7 +62,7 @@ class _QueryHandler extends _Handler {
         _finished = true;
       }
       
-      return new Results._(_okPacket, _resultSetHeaderPacket, _fieldPackets, _dataPackets);
+      return new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets, _dataPackets);
     }
   }
 }

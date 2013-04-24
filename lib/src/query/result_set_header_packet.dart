@@ -7,7 +7,7 @@ class _ResultSetHeaderPacket {
   
   int get fieldCount => _fieldCount;
   
-  _ResultSetHeaderPacket(_Buffer buffer) {
+  _ResultSetHeaderPacket(Buffer buffer) {
     log = new Logger("ResultSetHeaderPacket");
     _fieldCount = buffer.readLengthCodedBinary();
     if (buffer.canReadMore()) {

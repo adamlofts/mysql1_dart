@@ -7,13 +7,14 @@ import 'dart:typeddata';
 import 'dart:crypto';
 import 'dart:io';
 
+import 'package:sqljocky/src/buffer.dart';
+
 part '../../lib/src/auth/auth_handler.dart';
 part '../../lib/src/handlers/handler.dart';
 part '../../lib/src/handlers/ok_packet.dart';
 part '../../lib/src/mysql_exception.dart';
 part '../../lib/src/mysql_client_error.dart';
 part '../../lib/src/prepared_statements/prepare_ok_packet.dart';
-part '../../lib/src/buffer.dart';
 
 void runAuthHandlerTests() {
   group('auth_handler:', () {
@@ -21,9 +22,9 @@ void runAuthHandlerTests() {
       var handler = new _AuthHandler('username', 'password', 'db',
           [1, 2, 3, 4], 0, 100, 0);
       var buffer = handler.createRequest();
-      expect(buffer._list.length, equals(65));
-      expect(buffer._list.sublist(32, 40), "username".codeUnits);
-      expect(buffer._list, equals([8, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+      expect(buffer.list.length, equals(65));
+      expect(buffer.list.sublist(32, 40), "username".codeUnits);
+      expect(buffer.list, equals([8, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                                    117, 115, 101, 114, 110, 97, 109, 101, 
                                    0, 20, 211, 136, 65, 109, 153, 241, 227, 117, 168, 
@@ -36,9 +37,9 @@ void runAuthHandlerTests() {
       var handler = new _AuthHandler('iamtheuserwantingtologin', 'wibblededee', 'thisisthenameofthedatabase',
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 2435623, 34536, 2345);
       var buffer = handler.createRequest();
-      expect(buffer._list.length, equals(105));
-      expect(buffer._list.sublist(32, 40), "iamtheus".codeUnits);
-      expect(buffer._list, equals([47, 42, 37, 0, 232, 134, 0, 0, 41, 0, 0, 0, 0,
+      expect(buffer.list.length, equals(105));
+      expect(buffer.list.sublist(32, 40), "iamtheus".codeUnits);
+      expect(buffer.list, equals([47, 42, 37, 0, 232, 134, 0, 0, 41, 0, 0, 0, 0,
                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                                    105, 97, 109, 116, 104, 101, 117, 115, 101, 114, 119,
                                    97, 110, 116, 105, 110, 103, 116, 111, 108, 111, 103,

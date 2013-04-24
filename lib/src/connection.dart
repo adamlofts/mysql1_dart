@@ -11,10 +11,10 @@ class _Connection {
   _Handler _handler;
   Completer<dynamic> _completer;
   
-  _BufferedSocket _socket;
+  BufferedSocket _socket;
 
-  final _Buffer _headerBuffer;
-  _Buffer _dataBuffer;
+  final Buffer _headerBuffer;
+  Buffer _dataBuffer;
   
   int _packetNumber = 0;
 
@@ -30,7 +30,7 @@ class _Connection {
   _Connection(this._pool, this.number) :
       log = new Logger("Connection"),
       lifecycleLog = new Logger("Connection.Lifecycle"),
-      _headerBuffer = new _Buffer(HEADER_SIZE),
+      _headerBuffer = new Buffer(HEADER_SIZE),
       _preparedQueryCache = new Map<String, _PreparedQuery>(),
       _inUse = false;
   
@@ -68,7 +68,7 @@ class _Connection {
     
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
-    _BufferedSocket.connect(host, port,
+    BufferedSocket.connect(host, port,
       onDataReady: _readPacket,
       onDone: () {
         release();
@@ -92,7 +92,7 @@ class _Connection {
     _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
-    _dataBuffer = new _Buffer(_dataSize);
+    _dataBuffer = new Buffer(_dataSize);
     _socket.readBuffer(_dataBuffer).then(_handleData);
   }
   
@@ -119,7 +119,7 @@ class _Connection {
     }
   }
   
-  void _sendBuffer(_Buffer buffer) {
+  void _sendBuffer(Buffer buffer) {
     _headerBuffer[0] = buffer.length & 0xFF;
     _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;

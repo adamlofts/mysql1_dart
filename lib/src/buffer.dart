@@ -1,4 +1,8 @@
-part of sqljocky;
+library buffer;
+
+import 'package:logging/logging.dart';
+import 'dart:typeddata';
+import 'dart:io';
 
 /**
  * This provides methods to read and write strings, lists and
@@ -10,7 +14,7 @@ part of sqljocky;
  * As per mysql spec, numbers here are all unsigned.
  * Which makes things much easier.
  */
-class _Buffer {
+class Buffer {
   final Logger log;
   int _writePos = 0;
   int _readPos = 0;
@@ -23,7 +27,7 @@ class _Buffer {
   /**
    * Creates a [Buffer] of the given [size]
    */
-  _Buffer(int size) : _list = new Uint8List(size),
+  Buffer(int size) : _list = new Uint8List(size),
                      log = new Logger("Buffer") {
     _data = new ByteData.view(_list.buffer);
   }
@@ -31,7 +35,7 @@ class _Buffer {
   /**
    * Creates a [Buffer] with the given [list] as backing storage
    */
-  _Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
+  Buffer.fromList(List<int> list) : _list = new Uint8List(list.length),
                                     log = new Logger("Buffer") {
     _list.setRange(0, list.length, list);
     _data = new ByteData.view(_list.buffer);
@@ -212,7 +216,7 @@ class _Buffer {
    * Will write a length coded binary value, once implemented!
    */
   void writeLengthCodedBinary(int value) {
-    throw new MySqlClientError._("not implemented writeLengthCodedBinary yet");
+    throw new UnsupportedError("not implemented writeLengthCodedBinary yet");
   }
 
   /**

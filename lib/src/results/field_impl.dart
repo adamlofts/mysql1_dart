@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class Field {
+class _FieldImpl implements Field {
   String _catalog;
   String _db;
   String _table;
@@ -14,12 +14,12 @@ class Field {
   int _decimals;
   int _defaultValue;
   
-  String get name => _name;
-  String get table => _table;
   String get catalog => _catalog;
-  String get orgName => _orgName;
-  String get orgTable => _orgTable;
   String get db => _db;
+  String get table => _table;
+  String get orgTable => _orgTable;
+  String get name => _name;
+  String get orgName => _orgName;
   int get characterSet => _characterSet;
   int get length => _length;
   int get type => _type;
@@ -27,9 +27,9 @@ class Field {
   int get decimals => _decimals;
   int get defaultValue => _defaultValue;
 
-  Field._forTests(this._type);
+  _FieldImpl._forTests(this._type);
 
-  Field._(_Buffer buffer) {
+  _FieldImpl._(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
     _db = buffer.readLengthCodedString();
     _table = buffer.readLengthCodedString();
