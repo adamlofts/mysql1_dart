@@ -110,6 +110,8 @@ class Example {
           ];
         return query.executeMulti(parameters);
       }).then((results) {
+        return results.stream.toList();
+      }).then((results) {
         for (var result in results) {
           ids.add(result.insertId);
         }
@@ -162,16 +164,18 @@ class Example {
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
-      if (result != null) { 
-        for (var row in result) {
-          if (row[3] == null) {
-            print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
-          } else {
-            print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+      result.stream.toList().then((list) {
+        if (list != null) { 
+          for (var row in list) {
+            if (row[3] == null) {
+              print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
+            } else {
+              print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+            }
           }
         }
-      }
-      completer.complete(null);
+        completer.complete(null);
+      });
     });
     return completer.future;
   }

@@ -161,37 +161,6 @@ class ConnectionPool {
   Future<Results> query(String sql) {
     log.info("Running query: ${sql}");
     var c = new Completer<Results>();
-    
-    _getConnection()
-      .then((cnx) {
-        log.fine("Got cnx#${cnx.number} for query");
-        cnx.processHandler(new _QueryHandler(sql))
-          .then((results) {
-            log.fine("Got query results on #${cnx.number} for: ${sql}");
-            _releaseConnection(cnx);
-            c.complete(results);
-            _reuseConnection(cnx);
-          })
-          .catchError((e) {
-            c.completeError(e);
-            _releaseConnection(cnx);
-            _reuseConnection(cnx);
-          });
-      })
-      .catchError((e) {
-        c.completeError(e);
-      });
-
-    return c.future;
-  }
-
-  /**
-   * Executes the [sql] query as soon as a connection is available, returning
-   * a [Future<Results>] that completes when the results are available.
-   */
-  Future<Results> queryStream(String sql) {
-    log.info("Running query: ${sql}");
-    var c = new Completer<Results>();
 
     _getConnection()
       .then((cnx) {
@@ -350,7 +319,7 @@ class ConnectionPool {
         } else {
           sql = "start transaction";
         }
-        cnx.processHandler(new _QueryHandler(sql))
+        cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
             log.fine("Transaction started on cnx#${cnx.number}");
             var transaction = new Transaction._internal(cnx, this);
@@ -375,24 +344,31 @@ class ConnectionPool {
    * executed.
    */
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
-    var c = new Completer<Results>();
-    prepare(sql)
-      .then((q) {
-        for (int i = 0; i < parameters.length; i++) {
-          q[i] = parameters[i];
-        }
-        q.execute()
-          .then((results) {
-            c.complete(results);
-          })
-          .catchError((e) {
-            c.completeError(e);
-          });
-      })
-      .catchError((e) {
-        c.completeError(e);
-      });
-    return c.future;
+    return prepare(sql).then((query) {
+      for (int i = 0; i < parameters.length; i++) {
+        query[i] = parameters[i];
+      }
+      return query.execute();
+    });
+//    
+//    var c = new Completer<Results>();
+//    prepare(sql)
+//      .then((query) {
+//        for (int i = 0; i < parameters.length; i++) {
+//          query[i] = parameters[i];
+//        }
+//        query.execute()
+//          .then((results) {
+//            c.complete(results);
+//          })
+//          .catchError((e) {
+//            c.completeError(e);
+//          });
+//      })
+//      .catchError((e) {
+//        c.completeError(e);
+//      });
+//    return c.future;
   }
   
 //  dynamic fieldList(String table, [String column]);

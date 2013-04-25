@@ -14,7 +14,7 @@ class Transaction {
     _finished = true;
     var c = new Completer();
   
-    var handler = new _QueryHandler("commit");
+    var handler = new _QueryStreamHandler("commit");
     _cnx.processHandler(handler)
       .then((results) {
         _pool._releaseConnection(_cnx);
@@ -33,7 +33,7 @@ class Transaction {
     _finished = true;
     var c = new Completer();
   
-    var handler = new _QueryHandler("rollback");
+    var handler = new _QueryStreamHandler("rollback");
     _cnx.processHandler(handler)
       .then((results) {
         _pool._releaseConnection(_cnx);
@@ -51,7 +51,7 @@ class Transaction {
     _checkFinished();
     var c = new Completer<Results>();
     
-    var handler = new _QueryHandler(sql);
+    var handler = new _QueryStreamHandler(sql);
     _cnx.processHandler(handler)
       .then((results) {
         c.complete(results);

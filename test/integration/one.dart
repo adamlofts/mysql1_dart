@@ -25,29 +25,36 @@ void runIntTests(String user, String password, String db, int port, String host)
         "abinary binary(10), avarbinary varbinary(10), "
         "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
         "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then(expectAsync1((Results results) {
-          expect(results.length, equals(0));
+          expect(results.stream, equals(null));
         }));
     });
     
     test('show tables', () {
+      var c = new Completer();
       pool.query("show tables").then(expectAsync1((Results results) {
         print("tables");
-        for (var row in results) {
-          print(row);
-        }
-        expect(1, equals(1)); // put some real expectations here
+        results.stream.listen((row) {
+          print("table: $row");
+        }, onDone: () {
+          c.complete();
+        });
       }));
+      return c.future;
     });
     
     test('describe stuff', () {
+      var c = new Completer();
       pool.query("describe test1").then(expectAsync1((Results results) {
         print("table test1");
-        showResults(results);
-        expect(1, equals(1)); // put some real expectations here
+        showResults(results).then((x) {
+          c.complete();
+        });
       }));
+      return c.future;
     });
     
     test('insert stuff', () {
+      var c = new Completer();
       print("insert stuff test");
       pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
@@ -62,7 +69,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)").then(expectAsync1((Query query) {
+        "?, ?)").then((Query query) {
           query[0] = 126;
           query[1] = 164;
           query[2] = 165;
@@ -104,95 +111,116 @@ void runIntTests(String user, String password, String db, int port, String host)
           print("executing");
           expect(1, equals(1)); // put some real expectations here
           return query.execute();
-        })).then(expectAsync1((results) {
+        }).then((results) {
           print("updated ${results.affectedRows} ${results.insertId}");
           expect(results.affectedRows, equals(1));
-        }));
+          c.complete();
+        });
+      return c.future;
     });
     
     test('select everything', () {
-      pool.query('select * from test1').then(expectAsync1((results) {
-        expect(results.length, equals(1));
-      }));
+      var c = new Completer();
+      pool.query('select * from test1').then((results) {
+        results.stream.toList().then((list) {
+          expect(list.length, equals(1));
+          c.complete();
+        });
+      });
+      return c.future;
     });
 
     test('update', () {
+      var c = new Completer();
       Query preparedQuery;
-      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then(expectAsync1((query) {
+      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
         preparedQuery = query;
         query[0] = 127;
         query[1] = "123456789.987654321";
         expect(1, equals(1)); // put some real expectations here
         return query.execute();
-      })).then(expectAsync1((results) {
+      }).then((results) {
         preparedQuery.close();
-        expect(1, equals(1)); // put some real expectations here
-      }));
+        c.complete();
+      });
+      return c.future;
     });
     
     test('select stuff', () {
-      pool.query("select atinyint, adecimal from test1").then(expectAsync1((results) {
-        var it = results.iterator;
-        it.moveNext();
-        var row = it.current;
-        expect(row[0], equals(127));
-        expect(row[1], equals(123456789.987654321));
-      }));
+      var c = new Completer();
+      pool.query("select atinyint, adecimal from test1").then((results) {
+        results.stream.toList().then((list) {
+          var row = list[0];
+          expect(row[0], equals(127));
+          expect(row[1], equals(123456789.987654321));
+          c.complete();
+        });
+      });
+      return c.future;
     });
     
     test('prepare execute', () {
-      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then(expectAsync1((results) {
+      var c = new Completer();
+      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((results) {
         expect(results.affectedRows, equals(1));
-      }));
+        c.complete();
+      });
+      return c.future;
     });
     
     List<Field> preparedFields;
     List<dynamic> values;
     
     test('data types (prepared)', () {
-      pool.prepareExecute('select * from test1', []).then(expectAsync1((results) {
+      var c = new Completer();
+      pool.prepareExecute('select * from test1', []).then((results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
-        var it = results.iterator;
-        it.moveNext();
-        values = it.current;
-        for (var i = 0; i < results.fields.length; i++) {
-          var field = results.fields[i];
-          print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
-        }
-        expect(1, equals(1)); // put some real expectations here
-      }));
+        results.stream.toList().then((list) {
+          values = list[0];
+          for (var i = 0; i < results.fields.length; i++) {
+            var field = results.fields[i];
+            print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
+          }
+          c.complete();
+        });
+      });
+      return c.future;
     });
 
     test('data types (query)', () {
-      pool.query('select * from test1').then(expectAsync1((results) {
+      var c = new Completer();
+      pool.query('select * from test1').then((results) {
         print("----------- query results ---------------");
-        var it = results.iterator;
-        it.moveNext();
-        var row = it.current;
-        for (var i = 0; i < results.fields.length; i++) {
-          var field = results.fields[i];
-          
-          // make sure field types returned by both queries are the same
-          expect(field.type, equals(preparedFields[i].type));
-          // make sure results types are the same
-          expect(typeof(row[i]), equals(typeof(values[i])));
-          // make sure the values are the same
-          if (row[i] is double) {
-            // or at least close
-            expect(row[i], closeTo(values[i], 0.1));
-//          } else if (row[i] is Collection) {
-//            expect(row[i], equals(values[i]));
-          } else {
-            expect(row[i], equals(values[i]));
+        results.stream.toList().then((list) {
+          var row = list[0];
+          for (var i = 0; i < results.fields.length; i++) {
+            var field = results.fields[i];
+  
+            // make sure field types returned by both queries are the same
+            expect(field.type, equals(preparedFields[i].type));
+            // make sure results types are the same
+            expect(typeof(row[i]), equals(typeof(values[i])));
+            // make sure the values are the same
+            if (row[i] is double) {
+              // or at least close
+              expect(row[i], closeTo(values[i], 0.1));
+  //          } else if (row[i] is Collection) {
+  //            expect(row[i], equals(values[i]));
+            } else {
+              expect(row[i], equals(values[i]));
+            }
+            print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
           }
-          print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
-        }
-      }));
+          c.complete();
+        });
+      });
+      return c.future;
     });
-    
+
     test('multi queries', () {
-      pool.startTransaction().then(expectAsync1((trans) {
+      var c = new Completer();
+      pool.startTransaction().then((trans) {
         var start = new DateTime.now();
         trans.prepare('insert into test1 (aint) values (?)').then((query) {
           var params = [];
@@ -203,54 +231,61 @@ void runIntTests(String user, String password, String db, int port, String host)
             var end = new DateTime.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
-            trans.commit().then(expectAsync1((x) {
-              expect(1, equals(1)); // put some real expectations here
-            }));
+            trans.commit().then((x) {
+              c.complete();
+            });
           });
         });
-      }));
+      });
+      return c.future;
     });
 
     test('blobs in prepared queries', () {
+      var c = new Completer();
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
-      pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]).then(expectAsync1((results) {
+      pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]).then((results) {
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12344", []);
-      })).then(expectAsync1((results) {
-        expect(results.length, equals(1));
-        var it = results.iterator;
-        it.moveNext();
-        values = it.current;
-        expect(values[0].toString(), equals("ABC\u0000DEF"));
-      }));
+      }).then((results) {
+        results.stream.toList().then((list) {
+          expect(list.length, equals(1));
+          values = list[0];
+          expect(values[0].toString(), equals("ABC\u0000DEF"));
+          c.complete();
+        });
+      });
+      return c.future;
     });
 
     test('blobs with nulls', () {
-      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then(expectAsync1((results) {
+      var c = new Completer();
+      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then((results) {
         expect(1, equals(1)); // put some real expectations here
         return pool.query("select atext from test1 where aint = 12345");
-      })).then(expectAsync1((results) {
+      }).then((results) {
+        return results.stream.toList();
+      }).then((results) {
         expect(results.length, equals(1));
-        var it = results.iterator;
-        it.moveNext();
-        values = it.current;
+        values = results[0];
         expect(values[0].toString(), equals("ABC\u0000DEF"));
 
         return pool.query("delete from test1 where aint = 12345");
-      })).then(expectAsync1((results) {
+      }).then((results) {
         var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
-      })).then(expectAsync1((results) {
+      }).then((results) {
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12345", []);
-      })).then(expectAsync1((results) {
+      }).then((results) {
+        return results.stream.toList();
+      }).then((results) {
         expect(results.length, equals(1));
-        var it = results.iterator;
-        it.moveNext();
-        values = it.current;
+        values = results[0];
         expect(values[0].toString(), equals("ABC\u0000DEF"));
-      }));
+        c.complete();
+      });
+      return c.future;
     });
 
     test('close connection', () {
@@ -259,15 +294,20 @@ void runIntTests(String user, String password, String db, int port, String host)
   });
 }
 
-void showResults(Results results) {
+Future showResults(Results results) {
+  var c = new Completer();
   var fieldNames = <String>[];
   for (var field in results.fields) {
     fieldNames.add("${field.name}:${field.type}");
   }
   print(fieldNames);
-  for (var row in results) {
+  results.stream.listen((row) {
     print(row);
-  }
+  }, onDone: () {
+    c.complete(null);
+  });
+  
+  return c.future;
 }
 
 String typeof(dynamic item) {

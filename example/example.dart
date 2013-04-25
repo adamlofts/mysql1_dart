@@ -94,7 +94,7 @@ class Example {
 //        'left join pets t on t.owner_id = p.id').then((query) {
 //        return query.execute();
 //    }).then((result) {
-    pool.queryStream('select p.id, p.name, p.age, t.name, t.species '
+    pool.query('select p.id, p.name, p.age, t.name, t.species '
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");

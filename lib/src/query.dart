@@ -103,9 +103,17 @@ class Query {
       .then((preparedQuery) {
         _execute(preparedQuery)
           .then((Results results) {
-            _releaseConnection(preparedQuery.cnx);
-            c.complete(results);
-            _reuseConnection(preparedQuery.cnx);
+            if (results.stream != null) {
+              (results as _ResultsImpl)._stream = results.stream.transform(new StreamDoneTransformer(() {
+                _releaseConnection(preparedQuery.cnx);
+                _reuseConnection(preparedQuery.cnx);
+              }));
+              c.complete(results);
+            } else {
+              _releaseConnection(preparedQuery.cnx);
+              c.complete(results);
+              _reuseConnection(preparedQuery.cnx);
+            }
           })
           .catchError((e) {
             c.completeError(e);
@@ -207,3 +215,13 @@ class Query {
 //  dynamic fetch(int rows);
 }
 
+class StreamDoneTransformer extends StreamEventTransformer<Row, Row> {
+  var handler;
+  
+  StreamDoneTransformer(this.handler);
+  
+  void handleDone(EventSink<Row> sink) {
+    handler();
+    sink.close();
+  }
+}

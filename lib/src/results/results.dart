@@ -6,7 +6,7 @@ part of results;
 * Most of these fields and methods are inherited from [ListBase].
 * The ones added here are [insertId], [affectedRows] and [fields].
 */
-abstract class Results extends ListBase<Row> {
+abstract class Results {
   Stream<Row> get stream;
 
   /**

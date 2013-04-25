@@ -17,16 +17,4 @@ class _ResultsImpl extends Results {
   }
 
   Stream<Row> get stream => _stream;
-
-  int get length => _rows.length;
-
-  void set length(int newLength) {
-    throw new UnsupportedError("Cannot change length");
-  }
-
-  Row operator[](int index) => _rows[index];
-
-  void operator[]=(int index, Row value) {
-    throw new UnsupportedError("Cannot change results");
-  }
 }

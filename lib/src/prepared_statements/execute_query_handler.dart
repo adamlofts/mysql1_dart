@@ -9,7 +9,7 @@ class _ExecuteQueryHandler extends _Handler {
 
   _ResultSetHeaderPacket _resultSetHeaderPacket;
   List<_FieldImpl> _fieldPackets;
-  List<_BinaryDataPacket> _dataPackets;
+  StreamController<Row> _streamController;
 
   final _PreparedQuery _preparedQuery;
   final List<dynamic> _values;
@@ -19,7 +19,6 @@ class _ExecuteQueryHandler extends _Handler {
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed,
     List<dynamic> this._values) {
     _fieldPackets = <_FieldImpl>[];
-    _dataPackets = <_BinaryDataPacket>[];
     log = new Logger("ExecuteQueryHandler");
   }
   
@@ -154,9 +153,11 @@ class _ExecuteQueryHandler extends _Handler {
         log.fine('Got an EOF');
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
+          _streamController = new StreamController<Row>();
+          return new _HandlerResponse(false, null, new _ResultsImpl._(null, null, _fieldPackets, null, _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS){
-
-          return new _HandlerResponse(true, null, new _ResultsImpl._(null, null, _fieldPackets, _dataPackets));
+          _streamController.close();
+          return new _HandlerResponse(true, null);
         }
       } else {
         switch (_state) {
@@ -176,7 +177,7 @@ class _ExecuteQueryHandler extends _Handler {
           log.fine('Got a row packet');
           var dataPacket = new _BinaryDataPacket(response, _fieldPackets);
           log.fine(dataPacket.toString());
-          _dataPackets.add(dataPacket);
+          _streamController.add(dataPacket);
           break;
         }
       }
