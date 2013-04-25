@@ -33,7 +33,7 @@ class _HandshakeHandler extends _Handler {
    * Currently, if the client protocol version is not 4.1, an
    * exception is thrown.
    */
-  dynamic processResponse(Buffer response) {
+  _HandlerResponse processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
@@ -51,16 +51,14 @@ class _HandshakeHandler extends _Handler {
     scrambleBuffer.setRange(0, 8, scrambleBuffer1);
     scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
     
-    _finished = true;
-    
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
       throw new MySqlClientError._("Unsupported protocol (must be 4.1 or newer");
     }
     
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
       | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
-    
-    return new _AuthHandler(_user, _password, _db, scrambleBuffer, 
-      clientFlags, 0, 33);
+
+    return new _HandlerResponse(false, new _AuthHandler(_user, _password, _db, scrambleBuffer,
+      clientFlags, 0, 33));
   }
 }

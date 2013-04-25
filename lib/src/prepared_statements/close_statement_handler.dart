@@ -13,9 +13,9 @@ class _CloseStatementHandler extends _Handler {
     buffer.writeInt32(_handle);
     return buffer;
   }
-  
-  dynamic processResponse(Buffer response) {
-    checkResponse(response);
-    _finished = true;
+
+  _HandlerResponse processResponse(Buffer response) {
+    var result = checkResponse(response);
+    return new _HandlerResponse(true, null, result);
   }
 }

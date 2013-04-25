@@ -143,8 +143,8 @@ class _ExecuteQueryHandler extends _Handler {
 //    log.fine(Buffer.listChars(buffer._list));
     return buffer;
   }
-  
-  dynamic processResponse(Buffer response) {
+
+  _HandlerResponse processResponse(Buffer response) {
     var packet;
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);
@@ -155,9 +155,8 @@ class _ExecuteQueryHandler extends _Handler {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
         } else if (_state == STATE_ROW_PACKETS){
-          _finished = true;
-          
-          return new _ResultsImpl._(null, null, _fieldPackets, _dataPackets);
+
+          return new _HandlerResponse(true, null, new _ResultsImpl._(null, null, _fieldPackets, _dataPackets));
         }
       } else {
         switch (_state) {
@@ -184,10 +183,9 @@ class _ExecuteQueryHandler extends _Handler {
     } else if (packet is _OkPacket) {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        _finished = true;
-        
-        return new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, null, null);
+        return new _HandlerResponse(true, null, new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, null, null));
       }
     }
+    return _HandlerResponse.notFinished;
   }
 }

@@ -64,9 +64,8 @@ class _AuthHandler extends _Handler {
     return buffer;
   }
   
-  dynamic processResponse(Buffer response) {
+  _HandlerResponse processResponse(Buffer response) {
     var result = checkResponse(response);
-    _finished = true;
-    return result;
+    return new _HandlerResponse(true, null, result);
   }
 }

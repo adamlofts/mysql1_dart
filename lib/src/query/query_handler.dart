@@ -24,8 +24,8 @@ class _QueryHandler extends _Handler {
     buffer.writeString(_sql);
     return buffer;
   }
-  
-  dynamic processResponse(Buffer response) {
+
+  _HandlerResponse processResponse(Buffer response) {
     log.fine("Processing query response");
     var packet = checkResponse(response);
     if (packet == null) {
@@ -33,9 +33,7 @@ class _QueryHandler extends _Handler {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
         } else if (_state == STATE_ROW_PACKETS) {
-          _finished = true;
-          
-          return new _ResultsImpl._(null, null, _fieldPackets, _dataPackets);
+          return new _HandlerResponse(true, null, new _ResultsImpl._(null, null, _fieldPackets, _dataPackets));
         }
       } else {
         switch (_state) {
@@ -58,11 +56,14 @@ class _QueryHandler extends _Handler {
       } 
     } else if (packet is _OkPacket) {
       _okPacket = packet;
+      var finished = false;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        _finished = true;
+        finished = true;
       }
-      
-      return new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets, _dataPackets);
+
+      //TODO is this finished value right?
+      return new _HandlerResponse(finished, null, new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets, _dataPackets));
     }
+    return _HandlerResponse.notFinished;
   }
 }

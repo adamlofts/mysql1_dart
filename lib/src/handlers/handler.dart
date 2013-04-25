@@ -1,5 +1,26 @@
 part of sqljocky;
 
+
+class _HandlerResponse {
+  final bool finished;
+  final _Handler nextHandler;
+  bool _hasResult;
+  dynamic _result;
+
+  bool get hasResult => _hasResult;
+
+  dynamic get result => _result;
+
+  _HandlerResponse(this.finished, this.nextHandler, [dynamic result]) {
+    _hasResult = ?result;
+    if (?result) {
+      _result = result;
+    }
+  }
+
+  static final _HandlerResponse notFinished = new _HandlerResponse(false, null);
+}
+
 /**
  * Each command which the mysql protocol implements is handled with a [Handler] object.
  * A handler is created with the appropriate parameters when the command is invoked
@@ -9,8 +30,7 @@ part of sqljocky;
  */
 abstract class _Handler {
   Logger log;
-  bool _finished = false;
-  
+
   /**
    * Returns a [Buffer] containing the command packet.
    */
@@ -23,7 +43,7 @@ abstract class _Handler {
    * result is returned in the [Future], either in one of the
    * Connection methods, or Transport.connect() 
    */
-  dynamic processResponse(Buffer response);
+  _HandlerResponse processResponse(Buffer response);
   
   /**
    * Parses the response packet to recognise Ok and Error packets.
@@ -47,9 +67,4 @@ abstract class _Handler {
     }
     return null;
   }
-
-  /**
-   * When [finished] is true, this handler has finished processing responses.
-   */
-  bool get finished => _finished;
 }

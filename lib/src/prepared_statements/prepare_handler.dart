@@ -23,8 +23,8 @@ class _PrepareHandler extends _Handler {
     buffer.writeString(_sql);
     return buffer;
   }
-  
-  dynamic processResponse(Buffer response) {
+
+  _HandlerResponse processResponse(Buffer response) {
     log.fine("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {
@@ -70,9 +70,9 @@ class _PrepareHandler extends _Handler {
     }
     
     if (_parametersToRead == -1 && _columnsToRead == -1) {
-      _finished = true;
       log.fine("finished");
-      return new _PreparedQuery(this);
+      return new _HandlerResponse(true, null, new _PreparedQuery(this));
     }
+    return _HandlerResponse.notFinished;
   }
 }

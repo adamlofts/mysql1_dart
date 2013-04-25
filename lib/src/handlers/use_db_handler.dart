@@ -13,9 +13,9 @@ class _UseDbHandler extends _Handler {
     buffer.writeString(_dbName);
     return buffer;
   }
-  
-  dynamic processResponse(Buffer response) {
-    checkResponse(response);
-    _finished = true;
+
+  _HandlerResponse processResponse(Buffer response) {
+    var result = checkResponse(response);
+    return new _HandlerResponse(true, null, result);
   }
 }

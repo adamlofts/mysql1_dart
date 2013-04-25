@@ -102,15 +102,24 @@ class _Connection {
     _headerBuffer.reset();
 
     try {
-      var result = _handler.processResponse(buffer);
-      if (result is _Handler) {
+      var response = _handler.processResponse(buffer);
+      if (response.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now
-        _handler = result;
+        _handler = response.nextHandler;
         _sendBuffer(_handler.createRequest());
-      } else if (_handler.finished) {
-        // otherwise, complete using the result, and that result will be  passed back to the future.
+      }
+      if (response.finished) {
         _handler = null;
-        _completer.complete(result);
+        if (!response.hasResult) {
+          log.fine("handler has finished, but without a value. using null");
+          _completer.complete(null);
+        }
+      }
+      if (response.hasResult) {
+        if (_completer.isCompleted) {
+          _completer.completeError(new StateError("Request has already completed"));
+        }
+        _completer.complete(response.result);
       }
     } catch (e) {
       _handler = null;
@@ -138,7 +147,7 @@ class _Connection {
    */
   Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) {
     if (_handler != null) {
-      throw new MySqlClientError._("Cannot process a request while a request is already in progress");
+      throw new MySqlClientError._("Cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _packetNumber = -1;
     _completer = new Completer<dynamic>();
@@ -166,4 +175,3 @@ class _Connection {
     _preparedQueryCache[sql] = preparedQuery;
   }
 }
-
