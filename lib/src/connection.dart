@@ -110,10 +110,6 @@ class _Connection {
       }
       if (response.finished) {
         _handler = null;
-        if (!response.hasResult) {
-          log.fine("handler has finished, but without a value. using null");
-          _completer.complete(null);
-        }
       }
       if (response.hasResult) {
         if (_completer.isCompleted) {

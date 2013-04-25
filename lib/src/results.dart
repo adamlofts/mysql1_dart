@@ -5,6 +5,7 @@
 library results;
 
 import 'dart:collection';
+import 'dart:async';
 
 part 'results/field.dart';
 part 'results/row.dart';

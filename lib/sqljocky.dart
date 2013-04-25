@@ -50,6 +50,7 @@ part 'src/prepared_statements/binary_data_packet.dart';
 part 'src/query/result_set_header_packet.dart';
 part 'src/query/standard_data_packet.dart';
 part 'src/query/query_handler.dart';
+part 'src/query/query_stream_handler.dart';
 
 part 'src/results/results_impl.dart';
 part 'src/results/field_impl.dart';

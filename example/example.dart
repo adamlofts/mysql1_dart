@@ -94,18 +94,19 @@ class Example {
 //        'left join pets t on t.owner_id = p.id').then((query) {
 //        return query.execute();
 //    }).then((result) {
-    pool.query('select p.id, p.name, p.age, t.name, t.species '
+    pool.queryStream('select p.id, p.name, p.age, t.name, t.species '
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
-      for (var row in result) {
+      result.stream.listen((row) {
         if (row[3] == null) {
           print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
         } else {
           print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
         }
-      }
-      completer.complete(null);
+      }, onDone: () {
+        completer.complete(null);
+      });
     });
     return completer.future;
   }

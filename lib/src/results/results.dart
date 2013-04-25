@@ -7,6 +7,8 @@ part of results;
 * The ones added here are [insertId], [affectedRows] and [fields].
 */
 abstract class Results extends ListBase<Row> {
+  Stream<Row> get stream;
+
   /**
    * The id of the inserted row, or [null] if no row was inserted.
    */

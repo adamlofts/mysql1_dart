@@ -186,6 +186,37 @@ class ConnectionPool {
   }
 
   /**
+   * Executes the [sql] query as soon as a connection is available, returning
+   * a [Future<Results>] that completes when the results are available.
+   */
+  Future<Results> queryStream(String sql) {
+    log.info("Running query: ${sql}");
+    var c = new Completer<Results>();
+
+    _getConnection()
+      .then((cnx) {
+        log.fine("Got cnx#${cnx.number} for query");
+        cnx.processHandler(new _QueryStreamHandler(sql))
+          .then((results) {
+            log.fine("Got query results on #${cnx.number} for: ${sql}");
+            _releaseConnection(cnx);
+            c.complete(results);
+            _reuseConnection(cnx);
+          })
+          .catchError((e) {
+            c.completeError(e);
+            _releaseConnection(cnx);
+            _reuseConnection(cnx);
+          });
+      })
+      .catchError((e) {
+        c.completeError(e);
+      });
+
+    return c.future;
+  }
+
+  /**
    * Pings the server. Returns a [Future] that completes when the server replies.
    */
   Future ping() {
