@@ -12,8 +12,8 @@ import 'constants.dart';
 
 import 'src/buffer.dart';
 import 'src/buffered_socket.dart';
-import 'src/results/results.dart';
-export 'src/results/results.dart';
+import 'src/results.dart';
+export 'src/results.dart';
 
 part 'src/blob.dart';
 

@@ -1,5 +1,6 @@
 part of results;
 
+//TODO document these fields
 abstract class Field {
   String get catalog;
   String get db;

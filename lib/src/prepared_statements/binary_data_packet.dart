@@ -200,5 +200,15 @@ class _BinaryDataPacket implements Row {
     return null;
   }
 
+  int get length => values.length;
+
+  dynamic operator[](int index) => values[index];
+
+  void operator[]=(int index, dynamic value) => values[index] = value;
+
+  void set length(int newLength) {
+    throw new UnsupportedError("Cannot set length of results");
+  }
+
   String toString() => "Value: $values";
 }

@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _StandardDataPacket implements Row {
+class _StandardDataPacket extends Row {
   final List<dynamic> values;
   
   _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets) :
@@ -59,6 +59,16 @@ class _StandardDataPacket implements Row {
           break;
       }
     }
+  }
+
+  int get length => values.length;
+
+  dynamic operator[](int index) => values[index];
+
+  void operator[]=(int index, dynamic value) => values[index] = value;
+
+  void set length(int newLength) {
+    throw new UnsupportedError("Cannot set length of results");
   }
   
   String toString() => "Value: $values";

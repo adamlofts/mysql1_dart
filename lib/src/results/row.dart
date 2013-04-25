@@ -1,5 +1,7 @@
 part of results;
 
-abstract class Row {
-  List<dynamic> get values;
+/**
+ * A row of data.
+ */
+abstract class Row extends ListBase<dynamic> {
 }

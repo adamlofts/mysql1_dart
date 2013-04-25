@@ -10,7 +10,7 @@ import 'dart:typeddata';
 import 'package:logging/logging.dart';
 
 import 'package:sqljocky/src/buffer.dart';
-import 'package:sqljocky/src/results/results.dart';
+import 'package:sqljocky/src/results.dart';
 part '../../lib/src/mysql_client_error.dart';
 part '../../lib/src/blob.dart';
 part '../../lib/src/prepared_statements/binary_data_packet.dart';

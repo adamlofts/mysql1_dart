@@ -25,7 +25,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         "abinary binary(10), avarbinary varbinary(10), "
         "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
         "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then(expectAsync1((Results results) {
-          expect(results.count, equals(0));
+          expect(results.length, equals(0));
         }));
     });
     
@@ -112,7 +112,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     
     test('select everything', () {
       pool.query('select * from test1').then(expectAsync1((results) {
-        expect(results.count, equals(1));
+        expect(results.length, equals(1));
       }));
     });
 
@@ -217,7 +217,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12344", []);
       })).then(expectAsync1((results) {
-        expect(results.count, equals(1));
+        expect(results.length, equals(1));
         var it = results.iterator;
         it.moveNext();
         values = it.current;
@@ -230,7 +230,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.query("select atext from test1 where aint = 12345");
       })).then(expectAsync1((results) {
-        expect(results.count, equals(1));
+        expect(results.length, equals(1));
         var it = results.iterator;
         it.moveNext();
         values = it.current;
@@ -245,7 +245,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12345", []);
       })).then(expectAsync1((results) {
-        expect(results.count, equals(1));
+        expect(results.length, equals(1));
         var it = results.iterator;
         it.moveNext();
         values = it.current;

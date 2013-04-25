@@ -17,7 +17,7 @@ void main() {
   Logger.root.level = Level.ALL;
   new Logger("ConnectionPool").level = Level.ALL;
   new Logger("Query").level = Level.ALL;
-  Logger.root.onRecord.listen((LogRecord r) {
+  var listener = (LogRecord r) {
     var name = r.loggerName;
     if (name.length > 15) {
       name = name.substring(0, 15);
@@ -26,7 +26,8 @@ void main() {
       name = "$name ";
     }
     print("${r.time}: $name: ${r.message}");
-  });
+  };
+  Logger.root.onRecord.listen(listener);
 
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
