@@ -1,13 +1,11 @@
 part of results;
 
 /**
-* Holds a list of query results.
-*
-* Most of these fields and methods are inherited from [ListBase].
-* The ones added here are [insertId], [affectedRows] and [fields].
-*/
+ * Holds query results.
+ */
 abstract class Results {
   Stream<Row> get stream;
+  List<Row> get rows;
 
   /**
    * The id of the inserted row, or [null] if no row was inserted.
@@ -24,4 +22,10 @@ abstract class Results {
    * A list of the fields returned by the query.
    */
   List<Field> get fields;
+
+ /**
+  * If this [Results] object contains a stream, converts the stream to a list
+  * and returns the new [Results] object in the future.
+  */
+  Future<Results> toList();
 }

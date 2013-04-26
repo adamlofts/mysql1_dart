@@ -124,7 +124,7 @@ class ConnectionPool {
       c.complete(cnx);
     }
   }
-  
+
   // dangerous - would need to switch all connections
 //  Future useDatabase(String dbName) {
 //    var completer = new Completer();
@@ -167,10 +167,18 @@ class ConnectionPool {
         log.fine("Got cnx#${cnx.number} for query");
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
-            log.fine("Got query results on #${cnx.number} for: ${sql}");
-            _releaseConnection(cnx);
-            c.complete(results);
-            _reuseConnection(cnx);
+          log.fine("Got query results on #${cnx.number} for: ${sql}");
+            if (results.stream != null) {
+              (results as _ResultsImpl)._stream = results.stream.transform(new _StreamDoneTransformer(() {
+                _releaseConnection(cnx);
+                _reuseConnection(cnx);
+              }));
+              c.complete(results);
+            } else {
+              _releaseConnection(cnx);
+              c.complete(results);
+              _reuseConnection(cnx);
+            }
           })
           .catchError((e) {
             c.completeError(e);
@@ -350,25 +358,6 @@ class ConnectionPool {
       }
       return query.execute();
     });
-//    
-//    var c = new Completer<Results>();
-//    prepare(sql)
-//      .then((query) {
-//        for (int i = 0; i < parameters.length; i++) {
-//          query[i] = parameters[i];
-//        }
-//        query.execute()
-//          .then((results) {
-//            c.complete(results);
-//          })
-//          .catchError((e) {
-//            c.completeError(e);
-//          });
-//      })
-//      .catchError((e) {
-//        c.completeError(e);
-//      });
-//    return c.future;
   }
   
 //  dynamic fieldList(String table, [String column]);

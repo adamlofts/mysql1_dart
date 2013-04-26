@@ -110,7 +110,7 @@ class Example {
           ];
         return query.executeMulti(parameters);
       }).then((results) {
-        return results.stream.toList();
+        return results;
       }).then((results) {
         for (var result in results) {
           ids.add(result.insertId);
@@ -165,7 +165,7 @@ class Example {
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
       result.stream.toList().then((list) {
-        if (list != null) { 
+        if (list != null) {
           for (var row in list) {
             if (row[3] == null) {
               print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");

@@ -4,17 +4,24 @@ class _ResultsImpl extends Results {
   final int insertId;
   final int affectedRows;
   final List<Field> fields;
-  final List<Row> _rows;
+  List<Row> _rows;
   Stream<Row> _stream;
 
-  _ResultsImpl._(this.insertId, this.affectedRows,
+  List<Row> get rows => _rows;
+  Stream<Row> get stream => _stream;
+
+  _ResultsImpl(this.insertId, this.affectedRows,
     List<Field> this.fields,
-    List<Row> this._rows,
-    [Stream<Row> stream]) {
-    if (?stream) {
-      _stream = stream;
-    }
+    {Stream<Row> stream: null,
+    List<Row> rows: null}) {
+    this._stream = stream;
+    this._rows = rows;
   }
 
-  Stream<Row> get stream => _stream;
+  //TODO: rename to toResultsList??
+  Future<Results> toList() {
+    return _stream.toList().then((list) {
+      return new _ResultsImpl(insertId, affectedRows, fields, list: list);
+    });
+  }
 }

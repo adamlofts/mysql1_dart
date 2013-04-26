@@ -49,18 +49,8 @@ class Transaction {
 
   Future<Results> query(String sql) {
     _checkFinished();
-    var c = new Completer<Results>();
-    
     var handler = new _QueryStreamHandler(sql);
-    _cnx.processHandler(handler)
-      .then((results) {
-        c.complete(results);
-      })
-      .catchError((e) {
-        c.completeError(e);
-      });
-
-    return c.future;
+    return _cnx.processHandler(handler);
   }
   
   //TODO: should the query get closed when the transaction is closed?
@@ -86,6 +76,7 @@ class Transaction {
       .then((query) {
         query.execute()
           .then((results) {
+          //TODO is it right to close here? Query might still be running
             query.close();
             c.complete(results);
           })

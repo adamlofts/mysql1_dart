@@ -33,9 +33,12 @@ class _QueryStreamHandler extends _Handler {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
           _streamController = new StreamController<Row>();
-          return new _HandlerResponse(false, null, new _ResultsImpl._(null, null, _fieldPackets, null, _streamController.stream));
+          return new _HandlerResponse(false, null, new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS) {
-          _streamController.close();
+          // the connection's _handler field needs to have been nulled out before the stream is closed,
+          // otherwise the stream will be reused in an unfinished state.
+          // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
+          new Future.delayed(new Duration(seconds: 0), _streamController.close);
           return new _HandlerResponse(true, null);
         }
       } else {
@@ -60,12 +63,13 @@ class _QueryStreamHandler extends _Handler {
     } else if (packet is _OkPacket) {
       _okPacket = packet;
       var finished = false;
+      // TODO: I think this is to do with multiple queries. Will probably break.
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         finished = true;
       }
 
       //TODO is this finished value right?
-      return new _HandlerResponse(finished, null, new _ResultsImpl._(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets, null));
+      return new _HandlerResponse(finished, null, new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
     }
     return _HandlerResponse.notFinished;
   }

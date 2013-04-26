@@ -104,7 +104,8 @@ class Query {
         _execute(preparedQuery)
           .then((Results results) {
             if (results.stream != null) {
-              (results as _ResultsImpl)._stream = results.stream.transform(new StreamDoneTransformer(() {
+              //TODO can the result transform itself?
+              (results as _ResultsImpl)._stream = results.stream.transform(new _StreamDoneTransformer(() {
                 _releaseConnection(preparedQuery.cnx);
                 _reuseConnection(preparedQuery.cnx);
               }));
@@ -158,14 +159,28 @@ class Query {
           _values.setRange(0, _values.length, parameters[i]);
           _execute(preparedQuery)
             .then((Results results) {
-              log.fine("Got results, loop $i");
-              resultList.add(results);
-              if (i < parameters.length - 1) {
-                executeQuery(i + 1);
+              if (results.stream != null) {
+                results.toList().then((newResults) {
+                  log.fine("Got results, loop $i");
+                  resultList.add(newResults);
+                  if (i < parameters.length - 1) {
+                    executeQuery(i + 1);
+                  } else {
+                    _releaseConnection(preparedQuery.cnx);
+                    c.complete(resultList);
+                    _reuseConnection(preparedQuery.cnx);
+                  }
+                });
               } else {
-                _releaseConnection(preparedQuery.cnx);
-                c.complete(resultList);
-                _reuseConnection(preparedQuery.cnx);
+                log.fine("Got results, loop $i");
+                resultList.add(results);
+                if (i < parameters.length - 1) {
+                  executeQuery(i + 1);
+                } else {
+                  _releaseConnection(preparedQuery.cnx);
+                  c.complete(resultList);
+                  _reuseConnection(preparedQuery.cnx);
+                }
               }
             })
             .catchError((e) {
@@ -215,10 +230,11 @@ class Query {
 //  dynamic fetch(int rows);
 }
 
-class StreamDoneTransformer extends StreamEventTransformer<Row, Row> {
+//TODO put in own file, rename to StreamDoneWatcher?
+class _StreamDoneTransformer extends StreamEventTransformer<Row, Row> {
   var handler;
   
-  StreamDoneTransformer(this.handler);
+  _StreamDoneTransformer(this.handler);
   
   void handleDone(EventSink<Row> sink) {
     handler();
