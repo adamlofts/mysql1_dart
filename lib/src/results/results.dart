@@ -4,7 +4,16 @@ part of results;
  * Holds query results.
  */
 abstract class Results {
+  /**
+   * A [Stream] of [Row]s.
+   */
   Stream<Row> get stream;
+
+  /**
+   * In cases where it isn't possible to return the results in a stream, the results
+   * will be in this [List] of [Row]s instead of the [stream]. (For example, Query.executeMulti).
+   * The rows will also be found here in the [Results] return by [toResultsList]
+   */
   List<Row> get rows;
 
   /**
