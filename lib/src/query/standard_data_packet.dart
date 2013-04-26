@@ -65,7 +65,9 @@ class _StandardDataPacket extends Row {
 
   dynamic operator[](int index) => values[index];
 
-  void operator[]=(int index, dynamic value) => values[index] = value;
+  void operator[]=(int index, dynamic value) {
+    throw new UnsupportedError("Cannot modify row");
+  }
 
   void set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
