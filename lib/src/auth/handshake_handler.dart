@@ -58,7 +58,7 @@ class _HandshakeHandler extends _Handler {
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
       | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
 
-    return new _HandlerResponse(false, new _AuthHandler(_user, _password, _db, scrambleBuffer,
+    return new _HandlerResponse(nextHandler: new _AuthHandler(_user, _password, _db, scrambleBuffer,
       clientFlags, 0, 33));
   }
 }

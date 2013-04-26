@@ -66,6 +66,6 @@ class _AuthHandler extends _Handler {
   
   _HandlerResponse processResponse(Buffer response) {
     var result = checkResponse(response);
-    return new _HandlerResponse(true, null, result);
+    return new _HandlerResponse(finished: true, result: result);
   }
 }

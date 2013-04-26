@@ -154,10 +154,10 @@ class _ExecuteQueryHandler extends _Handler {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
           _streamController = new StreamController<Row>();
-          return new _HandlerResponse(false, null, new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+          return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS){
           _streamController.close();
-          return new _HandlerResponse(true, null);
+          return new _HandlerResponse(finished: true);
         }
       } else {
         switch (_state) {
@@ -184,7 +184,7 @@ class _ExecuteQueryHandler extends _Handler {
     } else if (packet is _OkPacket) {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        return new _HandlerResponse(true, null, new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
+        return new _HandlerResponse(finished: true, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
     return _HandlerResponse.notFinished;

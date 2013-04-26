@@ -1,24 +1,20 @@
 part of sqljocky;
 
+class _NoResult {
+  const _NoResult();
+}
+const _NO_RESULT = const _NoResult();
 
 class _HandlerResponse {
   final bool finished;
   final _Handler nextHandler;
-  bool _hasResult;
-  dynamic _result;
+  dynamic result;
 
-  bool get hasResult => _hasResult;
+  bool get hasResult => result != _NO_RESULT;
 
-  dynamic get result => _result;
+  _HandlerResponse({this.finished: false, this.nextHandler: null, this.result: _NO_RESULT});
 
-  _HandlerResponse(this.finished, this.nextHandler, [dynamic result]) {
-    _hasResult = ?result;
-    if (?result) {
-      _result = result;
-    }
-  }
-
-  static final _HandlerResponse notFinished = new _HandlerResponse(false, null);
+  static final _HandlerResponse notFinished = new _HandlerResponse();
 }
 
 /**
