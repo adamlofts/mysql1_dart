@@ -27,5 +27,5 @@ abstract class Results {
   * If this [Results] object contains a stream, converts the stream to a list
   * and returns the new [Results] object in the future.
   */
-  Future<Results> toList();
+  Future<Results> toResultsList();
 }

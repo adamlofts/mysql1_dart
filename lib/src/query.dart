@@ -105,10 +105,10 @@ class Query {
           .then((Results results) {
             if (results.stream != null) {
               //TODO can the result transform itself?
-              (results as _ResultsImpl)._stream = results.stream.transform(new _StreamDoneTransformer(() {
+              (results as _ResultsImpl).onDone = () {
                 _releaseConnection(preparedQuery.cnx);
                 _reuseConnection(preparedQuery.cnx);
-              }));
+              };
               c.complete(results);
             } else {
               _releaseConnection(preparedQuery.cnx);
@@ -160,7 +160,7 @@ class Query {
           _execute(preparedQuery)
             .then((Results results) {
               if (results.stream != null) {
-                results.toList().then((newResults) {
+                results.toResultsList().then((newResults) {
                   log.fine("Got results, loop $i");
                   resultList.add(newResults);
                   if (i < parameters.length - 1) {
@@ -228,16 +228,4 @@ class Query {
 //  dynamic longData(int index, data);
 //  dynamic reset();
 //  dynamic fetch(int rows);
-}
-
-//TODO put in own file, rename to StreamDoneWatcher?
-class _StreamDoneTransformer extends StreamEventTransformer<Row, Row> {
-  var handler;
-  
-  _StreamDoneTransformer(this.handler);
-  
-  void handleDone(EventSink<Row> sink) {
-    handler();
-    sink.close();
-  }
 }
