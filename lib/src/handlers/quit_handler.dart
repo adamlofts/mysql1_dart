@@ -12,6 +12,6 @@ class _QuitHandler extends _Handler {
   }
   
   dynamic processResponse(Buffer response) {
-    throw new MySqlProtocolError("Shouldn't have received a response after sending a QUIT message");
+    throw new MySqlProtocolError._("Shouldn't have received a response after sending a QUIT message");
   }
 }
