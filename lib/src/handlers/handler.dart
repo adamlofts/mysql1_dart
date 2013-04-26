@@ -8,7 +8,7 @@ const _NO_RESULT = const _NoResult();
 class _HandlerResponse {
   final bool finished;
   final _Handler nextHandler;
-  dynamic result;
+  final dynamic result;
 
   bool get hasResult => result != _NO_RESULT;
 
