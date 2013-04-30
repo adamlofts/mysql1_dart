@@ -6,7 +6,7 @@ import 'package:sqljocky/constants.dart';
 import 'dart:io';
 import 'dart:crypto';
 import 'dart:math' as Math;
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'package:logging/logging.dart';
 
 import 'package:sqljocky/src/buffer.dart';

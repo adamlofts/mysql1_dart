@@ -156,7 +156,7 @@ class ConnectionPool {
 
   /**
    * Executes the [sql] query as soon as a connection is available, returning
-   * a [Future<Results>] that completes when the results are available.
+   * a [Future<Results>] that completes when the results start to become available.
    */
   Future<Results> query(String sql) {
     log.info("Running query: ${sql}");
@@ -313,7 +313,8 @@ class ConnectionPool {
   /**
    * Starts a transaction. Returns a [Future<Transaction>] that completes
    * when the transaction has been started. If [consistent] is true, the
-   * transaction is started with consistent snapshot.
+   * transaction is started with consistent snapshot. A transaction holds
+   * onto its connection until closed (committed or rolled back).
    */
   Future<Transaction> startTransaction({bool consistent: false}) {
     log.info("Starting transaction");

@@ -2,7 +2,7 @@ library types_test;
 
 import 'package:sqljocky/sqljocky.dart';
 import 'package:unittest/unittest.dart';
-import 'dart:typeddata';
+import 'dart:typed_data';
 
 void runTypesTests() {
   group('types:', () {

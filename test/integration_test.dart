@@ -7,7 +7,7 @@ import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'package:sqljocky/utils.dart';
 
 part 'integration/one.dart';

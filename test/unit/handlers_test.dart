@@ -3,7 +3,7 @@ library sqljocky;
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'package:sqljocky/constants.dart';
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'dart:crypto';
 import 'dart:io';
 

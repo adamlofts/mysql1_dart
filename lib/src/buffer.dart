@@ -1,7 +1,7 @@
 library buffer;
 
 import 'package:logging/logging.dart';
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'dart:io';
 
 /**

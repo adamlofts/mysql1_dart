@@ -5,7 +5,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:crypto';
 import 'dart:math' as Math;
-import 'dart:typeddata';
+import 'dart:typed_data';
 import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'constants.dart';
