@@ -1,5 +1,5 @@
 /**
- * [results] is exported by [sqljocky], so there is no need to
+ * results is exported by sqljocky, so there is no need to
  * separately import this library.
  */
 library results;

@@ -27,7 +27,7 @@ class _HandshakeHandler extends _Handler {
   }
   
   /**
-   * After receiving the handshake packet, if all is well, an [AuthHandler]
+   * After receiving the handshake packet, if all is well, an [_AuthHandler]
    * is created and returned to handle authentication.
    *
    * Currently, if the client protocol version is not 4.1, an

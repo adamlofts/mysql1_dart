@@ -3,6 +3,7 @@ library sqljocky;
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'dart:typed_data';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:sqljocky/src/buffer.dart';

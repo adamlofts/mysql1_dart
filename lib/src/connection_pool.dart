@@ -276,7 +276,7 @@ class ConnectionPool {
   }
 
   /**
-   * The future returned by [whenReady] fires when all queued operations in the pool
+   * The future returned by [_waitUntilReady] fires when all queued operations in the pool
    * have completed, and the connection is free to be used again.
    */
   Future<_Connection> _waitUntilReady(_Connection cnx) {

@@ -4,6 +4,7 @@ import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'package:sqljocky/constants.dart';
 import 'dart:typed_data';
+import 'dart:collection';
 import 'dart:crypto';
 import 'dart:io';
 
