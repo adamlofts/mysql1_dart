@@ -18,8 +18,10 @@ class _ResultsImpl extends Results {
       List<Field> fields,
       {Stream<Row> stream: null,
       List<Row> rows: null}) {
-    _fields = new UnmodifiableListView<Field>(fields);
-    _rows = new UnmodifiableListView<Row>(rows);
+    List<Field> unmodifiableFields = new UnmodifiableListView<Field>(fields);
+    _fields = unmodifiableFields;
+    List<Row> unmodifiableRows = new UnmodifiableListView<Row>(rows);
+    _rows = unmodifiableRows; 
     if (stream != null) {
       this._stream = stream.transform(new _StreamDoneTransformer(() {
         if (onDone != null) {
