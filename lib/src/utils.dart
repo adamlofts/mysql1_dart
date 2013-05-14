@@ -26,7 +26,7 @@ class TableDropper {
     var table = _tables.removeAt(0);
     pool.query('drop table $table')
       // if it's an unknown table, ignore the error and continue
-      .then((x) {
+      .then((_) {
         afterDrop();
       })
       .catchError((e) {

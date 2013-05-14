@@ -130,7 +130,7 @@ class _Connection {
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
     log.fine("sending header, packet $_packetNumber");
-    _socket.writeBuffer(_headerBuffer).then((x) {
+    _socket.writeBuffer(_headerBuffer).then((_) {
       _socket.writeBuffer(buffer);
     });
   }

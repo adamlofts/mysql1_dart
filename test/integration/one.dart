@@ -9,7 +9,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     test('dropTables', () {
-      new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((x) {
+      new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((_) {
         expect(1, equals(1)); // not quite sure of the async testing stuff yet
       }));
     });
@@ -46,7 +46,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       var c = new Completer();
       pool.query("describe test1").then(expectAsync1((Results results) {
         print("table test1");
-        showResults(results).then((x) {
+        showResults(results).then((_) {
           c.complete();
         });
       }));
@@ -231,7 +231,7 @@ void runIntTests(String user, String password, String db, int port, String host)
             var end = new DateTime.now();
             print(end.difference(start));
             expect(resultList.length, equals(50));
-            trans.commit().then((x) {
+            trans.commit().then((_) {
               c.complete();
             });
           });

@@ -74,7 +74,7 @@ class ConnectionPool {
           db: _db);
       _pool.add(cnx);
       future
-        .then((x) {
+        .then((_) {
           log.finest("Logged in on cnx#${cnx.number}");
           c.complete(cnx);
         })
@@ -133,7 +133,7 @@ class ConnectionPool {
 //    cnxFuture.then((cnx) {
 //      var handler = new UseDbHandler(dbName);
 //      var future = _connection.processHandler(handler);
-//      future.then((x) {
+//      future.then((_) {
 //        completer.completer();
 //      });
 //      handleFutureException(future, completer);
@@ -254,11 +254,11 @@ class ConnectionPool {
     for (var cnx in _pool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
       if (preparedQuery != null) {
-        _waitUntilReady(cnx).then((x) {
+        _waitUntilReady(cnx).then((_) {
           log.finest("Connection ready - closing query: ${q.sql}");
           var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx.processHandler(handler, noResponse: true)
-            .then((x) {
+            .then((_) {
               if (!retain) {
                 _releaseConnection(cnx);
                 _reuseConnection(cnx);

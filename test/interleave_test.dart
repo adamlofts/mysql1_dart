@@ -23,11 +23,11 @@ class Example {
   Future run() {
     var completer = new Completer();
     // drop the tables if they already exist
-    var future = dropTables().then((x) {
+    var future = dropTables().then((_) {
       print("dropped tables");
       // then recreate the tables
       return createTables();
-    }).then((x) {
+    }).then((_) {
       print("created tables");
       // add some data
       var futures = new List<Future>();
@@ -38,7 +38,7 @@ class Example {
       }
       print("queued all operations");
       return Future.wait(futures);
-    }).then((x) {
+    }).then((_) {
       print("data added and read");
       completer.complete(null);
     }, onError: (e) {
@@ -134,7 +134,7 @@ class Example {
             ["Spot", "Dog", id3]];
         var c = new Completer();
         print("adding pets");
-        query.executeMulti(parameters).then((x) {
+        query.executeMulti(parameters).then((_) {
           print("added pets");
           c.complete(null);
         }, onError: (e) {
@@ -145,7 +145,7 @@ class Example {
         return c.future;
       }).then((results) {
         return trans.commit();
-      }).then((x) {
+      }).then((_) {
         insertedIds.addAll(ids);
         completer.complete(null);
       }, onError: (e) {
@@ -213,7 +213,7 @@ void main() {
       var example = new Example(pool);
       // run the example
       log.fine("running example");
-      example.run().then(expectAsync1((x) {
+      example.run().then(expectAsync1((_) {
         // finally, close the connection
         log.fine("closing");
         pool.close();

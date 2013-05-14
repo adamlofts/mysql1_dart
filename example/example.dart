@@ -17,18 +17,18 @@ class Example {
   Future run() {
     var completer = new Completer();
     // drop the tables if they already exist
-    dropTables().then((x) {
+    dropTables().then((_) {
       print("dropped tables");
       // then recreate the tables
       return createTables();
-    }).then((x) {
+    }).then((_) {
       print("created tables");
       // add some data
       return addData();
-    }).then((x) {
+    }).then((_) {
       // and read it back out
       return readData();
-    }).then((x) {
+    }).then((_) {
       completer.complete(null);
     });
     return completer.future;
@@ -128,7 +128,7 @@ void main() {
   var example = new Example(pool);
   // run the example
   print("running example");
-  example.run().then((x) {
+  example.run().then((_) {
     // finally, close the connection
     print("K THNX BYE!");
     pool.close();
