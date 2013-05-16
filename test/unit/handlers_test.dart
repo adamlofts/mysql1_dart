@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'dart:collection';
 import 'dart:crypto';
 import 'dart:io';
+import 'dart:async';
 
 import 'package:sqljocky/src/buffer.dart';
 
