@@ -15,6 +15,7 @@ class _Connection {
 
   final Buffer _headerBuffer;
   Buffer _dataBuffer;
+  bool _readyForHeader = true;
   
   int _packetNumber = 0;
 
@@ -85,7 +86,11 @@ class _Connection {
   }
 
   void _readPacket() {
-    _socket.readBuffer(_headerBuffer).then(_handleHeader);
+    log.fine("readPacket readyForHeader=${_readyForHeader}");
+    if (_readyForHeader) {
+      _readyForHeader = false;
+      _socket.readBuffer(_headerBuffer).then(_handleHeader);      
+    }
   }
   
   void _handleHeader(buffer) {
@@ -93,10 +98,12 @@ class _Connection {
     _packetNumber = buffer[3];
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
     _dataBuffer = new Buffer(_dataSize);
+    log.fine("buffer size=${_dataBuffer.length}");
     _socket.readBuffer(_dataBuffer).then(_handleData);
   }
   
   void _handleData(buffer) {
+    _readyForHeader = true;
     //log.fine("read all data: ${_dataBuffer._list}");
     //log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
     _headerBuffer.reset();
@@ -125,12 +132,14 @@ class _Connection {
   }
   
   void _sendBuffer(Buffer buffer) {
+    log.fine("sendBuffer header");
     _headerBuffer[0] = buffer.length & 0xFF;
     _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
     _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
     log.fine("sending header, packet $_packetNumber");
     _socket.writeBuffer(_headerBuffer).then((_) {
+      log.fine("sendBuffer body, buffer length=${buffer.length}");
       _socket.writeBuffer(buffer);
     });
   }

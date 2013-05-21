@@ -61,7 +61,9 @@ class BufferedSocket {
 
   _onData(RawSocketEvent event) {
     if (event == RawSocketEvent.READ) {
+      log.fine("READ data");
       if (_readingBuffer == null) {
+        log.fine("READ data: no buffer");
         if (onDataReady != null) {
           onDataReady();
         }
@@ -71,20 +73,10 @@ class BufferedSocket {
     } else if (event == RawSocketEvent.READ_CLOSED) {
 
     } else if (event == RawSocketEvent.WRITE) {
-      log.fine("WRITE");
+      log.fine("WRITE data");
       if (_writingBuffer != null) {
         _writeBuffer();
       }
-    }
-  }
-
-  void _readBuffer() {
-    int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
-    _readOffset += bytesRead;
-    if (_readOffset == _readingBuffer.length) {
-      var buffer = _readingBuffer;
-      _readingBuffer = null;
-      _readCompleter.complete(buffer);
     }
   }
 
@@ -93,6 +85,7 @@ class BufferedSocket {
    * completes when it has all been written.
    */
   Future<Buffer> writeBuffer(Buffer buffer) {
+    log.fine("writeBuffer length=${buffer.length}");
     if (_writingBuffer != null) {
       throw new StateError("Cannot write to socket, already writing");
     }
@@ -106,13 +99,15 @@ class BufferedSocket {
   }
 
   void _writeBuffer() {
+    log.fine("_writeBuffer offset=${_writeOffset}");
     int bytesWritten = _writingBuffer.writeToSocket(_socket, _writeOffset, _writingBuffer.length - _writeOffset);
     log.fine("Wrote $bytesWritten bytes");
     _writeOffset += bytesWritten;
     if (_writeOffset == _writingBuffer.length) {
-      var buffer = _writingBuffer;
+      _writeCompleter.complete(_writingBuffer);
       _writingBuffer = null;
-      _writeCompleter.complete(buffer);
+    } else {
+      _socket.writeEventsEnabled = true;
     }
   }
 
@@ -124,6 +119,7 @@ class BufferedSocket {
    * and the read will start instead.
    */
   Future<Buffer> readBuffer(Buffer buffer) {
+    log.fine("readBuffer, length=${buffer.length}");
     if (_readingBuffer != null) {
       throw new StateError("Cannot read from socket, already reading");
     }
@@ -137,6 +133,15 @@ class BufferedSocket {
     }
 
     return _readCompleter.future;
+  }
+
+  void _readBuffer() {
+    int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
+    _readOffset += bytesRead;
+    if (_readOffset == _readingBuffer.length) {
+      _readCompleter.complete(_readingBuffer);
+      _readingBuffer = null;
+    }
   }
 
   close() {

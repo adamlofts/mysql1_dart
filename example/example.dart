@@ -1,6 +1,7 @@
 import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:options_file/options_file.dart';
+import 'package:logging/logging.dart';
 import 'dart:async';
 
 /*
@@ -113,6 +114,22 @@ class Example {
 }
 
 void main() {
+  hierarchicalLoggingEnabled = true;
+  Logger.root.level = Level.ALL;
+  new Logger("ConnectionPool").level = Level.ALL;
+  new Logger("Query").level = Level.ALL;
+  var listener = (LogRecord r) {
+    var name = r.loggerName;
+    if (name.length > 15) {
+      name = name.substring(0, 15);
+    }
+    while (name.length < 15) {
+      name = "$name ";
+    }
+    print("${r.time}: $name: ${r.message}");
+  };
+  Logger.root.onRecord.listen(listener);
+
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
   String password = options.getString('password');
@@ -122,7 +139,7 @@ void main() {
 
   // create a connection
   print("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db);
+  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max:1);
   print("connection open");
   // create an example class
   var example = new Example(pool);
