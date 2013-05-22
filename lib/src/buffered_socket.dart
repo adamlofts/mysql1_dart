@@ -46,20 +46,25 @@ class BufferedSocket {
           onDataReady();
         }
       } else {
-        int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
-        _readOffset += bytesRead;
-        if (_readOffset == _readingBuffer.length) {
-          var buffer = _readingBuffer;
-          _readingBuffer = null;
-          _readCompleter.complete(buffer);
-        }
+        _readBuffer();
       }
     } else if (event == RawSocketEvent.READ_CLOSED) {
 
     } else if (event == RawSocketEvent.WRITE) {
+      log.fine("WRITE");
       if (_writingBuffer != null) {
         _writeBuffer();
       }
+    }
+  }
+
+  void _readBuffer() {
+    int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
+    _readOffset += bytesRead;
+    if (_readOffset == _readingBuffer.length) {
+      var buffer = _readingBuffer;
+      _readingBuffer = null;
+      _readCompleter.complete(buffer);
     }
   }
 
@@ -110,6 +115,12 @@ class BufferedSocket {
     _readingBuffer = buffer;
     _readOffset = 0;
     _readCompleter = new Completer<Buffer>();
+
+    if (_socket.available() > 0) {
+      log.fine("readBuffer, data already ready");
+      _readBuffer();
+    }
+
     return _readCompleter.future;
   }
 
