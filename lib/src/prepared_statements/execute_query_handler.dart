@@ -84,7 +84,7 @@ class _ExecuteQueryHandler extends _Handler {
           log.fine("DATE: $value");
           types.add(FIELD_TYPE_DATETIME);
           types.add(0);
-          values.add(11);
+          values.add(7);
           values.add(value.year >> 0x00 & 0xFF);
           values.add(value.year >> 0x08 & 0xFF);
           values.add(value.month);
@@ -92,11 +92,11 @@ class _ExecuteQueryHandler extends _Handler {
           values.add(value.hour);
           values.add(value.minute);
           values.add(value.second);
-          var billionths = value.millisecond * 1000000;
-          values.add(billionths >> 0x00 & 0xFF); 
-          values.add(billionths >> 0x08 & 0xFF); 
-          values.add(billionths >> 0x10 & 0xFF); 
-          values.add(billionths >> 0x18 & 0xFF); 
+//          var billionths = value.millisecond * 1000000;
+//          values.add(billionths >> 0x00 & 0xFF); 
+//          values.add(billionths >> 0x08 & 0xFF); 
+//          values.add(billionths >> 0x10 & 0xFF); 
+//          values.add(billionths >> 0x18 & 0xFF);
         } else if (value is bool) {
           log.fine("BOOL: $value");
           types.add(FIELD_TYPE_TINY);

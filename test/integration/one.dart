@@ -70,43 +70,44 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?)").then((Query query) {
-          query[0] = 126;
-          query[1] = 164;
-          query[2] = 165;
-          query[3] = 166;
-          query[4] = 167;
+          var i = 0;
+          query[i++] = 126;
+          query[i++] = 164;
+          query[i++] = 165;
+          query[i++] = 166;
+          query[i++] = 167;
           
-          query[5] = 592;
-          query[6] = 123.456;
-          query[7] = 123.456;
-          query[8] = 123.456;
+          query[i++] = 592;
+          query[i++] = 123.456;
+          query[i++] = 123.456;
+          query[i++] = 123.456;
           
-          query[9] = true;
-          query[10] = [1, 2, 3];
-          query[11] = 123;
+          query[i++] = true;
+          query[i++] = [1, 2, 3];
+          query[i++] = 123;
           
-          query[12] = new DateTime.now();
-          query[13] = new DateTime.now();
-          query[14] = new DateTime.now();
-          query[15] = new DateTime.now();
-          query[16] = 2012;
+          query[i++] = new DateTime.now();
+          query[i++] = new DateTime.now();
+          query[i++] = new DateTime.now();
+          query[i++] = new DateTime.now();
+          query[i++] = 2012;
           
-          query[17] = "Hello";
-          query[18] = "Hey";
-          query[19] = "Hello there";
-          query[20] = "Good morning";
-          query[21] = "Habari boss";
-          query[22] = "Bonjour";
+          query[i++] = "Hello";
+          query[i++] = "Hey";
+          query[i++] = "Hello there";
+          query[i++] = "Good morning";
+          query[i++] = "Habari boss";
+          query[i++] = "Bonjour";
     
-          query[23] = [65, 66, 67, 68];
-          query[24] = [65, 66, 67, 68];
-          query[25] = [65, 66, 67, 68];
-          query[26] = [65, 66, 67, 68];
-          query[27] = [65, 66, 67, 68];
-          query[28] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
+          query[i++] = [65, 66, 67, 68];
           
-          query[29] = "a";
-          query[30] = "a,b";
+          query[i++] = "a";
+          query[i++] = "a,b";
                  
           print("executing");
           expect(1, equals(1)); // put some real expectations here
