@@ -137,6 +137,7 @@ class BufferedSocket {
 
   void _readBuffer() {
     int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
+    log.fine("read $bytesRead bytes");
     _readOffset += bytesRead;
     if (_readOffset == _readingBuffer.length) {
       _readCompleter.complete(_readingBuffer);
