@@ -9,13 +9,27 @@ typedef ErrorHandler(AsyncError);
 typedef DoneHandler();
 typedef DataReadyHandler();
 
+typedef Future<RawSocket> SocketFactory(host, int port);
+
 class BufferedSocket {
   final Logger log;
 
-  RawSocket _socket;
   ErrorHandler onError;
   DoneHandler onDone;
+  /**
+   * When data arrives and there is no read currently in progress, the onDataReady handler is called.
+   */
   DataReadyHandler onDataReady;
+
+  RawSocket _socket;
+
+  Buffer _writingBuffer;
+  int _writeOffset;
+  Completer<Buffer> _writeCompleter;
+
+  Buffer _readingBuffer;
+  int _readOffset;
+  Completer<Buffer> _readCompleter;
 
   BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
@@ -29,11 +43,17 @@ class BufferedSocket {
       }
     }, cancelOnError: true);
   }
-
+  
   static Future<BufferedSocket> connect(String host, int port, {DataReadyHandler onDataReady,
-      DoneHandler onDone, ErrorHandler onError}) {
+      DoneHandler onDone, ErrorHandler onError, SocketFactory socketFactory}) {
     var c = new Completer<BufferedSocket>();
-    RawSocket.connect(host, port).then((socket) {
+    var future;
+    if (socketFactory != null) {
+      future = socketFactory(host, port);
+    } else {
+      future = RawSocket.connect(host, port);
+    }
+    future.then((socket) {
       c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError));
     }, onError: onError);
     return c.future;
@@ -68,10 +88,6 @@ class BufferedSocket {
     }
   }
 
-  Buffer _writingBuffer;
-  int _writeOffset;
-  Completer<Buffer> _writeCompleter;
-
   /**
    * Writes [buffer] to the socket, and returns the same buffer in a [Future] which
    * completes when it has all been written.
@@ -100,13 +116,12 @@ class BufferedSocket {
     }
   }
 
-  Buffer _readingBuffer;
-  int _readOffset;
-  Completer<Buffer> _readCompleter;
-
   /**
    * Reads into [buffer] from the socket, and returns the same buffer in a [Future] which
    * completes when enough bytes have been read to fill the buffer. 
+   * This may not be called while there is still a read ongoing, but may be called before
+   * onDataReady is called, in which case onDataReady will not be called when data arrives,
+   * and the read will start instead.
    */
   Future<Buffer> readBuffer(Buffer buffer) {
     if (_readingBuffer != null) {
