@@ -339,13 +339,13 @@ class ConnectionPool extends Object with ConnectionHelpers {
 }
 
 class ConnectionHelpers {
-  _releaseReuseComplete(Connection cnx, Completer c, dynamic result) {
+  _releaseReuseComplete(_Connection cnx, Completer c, dynamic result) {
     _releaseConnection(cnx);
     _reuseConnection(cnx);
     c.complete(result);
   }
   
-  _releaseReuseCompleteError(Connection cnx, Completer c, dynamic e) {
+  _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
     _releaseConnection(cnx);
     _reuseConnection(cnx);
     c.completeError(e);
