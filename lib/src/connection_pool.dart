@@ -314,7 +314,12 @@ class ConnectionPool {
    * Starts a transaction. Returns a [Future<Transaction>] that completes
    * when the transaction has been started. If [consistent] is true, the
    * transaction is started with consistent snapshot. A transaction holds
-   * onto its connection until closed (committed or rolled back).
+   * onto its connection until closed (committed or rolled back). You
+   * must use this method rather than query('start transaction') otherwise
+   * subsequent queries may get executed on other connections which are not
+   * in the transaction. Likewise, you must use the [Transaction.commit]
+   * and [Transaction.rollback] methods to commit and roll back, otherwise
+   * the connection will not be released.
    */
   Future<Transaction> startTransaction({bool consistent: false}) {
     log.info("Starting transaction");

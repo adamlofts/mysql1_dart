@@ -1,5 +1,11 @@
 part of sqljocky;
 
+/**
+ * Start a transaction by using [ConnectionPool.startTransaction]. Once a transaction
+ * is started it retains its connection until the transaction is committed or rolled
+ * back. You must use the [commit] and [rollback] methods to do this, otherwise
+ * the connection will not be released back to the pool.
+ */
 class Transaction {
   _Connection _cnx;
   ConnectionPool _pool;
@@ -9,6 +15,10 @@ class Transaction {
 
   Transaction._internal(this._cnx, this._pool) : _finished = false;
   
+  /**
+   * Commits the transaction and released the connection. An error will be thrown
+   * if any queries are executed after calling commit.
+   */
   Future commit() {
     _checkFinished();
     _finished = true;
@@ -28,6 +38,10 @@ class Transaction {
     return c.future;
   }
   
+  /**
+   * Rolls back the transaction and released the connection. An error will be thrown
+   * if any queries are executed after calling rollback.
+   */
   Future rollback() {
     _checkFinished();
     _finished = true;
