@@ -45,49 +45,43 @@ class ConnectionPool {
     log.finest("Getting a connection");
     var c = new Completer<_Connection>();
 
-    var inUseCount = 0;
-    for (var cnx in _pool) {
-      if (cnx.inUse) {
-        inUseCount++;
-      }
-    }
+    var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
     log.finest("Number of in-use connections: $inUseCount");
     
-    for (var cnx in _pool) {
-      if (!cnx.inUse) {
-        log.finest("Using open pooled cnx#${cnx.number}");
-        cnx.use();
-        c.complete(cnx);
-        return c.future;
-      }
-    }
-    
-    if (_pool.length < _max) {
-      log.finest("Creating new pooled cnx#${_pool.length}");
-      var cnx = new _Connection(this, _pool.length);
+    var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse, orElse: () => null);
+    if (cnx != null) {
+      log.finest("Using open pooled cnx#${cnx.number}");
       cnx.use();
-      var future = cnx.connect(
-          host: _host, 
-          port: _port, 
-          user: _user, 
-          password: _password, 
-          db: _db);
-      _pool.add(cnx);
-      future
-        .then((_) {
-          log.finest("Logged in on cnx#${cnx.number}");
-          c.complete(cnx);
-        })
-        .catchError((e) {
-          c.completeError(e);
-          _releaseConnection(cnx);
-          _reuseConnection(cnx);
-        });
+      c.complete(cnx);
+    } else if (_pool.length < _max) {
+      log.finest("Creating new pooled cnx#${_pool.length}");
+      _createConnection(c);
     } else {
       log.finest("Waiting for an available connection");
       _pendingConnections.add(c);
     }
     return c.future;
+  }
+  
+  _createConnection(Completer c) {
+    var cnx = new _Connection(this, _pool.length);
+    cnx.use();
+    _pool.add(cnx);
+    cnx.connect(
+        host: _host, 
+        port: _port, 
+        user: _user, 
+        password: _password, 
+        db: _db)
+      .then((_) {
+        log.finest("Logged in on cnx#${cnx.number}");
+        c.complete(cnx);
+      })
+      .catchError((e) {
+        c.completeError(e);
+        _releaseConnection(cnx);
+        _reuseConnection(cnx);
+      });
   }
   
   _releaseConnection(_Connection cnx) {
