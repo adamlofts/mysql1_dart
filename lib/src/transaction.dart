@@ -22,18 +22,14 @@ class Transaction extends Object with ConnectionHelpers {
   Future commit() {
     _checkFinished();
     _finished = true;
-    var c = new Completer();
   
     var handler = new _QueryStreamHandler("commit");
-    _cnx.processHandler(handler)
+    return _cnx.processHandler(handler)
       .then((results) {
+        var c = new Completer();
         _releaseReuseComplete(_cnx, c, results);
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-
-    return c.future;
   }
   
   /**
@@ -43,18 +39,14 @@ class Transaction extends Object with ConnectionHelpers {
   Future rollback() {
     _checkFinished();
     _finished = true;
-    var c = new Completer();
   
     var handler = new _QueryStreamHandler("rollback");
-    _cnx.processHandler(handler)
+    return _cnx.processHandler(handler)
       .then((results) {
+        var c = new Completer();
         _releaseReuseComplete(_cnx, c, results);
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-
-    return c.future;
   }
 
   Future<Results> query(String sql) {
@@ -68,36 +60,27 @@ class Transaction extends Object with ConnectionHelpers {
   Future<Query> prepare(String sql) {
     _checkFinished();
     var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
-    var c = new Completer<Query>();
-    query._prepare()
+    return query._prepare()
       .then((preparedQuery) {
+        var c = new Completer<Query>();
         c.complete(query);
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    return c.future;
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
     _checkFinished();
-    var c = new Completer<Results>();
-    prepare(sql)
+    return prepare(sql)
       .then((query) {
-        query.execute()
+        return query.execute()
           .then((results) {
-          //TODO is it right to close here? Query might still be running
+            //TODO is it right to close here? Query might still be running
+            var c = new Completer<Results>();
             query.close();
             c.complete(results);
-          })
-          .catchError((e) {
-            c.completeError(e);
+            return c.future;
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
       });
-    return c.future;
   }
 
   void _checkFinished() {

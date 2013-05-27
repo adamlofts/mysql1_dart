@@ -34,19 +34,16 @@ class Query extends Object with ConnectionHelpers {
 
   Future<_PreparedQuery> _prepare() {
     log.fine("Getting prepared query for: $sql");
-    var c = new Completer<_PreparedQuery>();
     
-    _getConnection()
+    return _getConnection()
       .then((cnx) {
+        var c = new Completer<_PreparedQuery>();
         log.fine("Got cnx#${cnx.number}");
         if (!_useCachedQuery(cnx, c)) {
           _prepareAndCacheQuery(cnx, c);
         }
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    return c.future;
   }
   
   /**
@@ -96,11 +93,11 @@ class Query extends Object with ConnectionHelpers {
    * Executes the query, returning a future [Results] object.
    */
   Future<Results> execute() {
-    var c = new Completer<Results>();
-    _prepare()
+    return _prepare()
       .then((preparedQuery) {
-        _execute(preparedQuery)
+        return _execute(preparedQuery)
           .then((Results results) {
+            var c = new Completer<Results>();
             if (results.stream != null) {
               //TODO can the result transform itself?
               (results as _ResultsImpl).onDone = () {
@@ -111,15 +108,9 @@ class Query extends Object with ConnectionHelpers {
             } else {
               _releaseReuseComplete(preparedQuery.cnx, c, results);
             }
-          })
-          .catchError((e) {
-            c.completeError(e);
+            return c.future;
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
       });
-    return c.future;
   }
   
   Future<Results> _execute(_PreparedQuery preparedQuery) {
@@ -145,9 +136,9 @@ class Query extends Object with ConnectionHelpers {
    * [Results.stream] field.
    */
   Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
-    var c = new Completer<List<Results>>();
-    _prepare()
+    return _prepare()
       .then((preparedQuery) {
+        var c = new Completer<List<Results>>();
         log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
         var resultList = new List<Results>();
         
@@ -182,11 +173,8 @@ class Query extends Object with ConnectionHelpers {
         }
         
         executeQuery(0);
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    return c.future;
   }
   
   /**

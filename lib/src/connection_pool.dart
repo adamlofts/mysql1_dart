@@ -152,10 +152,10 @@ class ConnectionPool extends Object with ConnectionHelpers {
    */
   Future<Results> query(String sql) {
     log.info("Running query: ${sql}");
-    var c = new Completer<Results>();
 
-    _getConnection()
+    return _getConnection()
       .then((cnx) {
+        var c = new Completer<Results>();
         log.fine("Got cnx#${cnx.number} for query");
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
@@ -173,12 +173,8 @@ class ConnectionPool extends Object with ConnectionHelpers {
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-
-    return c.future;
   }
 
   /**
@@ -186,24 +182,17 @@ class ConnectionPool extends Object with ConnectionHelpers {
    */
   Future ping() {
     log.info("Pinging server");
-    var c = new Completer<Results>();
     
-    _getConnection()
+    return _getConnection()
       .then((cnx) {
-        cnx.processHandler(new _PingHandler())
+        return cnx.processHandler(new _PingHandler())
           .then((x) {
+            var c = new Completer<Results>();
             log.fine("Pinged");
             _releaseReuseComplete(cnx, c, x);
-          })
-          .catchError((e) {
-            c.completeError(e);
+            return c.future;
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
       });
-    
-    return c.future;
   }
   
   /**
@@ -212,10 +201,10 @@ class ConnectionPool extends Object with ConnectionHelpers {
    */
   Future debug() {
     log.info("Sending debug message");
-    var c = new Completer<Results>();
     
-    _getConnection()
+    return _getConnection()
       .then((cnx) {
+        var c = new Completer<Results>();
         cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
@@ -224,12 +213,8 @@ class ConnectionPool extends Object with ConnectionHelpers {
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    
-    return c.future;
   }
   
   void _closeQuery(Query q, bool retain) {
@@ -279,16 +264,13 @@ class ConnectionPool extends Object with ConnectionHelpers {
    */
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
-    var c = new Completer<Query>();
-    query._prepare()
+    return query._prepare()
       .then((preparedQuery) {
+        var c = new Completer<Query>();
         log.info("Got value count");
         _releaseReuseComplete(preparedQuery.cnx, c, query);
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    return c.future;
   }
   
   /**
@@ -304,10 +286,10 @@ class ConnectionPool extends Object with ConnectionHelpers {
    */
   Future<Transaction> startTransaction({bool consistent: false}) {
     log.info("Starting transaction");
-    var c = new Completer<Transaction>();
     
-    _getConnection()
+    return _getConnection()
       .then((cnx) {
+        var c = new Completer<Transaction>();
         var sql;
         if (consistent) {
           sql = "start transaction with consistent snapshot";
@@ -323,12 +305,8 @@ class ConnectionPool extends Object with ConnectionHelpers {
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);
           });
-      })
-      .catchError((e) {
-        c.completeError(e);
+        return c.future;
       });
-    
-    return c.future;
   }
   
   /**
