@@ -82,6 +82,10 @@ class ConnectionPool extends Object with ConnectionHelpers {
       });
   }
   
+  _removeConnection(_Connection cnx) {
+    _pool.remove(cnx);
+  }
+  
   _releaseConnection(_Connection cnx) {
     cnx.release();
     log.finest("Finished with cnx#${cnx.number}: marked as not in use");
@@ -346,8 +350,13 @@ class ConnectionHelpers {
   }
   
   _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
-    _releaseConnection(cnx);
-    _reuseConnection(cnx);
+    if (e is MySqlException) {
+      _releaseConnection(cnx);
+      _reuseConnection(cnx);
+    } else {
+      print("KILLING CONNECTION!");
+      _removeConnection(cnx);
+    }
     c.completeError(e);
   }
 }

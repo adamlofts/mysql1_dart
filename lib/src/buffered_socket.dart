@@ -71,7 +71,6 @@ class BufferedSocket {
         _readBuffer();
       }
     } else if (event == RawSocketEvent.READ_CLOSED) {
-
     } else if (event == RawSocketEvent.WRITE) {
       log.fine("WRITE data");
       if (_writingBuffer != null) {

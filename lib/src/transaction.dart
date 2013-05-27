@@ -96,6 +96,10 @@ class Transaction extends Object with ConnectionHelpers {
   _reuseConnection(_Connection cnx) {
     _pool._reuseConnection(cnx);
   }
+  
+  _removeConnection(_Connection cnx) {
+    _pool._removeConnection(cnx);
+  }
 }
 
 class _TransactionPool extends ConnectionPool {
@@ -113,5 +117,8 @@ class _TransactionPool extends ConnectionPool {
   }
   
   _reuseConnection(_Connection cnx) {
+  }
+  
+  _removeConnection(_Connection cnx) {
   }
 }
