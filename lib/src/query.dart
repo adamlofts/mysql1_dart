@@ -77,9 +77,7 @@ class Query {
         c.complete(preparedQuery);
       })
       .catchError((e) {
-        c.completeError(e);
-        _releaseConnection(cnx);
-        _reuseConnection(cnx);
+        _releaseReuseCompleteError(cnx, c, e);
       });
   }
   
@@ -134,9 +132,7 @@ class Query {
         c.complete(results);
       })
       .catchError((e) {
-        c.completeError(e);
-        _releaseConnection(preparedQuery.cnx);
-        _reuseConnection(preparedQuery.cnx);
+        _releaseReuseCompleteError(preparedQuery.cnx, c, e);
       });
     return c.future;
   }
@@ -181,9 +177,7 @@ class Query {
               }
             })
             .catchError((e) {
-              c.completeError(e);
-              _releaseConnection(preparedQuery.cnx);
-              _reuseConnection(preparedQuery.cnx);
+              _releaseReuseCompleteError(preparedQuery.cnx, c, e);
             });
         }
         
@@ -199,6 +193,12 @@ class Query {
     _releaseConnection(cnx);
     _reuseConnection(cnx);
     c.complete(result);
+  }
+  
+  _releaseReuseCompleteError(Connection cnx, Completer c, dynamic e) {
+    _releaseConnection(cnx);
+    _reuseConnection(cnx);
+    c.completeError(e);
   }
 
   /**
