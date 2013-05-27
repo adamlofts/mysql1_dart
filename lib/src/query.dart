@@ -111,9 +111,7 @@ class Query {
               };
               c.complete(results);
             } else {
-              _releaseConnection(preparedQuery.cnx);
-              c.complete(results);
-              _reuseConnection(preparedQuery.cnx);
+              _releaseReuseComplete(preparedQuery.cnx, c, results);
             }
           })
           .catchError((e) {
@@ -169,9 +167,7 @@ class Query {
                   if (i < parameters.length - 1) {
                     executeQuery(i + 1);
                   } else {
-                    _releaseConnection(preparedQuery.cnx);
-                    c.complete(resultList);
-                    _reuseConnection(preparedQuery.cnx);
+                    _releaseReuseComplete(preparedQuery.cnx, c, resultList);
                   }
                 });
               } else {
@@ -180,9 +176,7 @@ class Query {
                 if (i < parameters.length - 1) {
                   executeQuery(i + 1);
                 } else {
-                  _releaseConnection(preparedQuery.cnx);
-                  c.complete(resultList);
-                  _reuseConnection(preparedQuery.cnx);
+                  _releaseReuseComplete(prepareQuery.cnx, c, resultList);
                 }
               }
             })
@@ -201,6 +195,12 @@ class Query {
     return c.future;
   }
   
+  _releaseReuseComplete(Connection cnx, Completer c, dynamic result) {
+    _releaseConnection(cnx);
+    _reuseConnection(cnx);
+    c.complete(result);
+  }
+
   /**
    * Get a current parameter value.
    */
