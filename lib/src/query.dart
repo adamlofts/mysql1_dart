@@ -4,7 +4,7 @@ part of sqljocky;
  * Query is created by ConnectionPool.prepare(sql) and Transaction.prepare(sql). It holds
  * a prepared query. Set parameters on it using the square bracket operators.
  */
-class Query {
+class Query extends Object with ConnectionHelpers {
   final ConnectionPool _pool;
   final _Connection _cnx;
   final String sql;
@@ -189,18 +189,6 @@ class Query {
     return c.future;
   }
   
-  _releaseReuseComplete(Connection cnx, Completer c, dynamic result) {
-    _releaseConnection(cnx);
-    _reuseConnection(cnx);
-    c.complete(result);
-  }
-  
-  _releaseReuseCompleteError(Connection cnx, Completer c, dynamic e) {
-    _releaseConnection(cnx);
-    _reuseConnection(cnx);
-    c.completeError(e);
-  }
-
   /**
    * Get a current parameter value.
    */

@@ -5,7 +5,7 @@ part of sqljocky;
  * a free connection it will be used, otherwise the query is queued until a connection is
  * free. 
  */
-class ConnectionPool {
+class ConnectionPool extends Object with ConnectionHelpers {
   final Logger log;
 
   final String _host;
@@ -78,9 +78,7 @@ class ConnectionPool {
         c.complete(cnx);
       })
       .catchError((e) {
-        c.completeError(e);
-        _releaseConnection(cnx);
-        _reuseConnection(cnx);
+        _releaseReuseCompleteError(cnx, c, e);
       });
   }
   
@@ -169,15 +167,11 @@ class ConnectionPool {
               }));
               c.complete(results);
             } else {
-              _releaseConnection(cnx);
-              c.complete(results);
-              _reuseConnection(cnx);
+              _releaseReuseComplete(cnx, c, results);
             }
           })
           .catchError((e) {
-            c.completeError(e);
-            _releaseConnection(cnx);
-            _reuseConnection(cnx);
+            _releaseReuseCompleteError(cnx, c, e);
           });
       })
       .catchError((e) {
@@ -199,9 +193,7 @@ class ConnectionPool {
         cnx.processHandler(new _PingHandler())
           .then((x) {
             log.fine("Pinged");
-            _releaseConnection(cnx);
-            c.complete(x);
-            _reuseConnection(cnx);
+            _releaseReuseComplete(cnx, c, x);
           })
           .catchError((e) {
             c.completeError(e);
@@ -227,13 +219,10 @@ class ConnectionPool {
         cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
-            c.complete(x);
-            _releaseConnection(cnx);
+            _releaseReuseComplete(cnx, x, e);
           })
           .catchError((e) {
-            c.completeError(e);
-            _releaseConnection(cnx);
-            _reuseConnection(cnx);
+            _releaseReuseCompleteError(cnx, c, e);
           });
       })
       .catchError((e) {
@@ -294,9 +283,7 @@ class ConnectionPool {
     query._prepare()
       .then((preparedQuery) {
         log.info("Got value count");
-        _releaseConnection(preparedQuery.cnx);
-        c.complete(query);
-        _reuseConnection(preparedQuery.cnx);
+        _releaseReuseComplete(preparedQuery.cnx, c, query);
       })
       .catchError((e) {
         c.completeError(e);
@@ -334,9 +321,7 @@ class ConnectionPool {
             c.complete(transaction);
           })
           .catchError((e) {
-            c.completeError(e);
-            _releaseConnection(cnx);
-            _reuseConnection(cnx);
+            _releaseReuseCompleteError(cnx, c, e);
           });
       })
       .catchError((e) {
@@ -375,3 +360,16 @@ class ConnectionPool {
 //  dynamic setOptions(int option);
 }
 
+class ConnectionHelpers {
+  _releaseReuseComplete(Connection cnx, Completer c, dynamic result) {
+    _releaseConnection(cnx);
+    _reuseConnection(cnx);
+    c.complete(result);
+  }
+  
+  _releaseReuseCompleteError(Connection cnx, Completer c, dynamic e) {
+    _releaseConnection(cnx);
+    _reuseConnection(cnx);
+    c.completeError(e);
+  }
+}

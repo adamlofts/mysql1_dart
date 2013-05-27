@@ -6,7 +6,7 @@ part of sqljocky;
  * back. You must use the [commit] and [rollback] methods to do this, otherwise
  * the connection will not be released back to the pool.
  */
-class Transaction {
+class Transaction extends Object with ConnectionHelpers {
   _Connection _cnx;
   ConnectionPool _pool;
   bool _finished;
@@ -27,9 +27,7 @@ class Transaction {
     var handler = new _QueryStreamHandler("commit");
     _cnx.processHandler(handler)
       .then((results) {
-        _pool._releaseConnection(_cnx);
-        c.complete(results);
-        _pool._reuseConnection(_cnx);
+        _releaseReuseComplete(_cnx, c, results);
       })
       .catchError((e) {
         c.completeError(e);
@@ -50,9 +48,7 @@ class Transaction {
     var handler = new _QueryStreamHandler("rollback");
     _cnx.processHandler(handler)
       .then((results) {
-        _pool._releaseConnection(_cnx);
-        c.complete(results);
-        _pool._reuseConnection(_cnx);
+        _releaseReuseComplete(_cnx, c, results);
       })
       .catchError((e) {
         c.completeError(e);
@@ -108,6 +104,14 @@ class Transaction {
     if (_finished) {
       throw new StateError("Transaction has already finished");
     }
+  }
+
+  _releaseConnection(_Connection cnx) {
+    _pool._releaseConnection(cnx);
+  }
+
+  _reuseConnection(_Connection cnx) {
+    _pool._reuseConnection(cnx);
   }
 }
 
