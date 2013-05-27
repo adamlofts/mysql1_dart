@@ -176,7 +176,7 @@ class Query {
                 if (i < parameters.length - 1) {
                   executeQuery(i + 1);
                 } else {
-                  _releaseReuseComplete(prepareQuery.cnx, c, resultList);
+                  _releaseReuseComplete(preparedQuery.cnx, c, resultList);
                 }
               }
             })
