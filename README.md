@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.5.0: Breaking change: Now uses streams to return results.
 * v0.4.1: Major refactoring so that only the parts of sqljocky which are supposed to be exposed are.
 * v0.4.0: Support for M4.
 * v0.3.0: Support for M3. Bit fields are now numbers, not lists. Dates now use the DateTime class instead of the Date class. Use new IO classes.
@@ -27,7 +28,7 @@ Execute a query:
 
 Use the results:
 
-	for (row in result) {
+	results.stream.listen((row) {
 		print('Name: ${row[0]}, email: ${row[1]}');
 	}
 
