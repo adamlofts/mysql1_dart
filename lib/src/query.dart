@@ -4,7 +4,7 @@ part of sqljocky;
  * Query is created by ConnectionPool.prepare(sql) and Transaction.prepare(sql). It holds
  * a prepared query. Set parameters on it using the square bracket operators.
  */
-class Query extends Object with ConnectionHelpers {
+class Query extends Object with _ConnectionHelpers {
   final ConnectionPool _pool;
   final _Connection _cnx;
   final String sql;

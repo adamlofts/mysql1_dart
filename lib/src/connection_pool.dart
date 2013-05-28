@@ -5,7 +5,7 @@ part of sqljocky;
  * a free connection it will be used, otherwise the query is queued until a connection is
  * free. 
  */
-class ConnectionPool extends Object with ConnectionHelpers {
+class ConnectionPool extends Object with _ConnectionHelpers {
   final Logger log;
 
   final String _host;
@@ -342,7 +342,7 @@ class ConnectionPool extends Object with ConnectionHelpers {
 //  dynamic setOptions(int option);
 }
 
-class ConnectionHelpers {
+class _ConnectionHelpers {
   _releaseReuseComplete(_Connection cnx, Completer c, dynamic result) {
     _releaseConnection(cnx);
     _reuseConnection(cnx);
@@ -354,7 +354,6 @@ class ConnectionHelpers {
       _releaseConnection(cnx);
       _reuseConnection(cnx);
     } else {
-      print("KILLING CONNECTION!");
       _removeConnection(cnx);
     }
     c.completeError(e);

@@ -6,7 +6,7 @@ part of sqljocky;
  * back. You must use the [commit] and [rollback] methods to do this, otherwise
  * the connection will not be released back to the pool.
  */
-class Transaction extends Object with ConnectionHelpers {
+class Transaction extends Object with _ConnectionHelpers {
   _Connection _cnx;
   ConnectionPool _pool;
   bool _finished;

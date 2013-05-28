@@ -114,22 +114,6 @@ class Example {
 }
 
 void main() {
-  hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.ALL;
-  new Logger("ConnectionPool").level = Level.ALL;
-  new Logger("Query").level = Level.ALL;
-  var listener = (LogRecord r) {
-    var name = r.loggerName;
-    if (name.length > 15) {
-      name = name.substring(0, 15);
-    }
-    while (name.length < 15) {
-      name = "$name ";
-    }
-    print("${r.time}: $name: ${r.message}");
-  };
-  Logger.root.onRecord.listen(listener);
-
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
   String password = options.getString('password');
