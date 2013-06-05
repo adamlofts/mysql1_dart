@@ -2,9 +2,9 @@ library sqljocky;
 
 import 'package:unittest/unittest.dart';
 import 'package:sqljocky/constants.dart';
+import 'package:crypto/crypto.dart';
 
 import 'dart:io';
-import 'dart:crypto';
 import 'dart:collection';
 import 'dart:math' as Math;
 import 'dart:typed_data';

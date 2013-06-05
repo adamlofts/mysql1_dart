@@ -3,9 +3,9 @@ library sqljocky;
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'package:sqljocky/constants.dart';
+import 'package:crypto/crypto.dart';
 import 'dart:typed_data';
 import 'dart:collection';
-import 'dart:crypto';
 import 'dart:io';
 import 'dart:async';
 
