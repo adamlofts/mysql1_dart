@@ -204,6 +204,12 @@ class Query extends Object with _ConnectionHelpers {
       _pool._reuseConnection(cnx);
     }
   }
+  
+  _removeConnection(_Connection cnx) {
+    if (!_inTransaction) {
+      _pool._removeConnection(cnx);
+    }
+  }
 //  dynamic longData(int index, data);
 //  dynamic reset();
 //  dynamic fetch(int rows);

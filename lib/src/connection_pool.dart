@@ -212,7 +212,7 @@ class ConnectionPool extends Object with _ConnectionHelpers {
         cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
-            _releaseReuseComplete(cnx, x, e);
+            _releaseReuseComplete(cnx, c, x);
           })
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);
@@ -342,7 +342,7 @@ class ConnectionPool extends Object with _ConnectionHelpers {
 //  dynamic setOptions(int option);
 }
 
-class _ConnectionHelpers {
+abstract class _ConnectionHelpers {
   _releaseReuseComplete(_Connection cnx, Completer c, dynamic result) {
     _releaseConnection(cnx);
     _reuseConnection(cnx);
@@ -358,4 +358,8 @@ class _ConnectionHelpers {
     }
     c.completeError(e);
   }
+  
+  _releaseConnection(cnx);
+  _reuseConnection(cnx);
+  _removeConnection(cnx);
 }
