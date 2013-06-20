@@ -36,7 +36,9 @@ class _Connection {
       _inUse = false;
   
   void close() {
-    _socket.close();
+    if (_socket != null) {
+      _socket.close();
+    }
   }
   
   bool get inUse => _inUse;

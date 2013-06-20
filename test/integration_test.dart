@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:sqljocky/utils.dart';
 
 part 'integration/one.dart';
+part 'integration/two.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -36,5 +37,6 @@ void main() {
   var db = options.getString('db');
   var host = options.getString('host', 'localhost');
   
-  runIntTests(user, password, db, port, host);
+//  runIntTests(user, password, db, port, host);
+  runIntTests2(user, password, db, port, host);
 }

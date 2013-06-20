@@ -146,7 +146,9 @@ class ConnectionPool extends Object with _ConnectionHelpers {
    */
   void close() {
     for (_Connection cnx in _pool) {
-      cnx.close();
+      if (cnx != null) {
+        cnx.close();
+      }
     }
   }
 
@@ -191,7 +193,7 @@ class ConnectionPool extends Object with _ConnectionHelpers {
       .then((cnx) {
         return cnx.processHandler(new _PingHandler())
           .then((x) {
-            var c = new Completer<Results>();
+            var c = new Completer();
             log.fine("Pinged");
             _releaseReuseComplete(cnx, c, x);
             return c.future;
@@ -208,7 +210,7 @@ class ConnectionPool extends Object with _ConnectionHelpers {
     
     return _getConnection()
       .then((cnx) {
-        var c = new Completer<Results>();
+        var c = new Completer();
         cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
