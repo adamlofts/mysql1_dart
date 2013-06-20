@@ -1,22 +1,4 @@
-library sqljocky;
-
-import 'package:unittest/unittest.dart';
-import 'package:logging/logging.dart';
-import 'package:sqljocky/constants.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:typed_data';
-import 'dart:collection';
-import 'dart:io';
-import 'dart:async';
-
-import 'package:sqljocky/src/buffer.dart';
-
-part '../../lib/src/auth/auth_handler.dart';
-part '../../lib/src/handlers/handler.dart';
-part '../../lib/src/handlers/ok_packet.dart';
-part '../../lib/src/mysql_exception.dart';
-part '../../lib/src/mysql_client_error.dart';
-part '../../lib/src/prepared_statements/prepare_ok_packet.dart';
+part of sqljocky;
 
 void runAuthHandlerTests() {
   group('auth_handler:', () {
@@ -52,8 +34,4 @@ void runAuthHandlerTests() {
                                    97, 115, 101, 0]));
     });
   });
-}
-
-void main() {
-  runAuthHandlerTests();
 }

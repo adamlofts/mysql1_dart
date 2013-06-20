@@ -1,12 +1,4 @@
-library sqljocky;
-
-import 'package:unittest/unittest.dart';
-import 'package:logging/logging.dart';
-import 'dart:typed_data';
-import 'dart:collection';
-import 'dart:io';
-
-import 'package:sqljocky/src/buffer.dart';
+part of sqljocky;
 
 final double SMALLEST_POSITIVE_SUBNORMAL_FLOAT = 1.4012984643248170E-45;
 final double LARGEST_POSITIVE_SUBNORMAL_FLOAT = 1.1754942106924411E-38;
@@ -183,8 +175,4 @@ void runSerializationTests() {
       expect(_BufferToHexString(buffer, true), equals("FFF8000000000000"));
     });
   });
-}
-
-void main() {
-  runSerializationTests();
 }

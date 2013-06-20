@@ -1,8 +1,4 @@
-library types_test;
-
-import 'package:sqljocky/sqljocky.dart';
-import 'package:unittest/unittest.dart';
-import 'dart:typed_data';
+part of sqljocky;
 
 void runTypesTests() {
   group('types:', () {
@@ -104,8 +100,4 @@ void runTypesTests() {
       expect(blob1.hashCode == blob2.hashCode, isTrue);
     });
   });
-}
-
-void main() {
-  runTypesTests();
 }

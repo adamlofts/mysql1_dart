@@ -1,11 +1,4 @@
-library buffer_test;
-
-import 'package:unittest/unittest.dart';
-import 'package:logging/logging.dart';
-import 'dart:typed_data';
-import 'dart:io';
-
-import 'package:sqljocky/src/buffer.dart';
+part of sqljocky;
 
 void runBufferTests() {
   group('buffer:', () {
@@ -29,8 +22,4 @@ void runBufferTests() {
       expect(buffer.readInt16(), equals(12345));
     });
   });
-}
-
-void main() {
-  runBufferTests();
 }

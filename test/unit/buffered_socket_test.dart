@@ -37,6 +37,30 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     _data.addAll(data);
     _streamController.add(RawSocketEvent.READ);
   }
+  
+  InternetAddress get address => null;
+
+  void close() {}
+
+  int get port => null;
+
+  bool get readEventsEnabled => null;
+
+  void set readEventsEnabled(bool value) {}
+
+  String get remoteHost => null;
+
+  int get remotePort => null; 
+
+  bool setOption(SocketOption option, bool enabled) {}
+
+  void shutdown(SocketDirection direction) {}
+
+  int write(List<int> buffer, [int offset, int count]) {}
+
+  void set writeEventsEnabled(bool value) {}
+
+  bool get writeEventsEnabled => null;
 }
 
 void runBufferedSocketTests() {
