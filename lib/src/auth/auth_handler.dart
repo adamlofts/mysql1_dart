@@ -63,6 +63,4 @@ class _AuthHandler extends _Handler {
     
     return buffer;
   }
-  
-  _HandlerResponse processResponse(Buffer response) => new _HandlerResponse(finished: true, result: checkResponse(response));
 }

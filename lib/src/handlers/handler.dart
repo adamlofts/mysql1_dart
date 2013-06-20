@@ -5,6 +5,14 @@ class _NoResult {
 }
 const _NO_RESULT = const _NoResult();
 
+/**
+ * Represents the response from a [_Handler] when [_Handler.processResponse] is
+ * called. If the handler has finished processing the response, [finished] is true,
+ * [nextHandler] is irrelevant and [result] contains the result to return to the
+ * user. If the handler needs another handler to process the response, [finished]
+ * is false, [nextHandler] contains the next handler which should process the
+ * next packet from the server, and [result] is [_NO_RESULT].
+ */
 class _HandlerResponse {
   final bool finished;
   final _Handler nextHandler;
@@ -34,12 +42,13 @@ abstract class _Handler {
   
   /**
    * Parses a [Buffer] containing the response to the command.
-   * Returns a [_Handler] if that handler should take over and
-   * process subsequent packets from the server, otherwise the
-   * result is returned in the [Future], either in one of the
-   * Connection methods, or Transport.connect() 
+   * Returns a [_HandlerResponse]. The default
+   * implementation returns a finished [_HandlerResponse] with
+   * a result which is obtained by calling [checkResponse] 
    */
-  _HandlerResponse processResponse(Buffer response);
+  _HandlerResponse processResponse(Buffer response) => 
+      new _HandlerResponse(finished: true, result: checkResponse(response));
+
   
   /**
    * Parses the response packet to recognise Ok and Error packets.

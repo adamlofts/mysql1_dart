@@ -13,6 +13,4 @@ class _UseDbHandler extends _Handler {
     buffer.writeString(_dbName);
     return buffer;
   }
-
-  _HandlerResponse processResponse(Buffer response) => new _HandlerResponse(finished: true, result: checkResponse(response));
 }

@@ -10,6 +10,4 @@ class _PingHandler extends _Handler {
     buffer.writeByte(COM_PING);
     return buffer;
   }
-
-  _HandlerResponse processResponse(Buffer response) => new _HandlerResponse(finished: true, result: checkResponse(response));
 }
