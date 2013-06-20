@@ -18,10 +18,8 @@ class _ResultsImpl extends Results {
       List<Field> fields,
       {Stream<Row> stream: null,
       List<Row> rows: null}) {
-    List<Field> unmodifiableFields = new UnmodifiableListView<Field>(fields);
-    _fields = unmodifiableFields;
-    List<Row> unmodifiableRows = new UnmodifiableListView<Row>(rows);
-    _rows = unmodifiableRows; 
+    _fields = new UnmodifiableListView<Field>(fields);
+    _rows = new UnmodifiableListView<Row>(rows);
     if (stream != null) {
       this._stream = stream.transform(new _StreamDoneTransformer(() {
         if (onDone != null) {
@@ -32,9 +30,7 @@ class _ResultsImpl extends Results {
   }
 
   Future<Results> toResultsList() {
-    return _stream.toList().then((list) {
-      return new _ResultsImpl(insertId, affectedRows, fields, rows: list);
-    });
+    return _stream.toList().then((list) => new _ResultsImpl(insertId, affectedRows, fields, rows: list));
   }
 }
 

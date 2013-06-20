@@ -53,13 +53,12 @@ class BufferedSocket {
     } else {
       future = RawSocket.connect(host, port);
     }
-    future.then((socket) {
-      c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError));
-    }, onError: onError);
+    future.then((socket) => c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError)),
+        onError: onError);
     return c.future;
   }
 
-  _onData(RawSocketEvent event) {
+  void _onData(RawSocketEvent event) {
     if (event == RawSocketEvent.READ) {
       log.fine("READ data");
       if (_readingBuffer == null) {
@@ -144,7 +143,7 @@ class BufferedSocket {
     }
   }
 
-  close() {
+  void close() {
     _socket.close();
   }
 }

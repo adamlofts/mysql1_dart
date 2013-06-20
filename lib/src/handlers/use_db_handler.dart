@@ -14,8 +14,5 @@ class _UseDbHandler extends _Handler {
     return buffer;
   }
 
-  _HandlerResponse processResponse(Buffer response) {
-    var result = checkResponse(response);
-    return new _HandlerResponse(finished: true, result: result);
-  }
+  _HandlerResponse processResponse(Buffer response) => new _HandlerResponse(finished: true, result: checkResponse(response));
 }

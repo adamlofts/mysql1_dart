@@ -20,8 +20,6 @@ class _PrepareOkPacket {
     _warningCount = buffer.readInt16();
   }
   
-  String toString() {
-    return "OK: statement handler id: $_statementHandlerId, columns: $_columnCount, "
-    "parameters: $_parameterCount, warnings: $_warningCount";
-  }
+  String toString() => "OK: statement handler id: $_statementHandlerId, columns: $_columnCount, "
+      "parameters: $_parameterCount, warnings: $_warningCount";
 }

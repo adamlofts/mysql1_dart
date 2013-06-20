@@ -60,12 +60,7 @@ class Transaction extends Object with _ConnectionHelpers {
   Future<Query> prepare(String sql) {
     _checkFinished();
     var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
-    return query._prepare()
-      .then((preparedQuery) {
-        var c = new Completer<Query>();
-        c.complete(query);
-        return c.future;
-      });
+    return query._prepare().then((preparedQuery) => new Future.value(query));
   }
   
   Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
@@ -75,10 +70,8 @@ class Transaction extends Object with _ConnectionHelpers {
         return query.execute()
           .then((results) {
             //TODO is it right to close here? Query might still be running
-            var c = new Completer<Results>();
             query.close();
-            c.complete(results);
-            return c.future;
+            return new Future.value(results);
           });
       });
   }
@@ -107,11 +100,7 @@ class _TransactionPool extends ConnectionPool {
   
   _TransactionPool(this.cnx);
   
-  Future<_Connection> _getConnection() {
-    var c = new Completer<_Connection>();
-    c.complete(cnx);
-    return c.future;
-  }
+  Future<_Connection> _getConnection() => new Future.value(cnx);
   
   _releaseConnection(_Connection cnx) {
   }

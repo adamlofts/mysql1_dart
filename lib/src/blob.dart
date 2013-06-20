@@ -53,7 +53,5 @@ class Blob {
     return _hashcode;
   }
   
-  bool operator ==(other) {
-    return toString() == other.toString();
-  }
+  bool operator ==(other) => toString() == other.toString();
 }
