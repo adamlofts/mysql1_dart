@@ -43,6 +43,8 @@ void runIntTests2(String user, String password, String db, int port, String host
         c3.complete();
       });
       print("ping 3 sent");
+
+      expect(finished, equals([]));
       
       return Future.wait(futures).then((_) {
         expect(finished, equals([1, 2, 3, 4]));
