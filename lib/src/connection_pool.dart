@@ -5,7 +5,7 @@ part of sqljocky;
  * a free connection it will be used, otherwise the query is queued until a connection is
  * free. 
  */
-class ConnectionPool extends Object with _ConnectionHelpers {
+class ConnectionPool extends Object with _ConnectionHelpers implements QueriableConnection {
   final Logger log;
 
   final String _host;
@@ -364,4 +364,10 @@ abstract class _ConnectionHelpers {
   _releaseConnection(cnx);
   _reuseConnection(cnx);
   _removeConnection(cnx);
+}
+
+abstract class QueriableConnection {
+  Future<Results> query(String sql);
+  Future<Query> prepare(String sql);
+  Future<Results> prepareExecute(String sql, List<dynamic> parameters);
 }

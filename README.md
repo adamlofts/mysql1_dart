@@ -8,6 +8,9 @@ in the near future.
 News
 ----
 
+* v0.5.3: Make ConnectionPool and Transaction implement QueriableConnection, and improved tests.
+* v0.5.2: Fix for new SDK
+* v0.5.1: Made an internal class private
 * v0.5.0: Breaking change: Now uses streams to return results.
 * v0.4.1: Major refactoring so that only the parts of sqljocky which are supposed to be exposed are.
 * v0.4.0: Support for M4.
