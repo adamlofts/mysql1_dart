@@ -211,12 +211,29 @@ class Buffer {
         return readInt64();
     }
   }
-  
+
   /**
    * Will write a length coded binary value, once implemented!
    */
   void writeLengthCodedBinary(int value) {
-    throw new UnsupportedError("not implemented writeLengthCodedBinary yet");
+    if (value < 251) {
+      writeByte(value);
+      return;
+    }
+    if (value < (2 << 15)) {
+      writeByte(0xfc);
+      writeInt16(value);
+      return;
+    }
+    if (value < (2 << 23)) {
+      writeByte(0xfd);
+      writeInt24(value);
+      return;
+    }
+    if (value < (2 << 63)) {
+      writeByte(0xfe);
+      writeInt64(value);
+    }
   }
 
   /**
