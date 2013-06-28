@@ -43,7 +43,7 @@ class _ExecuteQueryHandler extends _Handler {
     
     //TODO do this properly
     var types = <int>[];
-    var values = <int>[];
+    var values = new ListWriter(<int>[]);
     for (var i = 0; i < _values.length; i++) {
       log.fine("field $i ${_preparedQuery.parameters[i].type}");
       var value = _values[i];
@@ -73,8 +73,8 @@ class _ExecuteQueryHandler extends _Handler {
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          values.add(s.length);
-          values.addAll(s.codeUnits);
+          values.writeLengthCodedBinary(s.length);
+          values.writeList(s.codeUnits);
           
           // TODO: if you send a double value for a decimal field, it doesn't like it
 //          types.add(FIELD_TYPE_FLOAT);
@@ -106,27 +106,27 @@ class _ExecuteQueryHandler extends _Handler {
           log.fine("LIST: $value");
           types.add(FIELD_TYPE_BLOB);
           types.add(0);
-          values.add(value.length);
-          values.addAll(value);
+          values.writeLengthCodedBinary(value.length);
+          values.writeList(value);
         } else if (value is Blob) {
           log.fine("BLOB: $value");
           var bytes = (value as Blob).toBytes();
           types.add(FIELD_TYPE_BLOB);
           types.add(0);
-          values.add(bytes.length);
-          values.addAll(bytes);
+          values.writeLengthCodedBinary(bytes.length);
+          values.writeList(bytes);
         } else {
           log.fine("STRING: $value");
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          values.add(s.length);
-          values.addAll(s.codeUnits);
+          values.writeLengthCodedBinary(s.length);
+          values.writeList(s.codeUnits);
         }
       }
     }
     
-    var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.length);
+    var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.list.length);
     buffer.writeByte(COM_STMT_EXECUTE);
     buffer.writeInt32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
@@ -135,7 +135,7 @@ class _ExecuteQueryHandler extends _Handler {
     if (!_executed) {
       buffer.writeByte(1);
       buffer.writeList(types);
-      buffer.writeList(values);
+      buffer.writeList(values.list);
     } else {
       buffer.writeByte(0);      
     }

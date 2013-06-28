@@ -53,6 +53,58 @@ void runIntTests(String user, String password, String db, int port, String host)
       return c.future;
     });
     
+    test('small blobs', () {
+      var c = new Completer();
+      pool.prepare("insert into test1 (atext) values (?)").then((query) {
+        var longstring = "";
+        for (var i = 0; i < 200; i++) {
+          longstring += "x";
+        }
+        query[0] = new Blob.fromString(longstring);
+        return query.execute();
+      }).then((results) {
+        expect(results.affectedRows, equals(1));
+        
+//        return pool.query("select atext from test1 where length(atext) > 1000");
+        return pool.query("select atext from test1");
+      }).then((results) {
+        return results.stream.toList();
+      }).then((list) {
+        expect(list.length, equals(1));
+        expect((list[0][0] as Blob).toString().length, equals(200));
+        c.complete();
+      });
+      return c.future;
+    });
+    
+    test('medium blobs', () {
+      var c = new Completer();
+      pool.prepare("insert into test1 (atext) values (?)").then((query) {
+        var longstring = "";
+        for (var i = 0; i < 2000; i++) {
+          longstring += "x";
+        }
+        query[0] = new Blob.fromString(longstring);
+        return query.execute();
+      }).then((results) {
+        expect(results.affectedRows, equals(1));
+        
+//        return pool.query("select atext from test1 where length(atext) > 1000");
+        return pool.query("select atext from test1");
+      }).then((results) {
+        return results.stream.toList();
+      }).then((list) {
+        expect(list.length, equals(2));
+        expect((list[1][0] as Blob).toString().length, equals(2000));
+        c.complete();
+      });
+      return c.future;
+    });
+    
+    test('clear stuff', () {
+      return pool.query('delete from test1');
+    });
+    
     test('insert stuff', () {
       var c = new Completer();
       print("insert stuff test");

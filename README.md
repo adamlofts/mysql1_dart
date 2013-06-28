@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.5.4: Blobs and Texts which are bigger than 250 characters now work.
 * v0.5.3: Make ConnectionPool and Transaction implement QueriableConnection, and improved tests.
 * v0.5.2: Fix for new SDK
 * v0.5.1: Made an internal class private
