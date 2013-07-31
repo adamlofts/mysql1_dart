@@ -42,7 +42,10 @@ Prepare a query:
 
 Execute the query:
 
-	query.execute(['Bob', 'bob@bob.com', 25]).then((result) {...});
+	query[0] = 'Bob';
+	query[1] = 'bob@bob.com';
+	query[2] = 25;
+	query.execute().then((result) {...});
 
 An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
 
