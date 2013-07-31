@@ -99,5 +99,16 @@ void runTypesTests() {
       expect(blob1 == blob2, isTrue);
       expect(blob1.hashCode == blob2.hashCode, isTrue);
     });
+    
+    test('utf blobs', () {
+      var blob1 = new Blob.fromString("здрасти");
+      var bytes = blob1.toBytes();
+      var trimmedBytes = new List<int>();
+      for (var b in bytes) {
+        trimmedBytes.add(b & 0xFF);
+      }
+      var blob2 = new Blob.fromBytes(trimmedBytes);
+      expect(blob2.toString(), equals("здрасти"));
+    });
   });
 }

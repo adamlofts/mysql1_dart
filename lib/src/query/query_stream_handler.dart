@@ -19,9 +19,11 @@ class _QueryStreamHandler extends _Handler {
   }
   
   Buffer createRequest() {
-    var buffer = new Buffer(_sql.length + 1);
+    var codec = new Utf8Codec();
+    var encoded = codec.encode(_sql);
+    var buffer = new Buffer(encoded.length + 1);
     buffer.writeByte(COM_QUERY);
-    buffer.writeString(_sql);
+    buffer.writeList(encoded);
     return buffer;
   }
 

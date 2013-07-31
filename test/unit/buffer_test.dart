@@ -21,5 +21,14 @@ void runBufferTests() {
       buffer.list[1] = 0x30;
       expect(buffer.readInt16(), equals(12345));
     });
+    
+    test('utf strings', () {
+      var string = "здрасти";
+      var codec = new Utf8Codec();
+      var length = codec.encode(string).length;
+      var buffer = new Buffer(length);
+      buffer.writeString(string);
+      expect(buffer.list, equals(codec.encode(string)));
+    });
   });
 }
