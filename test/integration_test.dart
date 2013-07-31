@@ -38,7 +38,7 @@ void main() {
   var db = options.getString('db');
   var host = options.getString('host', 'localhost');
   
-//  runIntTests(user, password, db, port, host);
-//  runIntTests2(user, password, db, port, host);
+  runIntTests(user, password, db, port, host);
+  runIntTests2(user, password, db, port, host);
   runIntTests3(user, password, db, port, host);
 }
