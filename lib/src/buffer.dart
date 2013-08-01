@@ -3,7 +3,7 @@ library buffer;
 import 'package:logging/logging.dart';
 import 'dart:typed_data';
 import 'dart:io';
-import 'dart:convert';
+import 'dart:utf';
 
 /**
  * This provides methods to read and write strings, lists and
@@ -20,7 +20,6 @@ class Buffer {
   int _writePos = 0;
   int _readPos = 0;
 
-  final Utf8Codec _codec = const Utf8Codec();
   final Uint8List _list;
   ByteData _data;
   
@@ -160,7 +159,7 @@ class Buffer {
    * Returns the string, without a terminating null.
    */
   String readNullTerminatedString() {
-    return _codec.decode(readNullTerminatedList());
+    return decodeUtf8(readNullTerminatedList());
   }
   
   /**
@@ -168,7 +167,7 @@ class Buffer {
    * The given [string] does not need to contain the terminating null.
    */
   void writeNullTerminatedString(String string) {
-    writeNullTerminatedList(_codec.encode(string));
+    writeNullTerminatedList(encodeUtf8(string));
   }
   
   /**
@@ -182,14 +181,14 @@ class Buffer {
    * terminating nulls.
    */  
   void writeString(String string) {
-    writeList(_codec.encode(string));
+    writeList(encodeUtf8(string));
   }
   
   /**
    * Reads a string of the given [length] from the buffer.
    */
   String readString(int length) {
-    String s = _codec.decode(_list.sublist(_readPos, _readPos + length));
+    String s = decodeUtf8(_list.sublist(_readPos, _readPos + length));
     _readPos += length;
     return s;
   }

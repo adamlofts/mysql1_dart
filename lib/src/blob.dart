@@ -29,9 +29,7 @@ class Blob {
     if (_string != null) {
       return _string;
     }
-    var decoder = new Utf8Codec(allowMalformed: false);
-    return decoder.decode(_bytes);
-//    return new String.fromCharCodes(_bytes);
+    return decodeUtf8(_bytes);
   }
   
   /**
@@ -41,9 +39,7 @@ class Blob {
     if (_bytes != null) {
       return _bytes;
     }
-    var encoder = new Utf8Codec(allowMalformed: false);
-    return encoder.encode(_string);
-//    return _string.codeUnits;
+    return encodeUtf8(_string);
   }
   
   int get hashCode {

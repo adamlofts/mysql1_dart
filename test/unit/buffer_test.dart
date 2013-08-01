@@ -24,11 +24,10 @@ void runBufferTests() {
     
     test('utf strings', () {
       var string = "здрасти";
-      var codec = new Utf8Codec();
-      var length = codec.encode(string).length;
+      var length = encodeUtf8(string).length;
       var buffer = new Buffer(length);
       buffer.writeString(string);
-      expect(buffer.list, equals(codec.encode(string)));
+      expect(buffer.list, equals(encodeUtf8(string)));
     });
   });
 }
