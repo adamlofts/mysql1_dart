@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.5.6: Hopefully full unicode support, and fixed problem with null values in prepared queries.
 * v0.5.5: Some initial changes for better unicode handling.
 * v0.5.4: Blobs and Texts which are bigger than 250 characters now work.
 * v0.5.3: Make ConnectionPool and Transaction implement QueriableConnection, and improved tests.
