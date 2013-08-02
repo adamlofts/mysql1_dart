@@ -123,6 +123,9 @@ class _ExecuteQueryHandler extends _Handler {
           values.writeLengthCodedBinary(s.length);
           values.writeList(s.codeUnits);
         }
+      } else {
+        types.add(FIELD_TYPE_NULL);
+        types.add(0);
       }
     }
     

@@ -13,6 +13,7 @@ import 'package:sqljocky/utils.dart';
 part 'integration/one.dart';
 part 'integration/two.dart';
 part 'integration/charset.dart';
+part 'integration/nullmap.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -41,4 +42,5 @@ void main() {
   runIntTests(user, password, db, port, host);
   runIntTests2(user, password, db, port, host);
   runIntTests3(user, password, db, port, host);
+  runIntTests4(user, password, db, port, host);
 }
