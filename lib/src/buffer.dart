@@ -243,14 +243,14 @@ class Buffer {
    * Writes a single [byte] to the buffer.
    */ 
   void writeByte(int byte) {
-    _data.setInt8(_writePos++, byte);
+    _data.setUint8(_writePos++, byte);
   }
   
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
   int readInt16() {
-    int result = _data.getInt16(_readPos, Endianness.LITTLE_ENDIAN);
+    int result = _data.getUint16(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 2;
     return result;
   }
@@ -259,7 +259,7 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
-    _data.setInt16(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint16(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 2;
   }
 
@@ -282,7 +282,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    int val = _data.getInt32(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getUint32(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 4;
     return val;
   }
@@ -291,7 +291,7 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
-    _data.setInt32(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint32(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 4;
   }
 
@@ -299,7 +299,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    int val = _data.getInt64(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getUint64(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 8;
     return val;
   }
@@ -308,7 +308,7 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
-    _data.setInt64(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint64(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 8;
   }
 

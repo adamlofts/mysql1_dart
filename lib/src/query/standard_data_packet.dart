@@ -50,8 +50,6 @@ class _StandardDataPacket extends Row {
           values[i] = s;
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
-          var b = new Uint8List(s.length);
-          b.setRange(0, s.length, s.codeUnits);
           values[i] = new Blob.fromString(s);
           break;
         case FIELD_TYPE_GEOMETRY: // geometry
