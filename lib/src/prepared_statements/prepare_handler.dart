@@ -18,9 +18,10 @@ class _PrepareHandler extends _Handler {
   }
   
   Buffer createRequest() {
-    var buffer = new Buffer(_sql.length + 1);
+    var encoded = encodeUtf8(_sql);
+    var buffer = new Buffer(encoded.length + 1);
     buffer.writeByte(COM_STMT_PREPARE);
-    buffer.writeString(_sql);
+    buffer.writeList(encoded);
     return buffer;
   }
 

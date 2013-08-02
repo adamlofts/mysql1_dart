@@ -67,22 +67,6 @@ class ListWriter {
   }
   
   /**
-   * Writes a null terminated string to the buffer.
-   * The given [string] does not need to contain the terminating null.
-   */
-  void writeNullTerminatedString(String string) {
-    writeNullTerminatedList(string.codeUnits);
-  }
-  
-  /**
-   * Writes a [string] to the buffer, without any length indicators or
-   * terminating nulls.
-   */  
-  void writeString(String string) {
-    writeList(string.codeUnits);
-  }
-  
-  /**
    * Will write a length coded binary value, once implemented!
    */
   void writeLengthCodedBinary(int value) {

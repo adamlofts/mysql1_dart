@@ -8,9 +8,10 @@ class _UseDbHandler extends _Handler {
   }
   
   Buffer createRequest() {
-    var buffer = new Buffer(_dbName.length + 1);
+    var encoded = encodeUtf8(_dbName);
+    var buffer = new Buffer(encoded.length + 1);
     buffer.writeByte(COM_INIT_DB);
-    buffer.writeString(_dbName);
+    buffer.writeList(encoded);
     return buffer;
   }
 }

@@ -47,7 +47,7 @@ class Blob {
       if (_string != null) {
         _hashcode = _string.hashCode;
       } else {
-        _hashcode = new String.fromCharCodes(_bytes).hashCode;
+        _hashcode = decodeUtf8(_bytes).hashCode;
       }
     }
     return _hashcode;

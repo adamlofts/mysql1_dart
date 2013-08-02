@@ -40,10 +40,14 @@ class _AuthHandler extends _Handler {
       }
     }
 
-    var size = hash.length + _username.length + 2 + 32;
+    var encodedUsername = encodeUtf8(_username);
+    var encodedDb;
+
+    var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = _clientFlags;
     if (_db != null) {
-      size += _db.length + 1;
+      encodedDb = encodeUtf8(_db);
+      size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
     
@@ -53,12 +57,12 @@ class _AuthHandler extends _Handler {
     buffer.writeInt32(_maxPacketSize);
     buffer.writeByte(_collation);
     buffer.fill(23, 0);
-    buffer.writeNullTerminatedString(_username);
+    buffer.writeNullTerminatedList(encodedUsername);
     buffer.writeByte(hash.length);
     buffer.writeList(hash);
     
     if (_db != null) {
-      buffer.writeNullTerminatedString(_db);
+      buffer.writeNullTerminatedList(encodedDb);
     }
     
     return buffer;

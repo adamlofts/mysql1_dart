@@ -163,26 +163,10 @@ class Buffer {
   }
   
   /**
-   * Writes a null terminated string to the buffer.
-   * The given [string] does not need to contain the terminating null.
-   */
-  void writeNullTerminatedString(String string) {
-    writeNullTerminatedList(encodeUtf8(string));
-  }
-  
-  /**
    * Reads a string from the buffer, terminating when the end of the
    * buffer is reached.
    */
   String readStringToEnd() => readString(_list.length - _readPos);
-  
-  /**
-   * Writes a [string] to the buffer, without any length indicators or
-   * terminating nulls.
-   */  
-  void writeString(String string) {
-    writeList(encodeUtf8(string));
-  }
   
   /**
    * Reads a string of the given [length] from the buffer.
