@@ -38,7 +38,7 @@ class _FieldImpl implements Field {
     _orgName = buffer.readLengthCodedString();
     buffer.skip(1);
     _characterSet = buffer.readInt16();
-    _length = buffer.readInt32();
+    _length = buffer.readUint32();
     _type = buffer.readByte();
     _flags = buffer.readInt16();
     _decimals = buffer.readByte();

@@ -76,17 +76,17 @@ class ListWriter {
     }
     if (value < (2 << 15)) {
       writeByte(0xfc);
-      writeInt16(value);
+      _writeUint16(value);
       return;
     }
     if (value < (2 << 23)) {
       writeByte(0xfd);
-      writeInt24(value);
+      _writeUint24(value);
       return;
     }
     if (value < (2 << 63)) {
       writeByte(0xfe);
-      writeInt64(value);
+      _writeUint64(value);
     }
   }
   
@@ -100,7 +100,7 @@ class ListWriter {
   /**
    * Writes a 16 bit [integer] to the buffer.
    */
-  void writeInt16(int integer) {
+  void _writeUint16(int integer) {
     _list.add(integer & 0xFF);
     _list.add(integer >> 8 & 0xFF);
   }
@@ -108,7 +108,7 @@ class ListWriter {
   /**
    * Writes a 24 bit [integer] to the buffer.
    */
-  void writeInt24(int integer) {
+  void _writeUint24(int integer) {
     _list.add(integer & 0xFF);
     _list.add(integer >> 8 & 0xFF);
     _list.add(integer >> 16 & 0xFF);
@@ -117,7 +117,7 @@ class ListWriter {
   /**
    * Writes a 32 bit [integer] to the buffer.
    */
-  void writeInt32(int integer) {
+  void _writeUint32(int integer) {
     _list.add(integer & 0xFF);
     _list.add(integer >> 8 & 0xFF);
     _list.add(integer >> 16 & 0xFF);
@@ -127,7 +127,7 @@ class ListWriter {
   /**
    * Writes a 64 bit [integer] to the buffer.
    */
-  void writeInt64(int integer) {
+  void _writeUint64(int integer) {
     _list.add(integer & 0xFF);
     _list.add(integer >> 8 & 0xFF);
     _list.add(integer >> 16 & 0xFF);

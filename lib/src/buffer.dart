@@ -191,11 +191,11 @@ class Buffer {
       case 251:
         return null;
       case 252:
-        return readInt16();
+        return readUint16();
       case 253:
-        return readInt24();
+        return readUint24();
       case 254:
-        return readInt64();
+        return readUint64();
     }
   }
 
@@ -209,17 +209,17 @@ class Buffer {
     }
     if (value < (2 << 15)) {
       writeByte(0xfc);
-      writeInt16(value);
+      writeUint16(value);
       return;
     }
     if (value < (2 << 23)) {
       writeByte(0xfd);
-      writeInt24(value);
+      writeUint24(value);
       return;
     }
     if (value < (2 << 63)) {
       writeByte(0xfe);
-      writeInt64(value);
+      writeUint64(value);
     }
   }
 
@@ -243,14 +243,14 @@ class Buffer {
    * Writes a single [byte] to the buffer.
    */ 
   void writeByte(int byte) {
-    _data.setUint8(_writePos++, byte);
+    _data.setInt8(_writePos++, byte);
   }
   
   /**
    * Returns a 16-bit integer, read from the buffer 
    */
   int readInt16() {
-    int result = _data.getUint16(_readPos, Endianness.LITTLE_ENDIAN);
+    int result = _data.getInt16(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 2;
     return result;
   }
@@ -259,6 +259,23 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
+    _data.setInt16(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _writePos += 2;
+  }
+
+  /**
+   * Returns a 16-bit integer, read from the buffer 
+   */
+  int readUint16() {
+    int result = _data.getUint16(_readPos, Endianness.LITTLE_ENDIAN);
+    _readPos += 2;
+    return result;
+  }
+  
+  /**
+   * Writes a 16 bit [integer] to the buffer.
+   */
+  void writeUint16(int integer) {
     _data.setUint16(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 2;
   }
@@ -266,13 +283,13 @@ class Buffer {
   /**
    * Returns a 24-bit integer, read from the buffer.
    */
-  int readInt24() => _list[_readPos++] + (_list[_readPos++] << 8)
+  int readUint24() => _list[_readPos++] + (_list[_readPos++] << 8)
         + (_list[_readPos++] << 16);
 
   /**
    * Writes a 24 bit [integer] to the buffer.
    */
-  void writeInt24(int integer) {
+  void writeUint24(int integer) {
     _list[_writePos++] = integer & 0xFF;
     _list[_writePos++] = integer >> 8 & 0xFF;
     _list[_writePos++] = integer >> 16 & 0xFF;
@@ -282,7 +299,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    int val = _data.getUint32(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getInt32(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 4;
     return val;
   }
@@ -291,6 +308,23 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
+    _data.setInt32(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _writePos += 4;
+  }
+
+  /**
+   * Returns a 32-bit integer, read from the buffer.
+   */
+  int readUint32() {
+    int val = _data.getUint32(_readPos, Endianness.LITTLE_ENDIAN);
+    _readPos += 4;
+    return val;
+  }
+
+  /**
+   * Writes a 32 bit [integer] to the buffer.
+   */
+  void writeUint32(int integer) {
     _data.setUint32(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 4;
   }
@@ -299,7 +333,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    int val = _data.getUint64(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getInt64(_readPos, Endianness.LITTLE_ENDIAN);
     _readPos += 8;
     return val;
   }
@@ -308,6 +342,23 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
+    _data.setInt64(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _writePos += 8;
+  }
+
+  /**
+   * Returns a 64-bit integer, read from the buffer.
+   */
+  int readUint64() {
+    int val = _data.getUint64(_readPos, Endianness.LITTLE_ENDIAN);
+    _readPos += 8;
+    return val;
+  }
+  
+  /**
+   * Writes a 64 bit [integer] to the buffer.
+   */
+  void writeUint64(int integer) {
     _data.setUint64(_writePos, integer, Endianness.LITTLE_ENDIAN);
     _writePos += 8;
   }

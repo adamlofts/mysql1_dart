@@ -14,12 +14,13 @@ part 'integration/one.dart';
 part 'integration/two.dart';
 part 'integration/charset.dart';
 part 'integration/nullmap.dart';
+part 'integration/largeblob.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
-  Logger.root.level = Level.ALL;
-  new Logger("ConnectionPool").level = Level.ALL;
-  new Logger("Query").level = Level.ALL;
+  Logger.root.level = Level.OFF;
+//  new Logger("ConnectionPool").level = Level.ALL;
+//  new Logger("Query").level = Level.ALL;
   var listener = (LogRecord r) {
     var name = r.loggerName;
     if (name.length > 15) {
@@ -43,4 +44,5 @@ void main() {
   runIntTests2(user, password, db, port, host);
   runIntTests3(user, password, db, port, host);
   runIntTests4(user, password, db, port, host);
+  runLargeBlobTests(user, password, db, port, host);
 }
