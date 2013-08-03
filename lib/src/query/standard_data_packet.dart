@@ -6,7 +6,15 @@ class _StandardDataPacket extends Row {
   _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets) :
       values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
-      var s = buffer.readLengthCodedString();
+
+      var s;
+      var list;
+      int length = buffer.readLengthCodedBinary();
+      if (length != null) {
+        list = buffer.readList(length);
+        s = decodeUtf8(list);
+      }
+      
       if (s == null) {
         values[i] = null;
         continue;
@@ -26,7 +34,7 @@ class _StandardDataPacket extends Row {
           break;
         case FIELD_TYPE_BIT: // bit
           var value = 0;
-          for (var num in s.codeUnits) {
+          for (var num in list) {
             value = (value << 8) + num;
           }
           values[i] = value;

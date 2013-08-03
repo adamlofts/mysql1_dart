@@ -73,8 +73,9 @@ class _ExecuteQueryHandler extends _Handler {
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          values.writeLengthCodedBinary(s.length);
-          values.writeList(s.codeUnits);
+          var encoded = encodeUtf8(s);
+          values.writeLengthCodedBinary(encoded.length);
+          values.writeList(encoded);
           
           // TODO: if you send a double value for a decimal field, it doesn't like it
 //          types.add(FIELD_TYPE_FLOAT);
@@ -120,8 +121,9 @@ class _ExecuteQueryHandler extends _Handler {
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          values.writeLengthCodedBinary(s.length);
-          values.writeList(s.codeUnits);
+          var encoded = encodeUtf8(s);
+          values.writeLengthCodedBinary(encoded.length);
+          values.writeList(encoded);
         }
       } else {
         types.add(FIELD_TYPE_NULL);

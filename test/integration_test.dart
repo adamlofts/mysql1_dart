@@ -42,7 +42,7 @@ void main() {
   
   runIntTests(user, password, db, port, host);
   runIntTests2(user, password, db, port, host);
-  runIntTests3(user, password, db, port, host);
-  runIntTests4(user, password, db, port, host);
+  runCharsetTests(user, password, db, port, host);
+  runNullMapTests(user, password, db, port, host);
   runLargeBlobTests(user, password, db, port, host);
 }

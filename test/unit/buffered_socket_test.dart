@@ -40,7 +40,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   
   InternetAddress get address => null;
 
-  void close() {}
+  Future<RawSocket> close() {}
 
   int get port => null;
 

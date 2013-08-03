@@ -36,4 +36,5 @@ void main() {
   runSerializationTests();
   runTypesTests();
   runPreparedStatementTests();
+  runAuthHandlerTests();
 }

@@ -135,7 +135,7 @@ void runIntTests(String user, String password, String db, int port, String host)
           query[i++] = 123.456;
           
           query[i++] = true;
-          query[i++] = [1, 2, 3];
+          query[i++] = 0x010203;//[1, 2, 3];
           query[i++] = 123;
           
           query[i++] = new DateTime.now();
@@ -177,6 +177,8 @@ void runIntTests(String user, String password, String db, int port, String host)
       pool.query('select * from test1').then((results) {
         results.stream.toList().then((list) {
           expect(list.length, equals(1));
+          var row = list.first;
+          expect(row[10], equals(0x010203));
           c.complete();
         });
       });

@@ -1,6 +1,6 @@
 part of integrationtests;
 
-void runIntTests3(String user, String password, String db, int port, String host) {
+void runCharsetTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {

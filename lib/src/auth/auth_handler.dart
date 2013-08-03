@@ -22,7 +22,7 @@ class _AuthHandler extends _Handler {
       hash = <int>[];
     } else {
       var hasher = new SHA1();
-      hasher.add(_password.codeUnits);
+      hasher.add(encodeUtf8(_password));
       var hashedPassword = hasher.close();
       
       hasher = new SHA1();
