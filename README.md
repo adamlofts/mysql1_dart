@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.5.7: Fixed error with large fields.
 * v0.5.6: Hopefully full unicode support, and fixed problem with null values in prepared queries.
 * v0.5.5: Some initial changes for better unicode handling.
 * v0.5.4: Blobs and Texts which are bigger than 250 characters now work.
@@ -103,10 +104,9 @@ Things to do
 * More integration tests
 * DartDoc
 * More Example code
-* Refactor everything a few times, when I think of a nicer way of doing things, or the Dart language changes
 * Use idiomatic dart where possible
 * Geometry type
 * Decimal type should probably use a bigdecimal type of some sort
 * MySQL 4 types (old decimal, anything else?)
 * Test against multiple mysql versions
-* A logo.
+
