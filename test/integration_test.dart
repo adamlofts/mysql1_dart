@@ -6,7 +6,6 @@ import 'package:options_file/options_file.dart';
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:sqljocky/utils.dart';
 

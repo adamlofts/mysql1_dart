@@ -9,7 +9,7 @@ class MySqlClientError extends Error {
   /**
    * Create a [MySqlClientError]
    */
-  const MySqlClientError._(this.message);
+  MySqlClientError._(this.message);
   
   String toString() => "MySQL Client Error: $message";
 }

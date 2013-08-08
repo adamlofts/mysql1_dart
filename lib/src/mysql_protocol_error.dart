@@ -9,7 +9,7 @@ class MySqlProtocolError extends Error {
   /**
    * Create a [MySqlProtocolError]
    */
-  const MySqlProtocolError._(this.message);
+  MySqlProtocolError._(this.message);
 }
 
 

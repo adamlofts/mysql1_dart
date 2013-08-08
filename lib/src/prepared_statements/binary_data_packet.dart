@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _BinaryDataPacket implements Row {
+class _BinaryDataPacket extends Row {
   List<dynamic> values;
   final Logger log;
 
