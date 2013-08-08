@@ -1,7 +1,6 @@
 library list_writer;
 
 import 'package:logging/logging.dart';
-import 'dart:typed_data';
 import 'dart:io';
 
 /**

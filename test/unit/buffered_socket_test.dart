@@ -1,9 +1,6 @@
 library buffered_socket_test;
 
 import 'package:unittest/unittest.dart';
-import 'package:unittest/mock.dart';
-import 'package:logging/logging.dart';
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:async';
 
