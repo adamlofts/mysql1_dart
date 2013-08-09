@@ -2,6 +2,7 @@ part of integrationtests;
 
 void runLargeBlobTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
+  var text;
   group('some tests:', () {
     test('create pool', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
@@ -22,12 +23,12 @@ void runLargeBlobTests(String user, String password, String db, int port, String
     });
     
     test('store data', () {
-      var x = "insert into large (stuff) values ('";
-      while (x.length < 50000) {
-        x += "asdfghjkqaewrpoiuwretlkjahsdflkjashguaihefalkjehfauiwhefklajshdfkj";
+      text = "";
+      while (text.length < 50000) {
+        text += "asdfghjkqaewrpoiuwretlkjahsdflkjashguaihefalkjehfauiwhefklajshdfkj";
       }
-      x += "')";
-      pool.query(x).then(expectAsync1((Results results) {
+      var sql = "insert into large (stuff) values ('$text')";
+      pool.query(sql).then(expectAsync1((Results results) {
         expect(1, equals(1));
       }));
     });
@@ -36,6 +37,7 @@ void runLargeBlobTests(String user, String password, String db, int port, String
       var c = new Completer();
       pool.query('select * from large').then(expectAsync1((Results results) {
         results.stream.listen((row) {
+          expect(row[0].toString(), equals(text));
           // shouldn't get exception here
         }, onDone: () {
           c.complete();
