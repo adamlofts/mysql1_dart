@@ -3,22 +3,9 @@ part of integrationtests;
 void runNullMapTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('some tests:', () {
-    test('create pool', () {
+    test('setup', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
-      expect(pool, isNotNull);
-    });
-    
-    test('dropTables', () {
-      new TableDropper(pool, ["nullmap"]).dropTables().then(expectAsync1((_) {
-        expect(1, equals(1)); // not quite sure of the async testing stuff yet
-      }));
-    });
-    
-    test('create tables', () {
-      pool.query("create table nullmap ("
-        "a text, b text, c text, d text)").then(expectAsync1((Results results) {
-          expect(results.stream, equals(null));
-        }));
+      return setup(pool, "nullmap", "create table nullmap (a text, b text, c text, d text)");
     });
     
     test('store data', () {

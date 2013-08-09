@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:sqljocky/utils.dart';
 
+part 'integration/base.dart';
 part 'integration/one.dart';
 part 'integration/two.dart';
 part 'integration/charset.dart';
