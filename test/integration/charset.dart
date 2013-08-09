@@ -23,7 +23,6 @@ void runCharsetTests(String user, String password, String db, int port, String h
 
     test('close connection', () {
       pool.close();
-      expect(1, equals(1));
     });
   });
 }
