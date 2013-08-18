@@ -15,6 +15,7 @@ part 'integration/two.dart';
 part 'integration/charset.dart';
 part 'integration/nullmap.dart';
 part 'integration/largeblob.dart';
+part 'integration/numbers.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -44,5 +45,5 @@ void main() {
   runIntTests2(user, password, db, port, host);
   runCharsetTests(user, password, db, port, host);
   runNullMapTests(user, password, db, port, host);
-  runLargeBlobTests(user, password, db, port, host);
+  runNumberTests(user, password, db, port, host);
 }

@@ -3,7 +3,7 @@ part of integrationtests;
 void runLargeBlobTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   var text;
-  group('some tests:', () {
+  group('large blob tests:', () {
     test('setup', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
       text = "";
