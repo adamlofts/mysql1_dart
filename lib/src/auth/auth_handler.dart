@@ -53,8 +53,8 @@ class _AuthHandler extends _Handler {
     
     var buffer = new Buffer(size);
     buffer.seekWrite(0);
-    buffer.writeInt32(clientFlags);
-    buffer.writeInt32(_maxPacketSize);
+    buffer.writeUint32(clientFlags);
+    buffer.writeUint32(_maxPacketSize);
     buffer.writeByte(_collation);
     buffer.fill(23, 0);
     buffer.writeNullTerminatedList(encodedUsername);

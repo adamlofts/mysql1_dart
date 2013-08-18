@@ -13,10 +13,10 @@ class _ParameterPacket {
   int get length => _length;
   
   _ParameterPacket(Buffer buffer) {
-    _type = buffer.readInt16();
-    _flags = buffer.readInt16();
+    _type = buffer.readUint16();
+    _flags = buffer.readUint16();
     _decimals = buffer.readByte();
-    _length = buffer.readInt32();
+    _length = buffer.readUint32();
   }
 }
 

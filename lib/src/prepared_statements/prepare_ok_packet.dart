@@ -13,11 +13,11 @@ class _PrepareOkPacket {
   
   _PrepareOkPacket(Buffer buffer) {
     buffer.seek(1);
-    _statementHandlerId = buffer.readInt32();
-    _columnCount = buffer.readInt16();
-    _parameterCount = buffer.readInt16();
+    _statementHandlerId = buffer.readUint32();
+    _columnCount = buffer.readUint16();
+    _parameterCount = buffer.readUint16();
     buffer.skip(1);
-    _warningCount = buffer.readInt16();
+    _warningCount = buffer.readUint16();
   }
   
   String toString() => "OK: statement handler id: $_statementHandlerId, columns: $_columnCount, "

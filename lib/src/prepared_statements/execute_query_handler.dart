@@ -133,9 +133,9 @@ class _ExecuteQueryHandler extends _Handler {
     
     var buffer = new Buffer(10 + nullMap.length + 1 + _values.length * 2 + values.list.length);
     buffer.writeByte(COM_STMT_EXECUTE);
-    buffer.writeInt32(_preparedQuery.statementHandlerId);
+    buffer.writeUint32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
-    buffer.writeInt32(1);
+    buffer.writeUint32(1);
     buffer.writeList(nullMap);
     if (!_executed) {
       buffer.writeByte(1);

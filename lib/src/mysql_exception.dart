@@ -14,7 +14,7 @@ class MySqlException implements Exception {
    */
   MySqlException._(Buffer buffer) {
     buffer.seek(1);
-    _errorNumber = buffer.readInt16();
+    _errorNumber = buffer.readUint16();
     buffer.skip(1);
     _sqlState = buffer.readString(5);
     _message = buffer.readStringToEnd();

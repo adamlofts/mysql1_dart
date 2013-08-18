@@ -37,13 +37,13 @@ class _HandshakeHandler extends _Handler {
     response.seek(0);
     protocolVersion = response.readByte();
     serverVersion = response.readNullTerminatedString();
-    threadId = response.readInt32();
+    threadId = response.readUint32();
     var scrambleBuffer1 = response.readList(8);
     response.skip(1);
-    serverCapabilities = response.readInt16();
+    serverCapabilities = response.readUint16();
     serverLanguage = response.readByte();
-    serverStatus = response.readInt16();
-    serverCapabilities += (response.readInt16() << 0x10);
+    serverStatus = response.readUint16();
+    serverCapabilities += (response.readUint16() << 0x10);
     scrambleLength = response.readByte();
     response.skip(10);
     var scrambleBuffer2 = response.readNullTerminatedList();

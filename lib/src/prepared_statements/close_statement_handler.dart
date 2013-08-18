@@ -10,7 +10,7 @@ class _CloseStatementHandler extends _Handler {
   Buffer createRequest() {
     var buffer = new Buffer(5);
     buffer.writeByte(COM_STMT_CLOSE);
-    buffer.writeInt32(_handle);
+    buffer.writeUint32(_handle);
     return buffer;
   }
 }
