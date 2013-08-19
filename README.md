@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.5.8: Handle errors in the utils package properly. Pre-emptively fixed some errors, wrote more tests.
 * v0.5.7: Fixed error with large fields.
 * v0.5.6: Hopefully full unicode support, and fixed problem with null values in prepared queries.
 * v0.5.5: Some initial changes for better unicode handling.
@@ -85,8 +86,6 @@ Licence
 
 It is released under the GPL, because it uses a modified part of mysql's include/mysql_com.h in constants.dart, 
 which is licensed under the GPL. I would prefer to release it under the BSD Licence, but there you go.
-
-Includes some hashing code from the closure library, which contains its own copyright notice.
 
 The Name
 --------
