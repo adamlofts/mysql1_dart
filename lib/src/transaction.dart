@@ -63,11 +63,11 @@ class Transaction extends Object with _ConnectionHelpers implements QueriableCon
     return query._prepare().then((preparedQuery) => new Future.value(query));
   }
   
-  Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
+  Future<Results> prepareExecute(String sql, List parameters) {
     _checkFinished();
     return prepare(sql)
       .then((query) {
-        return query.execute()
+        return query.execute(parameters)
           .then((results) {
             //TODO is it right to close here? Query might still be running
             query.close();

@@ -60,8 +60,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         for (var i = 0; i < 200; i++) {
           longstring += "x";
         }
-        query[0] = new Blob.fromString(longstring);
-        return query.execute();
+        return query.execute([new Blob.fromString(longstring)]);
       }).then((results) {
         expect(results.affectedRows, equals(1));
         
@@ -84,8 +83,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         for (var i = 0; i < 2000; i++) {
           longstring += "x";
         }
-        query[0] = new Blob.fromString(longstring);
-        return query.execute();
+        return query.execute([new Blob.fromString(longstring)]);
       }).then((results) {
         expect(results.affectedRows, equals(1));
         
@@ -122,48 +120,48 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?)").then((Query query) {
-          var i = 0;
-          query[i++] = 126;
-          query[i++] = 164;
-          query[i++] = 165;
-          query[i++] = 166;
-          query[i++] = 167;
+          var values = [];
+          values.add(126);
+          values.add(164);
+          values.add(165);
+          values.add(166);
+          values.add(167);
           
-          query[i++] = 592;
-          query[i++] = 123.456;
-          query[i++] = 123.456;
-          query[i++] = 123.456;
+          values.add(592);
+          values.add(123.456);
+          values.add(123.456);
+          values.add(123.456);
           
-          query[i++] = true;
-          query[i++] = 0x010203;//[1, 2, 3];
-          query[i++] = 123;
+          values.add(true);
+          values.add(0x010203);//[1, 2, 3]);
+          values.add(123);
           
-          query[i++] = new DateTime.now();
-          query[i++] = new DateTime.now();
-          query[i++] = new DateTime.now();
-          query[i++] = new DateTime.now();
-          query[i++] = 2012;
+          values.add(new DateTime.now());
+          values.add(new DateTime.now());
+          values.add(new DateTime.now());
+          values.add(new DateTime.now());
+          values.add(2012);
           
-          query[i++] = "Hello";
-          query[i++] = "Hey";
-          query[i++] = "Hello there";
-          query[i++] = "Good morning";
-          query[i++] = "Habari boss";
-          query[i++] = "Bonjour";
+          values.add("Hello");
+          values.add("Hey");
+          values.add("Hello there");
+          values.add("Good morning");
+          values.add("Habari boss");
+          values.add("Bonjour");
     
-          query[i++] = [65, 66, 67, 68];
-          query[i++] = [65, 66, 67, 68];
-          query[i++] = [65, 66, 67, 68];
-          query[i++] = [65, 66, 67, 68];
-          query[i++] = [65, 66, 67, 68];
-          query[i++] = [65, 66, 67, 68];
+          values.add([65, 66, 67, 68]);
+          values.add([65, 66, 67, 68]);
+          values.add([65, 66, 67, 68]);
+          values.add([65, 66, 67, 68]);
+          values.add([65, 66, 67, 68]);
+          values.add([65, 66, 67, 68]);
           
-          query[i++] = "a";
-          query[i++] = "a,b";
+          values.add("a");
+          values.add("a,b");
                  
           print("executing");
           expect(1, equals(1)); // put some real expectations here
-          return query.execute();
+          return query.execute(values);
         }).then((results) {
           print("updated ${results.affectedRows} ${results.insertId}");
           expect(results.affectedRows, equals(1));
@@ -190,10 +188,8 @@ void runIntTests(String user, String password, String db, int port, String host)
       Query preparedQuery;
       pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
         preparedQuery = query;
-        query[0] = 127;
-        query[1] = "123456789.987654321";
         expect(1, equals(1)); // put some real expectations here
-        return query.execute();
+        return query.execute([127, "123456789.987654321"]);
       }).then((results) {
         preparedQuery.close();
         c.complete();

@@ -2,7 +2,7 @@ part of sqljocky;
 
 /**
  * Query is created by ConnectionPool.prepare(sql) and Transaction.prepare(sql). It holds
- * a prepared query. Set parameters on it using the square bracket operators.
+ * a prepared query.
  */
 class Query extends Object with _ConnectionHelpers {
   final ConnectionPool _pool;
@@ -10,7 +10,6 @@ class Query extends Object with _ConnectionHelpers {
   final String sql;
   final Logger log;
   final _inTransaction;
-  List<dynamic> _values;
   bool _executed = false;
   
   Query._internal(this._pool, this.sql) :
@@ -56,7 +55,6 @@ class Query extends Object with _ConnectionHelpers {
     }
 
     log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
-    _setUpValues(preparedQuery);
     c.complete(preparedQuery);
     return true;
   }
@@ -70,7 +68,6 @@ class Query extends Object with _ConnectionHelpers {
         log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
         preparedQuery.cnx = cnx;
         cnx.putPreparedQueryInCache(sql, preparedQuery);
-        _setUpValues(preparedQuery);
         c.complete(preparedQuery);
       })
       .catchError((e) {
@@ -78,12 +75,6 @@ class Query extends Object with _ConnectionHelpers {
       });
   }
   
-  _setUpValues(_PreparedQuery preparedQuery) {
-    if (_values == null) {
-      _values = new List<dynamic>(preparedQuery.parameters.length);
-    }
-  }
-      
   void close() {
     _pool._closeQuery(this, _inTransaction);
   }
@@ -92,10 +83,10 @@ class Query extends Object with _ConnectionHelpers {
   /**
    * Executes the query, returning a future [Results] object.
    */
-  Future<Results> execute() {
+  Future<Results> execute(List values) {
     return _prepare()
       .then((preparedQuery) {
-        return _execute(preparedQuery)
+        return _execute(preparedQuery, values)
           .then((Results results) {
             var c = new Completer<Results>();
             if (results.stream != null) {
@@ -113,10 +104,10 @@ class Query extends Object with _ConnectionHelpers {
       });
   }
   
-  Future<Results> _execute(_PreparedQuery preparedQuery) {
+  Future<Results> _execute(_PreparedQuery preparedQuery, List values) {
     log.finest("About to execute");
     var c = new Completer<Results>();
-    var handler = new _ExecuteQueryHandler(preparedQuery, _executed, _values);
+    var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.processHandler(handler)
       .then((results) {
         log.finest("Prepared query got results");
@@ -135,7 +126,7 @@ class Query extends Object with _ConnectionHelpers {
    * The [Results] in the list contain their rows in the [Results.rows] field, rather than in the
    * [Results.stream] field.
    */
-  Future<List<Results>> executeMulti(List<List<dynamic>> parameters) {
+  Future<List<Results>> executeMulti(List<List> parameters) {
     return _prepare()
       .then((preparedQuery) {
         var c = new Completer<List<Results>>();
@@ -144,8 +135,7 @@ class Query extends Object with _ConnectionHelpers {
         
         executeQuery(int i) {
           log.fine("Executing query, loop $i");
-          _values.setRange(0, _values.length, parameters[i]);
-          _execute(preparedQuery)
+          _execute(preparedQuery, parameters[i])
             .then((Results results) {
               if (results.stream != null) {
                 results.toResultsList().then((newResults) {
@@ -177,19 +167,6 @@ class Query extends Object with _ConnectionHelpers {
       });
   }
   
-  /**
-   * Get a current parameter value.
-   */
-  dynamic operator [](int pos) => _values[pos];
-
-  /**
-   * Set a parameter value.
-   */
-  void operator []=(int index, dynamic value) {
-    _values[index] = value;
-    _executed = false;
-  }
-
   _releaseConnection(_Connection cnx) {
     if (!_inTransaction) {
       _pool._releaseConnection(cnx);

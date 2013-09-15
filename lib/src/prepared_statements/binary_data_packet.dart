@@ -1,7 +1,7 @@
 part of sqljocky;
 
 class _BinaryDataPacket extends Row {
-  List<dynamic> values;
+  List values;
   final Logger log;
 
   _BinaryDataPacket._forTests() : log = new Logger("BinaryDataPacket");
@@ -24,7 +24,7 @@ class _BinaryDataPacket extends Row {
       }
     }
     
-    values = new List<dynamic>(fields.length);
+    values = new List(fields.length);
     for (var i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
       if (nullMap[i]) {

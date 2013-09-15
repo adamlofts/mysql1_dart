@@ -12,12 +12,12 @@ class _ExecuteQueryHandler extends _Handler {
   StreamController<Row> _streamController;
 
   final _PreparedQuery _preparedQuery;
-  final List<dynamic> _values;
+  final List _values;
   _OkPacket _okPacket;
   bool _executed;
   
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed,
-    List<dynamic> this._values) {
+    List this._values) {
     _fieldPackets = <_FieldImpl>[];
     log = new Logger("ExecuteQueryHandler");
   }

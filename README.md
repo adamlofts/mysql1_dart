@@ -8,6 +8,10 @@ in the near future.
 News
 ----
 
+* v0.6.0: Change prepared statement syntax. Values must now be passed into the execute() method
+in an array. This change was made because otherwise prepared statements couldn't be used
+asynchronously correctly - if you used the same prepared query object for multiple queries 
+'at the same time', the wrong values could get used.
 * v0.5.8: Handle errors in the utils package properly. Pre-emptively fixed some errors, wrote more tests.
 * v0.5.7: Fixed error with large fields.
 * v0.5.6: Hopefully full unicode support, and fixed problem with null values in prepared queries.
@@ -46,10 +50,7 @@ Prepare a query:
 
 Execute the query:
 
-	query[0] = 'Bob';
-	query[1] = 'bob@bob.com';
-	query[2] = 25;
-	query.execute().then((result) {...});
+	query.execute(['Bob', 'bob@bob.com', 25]).then((result) {...});
 
 An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
 

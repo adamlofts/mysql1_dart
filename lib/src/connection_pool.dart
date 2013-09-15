@@ -320,12 +320,9 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * Returns a [Future<Results>] that completes when the query has been
    * executed.
    */
-  Future<Results> prepareExecute(String sql, List<dynamic> parameters) {
+  Future<Results> prepareExecute(String sql, List parameters) {
     return prepare(sql).then((query) {
-      for (int i = 0; i < parameters.length; i++) {
-        query[i] = parameters[i];
-      }
-      return query.execute();
+      return query.execute(parameters);
     });
   }
   

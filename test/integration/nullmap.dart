@@ -11,11 +11,7 @@ void runNullMapTests(String user, String password, String db, int port, String h
     test('store data', () {
       var c = new Completer();
       pool.prepare('insert into nullmap (a, b, c, d) values (?, ?, ?, ?)').then((query) {
-        query[0] = null;
-        query[1] = 'b';
-        query[2] = 'c';
-        query[3] = 'd';
-        query.execute().then((Results results) {
+        query.execute([null, 'b', 'c', 'd']).then((Results results) {
           c.complete();
         });
       });
