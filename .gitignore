@@ -9,3 +9,6 @@ packages
 pubspec.lock
 *~
 out
+javaspeed/build
+javaspeed/gradle
+javaspeed/.gradle

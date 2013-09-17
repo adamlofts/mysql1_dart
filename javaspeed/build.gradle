@@ -1,0 +1,13 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
+}
