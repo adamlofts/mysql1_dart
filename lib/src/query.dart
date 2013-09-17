@@ -83,10 +83,10 @@ class Query extends Object with _ConnectionHelpers {
   /**
    * Executes the query, returning a future [Results] object.
    */
-  Future<Results> execute(List values) {
+  Future<Results> execute([List values]) {
     return _prepare()
       .then((preparedQuery) {
-        return _execute(preparedQuery, values)
+        return _execute(preparedQuery, values == null ? [] : values)
           .then((Results results) {
             var c = new Completer<Results>();
             if (results.stream != null) {
