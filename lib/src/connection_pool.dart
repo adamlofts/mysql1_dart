@@ -167,9 +167,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
           .then((results) {
           log.fine("Got query results on #${cnx.number} for: ${sql}");
             if (results.stream != null) {
-              (results as _ResultsImpl)._stream = results.stream.transform(new _StreamDoneTransformer(() {
+              (results as _ResultsImpl)._stream = results.stream.transform(new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {
                 _releaseConnection(cnx);
                 _reuseConnection(cnx);
+                sink.close();
               }));
               c.complete(results);
             } else {

@@ -21,26 +21,16 @@ class _ResultsImpl extends Results {
     _fields = new UnmodifiableListView<Field>(fields);
     _rows = new UnmodifiableListView<Row>(rows);
     if (stream != null) {
-      this._stream = stream.transform(new _StreamDoneTransformer(() {
+      this._stream = stream.transform(new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {
         if (onDone != null) {
           onDone();
         }
+        sink.close();
       }));
     }
   }
 
   Future<Results> toResultsList() {
     return _stream.toList().then((list) => new _ResultsImpl(insertId, affectedRows, fields, rows: list));
-  }
-}
-
-class _StreamDoneTransformer extends StreamEventTransformer<Row, Row> {
-  var handler;
-
-  _StreamDoneTransformer(this.handler);
-
-  void handleDone(EventSink<Row> sink) {
-    handler();
-    sink.close();
   }
 }
