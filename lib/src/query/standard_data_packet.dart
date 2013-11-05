@@ -12,7 +12,7 @@ class _StandardDataPacket extends Row {
       int length = buffer.readLengthCodedBinary();
       if (length != null) {
         list = buffer.readList(length);
-        s = decodeUtf8(list);
+        s = UTF8.decode(list);
       }
       
       if (s == null) {

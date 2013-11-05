@@ -8,6 +8,7 @@ in the near future.
 News
 ----
 
+* v0.6.2: Support for latest SDK (removal of dart:utf8 library)
 * v0.6.1: Support for latest SDK
 * v0.6.0: Change prepared statement syntax. Values must now be passed into the execute() method
 in an array. This change was made because otherwise prepared statements couldn't be used

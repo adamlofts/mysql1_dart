@@ -8,7 +8,7 @@ class _UseDbHandler extends _Handler {
   }
   
   Buffer createRequest() {
-    var encoded = encodeUtf8(_dbName);
+    var encoded = UTF8.encode(_dbName);
     var buffer = new Buffer(encoded.length + 1);
     buffer.writeByte(COM_INIT_DB);
     buffer.writeList(encoded);

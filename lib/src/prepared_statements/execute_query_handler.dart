@@ -73,7 +73,7 @@ class _ExecuteQueryHandler extends _Handler {
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          var encoded = encodeUtf8(s);
+          var encoded = UTF8.encode(s);
           values.writeLengthCodedBinary(encoded.length);
           values.writeList(encoded);
           
@@ -121,7 +121,7 @@ class _ExecuteQueryHandler extends _Handler {
           var s = value.toString();
           types.add(FIELD_TYPE_VARCHAR);
           types.add(0);
-          var encoded = encodeUtf8(s);
+          var encoded = UTF8.encode(s);
           values.writeLengthCodedBinary(encoded.length);
           values.writeList(encoded);
         }

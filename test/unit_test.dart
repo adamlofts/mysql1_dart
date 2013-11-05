@@ -1,7 +1,7 @@
 library sqljocky;
 
 import 'dart:typed_data';
-import 'dart:utf';
+import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';

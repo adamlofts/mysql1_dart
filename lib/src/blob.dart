@@ -29,7 +29,7 @@ class Blob {
     if (_string != null) {
       return _string;
     }
-    return decodeUtf8(_bytes);
+    return UTF8.decode(_bytes);
   }
   
   /**
@@ -39,7 +39,7 @@ class Blob {
     if (_bytes != null) {
       return _bytes;
     }
-    return encodeUtf8(_string);
+    return UTF8.encode(_string);
   }
   
   int get hashCode {
@@ -47,7 +47,7 @@ class Blob {
       if (_string != null) {
         _hashcode = _string.hashCode;
       } else {
-        _hashcode = decodeUtf8(_bytes).hashCode;
+        _hashcode = UTF8.decode(_bytes).hashCode;
       }
     }
     return _hashcode;

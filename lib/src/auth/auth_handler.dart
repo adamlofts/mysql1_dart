@@ -22,7 +22,7 @@ class _AuthHandler extends _Handler {
       hash = <int>[];
     } else {
       var hasher = new SHA1();
-      hasher.add(encodeUtf8(_password));
+      hasher.add(UTF8.encode(_password));
       var hashedPassword = hasher.close();
       
       hasher = new SHA1();
@@ -40,13 +40,13 @@ class _AuthHandler extends _Handler {
       }
     }
 
-    var encodedUsername = encodeUtf8(_username);
+    var encodedUsername = UTF8.encode(_username);
     var encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = _clientFlags;
     if (_db != null) {
-      encodedDb = encodeUtf8(_db);
+      encodedDb = UTF8.encode(_db);
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }

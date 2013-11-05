@@ -3,7 +3,7 @@ library sqljocky;
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:utf';
+import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';

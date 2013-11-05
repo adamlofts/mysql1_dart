@@ -3,7 +3,7 @@ library buffer;
 import 'package:logging/logging.dart';
 import 'dart:typed_data';
 import 'dart:io';
-import 'dart:utf';
+import 'dart:convert';
 
 /**
  * This provides methods to read and write strings, lists and
@@ -159,7 +159,7 @@ class Buffer {
    * Returns the string, without a terminating null.
    */
   String readNullTerminatedString() {
-    return decodeUtf8(readNullTerminatedList());
+    return UTF8.decode(readNullTerminatedList());
   }
   
   /**
@@ -172,7 +172,7 @@ class Buffer {
    * Reads a string of the given [length] from the buffer.
    */
   String readString(int length) {
-    String s = decodeUtf8(_list.sublist(_readPos, _readPos + length));
+    String s = UTF8.decode(_list.sublist(_readPos, _readPos + length));
     _readPos += length;
     return s;
   }
