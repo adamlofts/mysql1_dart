@@ -99,13 +99,7 @@ class Query extends Object with _ConnectionHelpers {
         return _execute(preparedQuery, values == null ? [] : values)
           .then((Results results) {
             log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
-            var c = new Completer<Results>();
-            if (results.stream != null) {
-              c.complete(results);
-            } else {
-              _releaseReuseComplete(preparedQuery.cnx, c, results);
-            }
-            return c.future;
+            return results;
           });
       });
   }
@@ -151,7 +145,7 @@ class Query extends Object with _ConnectionHelpers {
                   if (i < parameters.length - 1) {
                     executeQuery(i + 1);
                   } else {
-                    _releaseReuseComplete(preparedQuery.cnx, c, resultList);
+                    c.complete(resultList);
                   }
                 });
               } else {
@@ -160,7 +154,7 @@ class Query extends Object with _ConnectionHelpers {
                 if (i < parameters.length - 1) {
                   executeQuery(i + 1);
                 } else {
-                  _releaseReuseComplete(preparedQuery.cnx, c, resultList);
+                  c.complete(resultList);
                 }
               }
             })
@@ -172,21 +166,6 @@ class Query extends Object with _ConnectionHelpers {
         executeQuery(0);
         return c.future;
       });
-  }
-  
-  _releaseConnection(_Connection cnx) {
-    if (!_inTransaction) {
-      _pool._releaseConnection(cnx);
-    }
-  }
-
-  /**
-   * Attempt to reuse a connection for a queued operation
-   */
-  _reuseConnection(_Connection cnx) {
-    if (!_inTransaction) {
-      _pool._reuseConnection(cnx);
-    }
   }
   
   _removeConnection(_Connection cnx) {

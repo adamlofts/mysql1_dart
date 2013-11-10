@@ -144,8 +144,10 @@ class Example {
         });
         return c.future;
       }).then((results) {
+        print("committing");
         return trans.commit();
       }).then((_) {
+        print("committed");
         insertedIds.addAll(ids);
         completer.complete(null);
       }, onError: (e) {
