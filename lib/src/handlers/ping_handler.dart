@@ -6,6 +6,7 @@ class _PingHandler extends _Handler {
   }
   
   Buffer createRequest() {
+    log.finest("Creating buffer for PingHandler");
     var buffer = new Buffer(1);
     buffer.writeByte(COM_PING);
     return buffer;

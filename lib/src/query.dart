@@ -31,15 +31,23 @@ class Query extends Object with _ConnectionHelpers {
     return _pool._getConnection();
   }
 
-  Future<_PreparedQuery> _prepare() {
+  Future<_PreparedQuery> _prepare(bool retainConnection) {
     log.fine("Getting prepared query for: $sql");
     
     return _getConnection()
       .then((cnx) {
+        cnx.autoRelease = !retainConnection;
         var c = new Completer<_PreparedQuery>();
         log.fine("Got cnx#${cnx.number}");
-        if (!_useCachedQuery(cnx, c)) {
-          _prepareAndCacheQuery(cnx, c);
+        if (_useCachedQuery(cnx, c)) {
+          if (!retainConnection) {
+            // didn't actually use the connection, so the auto-release
+            // mechanism will never get fired, so we'd better give up
+            // on the connection now
+            cnx.release();
+          }
+        } else {
+          _prepareAndCacheQuery(cnx, c, retainConnection);
         }
         return c.future;
       });
@@ -59,10 +67,11 @@ class Query extends Object with _ConnectionHelpers {
     return true;
   }
   
-  void _prepareAndCacheQuery(_Connection cnx, Completer c) {
+  void _prepareAndCacheQuery(_Connection cnx, Completer c, retainConnection) {
     log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new _PrepareHandler(sql);
     cnx.use();
+    cnx.autoRelease = !retainConnection;
     cnx.processHandler(handler)
       .then((preparedQuery) {
         log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
@@ -79,22 +88,19 @@ class Query extends Object with _ConnectionHelpers {
     _pool._closeQuery(this, _inTransaction);
   }
   
-  //TODO: maybe have execute(Transaction) and execute(ConnectionPool)/**
   /**
    * Executes the query, returning a future [Results] object.
    */
   Future<Results> execute([List values]) {
-    return _prepare()
+    log.fine("Prepare...");
+    return _prepare(true)
       .then((preparedQuery) {
+        log.fine("Prepared, now to execute");
         return _execute(preparedQuery, values == null ? [] : values)
           .then((Results results) {
+            log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
             var c = new Completer<Results>();
             if (results.stream != null) {
-              //TODO can the result transform itself?
-              (results as _ResultsImpl).onDone = () {
-                _releaseConnection(preparedQuery.cnx);
-                _reuseConnection(preparedQuery.cnx);
-              };
               c.complete(results);
             } else {
               _releaseReuseComplete(preparedQuery.cnx, c, results);
@@ -108,6 +114,7 @@ class Query extends Object with _ConnectionHelpers {
     log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
+    preparedQuery.cnx.autoRelease = true;
     preparedQuery.cnx.processHandler(handler)
       .then((results) {
         log.finest("Prepared query got results");
@@ -127,7 +134,7 @@ class Query extends Object with _ConnectionHelpers {
    * [Results.stream] field.
    */
   Future<List<Results>> executeMulti(List<List> parameters) {
-    return _prepare()
+    return _prepare(true)
       .then((preparedQuery) {
         var c = new Completer<List<Results>>();
         log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");

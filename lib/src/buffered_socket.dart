@@ -31,9 +31,9 @@ class BufferedSocket {
   int _readOffset;
   Completer<Buffer> _readCompleter;
 
-  BufferedSocket._internal(this._socket, this.onDataReady, this.onDone, this.onError)
+  BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
-    _socket.listen(_onData, onError: (error) {
+    var subscription = _socket.listen(_onData, onError: (error) {
       if (onError != null) {
         onError(error);
       }
@@ -44,8 +44,14 @@ class BufferedSocket {
     }, cancelOnError: true);
   }
   
-  static Future<BufferedSocket> connect(String host, int port, {DataReadyHandler onDataReady,
-      DoneHandler onDone, ErrorHandler onError, SocketFactory socketFactory}) {
+  /**
+   * [socketFactory] is for unit testing.
+   */
+  static Future<BufferedSocket> connect(String host, int port,
+      {DataReadyHandler onDataReady,
+      DoneHandler onDone, 
+      ErrorHandler onError, 
+      SocketFactory socketFactory}) {
     var c = new Completer<BufferedSocket>();
     var future;
     if (socketFactory != null) {
@@ -53,7 +59,7 @@ class BufferedSocket {
     } else {
       future = RawSocket.connect(host, port);
     }
-    future.then((socket) => c.complete(new BufferedSocket._internal(socket, onDataReady, onDone, onError)),
+    future.then((socket) => c.complete(new BufferedSocket._(socket, onDataReady, onDone, onError)),
         onError: onError);
     return c.future;
   }
@@ -111,8 +117,9 @@ class BufferedSocket {
 
   /**
    * Reads into [buffer] from the socket, and returns the same buffer in a [Future] which
-   * completes when enough bytes have been read to fill the buffer. 
-   * This may not be called while there is still a read ongoing, but may be called before
+   * completes when enough bytes have been read to fill the buffer.
+   *  
+   * This must not be called while there is still a read ongoing, but may be called before
    * onDataReady is called, in which case onDataReady will not be called when data arrives,
    * and the read will start instead.
    */

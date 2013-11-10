@@ -34,3 +34,36 @@ class _ResultsImpl extends Results {
     return _stream.toList().then((list) => new _ResultsImpl(insertId, affectedRows, fields, rows: list));
   }
 }
+
+class MyTransformer implements StreamTransformer {
+  var onDoneOrCancelled;
+  
+  MyTransformer(this.onDoneOrCancelled);
+  
+  Stream bind(Stream stream) {
+    StreamController<Row> controller;
+    StreamSubscription<Row> subscription;
+
+    controller = new StreamController(onCancel: () {
+        return new Future.microtask(() {
+          onDoneOrCancelled(controller);
+        });
+      },
+      onPause: () {
+        subscription.pause();
+      },
+      onResume: () {
+        subscription.resume();
+      });
+    
+    subscription = stream.listen((data) {
+        controller.add(data);
+      },
+      onError: controller.addError,
+      onDone: () {
+        onDoneOrCancelled(controller);
+      });
+    
+    return controller.stream;
+  }
+}

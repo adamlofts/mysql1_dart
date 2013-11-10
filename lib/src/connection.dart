@@ -26,6 +26,7 @@ class _Connection {
   final int number;
   
   bool _inUse;
+  bool autoRelease;
   final Map<String, _PreparedQuery> _preparedQueryCache;
 
   _Connection(this._pool, this.number) :
@@ -46,6 +47,7 @@ class _Connection {
   void use() {
     lifecycleLog.finest("Use connection #$number");
     _inUse = true;
+    autoRelease = true;
   }
   
   void release() {
@@ -118,7 +120,7 @@ class _Connection {
         _sendBuffer(_handler.createRequest());
       }
       if (response.finished) {
-        _handler = null;
+        _finishAndReuse();
       }
       if (response.hasResult) {
         if (_completer.isCompleted) {
@@ -127,9 +129,27 @@ class _Connection {
         _completer.complete(response.result);
       }
     } catch (e) {
-      _handler = null;
+      autoRelease = true;
+      _finishAndReuse();
       log.fine("completing with exception: $e");
       _completer.completeError(e);
+    }
+  }
+  
+  void _finishAndReuse() {
+    if (autoRelease) { 
+      log.finest("Response finished for #$number, setting handler to null and waiting to release and reuse");
+      new Future.delayed(new Duration(seconds: 0), () {
+        if (_inUse) {
+          log.finest("Releasing and reusing connection #$number");
+          _inUse = false;
+          _handler = null;
+          _pool._newReuseConnection(this);
+        }
+      });
+    } else {
+      log.finest("Response finished for #$number. Not auto-releasing");
+      _handler = null;
     }
   }
   
@@ -154,7 +174,7 @@ class _Connection {
    */
   Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) {
     if (_handler != null) {
-      throw new MySqlClientError._("Cannot process a request for $handler while a request is already in progress for $_handler");
+      throw new MySqlClientError._("Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _packetNumber = -1;
     _completer = new Completer<dynamic>();

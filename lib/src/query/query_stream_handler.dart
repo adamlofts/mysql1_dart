@@ -33,7 +33,9 @@ class _QueryStreamHandler extends _Handler {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
-          _streamController = new StreamController<Row>();
+          _streamController = new StreamController<Row>(onCancel: () {
+            _streamController.close();
+          });
           return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS) {
           // the connection's _handler field needs to have been nulled out before the stream is closed,

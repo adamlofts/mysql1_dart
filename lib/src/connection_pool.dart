@@ -45,8 +45,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     log.finest("Getting a connection");
     var c = new Completer<_Connection>();
 
-    var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
-    log.finest("Number of in-use connections: $inUseCount");
+    if (log.isLoggable(Level.FINEST)) {
+      var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
+      log.finest("Number of in-use connections: $inUseCount");
+    }
     
     var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse, orElse: () => null);
     if (cnx != null) {
@@ -66,6 +68,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   _createConnection(Completer c) {
     var cnx = new _Connection(this, _pool.length);
     cnx.use();
+    cnx.autoRelease = false;
     _pool.add(cnx);
     cnx.connect(
         host: _host, 
@@ -74,6 +77,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         password: _password, 
         db: _db)
       .then((_) {
+        cnx.autoRelease = true;
         log.finest("Logged in on cnx#${cnx.number}");
         c.complete(cnx);
       })
@@ -87,8 +91,11 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   }
   
   _releaseConnection(_Connection cnx) {
-    cnx.release();
-    log.finest("Finished with cnx#${cnx.number}: marked as not in use");
+    log.finest("Old release connection, not doing anything for #${cnx.number}");
+  }
+  
+  _reuseConnection(_Connection cnx) {
+    log.finest("Old reuse connection, not doing anything for #${cnx.number}");
   }
   
   /**
@@ -102,7 +109,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * 
    * //TODO rename to something like processQueuedOperations??
    */
-  _reuseConnection(_Connection cnx) {
+  _newReuseConnection(_Connection cnx) {
     if (!_pool.contains(cnx)) {
       log.warning("reuseConnection called for unmanaged connection");
       return;
@@ -167,14 +174,12 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
           .then((results) {
           log.fine("Got query results on #${cnx.number} for: ${sql}");
             if (results.stream != null) {
-              (results as _ResultsImpl)._stream = results.stream.transform(new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {
-                _releaseConnection(cnx);
-                _reuseConnection(cnx);
-                sink.close();
+              (results as _ResultsImpl)._stream = results.stream.transform(new MyTransformer((controller) {
+                controller.close();
               }));
               c.complete(results);
             } else {
-              _releaseReuseComplete(cnx, c, results);
+              c.complete(results);
             }
           })
           .catchError((e) {
@@ -194,10 +199,8 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       .then((cnx) {
         return cnx.processHandler(new _PingHandler())
           .then((x) {
-            var c = new Completer();
             log.fine("Pinged");
-            _releaseReuseComplete(cnx, c, x);
-            return c.future;
+            return x;
           });
       });
   }
@@ -215,7 +218,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         cnx.processHandler(new _DebugHandler())
           .then((x) {
             log.fine("Message sent");
-            _releaseReuseComplete(cnx, c, x);
+            return x;
           })
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);
@@ -232,19 +235,8 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         _waitUntilReady(cnx).then((_) {
           log.finest("Connection ready - closing query: ${q.sql}");
           var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
-          cnx.processHandler(handler, noResponse: true)
-            .then((_) {
-              if (!retain) {
-                _releaseConnection(cnx);
-                _reuseConnection(cnx);
-              }
-            })
-            .catchError((e) {
-              if (!retain) {
-                _releaseConnection(cnx);
-                _reuseConnection(cnx);
-              }
-            });
+          cnx.autoRelease = !retain;
+          cnx.processHandler(handler, noResponse: true);
         });
       }
     }
@@ -271,12 +263,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    */
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
-    return query._prepare()
+    return query._prepare(false)
       .then((preparedQuery) {
-        var c = new Completer<Query>();
-        log.info("Got value count");
-        _releaseReuseComplete(preparedQuery.cnx, c, query);
-        return c.future;
+        log.info("Got prepared query");
+        return query;
       });
   }
   
@@ -351,8 +341,6 @@ abstract class _ConnectionHelpers {
   
   _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
     if (e is MySqlException) {
-      _releaseConnection(cnx);
-      _reuseConnection(cnx);
     } else {
       _removeConnection(cnx);
     }

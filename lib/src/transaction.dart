@@ -60,7 +60,7 @@ class Transaction extends Object with _ConnectionHelpers implements QueriableCon
   Future<Query> prepare(String sql) {
     _checkFinished();
     var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
-    return query._prepare().then((preparedQuery) => new Future.value(query));
+    return query._prepare(true).then((preparedQuery) => new Future.value(query));
   }
   
   Future<Results> prepareExecute(String sql, List parameters) {

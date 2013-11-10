@@ -8,26 +8,7 @@ in the near future.
 News
 ----
 
-* v0.6.2: Support for latest SDK (removal of dart:utf8 library)
-* v0.6.1: Support for latest SDK
-* v0.6.0: Change prepared statement syntax. Values must now be passed into the execute() method
-in an array. This change was made because otherwise prepared statements couldn't be used
-asynchronously correctly - if you used the same prepared query object for multiple queries 
-'at the same time', the wrong values could get used.
-* v0.5.8: Handle errors in the utils package properly. Pre-emptively fixed some errors, wrote more tests.
-* v0.5.7: Fixed error with large fields.
-* v0.5.6: Hopefully full unicode support, and fixed problem with null values in prepared queries.
-* v0.5.5: Some initial changes for better unicode handling.
-* v0.5.4: Blobs and Texts which are bigger than 250 characters now work.
-* v0.5.3: Make ConnectionPool and Transaction implement QueriableConnection, and improved tests.
-* v0.5.2: Fix for new SDK
-* v0.5.1: Made an internal class private
-* v0.5.0: Breaking change: Now uses streams to return results.
-* v0.4.1: Major refactoring so that only the parts of sqljocky which are supposed to be exposed are.
-* v0.4.0: Support for M4.
-* v0.3.0: Support for M3. Bit fields are now numbers, not lists. Dates now use the DateTime class instead of the Date class. Use new IO classes.
-* v0.2.0: Support for the new SDK. 
-* v0.1.3: SQLJocky now uses a connection pooling model, so the API has changed somewhat.
+The changelog has now been moved to CHANGELOG.md
 
 Usage
 -----

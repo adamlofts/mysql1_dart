@@ -45,7 +45,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
 
   void set readEventsEnabled(bool value) {}
 
-  String get remoteHost => null;
+  InternetAddress get remoteAddress => null;
 
   int get remotePort => null; 
 
