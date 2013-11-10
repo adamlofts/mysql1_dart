@@ -90,14 +90,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     _pool.remove(cnx);
   }
   
-  _releaseConnection(_Connection cnx) {
-    log.finest("Old release connection, not doing anything for #${cnx.number}");
-  }
-  
-  _reuseConnection(_Connection cnx) {
-    log.finest("Old reuse connection, not doing anything for #${cnx.number}");
-  }
-  
   /**
    * Attempts to continue using a connection. If the connection isn't managed
    * by this pool, or if the connection is already in use, nothing happens.
@@ -334,12 +326,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 }
 
 abstract class _ConnectionHelpers {
-  _releaseReuseComplete(_Connection cnx, Completer c, dynamic result) {
-    _releaseConnection(cnx);
-    _reuseConnection(cnx);
-    c.complete(result);
-  }
-  
   _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
     if (e is MySqlException) {
     } else {
@@ -348,8 +334,6 @@ abstract class _ConnectionHelpers {
     c.completeError(e);
   }
   
-  _releaseConnection(cnx);
-  _reuseConnection(cnx);
   _removeConnection(cnx);
 }
 
