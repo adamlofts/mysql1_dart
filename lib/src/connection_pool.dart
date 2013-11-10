@@ -286,6 +286,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     
     return _getConnection()
       .then((cnx) {
+        cnx.inTransaction = true;
         var c = new Completer<Transaction>();
         var sql;
         if (consistent) {

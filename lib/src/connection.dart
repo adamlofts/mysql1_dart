@@ -27,6 +27,7 @@ class _Connection {
   
   bool _inUse;
   bool autoRelease;
+  bool inTransaction = false;
   final Map<String, _PreparedQuery> _preparedQueryCache;
 
   _Connection(this._pool, this.number) :
@@ -137,7 +138,7 @@ class _Connection {
   }
   
   void _finishAndReuse() {
-    if (autoRelease) { 
+    if (autoRelease && !inTransaction) { 
       log.finest("Response finished for #$number, setting handler to null and waiting to release and reuse");
       new Future.delayed(new Duration(seconds: 0), () {
         if (_inUse) {

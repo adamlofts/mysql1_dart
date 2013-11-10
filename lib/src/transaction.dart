@@ -26,9 +26,10 @@ class Transaction extends Object with _ConnectionHelpers implements QueriableCon
     var handler = new _QueryStreamHandler("commit");
     return _cnx.processHandler(handler)
       .then((results) {
-        var c = new Completer();
-        _releaseReuseComplete(_cnx, c, results);
-        return c.future;
+        _cnx.inTransaction = false;
+        _cnx.release();
+        _pool._newReuseConnection(_cnx);
+        return results;
       });
   }
   
@@ -43,9 +44,10 @@ class Transaction extends Object with _ConnectionHelpers implements QueriableCon
     var handler = new _QueryStreamHandler("rollback");
     return _cnx.processHandler(handler)
       .then((results) {
-        var c = new Completer();
-        _releaseReuseComplete(_cnx, c, results);
-        return c.future;
+        _cnx.inTransaction = false;
+        _cnx.release();
+        _pool._newReuseConnection(_cnx);
+        return results;
       });
   }
 
