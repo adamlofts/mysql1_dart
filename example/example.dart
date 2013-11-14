@@ -98,7 +98,7 @@ class Example {
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
-      result.stream.listen((row) {
+      result.listen((row) {
         if (row[3] == null) {
           print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
         } else {
