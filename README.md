@@ -23,7 +23,7 @@ Execute a query:
 
 Use the results:
 
-	results.stream.listen((row) {
+	results.listen((row) {
 		print('Name: ${row[0]}, email: ${row[1]}');
 	}
 

@@ -4,7 +4,6 @@ import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
 
 import 'dart:async';
-import 'dart:math';
 
 class SpeedTest {
   static const SIMPLE_INSERTS = 200;

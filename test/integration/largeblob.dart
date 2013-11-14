@@ -17,7 +17,7 @@ void runLargeBlobTests(String user, String password, String db, int port, String
     test('read data', () {
       var c = new Completer();
       pool.query('select * from large').then(expectAsync1((Results results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0].toString(), equals(text));
           // shouldn't get exception here
         }, onDone: () {

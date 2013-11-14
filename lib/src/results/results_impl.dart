@@ -1,37 +1,31 @@
 part of sqljocky;
 
-typedef _OnDone();
-
-class _ResultsImpl extends Results {
+class _ResultsImpl extends StreamView<Row> implements Results {
   final int insertId;
   final int affectedRows;
   List<Field> _fields;
-  List<Row> _rows;
-  Stream<Row> _stream;
-  _OnDone onDone;
 
-  List<Row> get rows => _rows;
   List<Field> get fields => _fields;
-  Stream<Row> get stream => _stream;
 
-  _ResultsImpl(this.insertId, this.affectedRows,
+  factory _ResultsImpl(int insertId, int affectedRows,
       List<Field> fields,
-      {Stream<Row> stream: null,
-      List<Row> rows: null}) {
-    _fields = new UnmodifiableListView<Field>(fields);
-    _rows = new UnmodifiableListView<Row>(rows);
+      {Stream<Row> stream: null}) {
     if (stream != null) {
-      this._stream = stream.transform(new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {
-        if (onDone != null) {
-          onDone();
-        }
+      var newStream = stream.transform(new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {
         sink.close();
+      })).transform(new MyTransformer((controller) {
+        controller.close();
       }));
+      return new _ResultsImpl._fromStream(insertId, affectedRows, fields, newStream);
+    } else {
+      var newStream = new Stream.fromIterable(new List<Row>());
+      return new _ResultsImpl._fromStream(insertId, affectedRows, fields, newStream);
     }
   }
-
-  Future<Results> toResultsList() {
-    return _stream.toList().then((list) => new _ResultsImpl(insertId, affectedRows, fields, rows: list));
+  
+  _ResultsImpl._fromStream(this.insertId, this.affectedRows, List<Field> fields,
+    Stream<Row> stream) : super(stream) {
+    _fields = new UnmodifiableListView<Field>(fields);
   }
 }
 

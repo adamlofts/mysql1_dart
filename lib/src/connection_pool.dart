@@ -165,14 +165,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
           log.fine("Got query results on #${cnx.number} for: ${sql}");
-            if (results.stream != null) {
-              (results as _ResultsImpl)._stream = results.stream.transform(new MyTransformer((controller) {
-                controller.close();
-              }));
-              c.complete(results);
-            } else {
-              c.complete(results);
-            }
+            c.complete(results);
           })
           .catchError((e) {
             _releaseReuseCompleteError(cnx, c, e);

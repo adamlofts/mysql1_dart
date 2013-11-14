@@ -166,7 +166,7 @@ class Example {
         'from people p '
         'left join pets t on t.owner_id = p.id').then((result) {
       print("got results");
-      result.stream.toList().then((list) {
+      result.toList().then((list) {
         if (list != null) {
           for (var row in list) {
             if (row[3] == null) {

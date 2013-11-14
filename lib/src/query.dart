@@ -138,24 +138,12 @@ class Query extends Object with _ConnectionHelpers {
           log.fine("Executing query, loop $i");
           _execute(preparedQuery, parameters[i])
             .then((Results results) {
-              if (results.stream != null) {
-                results.toResultsList().then((newResults) {
-                  log.fine("Got results, loop $i");
-                  resultList.add(newResults);
-                  if (i < parameters.length - 1) {
-                    executeQuery(i + 1);
-                  } else {
-                    c.complete(resultList);
-                  }
-                });
+              log.fine("Got results, loop $i");
+              resultList.add(results);
+              if (i < parameters.length - 1) {
+                executeQuery(i + 1);
               } else {
-                log.fine("Got results, loop $i");
-                resultList.add(results);
-                if (i < parameters.length - 1) {
-                  executeQuery(i + 1);
-                } else {
-                  c.complete(resultList);
-                }
+                c.complete(resultList);
               }
             })
             .catchError((e) {

@@ -12,7 +12,7 @@ void runCharsetTests(String user, String password, String db, int port, String h
     test('read data', () {
       var c = new Completer();
       pool.query('select * from cset').then(expectAsync1((Results results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0].toString(), equals("здрасти"));
         }, onDone: () {
           c.complete();

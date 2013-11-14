@@ -24,7 +24,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
     test('minimum values', () {
       var c = new Completer();
       pool.query('select atinyint, asmallint, amediumint, aint, abigint from nums').then(expectAsync1((Results results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0], equals(-128));
           expect(row[1], equals(-32768));
           expect(row[2], equals(-8388608));
@@ -45,7 +45,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "127, 32767, 8388607, 2147483647, 9223372036854775807, "
           "0, 0, 0, 0)", 
           'select atinyint, asmallint, amediumint, aint, abigint from nums').then((results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0], equals(127));
           expect(row[1], equals(32767));
           expect(row[2], equals(8388607));
@@ -63,7 +63,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "insert into nums (utinyint, usmallint, umediumint, uint, ubigint) values ("
           "255, 65535, 12777215, 4294967295, 18446744073709551615)",
           'select atinyint, asmallint, amediumint, aint, abigint from nums').then((results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0], equals(255));
           expect(row[1], equals(65535));
           expect(row[2], equals(12777215));
@@ -81,7 +81,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "insert into nums (adecimal) values ("
           "99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0], equals(99999999999999999999.9999999999));
         }, onDone: () {
           c.complete();
@@ -95,7 +95,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "insert into nums (adecimal) values ("
           "-99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {
-        results.stream.listen((row) {
+        results.listen((row) {
           expect(row[0], equals(-99999999999999999999.9999999999));
         }, onDone: () {
           c.complete();

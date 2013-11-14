@@ -15,7 +15,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     test('create tables', () {
-      pool.query("create table test1 ("
+      return pool.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
         "adecimal decimal(20,10), afloat float, adouble double, areal real, "
         "aboolean boolean, abit bit(20), aserial serial, "
@@ -24,16 +24,20 @@ void runIntTests(String user, String password, String db, int port, String host)
         "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
         "abinary binary(10), avarbinary varbinary(10), "
         "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then(expectAsync1((Results results) {
-          expect(results.stream, equals(null));
-        }));
+        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then((Results results) {
+          expect(results.affectedRows, equals(0));
+          expect(results.insertId, equals(0));
+          return results.toList().then((list) {
+            expect(list, hasLength(0));
+          });
+        });
     });
     
     test('show tables', () {
       var c = new Completer();
       pool.query("show tables").then(expectAsync1((Results results) {
         print("tables");
-        results.stream.listen((row) {
+        results.listen((row) {
           print("table: $row");
         }, onDone: () {
           c.complete();
@@ -67,7 +71,7 @@ void runIntTests(String user, String password, String db, int port, String host)
 //        return pool.query("select atext from test1 where length(atext) > 1000");
         return pool.query("select atext from test1");
       }).then((results) {
-        return results.stream.toList();
+        return results.toList();
       }).then((list) {
         expect(list.length, equals(1));
         expect((list[0][0] as Blob).toString().length, equals(200));
@@ -90,7 +94,7 @@ void runIntTests(String user, String password, String db, int port, String host)
 //        return pool.query("select atext from test1 where length(atext) > 1000");
         return pool.query("select atext from test1");
       }).then((results) {
-        return results.stream.toList();
+        return results.toList();
       }).then((list) {
         expect(list.length, equals(2));
         expect((list[1][0] as Blob).toString().length, equals(2000));
@@ -173,7 +177,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     test('select everything', () {
       var c = new Completer();
       pool.query('select * from test1').then((results) {
-        results.stream.toList().then((list) {
+        results.toList().then((list) {
           expect(list.length, equals(1));
           var row = list.first;
           expect(row[10], equals(0x010203));
@@ -200,7 +204,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     test('select stuff', () {
       var c = new Completer();
       pool.query("select atinyint, adecimal from test1").then((results) {
-        results.stream.toList().then((list) {
+        results.toList().then((list) {
           var row = list[0];
           expect(row[0], equals(127));
           expect(row[1], equals(123456789.987654321));
@@ -227,7 +231,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       pool.prepareExecute('select * from test1', []).then((results) {
         print("----------- prepared results ---------------");
         preparedFields = results.fields;
-        results.stream.toList().then((list) {
+        results.toList().then((list) {
           values = list[0];
           for (var i = 0; i < results.fields.length; i++) {
             var field = results.fields[i];
@@ -243,7 +247,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       var c = new Completer();
       pool.query('select * from test1').then((results) {
         print("----------- query results ---------------");
-        results.stream.toList().then((list) {
+        results.toList().then((list) {
           var row = list[0];
           for (var i = 0; i < results.fields.length; i++) {
             var field = results.fields[i];
@@ -298,7 +302,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12344", []);
       }).then((results) {
-        results.stream.toList().then((list) {
+        results.toList().then((list) {
           expect(list.length, equals(1));
           values = list[0];
           expect(values[0].toString(), equals("ABC\u0000DEF"));
@@ -314,7 +318,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.query("select atext from test1 where aint = 12345");
       }).then((results) {
-        return results.stream.toList();
+        return results.toList();
       }).then((results) {
         expect(results.length, equals(1));
         values = results[0];
@@ -329,7 +333,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         expect(1, equals(1)); // put some real expectations here
         return pool.prepareExecute("select atext from test1 where aint = 12345", []);
       }).then((results) {
-        return results.stream.toList();
+        return results.toList();
       }).then((results) {
         expect(results.length, equals(1));
         values = results[0];
@@ -352,7 +356,7 @@ Future showResults(Results results) {
     fieldNames.add("${field.name}:${field.type}");
   }
   print(fieldNames);
-  results.stream.listen((row) {
+  results.listen((row) {
     print(row);
   }, onDone: () {
     c.complete(null);
