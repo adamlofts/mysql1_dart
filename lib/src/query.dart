@@ -1,26 +1,30 @@
 part of sqljocky;
 
 /**
- * Query is created by ConnectionPool.prepare(sql) and Transaction.prepare(sql). It holds
+ * Query is created by `ConnectionPool.prepare(sql)` and `Transaction.prepare(sql)`. It holds
  * a prepared query.
+ * 
+ * In MySQL, a query must be prepared on a specific connection. If you execute this
+ * query and a connection is used from the pool which doesn't yet have the prepared query
+ * in its cache, it will first prepare the query on that connection before executing it.
  */
 class Query extends Object with _ConnectionHelpers {
   final ConnectionPool _pool;
   final _Connection _cnx;
   final String sql;
-  final Logger log;
+  final Logger _log;
   final _inTransaction;
   bool _executed = false;
   
   Query._internal(this._pool, this.sql) :
       _cnx = null,
       _inTransaction = false,
-      log = new Logger("Query");
+      _log = new Logger("Query");
 
   Query._forTransaction(this._pool, _Connection cnx, this.sql) :
       _cnx = cnx,
       _inTransaction = true,
-      log = new Logger("Query");
+      _log = new Logger("Query");
   
   Future<_Connection> _getConnection() {
     if (_cnx != null) {
@@ -32,13 +36,13 @@ class Query extends Object with _ConnectionHelpers {
   }
 
   Future<_PreparedQuery> _prepare(bool retainConnection) {
-    log.fine("Getting prepared query for: $sql");
+    _log.fine("Getting prepared query for: $sql");
     
     return _getConnection()
       .then((cnx) {
         cnx.autoRelease = !retainConnection;
         var c = new Completer<_PreparedQuery>();
-        log.fine("Got cnx#${cnx.number}");
+        _log.fine("Got cnx#${cnx.number}");
         if (_useCachedQuery(cnx, c)) {
           if (!retainConnection) {
             // didn't actually use the connection, so the auto-release
@@ -62,19 +66,19 @@ class Query extends Object with _ConnectionHelpers {
       return false;
     }
 
-    log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
+    _log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
     c.complete(preparedQuery);
     return true;
   }
   
   void _prepareAndCacheQuery(_Connection cnx, Completer c, retainConnection) {
-    log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
+    _log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new _PrepareHandler(sql);
     cnx.use();
     cnx.autoRelease = !retainConnection;
     cnx.processHandler(handler)
       .then((preparedQuery) {
-        log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
+        _log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
         preparedQuery.cnx = cnx;
         cnx.putPreparedQueryInCache(sql, preparedQuery);
         c.complete(preparedQuery);
@@ -83,7 +87,8 @@ class Query extends Object with _ConnectionHelpers {
         _releaseReuseCompleteError(cnx, c, e);
       });
   }
-  
+
+  /// Closes this query and removes it from all connections in the pool.
   void close() {
     _pool._closeQuery(this, _inTransaction);
   }
@@ -92,26 +97,26 @@ class Query extends Object with _ConnectionHelpers {
    * Executes the query, returning a future [Results] object.
    */
   Future<Results> execute([List values]) {
-    log.fine("Prepare...");
+    _log.fine("Prepare...");
     return _prepare(true)
       .then((preparedQuery) {
-        log.fine("Prepared, now to execute");
+        _log.fine("Prepared, now to execute");
         return _execute(preparedQuery, values == null ? [] : values)
           .then((Results results) {
-            log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
+            _log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
             return results;
           });
       });
   }
   
   Future<Results> _execute(_PreparedQuery preparedQuery, List values) {
-    log.finest("About to execute");
+    _log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = true;
     preparedQuery.cnx.processHandler(handler)
       .then((results) {
-        log.finest("Prepared query got results");
+        _log.finest("Prepared query got results");
         c.complete(results);
       })
       .catchError((e) {
@@ -131,14 +136,14 @@ class Query extends Object with _ConnectionHelpers {
     return _prepare(true)
       .then((preparedQuery) {
         var c = new Completer<List<Results>>();
-        log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
+        _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
         var resultList = new List<Results>();
         
         executeQuery(int i) {
-          log.fine("Executing query, loop $i");
+          _log.fine("Executing query, loop $i");
           _execute(preparedQuery, parameters[i])
             .then((Results results) {
-              log.fine("Got results, loop $i");
+              _log.fine("Got results, loop $i");
               resultList.add(results);
               if (i < parameters.length - 1) {
                 executeQuery(i + 1);

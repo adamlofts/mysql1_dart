@@ -1,12 +1,20 @@
 part of sqljocky;
 
+/**
+ * An exception which is returned by the MySQL server.
+ */
 class MySqlException implements Exception {
   int _errorNumber;
   String _sqlState;
   String _message;
   
+  /// The MySQL error number
   int get errorNumber => _errorNumber;
+  
+  /// A five character ANSI SQLSTATE value
   String get sqlState => _sqlState;
+  
+  /// A textual description of the error
   String get message => _message;
   
   /**

@@ -6,7 +6,7 @@ part of sqljocky;
  * free. 
  */
 class ConnectionPool extends Object with _ConnectionHelpers implements QueriableConnection {
-  final Logger log;
+  final Logger _log;
 
   final String _host;
   final int _port;
@@ -39,27 +39,27 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         _password = password,
         _db = db,
         _max = max,
-        log = new Logger("ConnectionPool");
+        _log = new Logger("ConnectionPool");
   
   Future<_Connection> _getConnection() {
-    log.finest("Getting a connection");
+    _log.finest("Getting a connection");
     var c = new Completer<_Connection>();
 
-    if (log.isLoggable(Level.FINEST)) {
+    if (_log.isLoggable(Level.FINEST)) {
       var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
-      log.finest("Number of in-use connections: $inUseCount");
+      _log.finest("Number of in-use connections: $inUseCount");
     }
     
     var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse, orElse: () => null);
     if (cnx != null) {
-      log.finest("Using open pooled cnx#${cnx.number}");
+      _log.finest("Using open pooled cnx#${cnx.number}");
       cnx.use();
       c.complete(cnx);
     } else if (_pool.length < _max) {
-      log.finest("Creating new pooled cnx#${_pool.length}");
+      _log.finest("Creating new pooled cnx#${_pool.length}");
       _createConnection(c);
     } else {
-      log.finest("Waiting for an available connection");
+      _log.finest("Waiting for an available connection");
       _pendingConnections.add(c);
     }
     return c.future;
@@ -78,7 +78,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         db: _db)
       .then((_) {
         cnx.autoRelease = true;
-        log.finest("Logged in on cnx#${cnx.number}");
+        _log.finest("Logged in on cnx#${cnx.number}");
         c.complete(cnx);
       })
       .catchError((e) {
@@ -103,17 +103,17 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    */
   _newReuseConnection(_Connection cnx) {
     if (!_pool.contains(cnx)) {
-      log.warning("reuseConnection called for unmanaged connection");
+      _log.warning("reuseConnection called for unmanaged connection");
       return;
     }
     
     if (cnx.inUse) {
-      log.finest("cnx#${cnx.number} already reused");
+      _log.finest("cnx#${cnx.number} already reused");
       return;
     }
     
     if (_pendingConnections.length > 0) {
-      log.finest("Reusing cnx#${cnx.number} for a queued operation");
+      _log.finest("Reusing cnx#${cnx.number} for a queued operation");
       var c = _pendingConnections.removeFirst();
       cnx.use();
       c.complete(cnx);
@@ -151,20 +151,16 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     }
   }
 
-  /**
-   * Executes the [sql] query as soon as a connection is available, returning
-   * a [Future<Results>] that completes when the results start to become available.
-   */
   Future<Results> query(String sql) {
-    log.info("Running query: ${sql}");
+    _log.info("Running query: ${sql}");
 
     return _getConnection()
       .then((cnx) {
         var c = new Completer<Results>();
-        log.fine("Got cnx#${cnx.number} for query");
+        _log.fine("Got cnx#${cnx.number} for query");
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
-          log.fine("Got query results on #${cnx.number} for: ${sql}");
+          _log.fine("Got query results on #${cnx.number} for: ${sql}");
             c.complete(results);
           })
           .catchError((e) {
@@ -178,13 +174,13 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * Pings the server. Returns a [Future] that completes when the server replies.
    */
   Future ping() {
-    log.info("Pinging server");
+    _log.info("Pinging server");
     
     return _getConnection()
       .then((cnx) {
         return cnx.processHandler(new _PingHandler())
           .then((x) {
-            log.fine("Pinged");
+            _log.fine("Pinged");
             return x;
           });
       });
@@ -195,14 +191,14 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * when the server replies.
    */
   Future debug() {
-    log.info("Sending debug message");
+    _log.info("Sending debug message");
     
     return _getConnection()
       .then((cnx) {
         var c = new Completer();
         cnx.processHandler(new _DebugHandler())
           .then((x) {
-            log.fine("Message sent");
+            _log.fine("Message sent");
             return x;
           })
           .catchError((e) {
@@ -213,12 +209,12 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   }
   
   void _closeQuery(Query q, bool retain) {
-    log.finest("Closing query: ${q.sql}");
+    _log.finest("Closing query: ${q.sql}");
     for (var cnx in _pool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
       if (preparedQuery != null) {
         _waitUntilReady(cnx).then((_) {
-          log.finest("Connection ready - closing query: ${q.sql}");
+          _log.finest("Connection ready - closing query: ${q.sql}");
           var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
           cnx.autoRelease = !retain;
           cnx.processHandler(handler, noResponse: true);
@@ -242,32 +238,28 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     return c.future;
   }
 
-  /**
-   * Prepares a query with the given [sql]. Returns a [Future<Query>] that
-   * completes when the query has been prepared.
-   */
   Future<Query> prepare(String sql) {
     var query = new Query._internal(this, sql);
     return query._prepare(false)
       .then((preparedQuery) {
-        log.info("Got prepared query");
+        _log.info("Got prepared query");
         return query;
       });
   }
   
   /**
-   * Starts a transaction. Returns a [Future<Transaction>] that completes
+   * Starts a transaction. Returns a [Future]<[Transaction]> that completes
    * when the transaction has been started. If [consistent] is true, the
    * transaction is started with consistent snapshot. A transaction holds
    * onto its connection until closed (committed or rolled back). You
-   * must use this method rather than query('start transaction') otherwise
+   * must use this method rather than `query('start transaction')` otherwise
    * subsequent queries may get executed on other connections which are not
    * in the transaction. Likewise, you must use the [Transaction.commit]
    * and [Transaction.rollback] methods to commit and roll back, otherwise
    * the connection will not be released.
    */
   Future<Transaction> startTransaction({bool consistent: false}) {
-    log.info("Starting transaction");
+    _log.info("Starting transaction");
     
     return _getConnection()
       .then((cnx) {
@@ -281,7 +273,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         }
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
-            log.fine("Transaction started on cnx#${cnx.number}");
+            _log.fine("Transaction started on cnx#${cnx.number}");
             var transaction = new Transaction._internal(cnx, this);
             c.complete(transaction);
           })
@@ -292,11 +284,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       });
   }
   
-  /**
-   * Prepares and executes the [sql] with the given list of [parameters].
-   * Returns a [Future<Results>] that completes when the query has been
-   * executed.
-   */
   Future<Results> prepareExecute(String sql, List parameters) {
     return prepare(sql).then((query) {
       return query.execute(parameters);
@@ -331,7 +318,22 @@ abstract class _ConnectionHelpers {
 }
 
 abstract class QueriableConnection {
+  /**
+   * Executes the [sql] query, returning a [Future]<[Results]> that completes 
+   * when the results start to become available.
+   */
   Future<Results> query(String sql);
+  
+  /**
+   * Prepares a query with the given [sql]. Returns a [Future<Query>] that
+   * completes when the query has been prepared.
+   */
   Future<Query> prepare(String sql);
+
+  /**
+   * Prepares and executes the [sql] with the given list of [parameters].
+   * Returns a [Future]<[Results]> that completes when the query has been
+   * executed.
+   */
   Future<Results> prepareExecute(String sql, List<dynamic> parameters);
 }

@@ -1,7 +1,7 @@
 part of sqljocky;
 
 /**
- * [MySqlClientError] is thrown when the client is used improperly.
+ * An error which is thrown when the client is used improperly.
  */
 class MySqlClientError extends Error {
   final String message;
