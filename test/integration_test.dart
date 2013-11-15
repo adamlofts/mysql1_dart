@@ -16,6 +16,7 @@ part 'integration/charset.dart';
 part 'integration/nullmap.dart';
 part 'integration/largeblob.dart';
 part 'integration/numbers.dart';
+part 'integration/stream.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -46,4 +47,5 @@ void main() {
   runCharsetTests(user, password, db, port, host);
   runNullMapTests(user, password, db, port, host);
   runNumberTests(user, password, db, port, host);
+  runStreamTests(user, password, db, port, host);
 }
