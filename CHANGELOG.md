@@ -2,6 +2,7 @@ Changelog
 =========
 
 v0.8.0
+------
 * Breaking change: Results no longer has a 'stream' property - it now implements Stream itself.
 As a result, it also no longer has a 'rows' property, or a 'toResultsList()' method - you
 can use 'toList()' to convert it into a list instead.
