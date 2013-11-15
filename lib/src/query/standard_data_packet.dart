@@ -2,8 +2,9 @@ part of sqljocky;
 
 class _StandardDataPacket extends Row {
   final List<dynamic> values;
+  final Map<Symbol, int> _fieldIndex;
   
-  _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets) :
+  _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets, this._fieldIndex) :
       values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
 
@@ -77,6 +78,17 @@ class _StandardDataPacket extends Row {
 
   void set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
+  }
+  
+  noSuchMethod(Invocation invocation) {
+    var name = invocation.memberName;
+    if (invocation.isGetter) {
+      var i = _fieldIndex[name];
+      if (i != null) {
+        return values[i];
+      }
+    }
+    return super.noSuchMethod(invocation);
   }
   
   String toString() => "Value: $values";

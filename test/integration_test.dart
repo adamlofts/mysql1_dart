@@ -17,6 +17,7 @@ part 'integration/nullmap.dart';
 part 'integration/largeblob.dart';
 part 'integration/numbers.dart';
 part 'integration/stream.dart';
+part 'integration/row.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -48,4 +49,5 @@ void main() {
   runNullMapTests(user, password, db, port, host);
   runNumberTests(user, password, db, port, host);
   runStreamTests(user, password, db, port, host);
+  runRowTests(user, password, db, port, host);
 }

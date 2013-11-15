@@ -10,6 +10,7 @@ class _QueryStreamHandler extends _Handler {
   _OkPacket _okPacket;
   _ResultSetHeaderPacket _resultSetHeaderPacket;
   List<_FieldImpl> _fieldPackets;
+  Map<Symbol, int> _fieldIndex;
 
   StreamController<Row> _streamController;
   
@@ -36,6 +37,14 @@ class _QueryStreamHandler extends _Handler {
           _streamController = new StreamController<Row>(onCancel: () {
             _streamController.close();
           });
+          var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
+          _fieldIndex = new Map<Symbol, int>();
+          for (var i = 0; i < _fieldPackets.length; i++) {
+            var name = _fieldPackets[i].name;
+            if (identifierPattern.hasMatch(name)) {
+              _fieldIndex[new Symbol(name)] = i;
+            }
+          }
           return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS) {
           // the connection's _handler field needs to have been nulled out before the stream is closed,
@@ -57,7 +66,7 @@ class _QueryStreamHandler extends _Handler {
           _fieldPackets.add(fieldPacket);
           break;
         case STATE_ROW_PACKETS:
-          var dataPacket = new _StandardDataPacket(response, _fieldPackets);
+          var dataPacket = new _StandardDataPacket(response, _fieldPackets, _fieldIndex);
           log.fine(dataPacket.toString());
           _streamController.add(dataPacket);
           break;
