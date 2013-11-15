@@ -2,8 +2,8 @@ SQLJocky
 ========
 
 This is a MySQL connector for the Dart programming language. It isn't finished, but should
-work for most normal use. Expect this code to change though, possibly massively, 
-in the near future.
+work for most normal use. The API is getting reasonably close to where I want it to
+be now, so hopefully there shouldn't be too many breaking changes in the future.
 
 News
 ----
@@ -25,6 +25,12 @@ Use the results:
 
 	results.listen((row) {
 		print('Name: ${row[0]}, email: ${row[1]}');
+	}
+	
+Or access the fields by name:
+
+	results.listen((row) {
+		print('Name: ${row.name}, email: ${row.email}');
 	}
 
 Prepare a query:

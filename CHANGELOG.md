@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.8.1
+------
+* Can now access fields by name.
+
 v0.8.0
 ------
 * Breaking change: Results no longer has a 'stream' property - it now implements Stream itself.
