@@ -26,7 +26,7 @@ class _QueryStreamHandler extends _Handler {
     buffer.writeList(encoded);
     return buffer;
   }
-
+  
   _HandlerResponse processResponse(Buffer response) {
     log.fine("Processing query response");
     var packet = checkResponse(response);
@@ -37,14 +37,7 @@ class _QueryStreamHandler extends _Handler {
           _streamController = new StreamController<Row>(onCancel: () {
             _streamController.close();
           });
-          var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
-          _fieldIndex = new Map<Symbol, int>();
-          for (var i = 0; i < _fieldPackets.length; i++) {
-            var name = _fieldPackets[i].name;
-            if (identifierPattern.hasMatch(name)) {
-              _fieldIndex[new Symbol(name)] = i;
-            }
-          }
+          this._fieldIndex = _createFieldIndex();
           return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS) {
           // the connection's _handler field needs to have been nulled out before the stream is closed,
@@ -84,5 +77,17 @@ class _QueryStreamHandler extends _Handler {
       return new _HandlerResponse(finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
     }
     return _HandlerResponse.notFinished;
+  }
+
+  Map<Symbol,int> _createFieldIndex() {
+    var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
+    var fieldIndex = new Map<Symbol, int>();
+    for (var i = 0; i < _fieldPackets.length; i++) {
+      var name = _fieldPackets[i].name;
+      if (identifierPattern.hasMatch(name)) {
+        fieldIndex[new Symbol(name)] = i;
+      }
+    }
+    return fieldIndex;
   }
 }

@@ -68,6 +68,8 @@ class _StandardDataPacket extends Row {
     }
   }
 
+  _StandardDataPacket._forTests(this.values, this._fieldIndex);
+  
   int get length => values.length;
 
   dynamic operator[](int index) => values[index];
