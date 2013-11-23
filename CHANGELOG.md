@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.8.3
+------
+* Fixed connection retention error in Query.executeMulti
+
 v0.8.1
 ------
 * Can now access fields by name.
