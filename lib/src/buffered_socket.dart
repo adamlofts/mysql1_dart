@@ -42,6 +42,7 @@ class BufferedSocket {
     }, onDone: () {
       if (onDone != null) {
         onDone();
+        _closed = true;
       }
     }, cancelOnError: true);
   }
