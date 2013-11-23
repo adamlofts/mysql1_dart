@@ -109,11 +109,12 @@ class Query extends Object with _ConnectionHelpers {
       });
   }
   
-  Future<Results> _execute(_PreparedQuery preparedQuery, List values) {
+  Future<Results> _execute(_PreparedQuery preparedQuery, List values,
+      {bool retainConnection: false}) {
     _log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
-    preparedQuery.cnx.autoRelease = true;
+    preparedQuery.cnx.autoRelease = !retainConnection;
     preparedQuery.cnx.processHandler(handler)
       .then((results) {
         _log.finest("Prepared query got results");
@@ -141,13 +142,14 @@ class Query extends Object with _ConnectionHelpers {
         
         executeQuery(int i) {
           _log.fine("Executing query, loop $i");
-          _execute(preparedQuery, parameters[i])
+          _execute(preparedQuery, parameters[i], retainConnection: true)
             .then((Results results) {
               _log.fine("Got results, loop $i");
               resultList.add(results);
               if (i < parameters.length - 1) {
                 executeQuery(i + 1);
               } else {
+                preparedQuery.cnx.release();
                 c.complete(resultList);
               }
             })
