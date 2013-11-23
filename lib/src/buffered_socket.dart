@@ -30,10 +30,12 @@ class BufferedSocket {
   Buffer _readingBuffer;
   int _readOffset;
   Completer<Buffer> _readCompleter;
+  StreamSubscription _subscription;
+  bool _closed = false;
 
   BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
-    var subscription = _socket.listen(_onData, onError: (error) {
+    _subscription = _socket.listen(_onData, onError: (error) {
       if (onError != null) {
         onError(error);
       }
@@ -90,6 +92,9 @@ class BufferedSocket {
    */
   Future<Buffer> writeBuffer(Buffer buffer) {
     log.fine("writeBuffer length=${buffer.length}");
+    if (_closed) {
+      throw new StateError("Cannot write to socket, it is closed");
+    }
     if (_writingBuffer != null) {
       throw new StateError("Cannot write to socket, already writing");
     }
@@ -125,6 +130,9 @@ class BufferedSocket {
    */
   Future<Buffer> readBuffer(Buffer buffer) {
     log.fine("readBuffer, length=${buffer.length}");
+    if (_closed) {
+      throw new StateError("Cannot read from socket, it is closed");
+    }
     if (_readingBuffer != null) {
       throw new StateError("Cannot read from socket, already reading");
     }
@@ -152,5 +160,6 @@ class BufferedSocket {
 
   void close() {
     _socket.close();
+    _closed = true;
   }
 }
