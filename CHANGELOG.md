@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.9.0
+------
+* Added ConnectionPool.getConnection() which returns a RetainedConnection. Useful
+if you need to keep a specific connection around (for example, if you need to
+lock tables).
+
 v0.8.3
 ------
 * Fixed connection retention error in Query.executeMulti
