@@ -21,6 +21,7 @@ part 'src/blob.dart';
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
 part 'src/transaction.dart';
+part 'src/retained_connection.dart';
 part 'src/query.dart';
 part 'src/mysql_exception.dart';
 part 'src/mysql_protocol_error.dart';

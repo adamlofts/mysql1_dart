@@ -274,7 +274,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         cnx.processHandler(new _QueryStreamHandler(sql))
           .then((results) {
             _log.fine("Transaction started on cnx#${cnx.number}");
-            var transaction = new Transaction._internal(cnx, this);
+            var transaction = new _TransactionImpl._(cnx, this);
             c.complete(transaction);
           })
           .catchError((e) {
@@ -282,6 +282,16 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
           });
         return c.future;
       });
+  }
+  
+  Future<RetainedConnection> getConnection() {
+    _log.info("Retaining connection");
+    
+    return _getConnection()
+        .then((cnx) {
+          cnx.inTransaction = true;
+          return new _RetainedConnectionImpl._(cnx, this);
+        });
   }
   
   Future<Results> prepareExecute(String sql, List parameters) {
