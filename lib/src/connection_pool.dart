@@ -3,7 +3,7 @@ part of sqljocky;
 /**
  * Maintains a pool of database connections. When queries are executed, if there is
  * a free connection it will be used, otherwise the query is queued until a connection is
- * free. 
+ * free.
  */
 class ConnectionPool extends Object with _ConnectionHelpers implements QueriableConnection {
   final Logger _log;
@@ -13,17 +13,17 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   final String _user;
   final String _password;
   final String _db;
-  
+
   int _max;
 
   /*
    * The pool maintains a queue of connection requests. When a connection completes, if there
-   * is a connection in the queue then it is 'activated' - that is, the future returned 
+   * is a connection in the queue then it is 'activated' - that is, the future returned
    * by _getConnection() completes.
    */
   final Queue<Completer<_Connection>> _pendingConnections;
   final List<_Connection> _pool;
-  
+
   /**
    * Creates a [ConnectionPool]. When connections are required they will connect to the
    * [db] on the given [host] and [port], using the [user] and [password]. The [max] number
@@ -40,7 +40,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         _db = db,
         _max = max,
         _log = new Logger("ConnectionPool");
-  
+
   Future<_Connection> _getConnection() {
     _log.finest("Getting a connection");
     var c = new Completer<_Connection>();
@@ -49,7 +49,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
       _log.finest("Number of in-use connections: $inUseCount");
     }
-    
+
     var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse, orElse: () => null);
     if (cnx != null) {
       _log.finest("Using open pooled cnx#${cnx.number}");
@@ -64,17 +64,17 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     }
     return c.future;
   }
-  
+
   _createConnection(Completer c) {
     var cnx = new _Connection(this, _pool.length);
     cnx.use();
     cnx.autoRelease = false;
     _pool.add(cnx);
     cnx.connect(
-        host: _host, 
-        port: _port, 
-        user: _user, 
-        password: _password, 
+        host: _host,
+        port: _port,
+        user: _user,
+        password: _password,
         db: _db)
       .then((_) {
         cnx.autoRelease = true;
@@ -85,11 +85,11 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         _releaseReuseCompleteError(cnx, c, e);
       });
   }
-  
+
   _removeConnection(_Connection cnx) {
     _pool.remove(cnx);
   }
-  
+
   /**
    * Attempts to continue using a connection. If the connection isn't managed
    * by this pool, or if the connection is already in use, nothing happens.
@@ -106,12 +106,12 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       _log.warning("reuseConnection called for unmanaged connection");
       return;
     }
-    
+
     if (cnx.inUse) {
       _log.finest("cnx#${cnx.number} already reused");
       return;
     }
-    
+
     if (_pendingConnections.length > 0) {
       _log.finest("Reusing cnx#${cnx.number} for a queued operation");
       var c = _pendingConnections.removeFirst();
@@ -137,7 +137,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 //    
 //    return completer.future;
 //  }
-  
+
   /**
    * Closes all open connections. 
    * 
@@ -175,7 +175,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    */
   Future ping() {
     _log.info("Pinging server");
-    
+
     return _getConnection()
       .then((cnx) {
         return cnx.processHandler(new _PingHandler())
@@ -185,14 +185,14 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
           });
       });
   }
-  
+
   /**
    * Sends a debug message to the server. Returns a [Future] that completes
    * when the server replies.
    */
   Future debug() {
     _log.info("Sending debug message");
-    
+
     return _getConnection()
       .then((cnx) {
         var c = new Completer();
@@ -207,7 +207,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         return c.future;
       });
   }
-  
+
   void _closeQuery(Query q, bool retain) {
     _log.finest("Closing query: ${q.sql}");
     for (var cnx in _pool) {
@@ -246,7 +246,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         return query;
       });
   }
-  
+
   /**
    * Starts a transaction. Returns a [Future]<[Transaction]> that completes
    * when the transaction has been started. If [consistent] is true, the
@@ -260,7 +260,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    */
   Future<Transaction> startTransaction({bool consistent: false}) {
     _log.info("Starting transaction");
-    
+
     return _getConnection()
       .then((cnx) {
         cnx.inTransaction = true;
@@ -283,23 +283,36 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         return c.future;
       });
   }
-  
+
+  /**
+   * Gets a persistent connection to the database.
+   * 
+   * When you execute a query on the connection pool, it waits until a free
+   * connection is available, executes the query and then returns the connection
+   * back to the connection pool. Sometimes there may be cases where you want
+   * to keep the same connection around for subsequent queries (such as when
+   * you lock tables). Use this method to get a connection which isn't released
+   * after each query.
+   * 
+   * You must use [RetainedConnection.release] when you have finished with the
+   * connection, otherwise it will not be available in the pool again.
+   */
   Future<RetainedConnection> getConnection() {
     _log.info("Retaining connection");
-    
+
     return _getConnection()
         .then((cnx) {
           cnx.inTransaction = true;
           return new _RetainedConnectionImpl._(cnx, this);
         });
   }
-  
+
   Future<Results> prepareExecute(String sql, List parameters) {
     return prepare(sql).then((query) {
       return query.execute(parameters);
     });
   }
-  
+
 //  dynamic fieldList(String table, [String column]);
 //  dynamic refresh(bool grant, bool log, bool tables, bool hosts,
 //                  bool status, bool threads, bool slave, bool master);
@@ -323,7 +336,7 @@ abstract class _ConnectionHelpers {
     }
     c.completeError(e);
   }
-  
+
   _removeConnection(cnx);
 }
 
@@ -333,7 +346,7 @@ abstract class QueriableConnection {
    * when the results start to become available.
    */
   Future<Results> query(String sql);
-  
+
   /**
    * Prepares a query with the given [sql]. Returns a [Future<Query>] that
    * completes when the query has been prepared.
