@@ -23,13 +23,13 @@ Execute a query:
 
 Use the results:
 
-	results.listen((row) {
+	results.forEach((row) {
 		print('Name: ${row[0]}, email: ${row[1]}');
 	}
 	
 Or access the fields by name:
 
-	results.listen((row) {
+	results.forEach((row) {
 		print('Name: ${row.name}, email: ${row.email}');
 	}
 
