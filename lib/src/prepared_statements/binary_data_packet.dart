@@ -2,11 +2,12 @@ part of sqljocky;
 
 class _BinaryDataPacket extends Row {
   List values;
+  final Map<Symbol, int> _fieldIndex;
   final Logger log;
 
-  _BinaryDataPacket._forTests() : log = new Logger("BinaryDataPacket");
+  _BinaryDataPacket._forTests(this.values, this._fieldIndex) : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields) :
+  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields, this._fieldIndex) :
       log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
@@ -210,6 +211,17 @@ class _BinaryDataPacket extends Row {
 
   void set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
+  }
+
+  noSuchMethod(Invocation invocation) {
+    var name = invocation.memberName;
+    if (invocation.isGetter) {
+      var i = _fieldIndex[name];
+      if (i != null) {
+        return values[i];
+      }
+    }
+    return super.noSuchMethod(invocation);
   }
 
   String toString() => "Value: $values";

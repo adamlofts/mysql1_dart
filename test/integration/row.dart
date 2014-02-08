@@ -37,6 +37,25 @@ void runRowTests(String user, String password, String db, int port, String host)
       }
       return Future.wait(futures);
     });
+    
+    test('select from stream using prepareExecute and listen', () {
+      var futures = [];
+      for (var i = 0; i < 5; i++) {
+        var c = new Completer();
+        pool.prepareExecute('select * from row where id = ?',[0]).then((Results results) {
+          results.listen((row) {
+            expect(row.id, equals(0));
+            expect(row.name.toString(), equals("Bob"));
+            // length is a getter on List, so it isn't mapped to the result field
+            expect(row.length, equals(4));
+          }, onDone: () {
+            c.complete();
+          });
+        });
+        futures.add(c.future);
+      }
+      return Future.wait(futures);
+    });
 
     test('close connection', () {
       pool.close();

@@ -12,6 +12,7 @@ import 'package:unittest/unittest.dart';
 import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';
 import 'package:sqljocky/src/results.dart';
+import 'package:sqljocky/src/list_writer.dart';
 
 part '../lib/src/auth/auth_handler.dart';
 part '../lib/src/blob.dart';
@@ -21,6 +22,8 @@ part '../lib/src/mysql_client_error.dart';
 part '../lib/src/mysql_exception.dart';
 part '../lib/src/prepared_statements/binary_data_packet.dart';
 part '../lib/src/prepared_statements/prepare_ok_packet.dart';
+part '../lib/src/prepared_statements/execute_query_handler.dart';
+part '../lib/src/prepared_statements/prepared_query.dart';
 part '../lib/src/results/field_impl.dart';
 part '../lib/src/results/results_impl.dart';
 part '../lib/src/query/query_stream_handler.dart';

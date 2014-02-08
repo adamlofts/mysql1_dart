@@ -9,6 +9,7 @@ class _ExecuteQueryHandler extends _Handler {
 
   _ResultSetHeaderPacket _resultSetHeaderPacket;
   List<_FieldImpl> _fieldPackets;
+  Map<Symbol, int> _fieldIndex;
   StreamController<Row> _streamController;
 
   final _PreparedQuery _preparedQuery;
@@ -159,6 +160,7 @@ class _ExecuteQueryHandler extends _Handler {
         if (_state == STATE_FIELD_PACKETS) {
           _state = STATE_ROW_PACKETS;
           _streamController = new StreamController<Row>();
+          this._fieldIndex = _createFieldIndex();
           return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
         } else if (_state == STATE_ROW_PACKETS){
           _streamController.close();
@@ -180,7 +182,7 @@ class _ExecuteQueryHandler extends _Handler {
           break;
         case STATE_ROW_PACKETS:
           log.fine('Got a row packet');
-          var dataPacket = new _BinaryDataPacket(response, _fieldPackets);
+          var dataPacket = new _BinaryDataPacket(response, _fieldPackets, _fieldIndex);
           log.fine(dataPacket.toString());
           _streamController.add(dataPacket);
           break;
@@ -193,5 +195,17 @@ class _ExecuteQueryHandler extends _Handler {
       }
     }
     return _HandlerResponse.notFinished;
+  }
+
+  Map<Symbol,int> _createFieldIndex() {
+    var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
+    var fieldIndex = new Map<Symbol, int>();
+    for (var i = 0; i < _fieldPackets.length; i++) {
+      var name = _fieldPackets[i].name;
+      if (identifierPattern.hasMatch(name)) {
+        fieldIndex[new Symbol(name)] = i;
+      }
+    }
+    return fieldIndex;
   }
 }
