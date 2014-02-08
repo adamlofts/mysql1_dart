@@ -42,7 +42,7 @@ class _BinaryDataPacket extends Row {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");
-        var len = buffer.readByte();
+        var len = buffer.readLengthCodedBinary();
         var value = new Blob.fromBytes(buffer.readList(len));
         log.fine("Value: ${value}");
         return value;

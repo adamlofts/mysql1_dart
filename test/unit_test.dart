@@ -38,6 +38,7 @@ part 'unit/prepared_statements_test.dart';
 part 'unit/serialize_test.dart';
 part 'unit/types_test.dart';
 part 'unit/field_by_name_test.dart';
+part 'unit/binary_data_packet_test.dart';
 
 void main() {
   runBufferTests();
@@ -46,4 +47,5 @@ void main() {
   runPreparedStatementTests();
   runAuthHandlerTests();
   runFieldByNameTests();
+  runBinaryDataPacketTests();
 }
