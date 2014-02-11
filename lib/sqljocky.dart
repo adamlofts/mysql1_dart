@@ -4,6 +4,7 @@ library sqljocky;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
@@ -39,6 +40,7 @@ part 'src/handlers/quit_handler.dart';
 //auth handlers
 part 'src/auth/handshake_handler.dart';
 part 'src/auth/auth_handler.dart';
+part 'src/auth/ssl_handler.dart';
 
 //prepared statements handlers
 part 'src/prepared_statements/prepare_ok_packet.dart';

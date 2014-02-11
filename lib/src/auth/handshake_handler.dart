@@ -13,8 +13,12 @@ class _HandshakeHandler extends _Handler {
   int serverLanguage;
   int serverStatus;
   int scrambleLength;
+  bool useCompression = false;
+  bool useSSL = false;
   
-  _HandshakeHandler(String this._user, String this._password, [String db]) : _db = db {
+  _HandshakeHandler(String this._user, String this._password, [String db, bool useCompression, bool useSSL])
+      : _db = db, this.useCompression = useCompression,
+      this.useSSL = useSSL {
     log = new Logger("HandshakeHandler");
   }
 
@@ -57,7 +61,26 @@ class _HandshakeHandler extends _Handler {
     
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
       | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
-
+    
+    if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
+      log.shout("Compression enabled");
+      clientFlags |= CLIENT_COMPRESS;
+    } else {
+      useCompression = false;
+    }
+    
+    if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
+      log.shout("SSL enabled");
+      clientFlags |= CLIENT_SSL | CLIENT_SECURE_CONNECTION;
+    } else {
+      useSSL = false;
+    }
+    
+    if (useSSL) {
+      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, 16777216, 33, 
+          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, 16777216, 33, ssl: true)));
+    }
+    
     return new _HandlerResponse(nextHandler: new _AuthHandler(_user, _password, _db, scrambleBuffer,
       clientFlags, 0, 33));
   }

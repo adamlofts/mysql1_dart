@@ -18,6 +18,7 @@ part 'integration/largeblob.dart';
 part 'integration/numbers.dart';
 part 'integration/stream.dart';
 part 'integration/row.dart';
+part 'integration/errors.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -50,4 +51,5 @@ void main() {
   runNumberTests(user, password, db, port, host);
   runStreamTests(user, password, db, port, host);
   runRowTests(user, password, db, port, host);
+  runErrorTests(user, password, db, port, host);
 }

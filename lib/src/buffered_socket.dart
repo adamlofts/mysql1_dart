@@ -35,16 +35,21 @@ class BufferedSocket {
 
   BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError)
       : log = new Logger("BufferedSocket") {
-    _subscription = _socket.listen(_onData, onError: (error) {
-      if (onError != null) {
-        onError(error);
-      }
-    }, onDone: () {
-      if (onDone != null) {
-        onDone();
-        _closed = true;
-      }
-    }, cancelOnError: true);
+    _subscription = _socket.listen(_onData, onError: _onSocketError, 
+        onDone: _onSocketDone, cancelOnError: true);
+  }
+  
+  _onSocketError(error) {
+    if (onError != null) {
+      onError(error);
+    }
+  }
+  
+  _onSocketDone() {
+    if (onDone != null) {
+      onDone();
+      _closed = true;
+    }
   }
   
   /**
@@ -112,6 +117,9 @@ class BufferedSocket {
     log.fine("_writeBuffer offset=${_writeOffset}");
     int bytesWritten = _writingBuffer.writeToSocket(_socket, _writeOffset, _writingBuffer.length - _writeOffset);
     log.fine("Wrote $bytesWritten bytes");
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("\n${Buffer.debugChars(_writingBuffer.list)}");
+    }
     _writeOffset += bytesWritten;
     if (_writeOffset == _writingBuffer.length) {
       _writeCompleter.complete(_writingBuffer);
@@ -152,6 +160,9 @@ class BufferedSocket {
   void _readBuffer() {
     int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
     log.fine("read $bytesRead bytes");
+    if (log.isLoggable(Level.FINE)) {
+      log.fine("\n${Buffer.debugChars(_readingBuffer.list)}");
+    }
     _readOffset += bytesRead;
     if (_readOffset == _readingBuffer.length) {
       _readCompleter.complete(_readingBuffer);
@@ -162,5 +173,18 @@ class BufferedSocket {
   void close() {
     _socket.close();
     _closed = true;
+  }
+  
+  Future startSSL() {
+    log.fine("Securing socket");
+    return RawSecureSocket.secure(_socket, subscription: _subscription,
+        onBadCertificate: (cert) => true).then((socket) {
+      log.fine("Socket is secure");
+      _socket = socket;
+      _subscription = _socket.listen(_onData, onError: _onSocketError, 
+          onDone: _onSocketDone, cancelOnError: true);
+      _socket.writeEventsEnabled = true;
+      _socket.readEventsEnabled = true;
+    });
   }
 }

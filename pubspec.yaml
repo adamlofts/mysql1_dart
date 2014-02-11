@@ -3,9 +3,9 @@ version: 0.9.0
 author: James Ots <code@jamesots.com>
 description: A MySQL connector
 homepage: https://github.com/jamesots/sqljocky
-documentation: http://jamesots.github.io/sqljocky/docs
 environment:
   sdk: '>=0.8.10+6 <2.0.0'
+documentation: http://jamesots.github.io/sqljocky/docs
 dependencies:
   crypto: '>=0.9.0 <0.10.0'
   logging: '>=0.9.0 <0.10.0'

@@ -413,5 +413,51 @@ class Buffer {
     }
     return result.toString();
   }
+  
+  static String debugChars(Uint8List list) {
+    var result = new StringBuffer();
+    
+    var left = new StringBuffer();
+    var right = new StringBuffer();
+    
+    for (final e in list) {
+      if (e >= 32 && e < 127) {
+        right.write(new String.fromCharCodes([e]));
+      } else {
+        right.write('·');
+      }
+      var hex = e.toRadixString(16);
+      if (hex.length == 1) {
+        hex = "0$hex";
+      }
+      left.write("$hex ");
+      
+      if (right.length == 4) {
+        left.write(" ");
+      }
+      if (right.length == 8) {
+        result.write(left.toString());
+        result.write("  ");
+        result.write(right.toString());
+        result.write("\n");
+        left.clear();
+        right.clear();
+      }
+    }
+    if (right.length > 0) {
+      while (right.length < 8) {
+        left.write("   ");
+        right.write(" ");
+        if (right.length == 4) {
+          left.write(" ");
+        }
+      }
+      result.write(left.toString());
+      result.write("  ");
+      result.write(right.toString());
+      result.write("\n");
+    }
+    return result.toString();
+  }
 }
 
