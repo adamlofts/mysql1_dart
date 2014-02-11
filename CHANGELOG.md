@@ -3,7 +3,9 @@ Changelog
 
 v0.10.0
 -------
-* Added SSL connections. Pass 'useSSL: true' to ConnectionPool constructor.
+* Added SSL connections. Pass 'useSSL: true' to ConnectionPool constructor. If server doesn't support
+SSL, connection will continue unsecured. You can check if the connections are secure by calling
+pool.getConnection().then((cnx) {print(cnx.usingSSL); cnx.release();});
 
 v0.9.0
 ------
