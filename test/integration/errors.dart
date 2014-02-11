@@ -6,6 +6,10 @@ void runErrorTests(String user, String password, String db, int port, String hos
     test('setup', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1,
           useCompression: false, useSSL: true);
+      pool.getConnection().then((cnx) {
+        print("Connection secure: ${cnx.usingSSL}");
+        cnx.release();
+      });
       return setup(pool, "stream", "create table stream (id integer, name text)");
     });
     

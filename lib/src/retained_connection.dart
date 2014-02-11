@@ -37,6 +37,9 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
   _removeConnection(_Connection cnx) {
     _pool._removeConnection(cnx);
   }
+  
+  
+  bool get usingSSL => _cnx.usingSSL; 
 }
 
 /**

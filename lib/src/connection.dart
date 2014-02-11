@@ -24,6 +24,7 @@ class _Connection {
   int _compressedPacketNumber = 0;
   bool _useCompression = false;
   bool _useSSL = false;
+  bool _secure = false;
 
   int _dataSize;
 
@@ -147,6 +148,7 @@ class _Connection {
           if (_useSSL && _handler is _SSLHandler) {
             log.fine("Use SSL");
             _socket.startSSL().then((_) {
+              _secure = true;
               _handler = (_handler as _SSLHandler).nextHandler;
               _sendBuffer(_handler.createRequest()).then((_) {
                 log.fine("Sent buffer");
@@ -252,4 +254,6 @@ class _Connection {
   putPreparedQueryInCache(String sql, _PreparedQuery preparedQuery) {
     _preparedQueryCache[sql] = preparedQuery;
   }
+  
+  bool get usingSSL => _secure; 
 }

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.10.0
+-------
+* Added SSL connections. Pass 'useSSL: true' to ConnectionPool constructor.
+
 v0.9.0
 ------
 * Added ConnectionPool.getConnection() which returns a RetainedConnection. Useful

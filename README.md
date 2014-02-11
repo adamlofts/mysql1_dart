@@ -87,7 +87,6 @@ Things to do
 ------------
 
 * Compression
-* SSL
 * Larger than 16MB packets
 * Handle character sets properly
 * COM_SEND_LONG_DATA
