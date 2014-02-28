@@ -5,6 +5,8 @@ This is a MySQL connector for the Dart programming language. It isn't finished, 
 work for most normal use. The API is getting reasonably close to where I want it to
 be now, so hopefully there shouldn't be too many breaking changes in the future.
 
+It will only work in the command-line VM, not in a browser.
+
 News
 ----
 
