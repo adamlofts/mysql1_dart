@@ -13,7 +13,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   final String _user;
   final String _password;
   final String _db;
-  final bool _useCompression;
+  final bool _useCompression = false;
   final bool _useSSL;
 
   int _max;
@@ -32,8 +32,9 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * of simultaneous connections can also be specified.
    */
   ConnectionPool({String host: 'localhost', int port: 3306, String user,
-  String password, String db, int max: 5, bool useCompression: false,
-  bool useSSL: false}) :
+      String password, String db, int max: 5, 
+//      bool useCompression: false,
+      bool useSSL: false}) :
   _pendingConnections = new Queue<Completer<_Connection>>(),
   _pool = new List<_Connection>(),
   _host = host,
@@ -42,7 +43,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   _password = password,
   _db = db,
   _max = max,
-  _useCompression = useCompression,
+//  _useCompression = useCompression,
   _useSSL = useSSL,
   _log = new Logger("ConnectionPool");
 
