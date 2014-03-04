@@ -10,6 +10,7 @@ typedef DoneHandler();
 typedef DataReadyHandler();
 
 typedef Future<RawSocket> SocketFactory(host, int port);
+typedef OnConnection(BufferedSocket);
 
 class BufferedSocket {
   final Logger log;
@@ -59,7 +60,8 @@ class BufferedSocket {
       {DataReadyHandler onDataReady,
       DoneHandler onDone, 
       ErrorHandler onError, 
-      SocketFactory socketFactory}) {
+      SocketFactory socketFactory,
+      OnConnection onConnection}) {
     var c = new Completer<BufferedSocket>();
     var future;
     if (socketFactory != null) {
@@ -67,8 +69,13 @@ class BufferedSocket {
     } else {
       future = RawSocket.connect(host, port);
     }
-    future.then((socket) => c.complete(new BufferedSocket._(socket, onDataReady, onDone, onError)),
-        onError: onError);
+    future.then((socket) {
+        var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError);
+        if (onConnection != null) {
+          onConnection(bufferedSocket);
+        }
+        return c.complete(bufferedSocket);
+      }, onError: onError);
     return c.future;
   }
 

@@ -83,6 +83,9 @@ class _Connection {
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
     BufferedSocket.connect(host, port,
+      onConnection: (socket) {
+        _socket = socket;
+      },
       onDataReady: _readPacket,
       onDone: () {
         release();
@@ -92,9 +95,7 @@ class _Connection {
         log.fine("error $error");
         release();
         _completer.completeError(error);
-      }).then((socket) {
-      _socket = socket;
-    });
+      });
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
     //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
     if (useSSL) {
