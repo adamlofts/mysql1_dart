@@ -23,7 +23,7 @@ Execute a query:
 
 	pool.query('select name, email from users').then((result) {...});
 
-Use the results: (*Note: forEach is asynchronus.*)
+Use the results: (*Note: forEach is asynchronous.*)
 
 	results.forEach((row) {
 		print('Name: ${row[0]}, email: ${row[1]}');
