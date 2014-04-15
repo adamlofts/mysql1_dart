@@ -8,6 +8,7 @@ import 'dart:collection';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 import 'package:unittest/unittest.dart';
+import 'package:unittest/mock.dart';
 
 import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';
@@ -39,6 +40,7 @@ part 'unit/serialize_test.dart';
 part 'unit/types_test.dart';
 part 'unit/field_by_name_test.dart';
 part 'unit/binary_data_packet_test.dart';
+part 'unit/execute_query_handler_test.dart';
 
 void main() {
   runBufferTests();
@@ -48,4 +50,5 @@ void main() {
   runAuthHandlerTests();
   runFieldByNameTests();
   runBinaryDataPacketTests();
+  runExecuteQueryHandlerTests();
 }

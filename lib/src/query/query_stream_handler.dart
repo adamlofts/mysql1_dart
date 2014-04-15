@@ -26,57 +26,81 @@ class _QueryStreamHandler extends _Handler {
     buffer.writeList(encoded);
     return buffer;
   }
-  
+
   _HandlerResponse processResponse(Buffer response) {
     log.fine("Processing query response");
     var packet = checkResponse(response);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
-          _state = STATE_ROW_PACKETS;
-          _streamController = new StreamController<Row>(onCancel: () {
-            _streamController.close();
-          });
-          this._fieldIndex = _createFieldIndex();
-          return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+          return _handleEndOfFields();
         } else if (_state == STATE_ROW_PACKETS) {
-          // the connection's _handler field needs to have been nulled out before the stream is closed,
-          // otherwise the stream will be reused in an unfinished state.
-          // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
-          new Future.delayed(new Duration(seconds: 0), _streamController.close);
-          return new _HandlerResponse(finished: true);
+          return _handleEndOfRows();
         }
       } else {
         switch (_state) {
         case STATE_HEADER_PACKET:
-          _resultSetHeaderPacket = new _ResultSetHeaderPacket(response);
-          log.fine (_resultSetHeaderPacket.toString());
-          _state = STATE_FIELD_PACKETS;
+          _handleHeaderPacket(response);
           break;
         case STATE_FIELD_PACKETS:
-          var fieldPacket = new _FieldImpl._(response);
-          log.fine(fieldPacket.toString());
-          _fieldPackets.add(fieldPacket);
+          _handleFieldPacket(response);
           break;
         case STATE_ROW_PACKETS:
-          var dataPacket = new _StandardDataPacket(response, _fieldPackets, _fieldIndex);
-          log.fine(dataPacket.toString());
-          _streamController.add(dataPacket);
+          _handleRowPacket(response);
           break;
         }
       } 
     } else if (packet is _OkPacket) {
-      _okPacket = packet;
-      var finished = false;
-      // TODO: I think this is to do with multiple queries. Will probably break.
-      if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        finished = true;
-      }
-
-      //TODO is this finished value right?
-      return new _HandlerResponse(finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
+      return _handleOkPacket(packet);
     }
     return _HandlerResponse.notFinished;
+  }
+
+  _handleEndOfFields() {
+    _state = STATE_ROW_PACKETS;
+    _streamController = new StreamController<Row>(onCancel: () {
+      _streamController.close();
+    });
+    this._fieldIndex = _createFieldIndex();
+    return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+  }
+
+  _handleEndOfRows() {
+    // the connection's _handler field needs to have been nulled out before the stream is closed,
+    // otherwise the stream will be reused in an unfinished state.
+    // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
+    new Future.delayed(new Duration(seconds: 0), _streamController.close);
+    return new _HandlerResponse(finished: true);
+  }
+
+  _handleHeaderPacket(Buffer response) {
+    _resultSetHeaderPacket = new _ResultSetHeaderPacket(response);
+    log.fine(_resultSetHeaderPacket.toString());
+    _state = STATE_FIELD_PACKETS;
+  }
+
+  _handleFieldPacket(Buffer response) {
+    var fieldPacket = new _FieldImpl._(response);
+    log.fine(fieldPacket.toString());
+    _fieldPackets.add(fieldPacket);
+  }
+
+  _handleRowPacket(Buffer response) {
+    var dataPacket = new _StandardDataPacket(response, _fieldPackets, _fieldIndex);
+    log.fine(dataPacket.toString());
+    _streamController.add(dataPacket);
+  }
+
+  _handleOkPacket(packet) {
+    _okPacket = packet;
+    var finished = false;
+    // TODO: I think this is to do with multiple queries. Will probably break.
+    if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
+      finished = true;
+    }
+
+    //TODO is this finished value right?
+    return new _HandlerResponse(finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
   }
 
   Map<Symbol,int> _createFieldIndex() {
