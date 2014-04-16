@@ -40,6 +40,9 @@ class _HandshakeHandler extends _Handler {
   _HandlerResponse processResponse(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
+    if (protocolVersion != 10) {
+      throw new MySqlProtocolError._("Protocol not supported");
+    }
     serverVersion = response.readNullTerminatedString();
     threadId = response.readUint32();
     var scrambleBuffer1 = response.readList(8);

@@ -16,6 +16,8 @@ import 'package:sqljocky/src/results.dart';
 import 'package:sqljocky/src/list_writer.dart';
 
 part '../lib/src/auth/auth_handler.dart';
+part '../lib/src/auth/handshake_handler.dart';
+part '../lib/src/auth/ssl_handler.dart';
 part '../lib/src/blob.dart';
 part '../lib/src/handlers/handler.dart';
 part '../lib/src/handlers/ok_packet.dart';
@@ -41,6 +43,7 @@ part 'unit/types_test.dart';
 part 'unit/field_by_name_test.dart';
 part 'unit/binary_data_packet_test.dart';
 part 'unit/execute_query_handler_test.dart';
+part 'unit/handshake_handler_test.dart';
 
 void main() {
   runBufferTests();
@@ -51,4 +54,5 @@ void main() {
   runFieldByNameTests();
   runBinaryDataPacketTests();
   runExecuteQueryHandlerTests();
+  runHandshakeHandlerTests();
 }
