@@ -29,15 +29,8 @@ class _HandshakeHandler extends _Handler {
   Buffer createRequest() {
     throw new MySqlClientError._("Cannot create a handshake request"); 
   }
-  
-  /**
-   * After receiving the handshake packet, if all is well, an [_AuthHandler]
-   * is created and returned to handle authentication.
-   *
-   * Currently, if the client protocol version is not 4.1, an
-   * exception is thrown.
-   */
-  _HandlerResponse processResponse(Buffer response) {
+
+  _readResponseBuffer(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
@@ -57,7 +50,18 @@ class _HandshakeHandler extends _Handler {
     scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
     scrambleBuffer.setRange(0, 8, scrambleBuffer1);
     scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
-    
+  }
+  
+  /**
+   * After receiving the handshake packet, if all is well, an [_AuthHandler]
+   * is created and returned to handle authentication.
+   *
+   * Currently, if the client protocol version is not 4.1, an
+   * exception is thrown.
+   */
+  _HandlerResponse processResponse(Buffer response) {
+    _readResponseBuffer(response);
+
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
       throw new MySqlClientError._("Unsupported protocol (must be 4.1 or newer");
     }
