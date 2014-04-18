@@ -13,6 +13,7 @@ class _HandshakeHandler extends _Handler {
   int serverLanguage;
   int serverStatus;
   int scrambleLength;
+  String pluginName;
   bool useCompression = false;
   bool useSSL = false;
   
@@ -41,15 +42,33 @@ class _HandshakeHandler extends _Handler {
     var scrambleBuffer1 = response.readList(8);
     response.skip(1);
     serverCapabilities = response.readUint16();
-    serverLanguage = response.readByte();
-    serverStatus = response.readUint16();
-    serverCapabilities += (response.readUint16() << 0x10);
-    scrambleLength = response.readByte();
-    response.skip(10);
-    var scrambleBuffer2 = response.readNullTerminatedList();
-    scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
-    scrambleBuffer.setRange(0, 8, scrambleBuffer1);
-    scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
+    if (response.hasMore) {
+      serverLanguage = response.readByte();
+      serverStatus = response.readUint16();
+      serverCapabilities += (response.readUint16() << 0x10);
+
+      var secure = serverCapabilities & CLIENT_SECURE_CONNECTION;
+      var plugin = serverCapabilities & CLIENT_PLUGIN_AUTH;
+
+      scrambleLength = response.readByte();
+      response.skip(10);
+      if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
+        var scrambleBuffer2 = response.readList(math.max(13, scrambleLength - 8) - 1);
+        var nullTerminator = response.readByte();
+        scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+        scrambleBuffer.setRange(0, 8, scrambleBuffer1);
+        scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
+      } else {
+        scrambleBuffer = scrambleBuffer1;
+      }
+
+      if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
+        pluginName = response.readStringToEnd();
+        if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
+          pluginName = pluginName.substring(0, pluginName.length - 1);
+        }
+      }
+    }
   }
   
   /**

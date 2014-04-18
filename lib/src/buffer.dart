@@ -238,6 +238,8 @@ class Buffer {
    * Returns a single byte, read from the buffer.
    */
   int readByte() => _list[_readPos++];
+
+  bool get hasMore => _readPos < _list.length;
   
   /**
    * Writes a single [byte] to the buffer.

@@ -21,5 +21,17 @@ void runBufferTests() {
       buffer.list[1] = 0x30;
       expect(buffer.readInt16(), equals(12345));
     });
+
+    test('knows if there is no more data available', () {
+      var buffer = new Buffer(2);
+      buffer.readInt16();
+      expect(buffer.hasMore, isFalse);
+    });
+
+    test('knows if there is more data available', () {
+      var buffer = new Buffer(3);
+      buffer.readInt16();
+      expect(buffer.hasMore, isTrue);
+    });
   });
 }

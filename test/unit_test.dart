@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
