@@ -166,6 +166,29 @@ void runHandshakeHandlerTests() {
 
       expect(handler.pluginName, equals(pluginName));
     });
+
+    test('should read buffer with short scramble data length', () {
+      var user = "bob";
+      var password = "password";
+      var db = "db";
+      var handler = new _HandshakeHandler(user, password, db, true, true);
+      var serverVersion = "version 1";
+      var threadId = 123882394;
+      var serverLanguage = 9;
+      var serverStatus = 999;
+      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
+      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var scrambleBuffer1 = "abcdefgh";
+      var scrambleBuffer2 = "ijklmnopqrst";
+      var scrambleLength = 5;
+      var pluginName = "plugin name";
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
+          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
+          pluginName, true);
+      handler._readResponseBuffer(responseBuffer);
+
+      expect(handler.pluginName, equals(pluginName));
+    });
   });
 
   group('HandshakeHandler.processResponse', () {
@@ -208,6 +231,7 @@ void runHandshakeHandlerTests() {
       expect(authHandler._db, equals(db));
 
       //TODO test with SSL turned on
+      //TODO http://dev.mysql.com/doc/internals/en/determining-authentication-method.html
     });
   });
 }
