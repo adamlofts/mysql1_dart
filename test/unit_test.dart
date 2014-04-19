@@ -38,7 +38,7 @@ part '../lib/src/query/result_set_header_packet.dart';
 part '../lib/src/query/standard_data_packet.dart';
 
 part 'unit/buffer_test.dart';
-part 'unit/handlers_test.dart';
+part 'unit/auth_handler_test.dart';
 part 'unit/prepared_statements_test.dart';
 part 'unit/serialize_test.dart';
 part 'unit/types_test.dart';

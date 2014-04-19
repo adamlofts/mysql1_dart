@@ -7,18 +7,17 @@ class _AuthHandler extends _Handler {
   final List<int> _scrambleBuffer;
   final int _clientFlags;
   final int _maxPacketSize;
-  final int _character_set;
+  final int _characterSet;
   final bool _ssl;
   
   _AuthHandler(String this._username, String this._password, String this._db,
     List<int> this._scrambleBuffer, int this._clientFlags,
-    int this._maxPacketSize, int this._character_set, {bool ssl : false}) :
+    int this._maxPacketSize, int this._characterSet, {bool ssl : false}) :
       this._ssl = false {
     log = new Logger("AuthHandler");
   }
-  
-  Buffer createRequest() {
-    // calculate the mysql password hash
+
+  List<int> _getHash() {
     List<int> hash;
     if (_password == null) {
       hash = <int>[];
@@ -26,21 +25,27 @@ class _AuthHandler extends _Handler {
       var hasher = new SHA1();
       hasher.add(UTF8.encode(_password));
       var hashedPassword = hasher.close();
-      
+
       hasher = new SHA1();
       hasher.add(hashedPassword);
       var doubleHashedPassword = hasher.close();
-      
+
       hasher = new SHA1();
       hasher.add(_scrambleBuffer);
       hasher.add(doubleHashedPassword);
       var hashedSaltedPassword = hasher.close();
-      
+
       hash = new List<int>(hashedSaltedPassword.length);
       for (var i = 0; i < hash.length; i++) {
         hash[i] = hashedSaltedPassword[i] ^ hashedPassword[i];
       }
     }
+    return hash;
+  }
+
+  Buffer createRequest() {
+    // calculate the mysql password hash
+    var hash = _getHash();
 
     var encodedUsername = UTF8.encode(_username);
     var encodedDb;
@@ -57,7 +62,7 @@ class _AuthHandler extends _Handler {
     buffer.seekWrite(0);
     buffer.writeUint32(clientFlags);
     buffer.writeUint32(_maxPacketSize);
-    buffer.writeByte(_character_set);
+    buffer.writeByte(_characterSet);
     buffer.fill(23, 0);
     buffer.writeNullTerminatedList(encodedUsername);
     buffer.writeByte(hash.length);

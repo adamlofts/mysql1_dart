@@ -228,7 +228,7 @@ void runHandshakeHandlerTests() {
           | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
 
       _AuthHandler authHandler = response.nextHandler;
-      expect(authHandler._character_set, equals(CharacterSet.UTF8));
+      expect(authHandler._characterSet, equals(CharacterSet.UTF8));
       expect(authHandler._username, equals(user));
       expect(authHandler._password, equals(password));
       expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
@@ -335,12 +335,12 @@ void runHandshakeHandlerTests() {
 
       _SSLHandler sslHandler = response.nextHandler;
       expect(sslHandler.nextHandler, new isInstanceOf<_AuthHandler>());
-      expect(sslHandler._character_set, equals(CharacterSet.UTF8));
+      expect(sslHandler._characterSet, equals(CharacterSet.UTF8));
       expect(sslHandler._clientFlags, equals(clientFlags));
       expect(sslHandler._maxPacketSize, equals(_HandshakeHandler.MAX_PACKET_SIZE));
 
       _AuthHandler authHandler = sslHandler.nextHandler;
-      expect(authHandler._character_set, equals(CharacterSet.UTF8));
+      expect(authHandler._characterSet, equals(CharacterSet.UTF8));
       expect(authHandler._username, equals(user));
       expect(authHandler._password, equals(password));
       expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));

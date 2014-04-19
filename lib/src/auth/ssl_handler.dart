@@ -3,12 +3,12 @@ part of sqljocky;
 class _SSLHandler extends _Handler {
   final int _clientFlags;
   final int _maxPacketSize;
-  final int _character_set;
+  final int _characterSet;
   final _Handler _handler;
   
   _Handler get nextHandler => _handler;
   
-  _SSLHandler(this._clientFlags, this._maxPacketSize, this._character_set, this._handler) {
+  _SSLHandler(this._clientFlags, this._maxPacketSize, this._characterSet, this._handler) {
     log = new Logger("SSLHandler");
   }
   
@@ -17,7 +17,7 @@ class _SSLHandler extends _Handler {
     buffer.seekWrite(0);
     buffer.writeUint32(_clientFlags);
     buffer.writeUint32(_maxPacketSize);
-    buffer.writeByte(_character_set);
+    buffer.writeByte(_characterSet);
     buffer.fill(23, 0);
     
     return buffer;

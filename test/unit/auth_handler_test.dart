@@ -2,6 +2,14 @@ part of sqljocky;
 
 void runAuthHandlerTests() {
   group('auth_handler:', () {
+    test('hash password correctly', () {
+      var handler = new _AuthHandler('username', 'password', 'db',
+          [1, 2, 3, 4], 0, 100, 0);
+      var hash = handler._getHash();
+      expect(hash, equals([211, 136, 65, 109, 153, 241, 227, 117, 168,
+          83, 80, 136, 188, 116, 50, 54, 235, 225, 54, 225]));
+    });
+
     test('check one set of values', () {
       var handler = new _AuthHandler('username', 'password', 'db',
           [1, 2, 3, 4], 0, 100, 0);
