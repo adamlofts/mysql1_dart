@@ -50,7 +50,7 @@ void runHandshakeHandlerTests() {
       var response = new Buffer.fromList([9]);
       expect(() {
         handler._readResponseBuffer(response);
-      }, throwsA(new isInstanceOf<MySqlProtocolError>()));
+      }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
 
     test('set values and does not throw if handshake protocol is 10', () {
@@ -200,7 +200,7 @@ void runHandshakeHandlerTests() {
       }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
 
-    test('set values and does not throw if handshake protocol is 10 and server protocol is 4.1', () {
+    test('works when plugin name is not set', () {
       var user = "bob";
       var password = "password";
       var db = "db";
@@ -233,5 +233,75 @@ void runHandshakeHandlerTests() {
       //TODO test with SSL turned on
       //TODO http://dev.mysql.com/doc/internals/en/determining-authentication-method.html
     });
+
+    test('works when plugin name is set', () {
+      var user = "bob";
+      var password = "password";
+      var db = "db";
+      var handler = new _HandshakeHandler(user, password, db, true, true);
+      var serverVersion = "version 1";
+      var threadId = 123882394;
+      var serverLanguage = 9;
+      var serverStatus = 999;
+      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
+      var serverCapabilities2 = 0;
+      var scrambleBuffer1 = "abcdefgh";
+      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
+          serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
+          _HandshakeHandler.MYSQL_NATIVE_PASSWORD, true);
+      var response = handler.processResponse(responseBuffer);
+
+      expect(handler.useCompression, isFalse);
+      expect(handler.useSSL, isFalse);
+
+      expect(response, new isInstanceOf<_HandlerResponse>());
+      expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
+
+      _AuthHandler authHandler = response.nextHandler;
+      expect(authHandler._username, equals(user));
+      expect(authHandler._password, equals(password));
+      expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
+      expect(authHandler._db, equals(db));
+    });
+
+    test('throws if old password authentication is requested', () {
+      var serverVersion = "version 1";
+      var scrambleBuffer1 = "abcdefgh";
+      var threadId = 123882394;
+      var serverCapabilities = CLIENT_PROTOCOL_41;
+
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
+
+      var handler = new _HandshakeHandler("", "");
+      expect(() {
+        handler.processResponse(responseBuffer);
+      }, throwsA(new isInstanceOf<MySqlClientError>()));
+    });
+
+    test('throws if plugin is set and is not mysql_native_password', () {
+      var user = "bob";
+      var password = "password";
+      var db = "db";
+      var handler = new _HandshakeHandler(user, password, db, true, true);
+      var serverVersion = "version 1";
+      var threadId = 123882394;
+      var serverLanguage = 9;
+      var serverStatus = 999;
+      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
+      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var scrambleBuffer1 = "abcdefgh";
+      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
+          serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, "some_random_plugin", true);
+
+      expect(() {
+        handler.processResponse(responseBuffer);
+      }, throwsA(new isInstanceOf<MySqlClientError>()));
+    });
   });
 }
+
+//TODO test with SSL turned on

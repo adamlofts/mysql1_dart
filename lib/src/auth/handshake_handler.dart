@@ -1,6 +1,8 @@
 part of sqljocky;
 
 class _HandshakeHandler extends _Handler {
+  static const MYSQL_NATIVE_PASSWORD = "mysql_native_password";
+
   final String _user;
   final String _password;
   final String _db;
@@ -35,7 +37,7 @@ class _HandshakeHandler extends _Handler {
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
-      throw new MySqlProtocolError._("Protocol not supported");
+      throw new MySqlClientError._("Protocol not supported");
     }
     serverVersion = response.readNullTerminatedString();
     threadId = response.readUint32();
@@ -83,6 +85,14 @@ class _HandshakeHandler extends _Handler {
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
       throw new MySqlClientError._("Unsupported protocol (must be 4.1 or newer");
+    }
+
+    if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
+      throw new MySqlClientError._("Old Password AUthentication is not supported");
+    }
+
+    if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 && pluginName != MYSQL_NATIVE_PASSWORD) {
+      throw new MySqlClientError._("Authentication plugin not supported: $pluginName");
     }
     
     int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
