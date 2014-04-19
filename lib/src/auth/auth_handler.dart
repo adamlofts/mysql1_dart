@@ -7,12 +7,12 @@ class _AuthHandler extends _Handler {
   final List<int> _scrambleBuffer;
   final int _clientFlags;
   final int _maxPacketSize;
-  final int _collation;
+  final int _character_set;
   final bool _ssl;
   
   _AuthHandler(String this._username, String this._password, String this._db,
     List<int> this._scrambleBuffer, int this._clientFlags,
-    int this._maxPacketSize, int this._collation, {bool ssl : false}) :
+    int this._maxPacketSize, int this._character_set, {bool ssl : false}) :
       this._ssl = false {
     log = new Logger("AuthHandler");
   }
@@ -57,7 +57,7 @@ class _AuthHandler extends _Handler {
     buffer.seekWrite(0);
     buffer.writeUint32(clientFlags);
     buffer.writeUint32(_maxPacketSize);
-    buffer.writeByte(_collation);
+    buffer.writeByte(_character_set);
     buffer.fill(23, 0);
     buffer.writeNullTerminatedList(encodedUsername);
     buffer.writeByte(hash.length);

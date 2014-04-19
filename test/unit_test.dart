@@ -19,6 +19,7 @@ import 'package:sqljocky/src/list_writer.dart';
 part '../lib/src/auth/auth_handler.dart';
 part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
+part '../lib/src/auth/character_set.dart';
 part '../lib/src/blob.dart';
 part '../lib/src/handlers/handler.dart';
 part '../lib/src/handlers/ok_packet.dart';

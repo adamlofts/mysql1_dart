@@ -1,7 +1,8 @@
 part of sqljocky;
 
 class _HandshakeHandler extends _Handler {
-  static const MYSQL_NATIVE_PASSWORD = "mysql_native_password";
+  static const String MYSQL_NATIVE_PASSWORD = "mysql_native_password";
+  static const int MAX_PACKET_SIZE = 16777216;
 
   final String _user;
   final String _password;
@@ -113,11 +114,11 @@ class _HandshakeHandler extends _Handler {
     }
     
     if (useSSL) {
-      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, 16777216, 33, 
-          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, 16777216, 33, ssl: true)));
+      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, 16777216, CharacterSet.UTF8,
+          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, 16777216, CharacterSet.UTF8, ssl: true)));
     }
     
     return new _HandlerResponse(nextHandler: new _AuthHandler(_user, _password, _db, scrambleBuffer,
-      clientFlags, 0, 33));
+      clientFlags, MAX_PACKET_SIZE, CharacterSet.UTF8));
   }
 }

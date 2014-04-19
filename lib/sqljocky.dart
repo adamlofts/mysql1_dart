@@ -42,6 +42,7 @@ part 'src/handlers/quit_handler.dart';
 part 'src/auth/handshake_handler.dart';
 part 'src/auth/auth_handler.dart';
 part 'src/auth/ssl_handler.dart';
+part 'src/auth/character_set.dart';
 
 //prepared statements handlers
 part 'src/prepared_statements/prepare_ok_packet.dart';

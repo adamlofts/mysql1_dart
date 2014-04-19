@@ -224,14 +224,17 @@ void runHandshakeHandlerTests() {
       expect(response, new isInstanceOf<_HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
 
+      int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
+          | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+
       _AuthHandler authHandler = response.nextHandler;
+      expect(authHandler._character_set, equals(CharacterSet.UTF8));
       expect(authHandler._username, equals(user));
       expect(authHandler._password, equals(password));
       expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
       expect(authHandler._db, equals(db));
-
-      //TODO test with SSL turned on
-      //TODO http://dev.mysql.com/doc/internals/en/determining-authentication-method.html
+      expect(authHandler._clientFlags, equals(clientFlags));
+      expect(authHandler._maxPacketSize, equals(_HandshakeHandler.MAX_PACKET_SIZE));
     });
 
     test('works when plugin name is set', () {
@@ -301,7 +304,51 @@ void runHandshakeHandlerTests() {
         handler.processResponse(responseBuffer);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
+
+    test('works when ssl requested', () {
+      var user = "bob";
+      var password = "password";
+      var db = "db";
+      var handler = new _HandshakeHandler(user, password, db, true, true);
+      var serverVersion = "version 1";
+      var threadId = 123882394;
+      var serverLanguage = 9;
+      var serverStatus = 999;
+      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION | CLIENT_SSL;
+      var serverCapabilities2 = 0;
+      var scrambleBuffer1 = "abcdefgh";
+      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
+      serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
+      var response = handler.processResponse(responseBuffer);
+
+      expect(handler.useCompression, isFalse);
+      expect(handler.useSSL, isTrue);
+
+      expect(response, new isInstanceOf<_HandlerResponse>());
+      expect(response.nextHandler, new isInstanceOf<_SSLHandler>());
+
+      int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
+          | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION
+          | CLIENT_SSL;
+
+      _SSLHandler sslHandler = response.nextHandler;
+      expect(sslHandler.nextHandler, new isInstanceOf<_AuthHandler>());
+      expect(sslHandler._character_set, equals(CharacterSet.UTF8));
+      expect(sslHandler._clientFlags, equals(clientFlags));
+      expect(sslHandler._maxPacketSize, equals(_HandshakeHandler.MAX_PACKET_SIZE));
+
+      _AuthHandler authHandler = sslHandler.nextHandler;
+      expect(authHandler._character_set, equals(CharacterSet.UTF8));
+      expect(authHandler._username, equals(user));
+      expect(authHandler._password, equals(password));
+      expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
+      expect(authHandler._db, equals(db));
+      expect(authHandler._clientFlags, equals(clientFlags));
+      expect(authHandler._maxPacketSize, equals(_HandshakeHandler.MAX_PACKET_SIZE));
+    });
   });
 }
 
-//TODO test with SSL turned on
+//TODO http://dev.mysql.com/doc/internals/en/determining-authentication-method.html
