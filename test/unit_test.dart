@@ -3,6 +3,7 @@ library sqljocky;
 import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'dart:collection';
 import 'dart:math' as math;
 
@@ -13,6 +14,7 @@ import 'package:unittest/mock.dart';
 
 import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';
+import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
 import 'package:sqljocky/src/list_writer.dart';
 
@@ -21,8 +23,11 @@ part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
 part '../lib/src/auth/character_set.dart';
 part '../lib/src/blob.dart';
+part '../lib/src/connection.dart';
+part '../lib/src/connection_pool.dart';
 part '../lib/src/handlers/handler.dart';
 part '../lib/src/handlers/ok_packet.dart';
+part '../lib/src/handlers/use_db_handler.dart';
 part '../lib/src/mysql_client_error.dart';
 part '../lib/src/mysql_exception.dart';
 part '../lib/src/mysql_protocol_error.dart';
@@ -46,6 +51,7 @@ part 'unit/field_by_name_test.dart';
 part 'unit/binary_data_packet_test.dart';
 part 'unit/execute_query_handler_test.dart';
 part 'unit/handshake_handler_test.dart';
+part 'unit/connection_test.dart';
 
 void main() {
   runBufferTests();
@@ -57,4 +63,5 @@ void main() {
   runBinaryDataPacketTests();
   runExecuteQueryHandlerTests();
   runHandshakeHandlerTests();
+  runConnectionTests();
 }
