@@ -2,7 +2,7 @@ part of sqljocky;
 
 class _HandshakeHandler extends _Handler {
   static const String MYSQL_NATIVE_PASSWORD = "mysql_native_password";
-  static const int MAX_PACKET_SIZE = 16777216;
+  static const int MAX_PACKET_SIZE = 32 * 1024 * 1024;
 
   final String _user;
   final String _password;

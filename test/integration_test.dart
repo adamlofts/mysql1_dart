@@ -52,4 +52,5 @@ void main() {
   runStreamTests(user, password, db, port, host);
   runRowTests(user, password, db, port, host);
   runErrorTests(user, password, db, port, host);
+  runLargeBlobTests(user, password, db, port, host);
 }

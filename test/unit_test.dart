@@ -18,6 +18,8 @@ import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
 import 'package:sqljocky/src/list_writer.dart';
 
+import 'unit/buffered_socket_test.dart';
+
 part '../lib/src/auth/auth_handler.dart';
 part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
@@ -55,6 +57,7 @@ part 'unit/connection_test.dart';
 
 void main() {
   runBufferTests();
+  runBufferedSocketTests();
   runSerializationTests();
   runTypesTests();
   runPreparedStatementTests();

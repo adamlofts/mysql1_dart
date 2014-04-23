@@ -6,19 +6,18 @@ void runLargeBlobTests(String user, String password, String db, int port, String
   group('large blob tests:', () {
     test('setup', () {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
-      text = "";
-      while (text.length < 50000) {
-        text += "asdfghjkqaewrpoiuwretlkjahsdflkjashguaihefalkjehfauiwhefklajshdfkj";
-      }
+      text = new String.fromCharCodes(new List.filled(16*1024*1024, 65));
       var sql = "insert into large (stuff) values ('$text')";
-      return setup(pool, "large", "create table large (stuff text)", sql);
+      return setup(pool, "large", "create table large (stuff longtext)", sql);
     });
     
     test('read data', () {
       var c = new Completer();
       pool.query('select * from large').then(expectAsync1((Results results) {
         results.listen((row) {
-          expect(row[0].toString(), equals(text));
+          var t = row[0].toString();
+          expect(t.length, equals(text.length));
+          expect(t, equals(text));
           // shouldn't get exception here
         }, onDone: () {
           c.complete();

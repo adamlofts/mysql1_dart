@@ -122,6 +122,8 @@ class _Connection {
   }
   
   void _handleHeader(buffer) {
+    //TODO if datasize == 0xFFFFFF then keep data around, get more data
+    //TODO and add it to this data
     _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
@@ -194,6 +196,7 @@ class _Connection {
   }
   
   Future _sendBuffer(Buffer buffer) {
+    //TODO throw error if buffer > max packet size for this connection
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;
       _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
@@ -207,16 +210,28 @@ class _Connection {
       _socket.writeBuffer(_compressedHeaderBuffer);
     } else {
       log.fine("sendBuffer header");
-      _headerBuffer[0] = buffer.length & 0xFF;
-      _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
-      _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
-      _headerBuffer[3] = ++_packetNumber;
-      log.fine("sending header, packet $_packetNumber");
-      return _socket.writeBuffer(_headerBuffer).then((_) {
-        log.fine("sendBuffer body, buffer length=${buffer.length}");
-        return _socket.writeBuffer(buffer);
-      });
+      return _sendBufferPart(buffer, 0);
     }
+  }
+
+  Future<Buffer> _sendBufferPart(Buffer buffer, int start) {
+    var len = math.min(buffer.length - start, 0xFFFFFF);
+
+    _headerBuffer[0] = len & 0xFF;
+    _headerBuffer[1] = (len & 0xFF00) >> 8;
+    _headerBuffer[2] = (len & 0xFF0000) >> 16;
+    _headerBuffer[3] = ++_packetNumber;
+    log.fine("sending header, packet $_packetNumber");
+    return _socket.writeBuffer(_headerBuffer).then((_) {
+      log.fine("sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
+      return _socket.writeBufferPart(buffer, start, len);
+    }).then((_) {
+      if (len == 0xFFFFFF) {
+        return _sendBufferPart(buffer, start + len);
+      } else {
+        return buffer;
+      }
+    });
   }
 
   /**

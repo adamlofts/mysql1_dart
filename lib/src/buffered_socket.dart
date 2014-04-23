@@ -26,6 +26,7 @@ class BufferedSocket {
 
   Buffer _writingBuffer;
   int _writeOffset;
+  int _writeLength;
   Completer<Buffer> _writeCompleter;
 
   Buffer _readingBuffer;
@@ -104,6 +105,10 @@ class BufferedSocket {
    * completes when it has all been written.
    */
   Future<Buffer> writeBuffer(Buffer buffer) {
+    return writeBufferPart(buffer, 0, buffer.length);
+  }
+
+  Future<Buffer> writeBufferPart(Buffer buffer, int start, int length) {
     log.fine("writeBuffer length=${buffer.length}");
     if (_closed) {
       throw new StateError("Cannot write to socket, it is closed");
@@ -113,7 +118,8 @@ class BufferedSocket {
     }
     _writingBuffer = buffer;
     _writeCompleter = new Completer<Buffer>();
-    _writeOffset = 0;
+    _writeOffset = start;
+    _writeLength = length + start;
 
     _writeBuffer();
 
@@ -122,13 +128,13 @@ class BufferedSocket {
 
   void _writeBuffer() {
     log.fine("_writeBuffer offset=${_writeOffset}");
-    int bytesWritten = _writingBuffer.writeToSocket(_socket, _writeOffset, _writingBuffer.length - _writeOffset);
+    int bytesWritten = _writingBuffer.writeToSocket(_socket, _writeOffset, _writeLength - _writeOffset);
     log.fine("Wrote $bytesWritten bytes");
     if (log.isLoggable(Level.FINE)) {
       log.fine("\n${Buffer.debugChars(_writingBuffer.list)}");
     }
     _writeOffset += bytesWritten;
-    if (_writeOffset == _writingBuffer.length) {
+    if (_writeOffset == _writeLength) {
       _writeCompleter.complete(_writingBuffer);
       _writingBuffer = null;
     } else {

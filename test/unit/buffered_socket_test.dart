@@ -1,6 +1,7 @@
 library buffered_socket_test;
 
 import 'package:unittest/unittest.dart';
+import 'package:unittest/mock.dart';
 import 'dart:io';
 import 'dart:async';
 
@@ -55,10 +56,16 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
 
   int write(List<int> buffer, [int offset, int count]) {}
 
-  void set writeEventsEnabled(bool value) {}
+  void set writeEventsEnabled(bool value) {
+    if (value) {
+      _streamController.add(RawSocketEvent.WRITE);
+    }
+  }
 
   bool get writeEventsEnabled => null;
 }
+
+class MockBuffer extends Mock implements Buffer {}
 
 void runBufferedSocketTests() {
   group('buffered socket', () {
@@ -163,6 +170,30 @@ void runBufferedSocketTests() {
             c.complete();
           });
       return c.future;
+    });
+
+    test('should write buffer', () {
+      return BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
+          socketFactory: factory).then((socket) {
+        var buffer = new MockBuffer();
+        buffer.when(callsTo('get length')).alwaysReturn(100);
+        buffer.when(callsTo('writeToSocket')).alwaysReturn(25);
+        return socket.writeBuffer(buffer).then((_) {
+          buffer.getLogs(callsTo('writeToSocket')).verify(happenedExactly(4));
+        });
+      });
+    });
+
+    test('should write part of buffer', () {
+      return BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
+          socketFactory: factory).then((socket) {
+        var buffer = new MockBuffer();
+        buffer.when(callsTo('get length')).alwaysReturn(100);
+        buffer.when(callsTo('writeToSocket')).alwaysReturn(25);
+        return socket.writeBufferPart(buffer, 25, 50).then((_) {
+          buffer.getLogs(callsTo('writeToSocket')).verify(happenedExactly(2));
+        });
+      });
     });
   });
 }
