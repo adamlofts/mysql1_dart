@@ -5,6 +5,7 @@ import 'package:sqljocky/constants.dart';
 import 'package:options_file/options_file.dart';
 import 'package:unittest/unittest.dart';
 import 'package:logging/logging.dart';
+import 'package:args/args.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:sqljocky/utils.dart';
@@ -20,7 +21,7 @@ part 'integration/stream.dart';
 part 'integration/row.dart';
 part 'integration/errors.dart';
 
-void main() {
+void main(List<String> args) {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
@@ -37,6 +38,10 @@ void main() {
   };
   Logger.root.onRecord.listen(listener);
 
+  var parser = new ArgParser();
+  parser.addOption('large_packets', allowed: ['true', 'false'], defaultsTo: 'true');
+  var results = parser.parse(args);
+
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
   var password = options.getString('password');
@@ -52,5 +57,7 @@ void main() {
   runStreamTests(user, password, db, port, host);
   runRowTests(user, password, db, port, host);
   runErrorTests(user, password, db, port, host);
-  runLargeBlobTests(user, password, db, port, host);
+  if (results['large_packets'] == 'true') {
+    runLargeBlobTests(user, password, db, port, host);
+  }
 }

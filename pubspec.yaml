@@ -12,3 +12,4 @@ dependencies:
   options_file: '>=0.9.15'
 dev_dependencies:
   unittest: '>=0.9.0 <0.10.0'
+  args: any
