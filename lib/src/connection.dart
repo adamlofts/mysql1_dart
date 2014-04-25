@@ -25,6 +25,7 @@ class _Connection {
   bool _useCompression = false;
   bool _useSSL = false;
   bool _secure = false;
+  int _maxPacketSize;
 
   int _dataSize;
 
@@ -37,7 +38,7 @@ class _Connection {
   bool inTransaction = false;
   final Map<String, _PreparedQuery> _preparedQueryCache;
 
-  _Connection(this._pool, this.number) :
+  _Connection(this._pool, this.number, this._maxPacketSize) :
       log = new Logger("Connection"),
       lifecycleLog = new Logger("Connection.Lifecycle"),
       _headerBuffer = new Buffer(HEADER_SIZE),
@@ -78,8 +79,8 @@ class _Connection {
     
     _user = user;
     _password = password;
-    _handler = new _HandshakeHandler(user, password, db, useCompression, useSSL);
-    
+    _handler = new _HandshakeHandler(user, password, _maxPacketSize, db, useCompression, useSSL);
+
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
     BufferedSocket.connect(host, port,
@@ -196,6 +197,9 @@ class _Connection {
   }
   
   Future _sendBuffer(Buffer buffer) {
+    if (buffer.length > _maxPacketSize) {
+      throw new MySqlClientError._("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
+    }
     //TODO throw error if buffer > max packet size for this connection
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;

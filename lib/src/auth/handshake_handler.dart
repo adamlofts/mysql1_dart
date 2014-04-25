@@ -2,12 +2,12 @@ part of sqljocky;
 
 class _HandshakeHandler extends _Handler {
   static const String MYSQL_NATIVE_PASSWORD = "mysql_native_password";
-  static const int MAX_PACKET_SIZE = 32 * 1024 * 1024;
 
   final String _user;
   final String _password;
   final String _db;
-  
+  final int _maxPacketSize;
+
   int protocolVersion;
   String serverVersion;
   int threadId;
@@ -19,8 +19,9 @@ class _HandshakeHandler extends _Handler {
   String pluginName;
   bool useCompression = false;
   bool useSSL = false;
-  
-  _HandshakeHandler(String this._user, String this._password, [String db, bool useCompression, bool useSSL])
+
+  _HandshakeHandler(String this._user, String this._password, int this._maxPacketSize,
+                    [String db, bool useCompression, bool useSSL])
       : _db = db, this.useCompression = useCompression,
       this.useSSL = useSSL {
     log = new Logger("HandshakeHandler");
@@ -114,11 +115,11 @@ class _HandshakeHandler extends _Handler {
     }
     
     if (useSSL) {
-      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, 16777216, CharacterSet.UTF8,
-          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, 16777216, CharacterSet.UTF8, ssl: true)));
+      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, _maxPacketSize, CharacterSet.UTF8,
+          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8, ssl: true)));
     }
     
     return new _HandlerResponse(nextHandler: new _AuthHandler(_user, _password, _db, scrambleBuffer,
-      clientFlags, MAX_PACKET_SIZE, CharacterSet.UTF8));
+      clientFlags, _maxPacketSize, CharacterSet.UTF8));
   }
 }

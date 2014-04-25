@@ -15,7 +15,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   final String _db;
   final bool _useCompression = false;
   final bool _useSSL;
-
+  final int _maxPacketSize;
   int _max;
 
 /*
@@ -29,10 +29,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 /**
    * Creates a [ConnectionPool]. When connections are required they will connect to the
    * [db] on the given [host] and [port], using the [user] and [password]. The [max] number
-   * of simultaneous connections can also be specified.
+   * of simultaneous connections can also be specified, as well as the [maxPacketSize].
    */
   ConnectionPool({String host: 'localhost', int port: 3306, String user,
-      String password, String db, int max: 5, 
+      String password, String db, int max: 5, int maxPacketSize: 16 * 1024 * 1024,
 //      bool useCompression: false,
       bool useSSL: false}) :
   _pendingConnections = new Queue<Completer<_Connection>>(),
@@ -42,6 +42,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   _user = user,
   _password = password,
   _db = db,
+  _maxPacketSize = maxPacketSize,
   _max = max,
 //  _useCompression = useCompression,
   _useSSL = useSSL,
@@ -72,7 +73,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   }
 
   _createConnection(Completer c) {
-    var cnx = new _Connection(this, _pool.length);
+    var cnx = new _Connection(this, _pool.length, _maxPacketSize);
     cnx.use();
     cnx.autoRelease = false;
     _pool.add(cnx);

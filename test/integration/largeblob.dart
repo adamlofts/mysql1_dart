@@ -5,7 +5,8 @@ void runLargeBlobTests(String user, String password, String db, int port, String
   var text;
   group('large blob tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1,
+          maxPacketSize: 32 * 1024 * 1024);
       text = new String.fromCharCodes(new List.filled(16*1024*1024, 65));
       var sql = "insert into large (stuff) values ('$text')";
       return setup(pool, "large", "create table large (stuff longtext)", sql);
