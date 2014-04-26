@@ -11,6 +11,9 @@ class _Connection {
   ConnectionPool _pool;
   _Handler _handler;
   Completer<dynamic> _completer;
+
+  // this is for unit testing, so we can replace this method with a spy
+  var _dataHandler;
   
   BufferedSocket _socket;
 
@@ -44,7 +47,9 @@ class _Connection {
       _headerBuffer = new Buffer(HEADER_SIZE),
       _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
       _preparedQueryCache = new Map<String, _PreparedQuery>(),
-      _inUse = false;
+      _inUse = false {
+    _dataHandler = this._handleData;
+  }
   
   void close() {
     if (_socket != null) {
@@ -130,7 +135,7 @@ class _Connection {
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
     _dataBuffer = new Buffer(_dataSize);
     log.fine("buffer size=${_dataBuffer.length}");
-    _socket.readBuffer(_dataBuffer).then(_handleData);
+    _socket.readBuffer(_dataBuffer).then(_dataHandler);
   }
   
   void _handleData(buffer) {

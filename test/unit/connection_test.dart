@@ -64,8 +64,43 @@ void runConnectionTests() {
         expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(17 * 1024 * 1024 - 0xffffff));
       });
     });
+
+    test('should receive buffer', () {
+      var cnx = new _Connection(null, 15, 16 * 1024 * 1024);
+      var socket = new MockSocket();
+      cnx._socket = socket;
+
+      var c = new Completer();
+
+      var buffer;
+      cnx._dataHandler = (newBuffer) {
+        buffer = newBuffer;
+        c.complete();
+      };
+
+      var bufferReturnCount = 0;
+      var bufferReturn = (_) {
+        if (bufferReturnCount == 0) {
+          bufferReturnCount++;
+          return new Future.value(new Buffer.fromList([3, 0, 0, 1]));
+        } else {
+          bufferReturnCount++;
+          return new Future.value(new Buffer.fromList([1, 2, 3]));
+        }
+      };
+      socket.when(callsTo('readBuffer')).thenCall(bufferReturn, 2);
+
+      cnx._readPacket();
+
+      return c.future.then((_) {
+
+        socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(2));
+        expect(buffer.list, equals([1, 2, 3]));
+      });
+    });
   });
 
 }
 
 class MockSocket extends Mock implements BufferedSocket {}
+class MockConnection extends Mock implements _Connection {}
