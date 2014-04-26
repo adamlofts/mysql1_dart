@@ -89,7 +89,6 @@ Things to do
 ------------
 
 * Compression
-* Larger than 16MB packets
 * Handle character sets properly (currently defaults to UTF8)
 * COM_SEND_LONG_DATA
 * Better handling of various data types, especially BLOBs, which behave differently when using straight queries and prepared queries.

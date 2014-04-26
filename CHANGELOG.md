@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.11.0
+-------
+* Added support for packets larger than 16 MB. ConnectionPool's constructor has a new parameter,
+'maxPacketSize', which specifies the maximum packet size in bytes. Using packets larger than
+16 MB is not currently particularly optimised.
+* Fixed some issues with authentication. In particular, errors should now be thrown when you
+try to connect to a server which is using an old or unsupported authentication protocol.
+
 v0.10.0
 -------
 * Added SSL connections. Pass 'useSSL: true' to ConnectionPool constructor. If server doesn't support
