@@ -98,6 +98,56 @@ void runConnectionTests() {
         expect(buffer.list, equals([1, 2, 3]));
       });
     });
+
+    test('should receive large buffer', () {
+      var cnx = new _Connection(null, 15, 32 * 1024 * 1024);
+      var socket = new MockSocket();
+      cnx._socket = socket;
+
+      var c = new Completer();
+
+      var buffer;
+      cnx._dataHandler = (newBuffer) {
+        buffer = newBuffer;
+        c.complete();
+      };
+
+      var bufferReturnCount = 0;
+      var bufferReturn = (_) {
+        if (bufferReturnCount == 0) {
+          bufferReturnCount++;
+          return new Future.value(new Buffer.fromList([0xff, 0xff, 0xff, 1]));
+        } else if (bufferReturnCount == 1) {
+          bufferReturnCount++;
+          var bigBuffer = new Buffer(0xffffff);
+          bigBuffer.list[0] = 1;
+          bigBuffer.list[0xffffff - 1] = 2;
+          return new Future.value(bigBuffer);
+        } else if (bufferReturnCount == 2) {
+          bufferReturnCount++;
+          return new Future.value(new Buffer.fromList([3, 0, 0, 2]));
+        } else {
+          bufferReturnCount++;
+          var bufferSize = 17 * 1024 * 1024 - 0xffffff;
+          var littleBuffer = new Buffer(bufferSize);
+          littleBuffer[0] = 3;
+          littleBuffer[bufferSize - 1] = 4;
+          return new Future.value(littleBuffer);
+        }
+      };
+      socket.when(callsTo('readBuffer')).thenCall(bufferReturn, 4);
+
+      cnx._readPacket();
+
+      return c.future.then((_) {
+        socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(4));
+        expect(buffer.list.length, equals(17 * 1024 * 1024));
+        expect(buffer.list[0], equals(1));
+        expect(buffer.list[0xffffff - 1], equals(2));
+        expect(buffer.list[0xffffff], equals(3));
+        expect(buffer.list[buffer.list.length - 1], equals(4));
+      });
+    });
   });
 
 }

@@ -16,6 +16,7 @@ class _Connection {
   var _dataHandler;
   
   BufferedSocket _socket;
+  var _largePacketBuffers = new List<Buffer>();
 
   final Buffer _headerBuffer;
   final Buffer _compressedHeaderBuffer;
@@ -100,7 +101,11 @@ class _Connection {
       onError: (error) {
         log.fine("error $error");
         release();
-        _completer.completeError(error);
+        if (_completer.isCompleted) {
+          throw error;
+        } else {
+          _completer.completeError(error);
+        }
       });
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
     //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
@@ -126,16 +131,39 @@ class _Connection {
       _socket.readBuffer(_headerBuffer).then(_handleHeader);      
     }
   }
-  
+
   void _handleHeader(buffer) {
-    //TODO if datasize == 0xFFFFFF then keep data around, get more data
-    //TODO and add it to this data
     _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
     _dataBuffer = new Buffer(_dataSize);
     log.fine("buffer size=${_dataBuffer.length}");
-    _socket.readBuffer(_dataBuffer).then(_dataHandler);
+    if (_dataSize == 0xffffff || _largePacketBuffers.length > 0) {
+      _socket.readBuffer(_dataBuffer).then(_handleMoreData);
+    } else {
+      _socket.readBuffer(_dataBuffer).then(_dataHandler);
+    }
+  }
+
+  void _handleMoreData(buffer) {
+    _largePacketBuffers.add(buffer);
+    if (buffer.length < 0xffffff) {
+      var length = _largePacketBuffers.fold(0, (length, buf) {
+        return length + buf.length;
+      });
+      var combinedBuffer = new Buffer(length);
+      var start = 0;
+      _largePacketBuffers.forEach((aBuffer) {
+        combinedBuffer.list.setRange(start, start + aBuffer.length, aBuffer.list);
+        start += aBuffer.length;
+      });
+      _largePacketBuffers.clear();
+      _dataHandler(combinedBuffer);
+    } else {
+      _readyForHeader = true;
+      _headerBuffer.reset();
+      _readPacket();
+    }
   }
   
   void _handleData(buffer) {
@@ -205,7 +233,6 @@ class _Connection {
     if (buffer.length > _maxPacketSize) {
       throw new MySqlClientError._("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
     }
-    //TODO throw error if buffer > max packet size for this connection
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;
       _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
