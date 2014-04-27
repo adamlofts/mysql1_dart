@@ -89,16 +89,12 @@ Things to do
 ------------
 
 * Compression
-* Handle character sets properly (currently defaults to UTF8)
 * COM_SEND_LONG_DATA
 * Better handling of various data types, especially BLOBs, which behave differently when using straight queries and prepared queries.
 * Implement the rest of mysql's commands
+* Handle character sets properly? Currently defaults to UTF8 for the connection character set. Is it
+necessary to support anything else?
 * Improve performance where possible
-* More unit testing
-* More integration tests
-* DartDoc
-* More Example code
-* Use idiomatic dart where possible
 * Geometry type
 * Decimal type should probably use a bigdecimal type of some sort
 * MySQL 4 types (old decimal, anything else?)
