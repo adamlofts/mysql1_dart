@@ -14,6 +14,7 @@ class _ExecuteQueryHandler extends _Handler {
 
   final _PreparedQuery _preparedQuery;
   final List _values;
+  List _preparedValues;
   _OkPacket _okPacket;
   bool _executed;
   
@@ -23,45 +24,115 @@ class _ExecuteQueryHandler extends _Handler {
   }
 
   Buffer createRequest() {
-    //TODO do this properly
-    var types = <int>[];
-    var values = new ListWriter(<int>[]);
+    var length = 0;
+    var types = new List<int>(_values.length * 2);
+    var nullMap = _createNullMap();
+    _preparedValues = new List(_values.length);
     for (var i = 0; i < _values.length; i++) {
-      _writeValue(i, types, values);
+      types[i * 2] = _getType(_values[i]);
+      types[i * 2 + 1] = 0;
+      _preparedValues[i] = _prepareValue(_values[i]);
+      length += _measureValue(_values[i], _preparedValues[i]);
     }
 
-    var nullMap = _createNullMap();
-    var buffer = _writeValuesToBuffer(nullMap, values, types);
+    var buffer = _writeValuesToBuffer(nullMap, length, types);
 //    log.fine(Buffer.listChars(buffer._list));
     return buffer;
   }
 
-  _writeValue(int i, List<int> types, ListWriter values) {
-    log.fine("field $i ${_preparedQuery.parameters[i].type}");
-    var value = _values[i];
+  _prepareValue(value) {
     if (value != null) {
       if (value is int) {
-        _writeInt(value, types, values);
+        return _prepareInt(value);
       } else if (value is double) {
-        _writeDouble(value, types, values);
+        return _prepareDouble(value);
       } else if (value is DateTime) {
-        _writeDateTime(value, types, values);
+        return _prepareDateTime(value);
       } else if (value is bool) {
-        _writeBool(value, types, values);
+        return _prepareBool(value);
       } else if (value is List<int>) {
-        _writeList(value, types, values);
+        return _prepareList(value);
       } else if (value is Blob) {
-        _writeBlob(value, types, values);
+        return _prepareBlob(value);
       } else {
-        _writeString(value, types, values);
+        return _prepareString(value);
+      }
+    }
+    return value;
+  }
+
+  _measureValue(value, preparedValue) {
+    if (value != null) {
+      if (value is int) {
+        return _measureInt(value, preparedValue);
+      } else if (value is double) {
+        return _measureDouble(value, preparedValue);
+      } else if (value is DateTime) {
+        return _measureDateTime(value, preparedValue);
+      } else if (value is bool) {
+        return _measureBool(value, preparedValue);
+      } else if (value is List<int>) {
+        return _measureList(value, preparedValue);
+      } else if (value is Blob) {
+        return _measureBlob(value, preparedValue);
+      } else {
+        return _measureString(value, preparedValue);
+      }
+    }
+    return 0;
+  }
+
+  _getType(value) {
+    if (value != null) {
+      if (value is int) {
+        return FIELD_TYPE_LONGLONG;
+      } else if (value is double) {
+        return FIELD_TYPE_VARCHAR;
+      } else if (value is DateTime) {
+        return FIELD_TYPE_DATETIME;
+      } else if (value is bool) {
+        return FIELD_TYPE_TINY;
+      } else if (value is List<int>) {
+        return FIELD_TYPE_BLOB;
+      } else if (value is Blob) {
+        return FIELD_TYPE_BLOB;
+      } else {
+        return FIELD_TYPE_VARCHAR;
       }
     } else {
-      types.add(FIELD_TYPE_NULL);
-      types.add(0);
+      return FIELD_TYPE_NULL;
     }
   }
 
-  _writeInt(value, List<int> types, ListWriter values) {
+  _writeValue(value, preparedValue, Buffer buffer) {
+    if (value != null) {
+      if (value is int) {
+        _writeInt(value, preparedValue, buffer);
+      } else if (value is double) {
+        _writeDouble(value, preparedValue, buffer);
+      } else if (value is DateTime) {
+        _writeDateTime(value, preparedValue, buffer);
+      } else if (value is bool) {
+        _writeBool(value, preparedValue, buffer);
+      } else if (value is List<int>) {
+        _writeList(value, preparedValue, buffer);
+      } else if (value is Blob) {
+        _writeBlob(value, preparedValue, buffer);
+      } else {
+        _writeString(value, preparedValue, buffer);
+      }
+    }
+  }
+
+  _prepareInt(value) {
+    return value;
+  }
+
+  int _measureInt(value, preparedValue) {
+    return 8;
+  }
+
+  _writeInt(value, preparedValue, Buffer buffer) {
 //          if (value < 128 && value > -127) {
 //            log.fine("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
@@ -69,28 +140,30 @@ class _ExecuteQueryHandler extends _Handler {
 //            values.add(value & 0xFF);
 //          } else {
     log.fine("LONG: $value");
-    types.add(FIELD_TYPE_LONGLONG);
-    types.add(0);
-    values.add(value >> 0x00 & 0xFF);
-    values.add(value >> 0x08 & 0xFF);
-    values.add(value >> 0x10 & 0xFF);
-    values.add(value >> 0x18 & 0xFF);
-    values.add(value >> 0x20 & 0xFF);
-    values.add(value >> 0x28 & 0xFF);
-    values.add(value >> 0x30 & 0xFF);
-    values.add(value >> 0x38 & 0xFF);
+    buffer.writeByte(value >> 0x00 & 0xFF);
+    buffer.writeByte(value >> 0x08 & 0xFF);
+    buffer.writeByte(value >> 0x10 & 0xFF);
+    buffer.writeByte(value >> 0x18 & 0xFF);
+    buffer.writeByte(value >> 0x20 & 0xFF);
+    buffer.writeByte(value >> 0x28 & 0xFF);
+    buffer.writeByte(value >> 0x30 & 0xFF);
+    buffer.writeByte(value >> 0x38 & 0xFF);
 //          }
   }
 
-  _writeDouble(value, List<int> types, ListWriter values) {
+  _prepareDouble(value) {
+    return UTF8.encode(value.toString());
+  }
+
+  int _measureDouble(value, preparedValue) {
+    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+  }
+
+  _writeDouble(value, preparedValue, Buffer buffer) {
     log.fine("DOUBLE: $value");
 
-    var s = value.toString();
-    types.add(FIELD_TYPE_VARCHAR);
-    types.add(0);
-    var encoded = UTF8.encode(s);
-    values.writeLengthCodedBinary(encoded.length);
-    values.writeList(encoded);
+    buffer.writeLengthCodedBinary(preparedValue.length);
+    buffer.writeList(preparedValue);
 
     // TODO: if you send a double value for a decimal field, it doesn't like it
 //          types.add(FIELD_TYPE_FLOAT);
@@ -98,58 +171,80 @@ class _ExecuteQueryHandler extends _Handler {
 //          values.addAll(doubleToList(value));
   }
 
-  _writeDateTime(value, List<int> types, ListWriter values) {
+  _prepareDateTime(value) {
+    return value;
+  }
+
+  int _measureDateTime(value, preparedValue) {
+    return 8;
+  }
+
+  _writeDateTime(value, preparedValue, Buffer buffer) {
     // TODO remove Date eventually
     log.fine("DATE: $value");
-    types.add(FIELD_TYPE_DATETIME);
-    types.add(0);
-    values.add(7);
-    values.add(value.year >> 0x00 & 0xFF);
-    values.add(value.year >> 0x08 & 0xFF);
-    values.add(value.month);
-    values.add(value.day);
-    values.add(value.hour);
-    values.add(value.minute);
-    values.add(value.second);
-//          var billionths = value.millisecond * 1000000;
-//          values.add(billionths >> 0x00 & 0xFF);
-//          values.add(billionths >> 0x08 & 0xFF);
-//          values.add(billionths >> 0x10 & 0xFF);
-//          values.add(billionths >> 0x18 & 0xFF);
+    buffer.writeByte(7);
+    buffer.writeByte(value.year >> 0x00 & 0xFF);
+    buffer.writeByte(value.year >> 0x08 & 0xFF);
+    buffer.writeByte(value.month);
+    buffer.writeByte(value.day);
+    buffer.writeByte(value.hour);
+    buffer.writeByte(value.minute);
+    buffer.writeByte(value.second);
   }
 
-  _writeBool(value, List<int> types, ListWriter values) {
+  _prepareBool(value) {
+    return value;
+  }
+
+  int _measureBool(value, preparedValue) {
+    return 1;
+  }
+
+  _writeBool(value, preparedValue, Buffer buffer) {
     log.fine("BOOL: $value");
-    types.add(FIELD_TYPE_TINY);
-    types.add(0);
-    values.add(value ? 1 : 0);
+    buffer.writeByte(value ? 1 : 0);
   }
 
-  _writeList(value, List<int> types, ListWriter values) {
+  _prepareList(value) {
+    return value;
+  }
+
+  int _measureList(value, preparedValue) {
+    return Buffer.measureLengthCodedBinary(value.length) + value.length;
+  }
+
+  _writeList(value, preparedValue, Buffer buffer) {
     log.fine("LIST: $value");
-    types.add(FIELD_TYPE_BLOB);
-    types.add(0);
-    values.writeLengthCodedBinary(value.length);
-    values.writeList(value);
+    buffer.writeLengthCodedBinary(value.length);
+    buffer.writeList(value);
   }
 
-  _writeBlob(value, List<int> types, ListWriter values) {
+  _prepareBlob(value) {
+    return (value as Blob).toBytes();
+  }
+
+  int _measureBlob(value, preparedValue) {
+    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+  }
+
+  _writeBlob(value, preparedValue, Buffer buffer) {
     log.fine("BLOB: $value");
-    var bytes = (value as Blob).toBytes();
-    types.add(FIELD_TYPE_BLOB);
-    types.add(0);
-    values.writeLengthCodedBinary(bytes.length);
-    values.writeList(bytes);
+    buffer.writeLengthCodedBinary(preparedValue.length);
+    buffer.writeList(preparedValue);
   }
 
-  _writeString(value, List<int> types, ListWriter values) {
+  _prepareString(value) {
+    return UTF8.encode(value.toString());
+  }
+
+  int _measureString(value, preparedValue) {
+    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+  }
+
+  _writeString(value, preparedValue, Buffer buffer) {
     log.fine("STRING: $value");
-    var s = value.toString();
-    types.add(FIELD_TYPE_VARCHAR);
-    types.add(0);
-    var encoded = UTF8.encode(s);
-    values.writeLengthCodedBinary(encoded.length);
-    values.writeList(encoded);
+    buffer.writeLengthCodedBinary(preparedValue.length);
+    buffer.writeList(preparedValue);
   }
 
   List<int> _createNullMap() {
@@ -174,8 +269,8 @@ class _ExecuteQueryHandler extends _Handler {
     return nullMap;
   }
 
-  Buffer _writeValuesToBuffer(List<int> nullMap, ListWriter values, List<int> types) {
-    var buffer = new Buffer(10 + nullMap.length + 1 + types.length + values.list.length);
+  Buffer _writeValuesToBuffer(List<int> nullMap, int length, List<int> types) {
+    var buffer = new Buffer(10 + nullMap.length + 1 + types.length + length);
     buffer.writeByte(COM_STMT_EXECUTE);
     buffer.writeUint32(_preparedQuery.statementHandlerId);
     buffer.writeByte(0);
@@ -184,7 +279,9 @@ class _ExecuteQueryHandler extends _Handler {
     if (!_executed) {
       buffer.writeByte(1);
       buffer.writeList(types);
-      buffer.writeList(values.list);
+      for (int i = 0; i < _values.length; i++) {
+        _writeValue(_values[i], _preparedValues[i], buffer);
+      }
     } else {
       buffer.writeByte(0);
     }

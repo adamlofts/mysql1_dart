@@ -16,12 +16,11 @@ void runBinaryDataPacketTests() {
       var packet = new _BinaryDataPacket._forTests(null, null);
       var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
       
-      var listWriter = new ListWriter(new List());
-      listWriter.writeLengthCodedBinary(500);
+      var buffer = new Buffer(500 + 3);
+      buffer.writeLengthCodedBinary(500);
       for (int i = 0; i < 500; i++) {
-        listWriter.writeByte(32);      
+        buffer.writeByte(32);
       }
-      var buffer = new Buffer.fromList(listWriter.list);
       var value = packet._readField(field, buffer);
       
       expect(value, new isInstanceOf<Blob>());
@@ -31,13 +30,12 @@ void runBinaryDataPacketTests() {
     test('can read very long blob', () {
       var packet = new _BinaryDataPacket._forTests(null, null);
       var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
-      
-      var listWriter = new ListWriter(new List());
-      listWriter.writeLengthCodedBinary(50000);
+
+      var buffer = new Buffer(50000 + 3);
+      buffer.writeLengthCodedBinary(50000);
       for (int i = 0; i < 50000; i++) {
-        listWriter.writeByte(32);      
+        buffer.writeByte(32);
       }
-      var buffer = new Buffer.fromList(listWriter.list);
       var value = packet._readField(field, buffer);
       
       expect(value, new isInstanceOf<Blob>());

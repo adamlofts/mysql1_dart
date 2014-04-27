@@ -13,7 +13,6 @@ import 'package:logging/logging.dart';
 import 'constants.dart';
 
 import 'src/buffer.dart';
-import 'src/list_writer.dart';
 import 'src/buffered_socket.dart';
 import 'src/results.dart';
 export 'src/results.dart';

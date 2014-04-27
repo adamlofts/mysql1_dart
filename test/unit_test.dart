@@ -16,7 +16,6 @@ import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';
 import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
-import 'package:sqljocky/src/list_writer.dart';
 
 import 'unit/buffered_socket_test.dart';
 

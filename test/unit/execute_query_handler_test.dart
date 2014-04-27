@@ -71,11 +71,9 @@ void runExecuteQueryHandlerTests() {
 
   group('ExecuteQueryHandler._writeValuesToBuffer', () {
     var types;
-    var values;
 
     setUp(() {
       types = <int>[];
-      values = new ListWriter(<int>[]);
     });
 
     test('can write values for unexecuted query', () {
@@ -83,7 +81,8 @@ void runExecuteQueryHandlerTests() {
       preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, false, []);
-      var buffer = handler._writeValuesToBuffer([], values, types);
+      handler._preparedValues = [];
+      var buffer = handler._writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
       expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 1]));
     });
@@ -93,7 +92,8 @@ void runExecuteQueryHandlerTests() {
       preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, true, []);
-      var buffer = handler._writeValuesToBuffer([], values, types);
+      handler._preparedValues = [];
+      var buffer = handler._writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
       expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 0]));
     });
@@ -103,7 +103,8 @@ void runExecuteQueryHandlerTests() {
       preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, true, []);
-      var buffer = handler._writeValuesToBuffer([5, 6, 7], values, types);
+      handler._preparedValues = [];
+      var buffer = handler._writeValuesToBuffer([5, 6, 7], 0, types);
       expect(buffer.length, equals(14));
       expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 0]));
     });
@@ -112,33 +113,92 @@ void runExecuteQueryHandlerTests() {
       var preparedQuery = new MockPreparedQuery();
       preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
 
-      types = [100, 150, 200];
-      values.add(50);
-      values.add(60);
-      values.add(70);
-      var handler = new _ExecuteQueryHandler(preparedQuery, false, []);
-      var buffer = handler._writeValuesToBuffer([5, 6, 7], values, types);
-      expect(buffer.length, equals(20));
-      expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 1, 100, 150, 200, 50, 60, 70]));
+      types = [100];
+      var handler = new _ExecuteQueryHandler(preparedQuery, false, [123]);
+      handler._preparedValues = [123];
+      var buffer = handler._writeValuesToBuffer([5, 6, 7], 8, types);
+      expect(buffer.length, equals(23));
+      expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 1, 100, 123, 0, 0, 0, 0, 0, 0, 0]));
+    });
+  });
+
+  group('ExecuteQueryHandler._prepareValue', () {
+    var preparedQuery;
+    var handler;
+
+    setUp(() {
+      preparedQuery = new MockPreparedQuery();
+      handler = new _ExecuteQueryHandler(preparedQuery, false, []);
     });
 
-    test('can write values for unexecuted query with more values', () {
-      var preparedQuery = new MockPreparedQuery();
-      preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
-
-      types = [100, 101, 102, 103, 104, 105];
-      values.add(50);
-      values.add(51);
-      values.add(52);
-      values.add(53);
-      values.add(54);
-      values.add(55);
-      values.add(56);
-      var handler = new _ExecuteQueryHandler(preparedQuery, false, []);
-      var buffer = handler._writeValuesToBuffer([5, 6, 7], values, types);
-      expect(buffer.length, equals(27));
-      expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 1, 100, 101, 102, 103, 104, 105, 50, 51, 52, 53, 54, 55, 56]));
+    test('can prepare int values correctly', () {
+      expect(handler._prepareValue(123), equals(123));
     });
+
+    test('can prepare string values correctly', () {
+      expect(handler._prepareValue("hello"), equals(UTF8.encode("hello")));
+    });
+
+    test('can prepare double values correctly', () {
+      expect(handler._prepareValue(123.45), equals(UTF8.encode("123.45")));
+    });
+
+    test('can prepare datetime values correctly', () {
+      var dateTime = new DateTime.utc(2014, 3, 4, 5, 6, 7, 8);
+      expect(handler._prepareValue(dateTime), equals(dateTime));
+    });
+
+    test('can prepare bool values correctly', () {
+      expect(handler._prepareValue(true), equals(true));
+    });
+
+    test('can prepare list values correctly', () {
+      expect(handler._prepareValue([1, 2, 3]), equals([1, 2, 3]));
+    });
+
+    test('can prepare blob values correctly', () {
+      expect(handler._prepareValue(new Blob.fromString("hello")), equals(UTF8.encode("hello")));
+    });
+  });
+
+  group('ExecuteQueryHandler._measureValue', () {
+    var preparedQuery;
+    var handler;
+
+    setUp(() {
+      preparedQuery = new MockPreparedQuery();
+      handler = new _ExecuteQueryHandler(preparedQuery, false, []);
+    });
+
+    test('can measure int values correctly', () {
+      expect(handler._measureValue(123, 123), equals(8));
+    });
+
+    test('can measure short string correctly', () {
+      var string = "a";
+      var preparedString = UTF8.encode(string);
+      expect(handler._measureValue(string, preparedString), equals(2));
+    });
+
+    test('can measure longer string correctly', () {
+      var string = new String.fromCharCodes(new List.filled(300, 65));
+      var preparedString = UTF8.encode(string);
+      expect(handler._measureValue(string, preparedString), equals(3 + string.length));
+    });
+
+    test('can measure even longer string correctly', () {
+      var string = new String.fromCharCodes(new List.filled(70000, 65));
+      var preparedString = UTF8.encode(string);
+      expect(handler._measureValue(string, preparedString), equals(4 + string.length));
+    });
+
+    test('can measure even very long string correctly', () {
+      var string = new String.fromCharCodes(new List.filled(2 << 23 + 1, 65));
+      var preparedString = UTF8.encode(string);
+      expect(handler._measureValue(string, preparedString), equals(5 + string.length));
+    });
+
+    //etc
   });
 }
 
