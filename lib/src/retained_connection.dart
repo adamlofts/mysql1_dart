@@ -64,7 +64,7 @@ class _RetainedConnectionImpl extends _RetainedConnectionBase implements Retaine
   
     _cnx.inTransaction = false;
     _cnx.release();
-    _pool._newReuseConnection(_cnx);
+    _pool._reuseConnectionForQueuedOperations(_cnx);
   }
 
   void _checkReleased() {

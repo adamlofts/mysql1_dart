@@ -32,7 +32,7 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
       .then((results) {
         _cnx.inTransaction = false;
         _cnx.release();
-        _pool._newReuseConnection(_cnx);
+        _pool._reuseConnectionForQueuedOperations(_cnx);
         return results;
       });
   }
@@ -46,7 +46,7 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
       .then((results) {
         _cnx.inTransaction = false;
         _cnx.release();
-        _pool._newReuseConnection(_cnx);
+        _pool._reuseConnectionForQueuedOperations(_cnx);
         return results;
       });
   }

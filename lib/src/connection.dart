@@ -22,6 +22,7 @@ class _Connection {
   final Buffer _compressedHeaderBuffer;
   Buffer _dataBuffer;
   bool _readyForHeader = true;
+  bool _closeRequested = false;
   
   int _packetNumber = 0;
   
@@ -55,6 +56,15 @@ class _Connection {
   void close() {
     if (_socket != null) {
       _socket.close();
+    }
+    _pool._removeConnection(this);
+  }
+
+  void closeWhenFinished() {
+    if (_inUse) {
+      _closeRequested = true;
+    } else {
+      close();
     }
   }
   
@@ -216,11 +226,15 @@ class _Connection {
     if (autoRelease && !inTransaction) { 
       log.finest("Response finished for #$number, setting handler to null and waiting to release and reuse");
       new Future.delayed(new Duration(seconds: 0), () {
+        if (_closeRequested) {
+          close();
+          return;
+        }
         if (_inUse) {
           log.finest("Releasing and reusing connection #$number");
           _inUse = false;
           _handler = null;
-          _pool._newReuseConnection(this);
+          _pool._reuseConnectionForQueuedOperations(this);
         }
       });
     } else {

@@ -99,7 +99,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     _pool.remove(cnx);
   }
 
-/**
+  /**
    * Attempts to continue using a connection. If the connection isn't managed
    * by this pool, or if the connection is already in use, nothing happens.
    * 
@@ -107,10 +107,8 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * to execute that operation. 
    * 
    * Otherwise, nothing happens.
-   * 
-   * //TODO rename to something like processQueuedOperations??
    */
-  _newReuseConnection(_Connection cnx) {
+  _reuseConnectionForQueuedOperations(_Connection cnx) {
     if (!_pool.contains(cnx)) {
       _log.warning("reuseConnection called for unmanaged connection");
       return;
@@ -138,15 +136,34 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 //    });
 //  }
 
-/**
-   * Closes all open connections. 
-   * 
+  /**
+   * Closes all open connections immediately. It doesn't wait for operations to complete.
+   *
    * WARNING: this will probably break things.
    */
-  void close() {
+  void closeConnectionsNow() {
     for (_Connection cnx in _pool) {
       if (cnx != null) {
         cnx.close();
+      }
+    }
+  }
+
+  /**
+   * Closes all connections as soon as they are no longer in use.
+   *
+   * Retained connections will only be closed once they have been released.
+   * Connection which are in use by a transaction will only be closed
+   * once the transaction has completed.
+   *
+   * Any operations which are initiated after calling this method will be
+   * executed on new connections, even if the current operations haven't
+   * yet finished when the operation is queued.
+   */
+  void closeConnectionsWhenNotInUse() {
+    for (_Connection cnx in _pool) {
+      if (cnx != null) {
+        cnx.closeWhenFinished();
       }
     }
   }

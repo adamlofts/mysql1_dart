@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.12.0
+-------
+* Breaking change: ConnectionPool.close() has been renamed to ConnectionPool.closeConnectionsNow.
+It is a dangerous method to call as it closes all connections even if they are in the middle
+of an operation. ConnectionPool.closeConnectionsWhenNotInUse has been added, which is much
+safer.
+
 v0.11.0
 -------
 * Added support for packets larger than 16 MB. ConnectionPool's constructor has a new parameter,

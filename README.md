@@ -90,6 +90,8 @@ Things to do
 
 * Compression
 * COM_SEND_LONG_DATA
+* CLIENT_MULTI_STATEMENTS and CLIENT_MULTI_RESULTS for stored procedures
+* More connection pool management (close after timeout, change pool size...)
 * Better handling of various data types, especially BLOBs, which behave differently when using straight queries and prepared queries.
 * Implement the rest of mysql's commands
 * Handle character sets properly? Currently defaults to UTF8 for the connection character set. Is it
