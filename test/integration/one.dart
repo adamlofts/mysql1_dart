@@ -9,11 +9,11 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
     
     test('dropTables', () {
-      new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((_) {
+      return new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((_) {
         expect(1, equals(1)); // not quite sure of the async testing stuff yet
       }));
     });
-    
+
     test('create tables', () {
       return pool.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
@@ -32,7 +32,7 @@ void runIntTests(String user, String password, String db, int port, String host)
           });
         });
     });
-    
+
     test('show tables', () {
       var c = new Completer();
       pool.query("show tables").then(expectAsync1((Results results) {
@@ -45,7 +45,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       }));
       return c.future;
     });
-    
+
     test('describe stuff', () {
       var c = new Completer();
       pool.query("describe test1").then(expectAsync1((Results results) {
@@ -56,7 +56,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       }));
       return c.future;
     });
-    
+
     test('small blobs', () {
       var c = new Completer();
       pool.prepare("insert into test1 (atext) values (?)").then((query) {
@@ -67,7 +67,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         return query.execute([new Blob.fromString(longstring)]);
       }).then((results) {
         expect(results.affectedRows, equals(1));
-        
+
 //        return pool.query("select atext from test1 where length(atext) > 1000");
         return pool.query("select atext from test1");
       }).then((results) {
@@ -79,7 +79,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
       return c.future;
     });
-    
+
     test('medium blobs', () {
       var c = new Completer();
       pool.prepare("insert into test1 (atext) values (?)").then((query) {
@@ -90,7 +90,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         return query.execute([new Blob.fromString(longstring)]);
       }).then((results) {
         expect(results.affectedRows, equals(1));
-        
+
 //        return pool.query("select atext from test1 where length(atext) > 1000");
         return pool.query("select atext from test1");
       }).then((results) {
@@ -102,11 +102,11 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
       return c.future;
     });
-    
+
     test('clear stuff', () {
       return pool.query('delete from test1');
     });
-    
+
     test('insert stuff', () {
       var c = new Completer();
       print("insert stuff test");
@@ -116,7 +116,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         "adate, adatetime, atimestamp, atime, ayear, "
         "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
         "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
-        "aenum, aset) values" 
+        "aenum, aset) values"
         "(?, ?, ?, ?, ?, "
         "?, ?, ?, ?, "
         "?, ?, ?, "
@@ -130,39 +130,39 @@ void runIntTests(String user, String password, String db, int port, String host)
           values.add(165);
           values.add(166);
           values.add(167);
-          
+
           values.add(592);
           values.add(123.456);
           values.add(123.456);
           values.add(123.456);
-          
+
           values.add(true);
           values.add(0x010203);//[1, 2, 3]);
           values.add(123);
-          
+
           values.add(new DateTime.now());
           values.add(new DateTime.now());
           values.add(new DateTime.now());
           values.add(new DateTime.now());
           values.add(2012);
-          
+
           values.add("Hello");
           values.add("Hey");
           values.add("Hello there");
           values.add("Good morning");
           values.add("Habari boss");
           values.add("Bonjour");
-    
+
           values.add([65, 66, 67, 68]);
           values.add([65, 66, 67, 68]);
           values.add([65, 66, 67, 68]);
           values.add([65, 66, 67, 68]);
           values.add([65, 66, 67, 68]);
           values.add([65, 66, 67, 68]);
-          
+
           values.add("a");
           values.add("a,b");
-                 
+
           print("executing");
           expect(1, equals(1)); // put some real expectations here
           return query.execute(values);
@@ -173,7 +173,7 @@ void runIntTests(String user, String password, String db, int port, String host)
         });
       return c.future;
     });
-    
+
     test('select everything', () {
       var c = new Completer();
       pool.query('select * from test1').then((results) {
@@ -200,7 +200,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
       return c.future;
     });
-    
+
     test('select stuff', () {
       var c = new Completer();
       pool.query("select atinyint, adecimal from test1").then((results) {
@@ -213,7 +213,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
       return c.future;
     });
-    
+
     test('prepare execute', () {
       var c = new Completer();
       pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((results) {
@@ -222,10 +222,10 @@ void runIntTests(String user, String password, String db, int port, String host)
       });
       return c.future;
     });
-    
+
     List<Field> preparedFields;
     List<dynamic> values;
-    
+
     test('data types (prepared)', () {
       var c = new Completer();
       pool.prepareExecute('select * from test1', []).then((results) {
@@ -251,7 +251,7 @@ void runIntTests(String user, String password, String db, int port, String host)
           var row = list[0];
           for (var i = 0; i < results.fields.length; i++) {
             var field = results.fields[i];
-  
+
             // make sure field types returned by both queries are the same
             expect(field.type, equals(preparedFields[i].type));
             // make sure results types are the same
