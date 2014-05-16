@@ -55,6 +55,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           c.complete();
         });
       });
+      return c.future;
     });
 
     test('maximum unsigned values', () {
@@ -62,7 +63,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
       deleteInsertSelect(pool, 'nums',
           "insert into nums (utinyint, usmallint, umediumint, uint, ubigint) values ("
           "255, 65535, 12777215, 4294967295, 18446744073709551615)",
-          'select atinyint, asmallint, amediumint, aint, abigint from nums').then((results) {
+          'select utinyint, usmallint, umediumint, uint, ubigint from nums').then((results) {
         results.listen((row) {
           expect(row[0], equals(255));
           expect(row[1], equals(65535));
@@ -73,6 +74,7 @@ void runNumberTests(String user, String password, String db, int port, String ho
           c.complete();
         });
       });
+      return c.future;
     });
 
     test('max decimal', () {
@@ -82,11 +84,12 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {
         results.listen((row) {
-          expect(row[0], equals(99999999999999999999.9999999999));
+          expect(row[0], equals(9999999999.9999999999));
         }, onDone: () {
           c.complete();
         });
       });
+      return c.future;
     });
 
     test('min decimal', () {
@@ -96,15 +99,16 @@ void runNumberTests(String user, String password, String db, int port, String ho
           "-99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {
         results.listen((row) {
-          expect(row[0], equals(-99999999999999999999.9999999999));
+          expect(row[0], equals(-9999999999.9999999999));
         }, onDone: () {
           c.complete();
         });
       });
+      return c.future;
     });
 
     test('close connection', () {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

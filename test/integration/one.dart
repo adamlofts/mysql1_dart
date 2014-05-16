@@ -344,7 +344,7 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('close connection', () {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

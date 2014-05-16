@@ -143,7 +143,7 @@ void runStreamTests(String user, String password, String db, int port, String ho
     });
 
     test('close connection', () {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

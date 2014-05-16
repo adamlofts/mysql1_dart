@@ -28,7 +28,7 @@ void runLargeBlobTests(String user, String password, String db, int port, String
     });
 
     test('close connection', () {
-      return close(pool);
+      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

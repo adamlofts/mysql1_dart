@@ -218,7 +218,7 @@ void main() {
       example.run().then(expectAsync1((_) {
         // finally, close the connection
         log.fine("closing");
-        pool.close();
+        pool.closeConnectionsWhenNotInUse();
         // not much of a test, is it?
         expect(true, isTrue);
       }));

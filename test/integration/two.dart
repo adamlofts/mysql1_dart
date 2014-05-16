@@ -52,7 +52,7 @@ void runIntTests2(String user, String password, String db, int port, String host
     });
 
     test('close connection', () {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
       expect(1, equals(1));
     });
   });

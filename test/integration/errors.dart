@@ -42,7 +42,7 @@ void runErrorTests(String user, String password, String db, int port, String hos
       return Future.wait(futures);
     });
     test('close connection', () {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

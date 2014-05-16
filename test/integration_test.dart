@@ -20,6 +20,7 @@ part 'integration/numbers.dart';
 part 'integration/stream.dart';
 part 'integration/row.dart';
 part 'integration/errors.dart';
+part 'integration/stored_procedures.dart';
 
 void main(List<String> args) {
   hierarchicalLoggingEnabled = true;
@@ -57,6 +58,7 @@ void main(List<String> args) {
   runStreamTests(user, password, db, port, host);
   runRowTests(user, password, db, port, host);
   runErrorTests(user, password, db, port, host);
+//  runStoredProcedureTests(user, password, db, port, host);
   if (results['large_packets'] == 'true') {
     runLargeBlobTests(user, password, db, port, host);
   }

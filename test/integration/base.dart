@@ -15,5 +15,5 @@ Future setup(ConnectionPool pool, String tableName, String createSql, [String in
 
 // thinking of putting other stuff in here too.
 void close(ConnectionPool pool) {
-  return pool.close();
+  pool.closeConnectionsWhenNotInUse();
 }

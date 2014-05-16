@@ -24,7 +24,7 @@ class SpeedTest {
     }).then((_) {
       return insertPreparedData();
     }).then((_) {
-      pool.close();
+      pool.closeConnectionsWhenNotInUse();
       log.fine("closed");
     });
   }

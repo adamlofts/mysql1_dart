@@ -142,7 +142,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * WARNING: this will probably break things.
    */
   void closeConnectionsNow() {
-    for (_Connection cnx in _pool) {
+    for (_Connection cnx in _pool.toList()) {
       if (cnx != null) {
         cnx.close();
       }
@@ -161,7 +161,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * yet finished when the operation is queued.
    */
   void closeConnectionsWhenNotInUse() {
-    for (_Connection cnx in _pool) {
+    for (_Connection cnx in _pool.toList()) {
       if (cnx != null) {
         cnx.closeWhenFinished();
       }
