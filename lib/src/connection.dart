@@ -300,7 +300,11 @@ class _Connection {
     if (!noResponse) {
       _handler = handler;
     }
-    _sendBuffer(handler.createRequest());
+    _sendBuffer(handler.createRequest()).then((_) {
+      if (noResponse) {
+        _finishAndReuse();
+      }
+    });
     return _completer.future;
   }
   
