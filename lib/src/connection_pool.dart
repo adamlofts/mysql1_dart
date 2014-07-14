@@ -27,10 +27,14 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   final List<_Connection> _pool;
 
 /**
-   * Creates a [ConnectionPool]. When connections are required they will connect to the
-   * [db] on the given [host] and [port], using the [user] and [password]. The [max] number
-   * of simultaneous connections can also be specified, as well as the [maxPacketSize].
-   */
+ * Creates a [ConnectionPool]. When connections are required they will connect to the
+ * [db] on the given [host] and [port], using the [user] and [password]. The [max] number
+ * of simultaneous connections can also be specified, as well as the [maxPacketSize].
+ *
+ * Note that no connections are created at this point, so any connection errors
+ * will happen when the pool is used. If you need to find out if the connection
+ * details are correct you might want to run a dummy query such as 'SELECT 1'.
+ */
   ConnectionPool({String host: 'localhost', int port: 3306, String user,
       String password, String db, int max: 5, int maxPacketSize: 16 * 1024 * 1024,
 //      bool useCompression: false,
