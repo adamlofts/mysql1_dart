@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.13.0
+-------
+* Fixes an issue with executeMulti being broken.
+
 v0.12.0
 -------
 * Breaking change: ConnectionPool.close() has been renamed to ConnectionPool.closeConnectionsNow.

@@ -21,12 +21,13 @@ part 'integration/stream.dart';
 part 'integration/row.dart';
 part 'integration/errors.dart';
 part 'integration/stored_procedures.dart';
+part 'integration/execute_multi.dart';
 
 void main(List<String> args) {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
-//  new Logger("ConnectionPool").level = Level.ALL;
-//  new Logger("Query").level = Level.ALL;
+  new Logger("ConnectionPool").level = Level.ALL;
+  new Logger("Query").level = Level.ALL;
   var listener = (LogRecord r) {
     var name = r.loggerName;
     if (name.length > 15) {
@@ -59,7 +60,8 @@ void main(List<String> args) {
   runRowTests(user, password, db, port, host);
   runErrorTests(user, password, db, port, host);
 //  runStoredProcedureTests(user, password, db, port, host);
-  if (results['large_packets'] == 'true') {
-    runLargeBlobTests(user, password, db, port, host);
-  }
+  runExecuteMultiTests(user, password, db, port, host);
+//  if (results['large_packets'] == 'true') {
+//    runLargeBlobTests(user, password, db, port, host);
+//  }
 }

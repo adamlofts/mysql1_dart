@@ -116,7 +116,7 @@ class Query extends Object with _ConnectionHelpers {
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
     preparedQuery.cnx.processHandler(handler)
-      .then((results) {
+      .then((Results results) {
         _log.finest("Prepared query got results");
         c.complete(results);
       })
@@ -130,8 +130,9 @@ class Query extends Object with _ConnectionHelpers {
    * Executes the query once for each set of [parameters], and returns a future list
    * of results, one for each set of parameters, that completes when the query has been executed.
    *
-   * The [Results] in the list contain their rows in the [Results.rows] field, rather than in the
-   * [Results.stream] field.
+   * Because this method has to wait for all the results to return from the server before it
+   * can move onto the next query, it ends up keeping all the results in memory, rather than
+   * streaming them, which can be less efficient.
    */
   Future<List<Results>> executeMulti(List<List> parameters) {
     return _prepare(true)
@@ -145,7 +146,10 @@ class Query extends Object with _ConnectionHelpers {
           _execute(preparedQuery, parameters[i], retainConnection: true)
             .then((Results results) {
               _log.fine("Got results, loop $i");
-              resultList.add(results);
+              return _ResultsImpl.destream(results);
+            })
+            .then((Results deStreamedResults) {
+              resultList.add(deStreamedResults);
               if (i < parameters.length - 1) {
                 executeQuery(i + 1);
               } else {
