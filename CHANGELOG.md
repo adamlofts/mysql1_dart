@@ -4,6 +4,7 @@ Changelog
 v0.13.0
 -------
 * Fixes an issue with executeMulti being broken.
+* Fixes an issue with query failing if the first field in a SELECT is an empty string
 
 v0.12.0
 -------

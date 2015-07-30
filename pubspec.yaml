@@ -1,5 +1,5 @@
 name: sqljocky
-version: 0.12.0
+version: 0.13.0
 author: James Ots <code@jamesots.com>
 description: A MySQL connector
 homepage: https://github.com/jamesots/sqljocky
