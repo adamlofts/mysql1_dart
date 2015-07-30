@@ -14,24 +14,17 @@ class Example {
   
   Example(this.pool);
   
-  Future run() {
-    var completer = new Completer();
+  Future run() async {
     // drop the tables if they already exist
-    dropTables().then((_) {
-      print("dropped tables");
-      // then recreate the tables
-      return createTables();
-    }).then((_) {
-      print("created tables");
-      // add some data
-      return addData();
-    }).then((_) {
-      // and read it back out
-      return readData();
-    }).then((_) {
-      completer.complete(null);
-    });
-    return completer.future;
+    await dropTables();
+    print("dropped tables");
+    // then recreate the tables
+    await createTables();
+    print("created tables");
+    // add some data
+    await addData();
+    // and read it back out
+    await readData();
   }
 
   Future dropTables() {
@@ -58,53 +51,47 @@ class Example {
     return querier.executeQueries();
   }
   
-  Future addData() {
-    var completer = new Completer();
-    pool.prepare("insert into people (name, age) values (?, ?)").then((query) {
-      print("prepared query 1");
-      var parameters = [
-          ["Dave", 15],
-          ["John", 16],
-          ["Mavis", 93]
-        ];
-      return query.executeMulti(parameters);
-    }).then((results) {
-      print("executed query 1");
-      return pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-    }).then((query) {
-      print("prepared query 2");
-      var parameters = [
-          ["Rover", "Dog", 1],
-          ["Daisy", "Cow", 2],
-          ["Spot", "Dog", 2]];
+  Future addData() async {
+    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    print("prepared query 1");
+    var parameters = [
+        ["Dave", 15],
+        ["John", 16],
+        ["Mavis", 93]
+      ];
+    var results = await query.executeMulti(parameters);
+
+    print("executed query 1");
+    query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+
+    print("prepared query 2");
+    parameters = [
+        ["Rover", "Dog", 1],
+        ["Daisy", "Cow", 2],
+        ["Spot", "Dog", 2]];
 //          ["Spot", "D\u0000og", 2]];
-      return query.executeMulti(parameters);
-    }).then((results) {
-      print("executed query 2");
-      completer.complete(null);
-    });
-    return completer.future;
+    results = await query.executeMulti(parameters);
+
+    print("executed query 2");
   }
   
-  Future readData() {
-    var completer = new Completer();
+  Future readData() async {
     print("querying");
-    return pool.query('select p.id, p.name, p.age, t.name, t.species '
+    var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
         'from people p '
-        'left join pets t on t.owner_id = p.id').then((result) {
-      print("got results");
-      return result.forEach((row) {
-        if (row[3] == null) {
-          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
-        } else {
-          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
-        }
-      });
+        'left join pets t on t.owner_id = p.id');
+    print("got results");
+    return result.forEach((row) {
+      if (row[3] == null) {
+        print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
+      } else {
+        print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+      }
     });
   }
 }
 
-void main() {
+main() async {
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
   String password = options.getString('password');
@@ -120,9 +107,8 @@ void main() {
   var example = new Example(pool);
   // run the example
   print("running example");
-  example.run().then((_) {
-    // finally, close the connection
-    print("K THNX BYE!");
-    pool.close();
-  });
+  await example.run();
+  // finally, close the connection
+  print("K THNX BYE!");
+  pool.closeConnectionsNow();
 }

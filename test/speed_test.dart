@@ -16,17 +16,12 @@ class SpeedTest {
   SpeedTest(this.pool) :
     log = new Logger("Speed");
   
-  Future run() {
-    return dropTables().then((_) {
-      return createTables();
-    }).then((_) {
-      return insertSimpleData();
-    }).then((_) {
-      return insertPreparedData();
-    }).then((_) {
-      pool.closeConnectionsWhenNotInUse();
-      log.fine("closed");
-    });
+  Future run() async {
+    await dropTables();
+    await createTables();
+    await insertSimpleData();
+    await insertPreparedData();
+    await pool.closeConnectionsWhenNotInUse();
   }
   
   Future dropTables() {
@@ -53,32 +48,29 @@ class SpeedTest {
     return querier.executeQueries();
   }
   
-  Future insertSimpleData() {
+  Future insertSimpleData() async {
     log.fine("inserting simple data");
     var sw = new Stopwatch()..start();
     var futures = <Future>[];
     for (var i = 0; i < SIMPLE_INSERTS; i++) {
       futures.add(pool.query("insert into people (name, age) values ('person$i', $i)"));
     }
-    return Future.wait(futures).then((_) {
-      logTime("simple insertions", sw);
-      log.fine("inserted");
-    });
+    await Future.wait(futures);
+    logTime("simple insertions", sw);
+    log.fine("inserted");
   }
   
-  Future insertPreparedData() {
+  Future insertPreparedData() async {
     log.fine("inserting prepared data");
     var sw = new Stopwatch()..start();
     var futures = <Future>[];
-    return pool.prepare("insert into people (name, age) values (?, ?)").then((query) {
-      for (var i = 0; i < PREPARED_INSERTS; i++) {
-        futures.add(query.execute(["person$i", i]));
-      }
-      return Future.wait(futures).then((_) {
-        logTime("prepared insertions", sw);
-        log.fine("inserted");
-      });
-    });
+    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    for (var i = 0; i < PREPARED_INSERTS; i++) {
+      futures.add(query.execute(["person$i", i]));
+    }
+    await Future.wait(futures);
+    logTime("prepared insertions", sw);
+    log.fine("inserted");
   }
   
   void logTime(String operation, Stopwatch sw) {
@@ -88,7 +80,7 @@ class SpeedTest {
   }
 }
 
-void main() {
+main() async {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
@@ -115,9 +107,8 @@ void main() {
   log.fine("connection open");
 
   var stopwatch = new Stopwatch()..start();
-  new SpeedTest(pool).run().then((_) {
-    var time = stopwatch.elapsedMicroseconds;
-    var seconds = time/1000000;
-    log.fine("Time taken: ${seconds}s");
-  });
+  await new SpeedTest(pool).run();
+  var time = stopwatch.elapsedMicroseconds;
+  var seconds = time/1000000;
+  log.fine("Time taken: ${seconds}s");
 }
