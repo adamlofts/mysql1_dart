@@ -62,22 +62,22 @@ class BufferedSocket {
       DoneHandler onDone, 
       ErrorHandler onError, 
       SocketFactory socketFactory,
-      OnConnection onConnection}) {
-    var c = new Completer<BufferedSocket>();
-    var future;
-    if (socketFactory != null) {
-      future = socketFactory(host, port);
-    } else {
-      future = RawSocket.connect(host, port);
+      OnConnection onConnection}) async {
+    try {
+      var socket;
+      if (socketFactory != null) {
+        socket = await socketFactory(host, port);
+      } else {
+        socket = await RawSocket.connect(host, port);
+      }
+      var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError);
+      if (onConnection != null) {
+        onConnection(bufferedSocket);
+      }
+      return bufferedSocket;
+    } catch (e) {
+      onError(e);
     }
-    future.then((socket) {
-        var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError);
-        if (onConnection != null) {
-          onConnection(bufferedSocket);
-        }
-        return c.complete(bufferedSocket);
-      }, onError: onError);
-    return c.future;
   }
 
   void _onData(RawSocketEvent event) {
@@ -188,16 +188,15 @@ class BufferedSocket {
     _closed = true;
   }
   
-  Future startSSL() {
+  Future startSSL() async {
     log.fine("Securing socket");
-    return RawSecureSocket.secure(_socket, subscription: _subscription,
-        onBadCertificate: (cert) => true).then((socket) {
-      log.fine("Socket is secure");
-      _socket = socket;
-      _subscription = _socket.listen(_onData, onError: _onSocketError, 
-          onDone: _onSocketDone, cancelOnError: true);
-      _socket.writeEventsEnabled = true;
-      _socket.readEventsEnabled = true;
-    });
+    var socket = await RawSecureSocket.secure(_socket, subscription: _subscription,
+        onBadCertificate: (cert) => true);
+    log.fine("Socket is secure");
+    _socket = socket;
+    _subscription = _socket.listen(_onData, onError: _onSocketError,
+        onDone: _onSocketDone, cancelOnError: true);
+    _socket.writeEventsEnabled = true;
+    _socket.readEventsEnabled = true;
   }
 }
