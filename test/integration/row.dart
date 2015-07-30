@@ -1,14 +1,18 @@
 part of integrationtests;
 
 void runRowTests(String user, String password, String db, int port, String host) {
-  ConnectionPool pool;
   group('row tests:', () {
-    test('setup', () {
+    ConnectionPool pool;
+
+    setUp(() {
       pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
-      return setup(pool, "row", "create table row (id integer, name text, " 
-        "`the field` text, length integer)");
+      return setup(pool, "row", "create table row (id integer, name text, `the field` text, length integer)");
     });
-    
+
+    tearDown(() {
+      pool.closeConnectionsNow();
+    });
+
     test('store data', () {
       var c = new Completer();
       pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)').then((query) {
@@ -17,6 +21,13 @@ void runRowTests(String user, String password, String db, int port, String host)
         });
       });
       return c.future;
+    });
+
+    test('first field is empty', () async {
+      final query = await pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
+      await (await query.execute([1, '', 'Thing', 5000])).toList();
+      Iterable<Row> results = await (await pool.query("select name, length from row")).toList();
+      expect(results.map((r) => [r[0].toString(), r[1]]).toList().first, equals(['', 5000]));
     });
 
     test('select from stream using query and listen', () {
@@ -37,7 +48,7 @@ void runRowTests(String user, String password, String db, int port, String host)
       }
       return Future.wait(futures);
     });
-    
+
     test('select from stream using prepareExecute and listen', () {
       var futures = [];
       for (var i = 0; i < 5; i++) {
@@ -55,10 +66,6 @@ void runRowTests(String user, String password, String db, int port, String host)
         futures.add(c.future);
       }
       return Future.wait(futures);
-    });
-
-    test('close connection', () {
-      pool.closeConnectionsWhenNotInUse();
     });
   });
 }

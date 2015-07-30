@@ -46,11 +46,11 @@ void main(List<String> args) {
 
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
-  var password = options.getString('password');
+  var password = options.getString('password', null);
   var port = options.getInt('port', 3306);
   var db = options.getString('db');
   var host = options.getString('host', 'localhost');
-  
+
   runIntTests(user, password, db, port, host);
   runIntTests2(user, password, db, port, host);
   runCharsetTests(user, password, db, port, host);
