@@ -35,26 +35,24 @@ class Query extends Object with _ConnectionHelpers {
     return _pool._getConnection();
   }
 
-  Future<_PreparedQuery> _prepare(bool retainConnection) {
+  Future<_PreparedQuery> _prepare(bool retainConnection) async {
     _log.fine("Getting prepared query for: $sql");
     
-    return _getConnection()
-      .then((cnx) {
-        cnx.autoRelease = !retainConnection;
-        var c = new Completer<_PreparedQuery>();
-        _log.fine("Got cnx#${cnx.number}");
-        if (_useCachedQuery(cnx, c)) {
-          if (!retainConnection) {
-            // didn't actually use the connection, so the auto-release
-            // mechanism will never get fired, so we'd better give up
-            // on the connection now
-            cnx.release();
-          }
-        } else {
-          _prepareAndCacheQuery(cnx, c, retainConnection);
-        }
-        return c.future;
-      });
+    var cnx = await _getConnection();
+    cnx.autoRelease = !retainConnection;
+    var c = new Completer<_PreparedQuery>();
+    _log.fine("Got cnx#${cnx.number}");
+    if (_useCachedQuery(cnx, c)) {
+      if (!retainConnection) {
+        // didn't actually use the connection, so the auto-release
+        // mechanism will never get fired, so we'd better give up
+        // on the connection now
+        cnx.release();
+      }
+    } else {
+      _prepareAndCacheQuery(cnx, c, retainConnection);
+    }
+    return c.future;
   }
   
   /**
@@ -71,21 +69,20 @@ class Query extends Object with _ConnectionHelpers {
     return true;
   }
   
-  void _prepareAndCacheQuery(_Connection cnx, Completer c, retainConnection) {
+  _prepareAndCacheQuery(_Connection cnx, Completer c, retainConnection) async {
     _log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new _PrepareHandler(sql);
     cnx.use();
     cnx.autoRelease = !retainConnection;
-    cnx.processHandler(handler)
-      .then((preparedQuery) {
-        _log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
-        preparedQuery.cnx = cnx;
-        cnx.putPreparedQueryInCache(sql, preparedQuery);
-        c.complete(preparedQuery);
-      })
-      .catchError((e) {
-        _releaseReuseCompleteError(cnx, c, e);
-      });
+    var preparedQuery = await cnx.processHandler(handler);
+    try {
+      _log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
+      preparedQuery.cnx = cnx;
+      cnx.putPreparedQueryInCache(sql, preparedQuery);
+      c.complete(preparedQuery);
+    } catch (e) {
+      _releaseReuseCompleteError(cnx, c, e);
+    }
   }
 
   /// Closes this query and removes it from all connections in the pool.
@@ -96,33 +93,28 @@ class Query extends Object with _ConnectionHelpers {
   /**
    * Executes the query, returning a future [Results] object.
    */
-  Future<Results> execute([List values]) {
+  Future<Results> execute([List values]) async {
     _log.fine("Prepare...");
-    return _prepare(true)
-      .then((preparedQuery) {
-        _log.fine("Prepared, now to execute");
-        return _execute(preparedQuery, values == null ? [] : values)
-          .then((Results results) {
-            _log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
-            return results;
-          });
-      });
+    var preparedQuery = await _prepare(true);
+    _log.fine("Prepared, now to execute");
+    Results results = await _execute(preparedQuery, values == null ? [] : values);
+    _log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
+    return results;
   }
   
   Future<Results> _execute(_PreparedQuery preparedQuery, List values,
-      {bool retainConnection: false}) {
+      {bool retainConnection: false}) async {
     _log.finest("About to execute");
     var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
-    preparedQuery.cnx.processHandler(handler)
-      .then((Results results) {
-        _log.finest("Prepared query got results");
-        c.complete(results);
-      })
-      .catchError((e) {
-        _releaseReuseCompleteError(preparedQuery.cnx, c, e);
-      });
+    Results results = await preparedQuery.cnx.processHandler(handler);
+    try {
+      _log.finest("Prepared query got results");
+      c.complete(results);
+    } catch (e) {
+      _releaseReuseCompleteError(preparedQuery.cnx, c, e);
+    }
     return c.future;
   }
 
@@ -134,37 +126,31 @@ class Query extends Object with _ConnectionHelpers {
    * can move onto the next query, it ends up keeping all the results in memory, rather than
    * streaming them, which can be less efficient.
    */
-  Future<List<Results>> executeMulti(List<List> parameters) {
-    return _prepare(true)
-      .then((preparedQuery) {
-        var c = new Completer<List<Results>>();
-        _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
-        var resultList = new List<Results>();
-        
-        executeQuery(int i) {
-          _log.fine("Executing query, loop $i");
-          _execute(preparedQuery, parameters[i], retainConnection: true)
-            .then((Results results) {
-              _log.fine("Got results, loop $i");
-              return _ResultsImpl.destream(results);
-            })
-            .then((Results deStreamedResults) {
-              resultList.add(deStreamedResults);
-              if (i < parameters.length - 1) {
-                executeQuery(i + 1);
-              } else {
-                preparedQuery.cnx.release();
-                c.complete(resultList);
-              }
-            })
-            .catchError((e) {
-              _releaseReuseCompleteError(preparedQuery.cnx, c, e);
-            });
+  Future<List<Results>> executeMulti(List<List> parameters) async {
+    var preparedQuery = await _prepare(true);
+    var c = new Completer<List<Results>>();
+    _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
+    var resultList = new List<Results>();
+
+    executeQuery(int i) async {
+      try {
+        _log.fine("Executing query, loop $i");
+        Results results = await _execute(preparedQuery, parameters[i], retainConnection: true);
+        _log.fine("Got results, loop $i");
+        Results deStreamedResults = await _ResultsImpl.destream(results);
+        resultList.add(deStreamedResults);
+        if (i < parameters.length - 1) {
+          await executeQuery(i + 1);
+        } else {
+          preparedQuery.cnx.release();
         }
-        
-        executeQuery(0);
-        return c.future;
-      });
+      } catch (e) {
+        _releaseReuseCompleteError(preparedQuery.cnx, c, e);
+      }
+    }
+
+    await executeQuery(0);
+    return resultList;
   }
   
   _removeConnection(_Connection cnx) {
