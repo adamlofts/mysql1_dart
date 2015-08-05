@@ -40,36 +40,35 @@ class Query extends Object with _ConnectionHelpers {
     
     var cnx = await _getConnection();
     cnx.autoRelease = !retainConnection;
-    var c = new Completer<_PreparedQuery>();
     _log.fine("Got cnx#${cnx.number}");
-    if (_useCachedQuery(cnx, c)) {
+    var preparedQuery = _useCachedQuery(cnx);
+    if (preparedQuery != null) {
       if (!retainConnection) {
         // didn't actually use the connection, so the auto-release
         // mechanism will never get fired, so we'd better give up
         // on the connection now
         cnx.release();
       }
+      return preparedQuery;
     } else {
-      _prepareAndCacheQuery(cnx, c, retainConnection);
+      return await _prepareAndCacheQuery(cnx, retainConnection);
     }
-    return c.future;
   }
   
   /**
    * Returns true if there was already a cached query which has been used.
    */
-  bool _useCachedQuery(_Connection cnx, Completer c) {
+  _PreparedQuery _useCachedQuery(_Connection cnx) {
     var preparedQuery = cnx.getPreparedQueryFromCache(sql);
     if (preparedQuery == null) {
-      return false;
+      return null;
     }
 
     _log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
-    c.complete(preparedQuery);
-    return true;
+    return preparedQuery;
   }
   
-  _prepareAndCacheQuery(_Connection cnx, Completer c, retainConnection) async {
+  _prepareAndCacheQuery(_Connection cnx, retainConnection) async {
     _log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new _PrepareHandler(sql);
     cnx.use();
@@ -79,9 +78,9 @@ class Query extends Object with _ConnectionHelpers {
       _log.fine("Prepared new query in cnx#${cnx.number} for: $sql");
       preparedQuery.cnx = cnx;
       cnx.putPreparedQueryInCache(sql, preparedQuery);
-      c.complete(preparedQuery);
+      return preparedQuery;
     } catch (e) {
-      _releaseReuseCompleteError(cnx, c, e);
+      _releaseReuseThrow(cnx, e);
     }
   }
 
@@ -108,14 +107,13 @@ class Query extends Object with _ConnectionHelpers {
     var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
-    Results results = await preparedQuery.cnx.processHandler(handler);
     try {
+      Results results = await preparedQuery.cnx.processHandler(handler);
       _log.finest("Prepared query got results");
-      c.complete(results);
+      return results;
     } catch (e) {
-      _releaseReuseCompleteError(preparedQuery.cnx, c, e);
+      _releaseReuseThrow(preparedQuery.cnx, e);
     }
-    return c.future;
   }
 
   /**
@@ -132,24 +130,18 @@ class Query extends Object with _ConnectionHelpers {
     _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
     var resultList = new List<Results>();
 
-    executeQuery(int i) async {
+    for (int i = 0; i < parameters.length; i++) {
       try {
         _log.fine("Executing query, loop $i");
         Results results = await _execute(preparedQuery, parameters[i], retainConnection: true);
         _log.fine("Got results, loop $i");
         Results deStreamedResults = await _ResultsImpl.destream(results);
         resultList.add(deStreamedResults);
-        if (i < parameters.length - 1) {
-          await executeQuery(i + 1);
-        } else {
-          preparedQuery.cnx.release();
-        }
       } catch (e) {
-        _releaseReuseCompleteError(preparedQuery.cnx, c, e);
+        _releaseReuseThrow(preparedQuery.cnx, e);
       }
     }
-
-    await executeQuery(0);
+    preparedQuery.cnx.release();
     return resultList;
   }
   
