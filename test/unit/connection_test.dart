@@ -12,7 +12,7 @@ void runConnectionTests() {
       }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
 
-    test('should send buffer', () {
+    test('should send buffer', () async {
       final MAX_PACKET_SIZE = 16 * 1024 * 1024;
       var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
@@ -22,28 +22,25 @@ void runConnectionTests() {
       socket.when(callsTo('writeBufferPart')).alwaysReturn(new Future.value());
 
       var buffer = new Buffer.fromList([1, 2, 3]);
-      return cnx._sendBuffer(buffer).then((_) {
-        socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(1));
-        socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(1));
-        expect(socket.getLogs(callsTo('writeBuffer')).logs[0].args[0].list, equals([3, 0, 0, 1]));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[0].list, equals([1, 2, 3]));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[1], equals(0));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[2], equals(3));
+      await cnx._sendBuffer(buffer);
+      socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(1));
+      socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(1));
+      expect(socket.getLogs(callsTo('writeBuffer')).logs[0].args[0].list, equals([3, 0, 0, 1]));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[0].list, equals([1, 2, 3]));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[1], equals(0));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[2], equals(3));
 
-        var buffer = new Buffer.fromList([1, 2, 3]);
-        return cnx._sendBuffer(buffer).then((_) {
-          socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(2));
-          socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(2));
-          expect(socket.getLogs(callsTo('writeBuffer')).logs[1].args[0].list, equals([3, 0, 0, 2]));
-          expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[0].list, equals([1, 2, 3]));
-          expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[1], equals(0));
-          expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(3));
-        });
-
-      });
+      buffer = new Buffer.fromList([1, 2, 3]);
+      await cnx._sendBuffer(buffer);
+      socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(2));
+      socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(2));
+      expect(socket.getLogs(callsTo('writeBuffer')).logs[1].args[0].list, equals([3, 0, 0, 2]));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[0].list, equals([1, 2, 3]));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[1], equals(0));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(3));
     });
 
-    test('should send large buffer', () {
+    test('should send large buffer', () async {
       final MAX_PACKET_SIZE = 32 * 1024 * 1024;
       var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
@@ -58,19 +55,18 @@ void runConnectionTests() {
 
       final PACKET_SIZE = 17 * 1024 * 1024;
       var buffer = new Buffer(PACKET_SIZE);
-      return cnx._sendBuffer(buffer).then((_) {
-        socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(2));
-        socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(2));
-        expect(buffers[0], equals([0xff, 0xff, 0xff, 1]));
-        expect(buffers[1], equals([1, 0, 16, 2]));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[1], equals(0));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[2], equals(0xffffff));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[1], equals(0xffffff));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(PACKET_SIZE - 0xffffff));
-      });
+      await cnx._sendBuffer(buffer);
+      socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(2));
+      socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(2));
+      expect(buffers[0], equals([0xff, 0xff, 0xff, 1]));
+      expect(buffers[1], equals([1, 0, 16, 2]));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[1], equals(0));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[2], equals(0xffffff));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[1], equals(0xffffff));
+      expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(PACKET_SIZE - 0xffffff));
     });
 
-    test('should receive buffer', () {
+    test('should receive buffer', () async {
       final MAX_PACKET_SIZE = 16 * 1024 * 1024;
       var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
@@ -98,14 +94,13 @@ void runConnectionTests() {
 
       cnx._readPacket();
 
-      return c.future.then((_) {
+      await c.future;
 
-        socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(2));
-        expect(buffer.list, equals([1, 2, 3]));
-      });
+      socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(2));
+      expect(buffer.list, equals([1, 2, 3]));
     });
 
-    test('should receive large buffer', () {
+    test('should receive large buffer', () async {
       final MAX_PACKET_SIZE = 32 * 1024 * 1024;
       var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
@@ -146,14 +141,13 @@ void runConnectionTests() {
 
       cnx._readPacket();
 
-      return c.future.then((_) {
-        socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(4));
-        expect(buffer.list.length, equals(17 * 1024 * 1024));
-        expect(buffer.list[0], equals(1));
-        expect(buffer.list[0xffffff - 1], equals(2));
-        expect(buffer.list[0xffffff], equals(3));
-        expect(buffer.list[buffer.list.length - 1], equals(4));
-      });
+      await c.future;
+      socket.getLogs(callsTo('readBuffer')).verify(happenedExactly(4));
+      expect(buffer.list.length, equals(17 * 1024 * 1024));
+      expect(buffer.list[0], equals(1));
+      expect(buffer.list[0xffffff - 1], equals(2));
+      expect(buffer.list[0xffffff], equals(3));
+      expect(buffer.list[buffer.list.length - 1], equals(4));
     });
   });
 
