@@ -136,8 +136,8 @@ class _Connection {
     log.fine("readPacket readyForHeader=${_readyForHeader}");
     if (_readyForHeader) {
       _readyForHeader = false;
-      await _socket.readBuffer(_headerBuffer);
-      _handleHeader(_headerBuffer);
+      var buffer = await _socket.readBuffer(_headerBuffer);
+      _handleHeader(buffer);
     }
   }
 
@@ -148,11 +148,11 @@ class _Connection {
     _dataBuffer = new Buffer(_dataSize);
     log.fine("buffer size=${_dataBuffer.length}");
     if (_dataSize == 0xffffff || _largePacketBuffers.length > 0) {
-      await _socket.readBuffer(_dataBuffer);
-      _handleMoreData(_dataBuffer);
+      var buffer = await _socket.readBuffer(_dataBuffer);
+      _handleMoreData(buffer);
     } else {
-      await _socket.readBuffer(_dataBuffer);
-      _dataHandler(_dataBuffer);
+      var buffer = await _socket.readBuffer(_dataBuffer);
+      _dataHandler(buffer);
     }
   }
 
