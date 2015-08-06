@@ -31,14 +31,13 @@ class _ResultsImpl extends StreamView<Row> implements Results {
    * all the rows into a list until the stream has finished. It then returns a new
    * _ResultsImpl which wraps that list of rows.
    */
-  static Future<_ResultsImpl> destream(_ResultsImpl results) {
+  static Future<_ResultsImpl> destream(_ResultsImpl results) async {
     var rows = new List<Row>();
-    return results.forEach((row) {
+    await results.forEach((row) {
       rows.add(row);
-    }).then((_) {
-      var newStream = new Stream<Row>.fromIterable(rows);
-      return new _ResultsImpl._fromStream(results.insertId, results.affectedRows,
-        results.fields, newStream);
     });
+    var newStream = new Stream<Row>.fromIterable(rows);
+    return new _ResultsImpl._fromStream(results.insertId, results.affectedRows,
+      results.fields, newStream);
   }
 }
