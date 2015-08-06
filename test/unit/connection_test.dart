@@ -3,15 +3,18 @@ part of sqljocky;
 void runConnectionTests() {
   group('Connection', () {
     test('should throw error if buffer is too big', () {
-      var cnx = new _Connection(null, 15, 10);
-      var buffer = new Buffer(11);
+      final MAX_PACKET_SIZE = 10;
+      var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
+      final PACKET_SIZE = 11;
+      var buffer = new Buffer(PACKET_SIZE);
       expect(() {
         cnx._sendBuffer(buffer);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
 
     test('should send buffer', () {
-      var cnx = new _Connection(null, 15, 16 * 1024 * 1024);
+      final MAX_PACKET_SIZE = 16 * 1024 * 1024;
+      var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
       cnx._socket = socket;
 
@@ -41,7 +44,8 @@ void runConnectionTests() {
     });
 
     test('should send large buffer', () {
-      var cnx = new _Connection(null, 15, 32 * 1024 * 1024);
+      final MAX_PACKET_SIZE = 32 * 1024 * 1024;
+      var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
       cnx._socket = socket;
 
@@ -52,7 +56,8 @@ void runConnectionTests() {
       });
       socket.when(callsTo('writeBufferPart')).alwaysReturn(new Future.value());
 
-      var buffer = new Buffer(17 * 1024 * 1024);
+      final PACKET_SIZE = 17 * 1024 * 1024;
+      var buffer = new Buffer(PACKET_SIZE);
       return cnx._sendBuffer(buffer).then((_) {
         socket.getLogs(callsTo('writeBuffer')).verify(happenedExactly(2));
         socket.getLogs(callsTo('writeBufferPart')).verify(happenedExactly(2));
@@ -61,12 +66,13 @@ void runConnectionTests() {
         expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[1], equals(0));
         expect(socket.getLogs(callsTo('writeBufferPart')).logs[0].args[2], equals(0xffffff));
         expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[1], equals(0xffffff));
-        expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(17 * 1024 * 1024 - 0xffffff));
+        expect(socket.getLogs(callsTo('writeBufferPart')).logs[1].args[2], equals(PACKET_SIZE - 0xffffff));
       });
     });
 
     test('should receive buffer', () {
-      var cnx = new _Connection(null, 15, 16 * 1024 * 1024);
+      final MAX_PACKET_SIZE = 16 * 1024 * 1024;
+      var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
       cnx._socket = socket;
 
@@ -79,13 +85,13 @@ void runConnectionTests() {
       };
 
       var bufferReturnCount = 0;
-      var bufferReturn = (_) {
+      var bufferReturn = (_) async {
         if (bufferReturnCount == 0) {
           bufferReturnCount++;
-          return new Future.value(new Buffer.fromList([3, 0, 0, 1]));
+          return new Buffer.fromList([3, 0, 0, 1]);
         } else {
           bufferReturnCount++;
-          return new Future.value(new Buffer.fromList([1, 2, 3]));
+          return new Buffer.fromList([1, 2, 3]);
         }
       };
       socket.when(callsTo('readBuffer')).thenCall(bufferReturn, 2);
@@ -100,7 +106,8 @@ void runConnectionTests() {
     });
 
     test('should receive large buffer', () {
-      var cnx = new _Connection(null, 15, 32 * 1024 * 1024);
+      final MAX_PACKET_SIZE = 32 * 1024 * 1024;
+      var cnx = new _Connection(null, 15, MAX_PACKET_SIZE);
       var socket = new MockSocket();
       cnx._socket = socket;
 
