@@ -8,10 +8,8 @@ void runIntTests(String user, String password, String db, int port, String host)
       expect(pool, isNotNull);
     });
     
-    test('dropTables', () {
-      return new TableDropper(pool, ["test1"]).dropTables().then(expectAsync1((_) {
-        expect(1, equals(1)); // not quite sure of the async testing stuff yet
-      }));
+    test('dropTables', () async {
+      await new TableDropper(pool, ["test1"]).dropTables();
     });
 
     test('create tables', () {
@@ -33,27 +31,25 @@ void runIntTests(String user, String password, String db, int port, String host)
         });
     });
 
-    test('show tables', () {
+    test('show tables', () async {
       var c = new Completer();
-      pool.query("show tables").then(expectAsync1((Results results) {
-        print("tables");
-        results.listen((row) {
-          print("table: $row");
-        }, onDone: () {
-          c.complete();
-        });
-      }));
+      var results = await pool.query("show tables");
+      print("tables");
+      results.listen((row) {
+        print("table: $row");
+      }, onDone: () {
+        c.complete();
+      });
       return c.future;
     });
 
-    test('describe stuff', () {
+    test('describe stuff', () async {
       var c = new Completer();
-      pool.query("describe test1").then(expectAsync1((Results results) {
-        print("table test1");
-        showResults(results).then((_) {
-          c.complete();
-        });
-      }));
+      var results = await pool.query("describe test1");
+      print("table test1");
+      showResults(results).then((_) {
+        c.complete();
+      });
       return c.future;
     });
 

@@ -1,7 +1,7 @@
 library buffered_socket_test;
 
-import 'package:unittest/unittest.dart';
-import 'package:unittest/mock.dart';
+import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 import 'dart:io';
 import 'dart:async';
 
@@ -170,20 +170,20 @@ void runBufferedSocketTests() {
       var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
           socketFactory: factory);
       var buffer = new MockBuffer();
-      buffer.when(callsTo('get length')).alwaysReturn(100);
-      buffer.when(callsTo('writeToSocket')).alwaysReturn(25);
+      when(buffer.length).thenReturn(100);
+      when(buffer.writeToSocket(any, any, any)).thenReturn(25);
       await socket.writeBuffer(buffer);
-      buffer.getLogs(callsTo('writeToSocket')).verify(happenedExactly(4));
+      verify(buffer.writeToSocket(any, any, any)).called(4);
     });
 
     test('should write part of buffer', () async {
       var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
           socketFactory: factory);
       var buffer = new MockBuffer();
-      buffer.when(callsTo('get length')).alwaysReturn(100);
-      buffer.when(callsTo('writeToSocket')).alwaysReturn(25);
+      when(buffer.length).thenReturn(100);
+      when(buffer.writeToSocket(any, any, any)).thenReturn(25);
       await socket.writeBufferPart(buffer, 25, 50);
-      buffer.getLogs(callsTo('writeToSocket')).verify(happenedExactly(2));
+      verify(buffer.writeToSocket(any, any, any)).called(2);
     });
   });
 }

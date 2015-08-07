@@ -9,15 +9,14 @@ void runCharsetTests(String user, String password, String db, int port, String h
         "insert into cset (stuff) values ('здрасти')");
     });
 
-    test('read data', () {
+    test('read data', () async {
       var c = new Completer();
-      pool.query('select * from cset').then(expectAsync1((Results results) {
-        results.listen((row) {
-          expect(row[0].toString(), equals("здрасти"));
-        }, onDone: () {
-          c.complete();
-        });
-      }));
+      var results = await pool.query('select * from cset');
+      results.listen((row) {
+        expect(row[0].toString(), equals("здрасти"));
+      }, onDone: () {
+        c.complete();
+      });
       return c.future;
     });
 

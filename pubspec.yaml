@@ -8,8 +8,9 @@ environment:
 documentation: http://jamesots.github.io/sqljocky/docs
 dependencies:
   crypto: '>=0.9.0 <0.10.0'
-  logging: '>=0.9.0 <0.10.0'
-  options_file: '>=0.9.15'
+  logging: '>=0.11.1 <0.12.0'
+  options_file: '>=0.11.0 <0.12.0'
 dev_dependencies:
-  unittest: '>=0.9.0 <0.10.0'
+  test: '>=0.12.3+9 <0.13.0'
+  mockito: '>=0.10.1 <0.11.0'
   args: any
