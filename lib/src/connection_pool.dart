@@ -94,7 +94,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       _log.finest("Logged in on cnx#${cnx.number}");
       c.complete(cnx);
     } catch (e) {
-      _releaseReuseCompleteError(cnx, c, e);
+      if (!(e is MySqlException)) {
+        _removeConnection(cnx);
+      }
+      c.completeError(e);
     }
   }
 
@@ -175,7 +178,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     _log.info("Running query: ${sql}");
 
     var cnx = await _getConnection();
-    var c = new Completer<Results>();
     _log.fine("Got cnx#${cnx.number} for query");
     try {
       var results = await cnx.processHandler(new _QueryStreamHandler(sql));
@@ -269,7 +271,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 
     var cnx = await _getConnection();
     cnx.inTransaction = true;
-    var c = new Completer<Transaction>();
     var sql;
     if (consistent) {
       sql = "start transaction with consistent snapshot";
@@ -277,7 +278,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       sql = "start transaction";
     }
     try {
-      var results = await cnx.processHandler(new _QueryStreamHandler(sql));
+      await cnx.processHandler(new _QueryStreamHandler(sql));
       _log.fine("Transaction started on cnx#${cnx.number}");
       return new _TransactionImpl._(cnx, this);
     } catch (e) {
@@ -327,14 +328,6 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 }
 
 abstract class _ConnectionHelpers {
-  _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
-    if (e is MySqlException) {
-    } else {
-      _removeConnection(cnx);
-    }
-    c.completeError(e);
-  }
-
   _releaseReuseThrow(_Connection cnx, dynamic e) {
     if (!(e is MySqlException)) {
       _removeConnection(cnx);

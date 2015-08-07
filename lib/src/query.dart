@@ -26,11 +26,9 @@ class Query extends Object with _ConnectionHelpers {
       _inTransaction = true,
       _log = new Logger("Query");
   
-  Future<_Connection> _getConnection() {
+  Future<_Connection> _getConnection() async {
     if (_cnx != null) {
-      var c = new Completer<_Connection>();
-      c.complete(_cnx);
-      return c.future;
+      return _cnx;
     }
     return _pool._getConnection();
   }
@@ -104,7 +102,6 @@ class Query extends Object with _ConnectionHelpers {
   Future<Results> _execute(_PreparedQuery preparedQuery, List values,
       {bool retainConnection: false}) async {
     _log.finest("About to execute");
-    var c = new Completer<Results>();
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
     try {
@@ -126,7 +123,6 @@ class Query extends Object with _ConnectionHelpers {
    */
   Future<List<Results>> executeMulti(List<List> parameters) async {
     var preparedQuery = await _prepare(true);
-    var c = new Completer<List<Results>>();
     _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
     var resultList = new List<Results>();
 
