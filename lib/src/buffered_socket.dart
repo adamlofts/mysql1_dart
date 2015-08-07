@@ -53,23 +53,18 @@ class BufferedSocket {
       _closed = true;
     }
   }
+
+  static defaultSocketFactory(host, port) => RawSocket.connect(host, port);
   
-  /**
-   * [socketFactory] is for unit testing.
-   */
   static Future<BufferedSocket> connect(String host, int port,
       {DataReadyHandler onDataReady,
       DoneHandler onDone, 
       ErrorHandler onError, 
-      SocketFactory socketFactory,
+      SocketFactory socketFactory : defaultSocketFactory,
       OnConnection onConnection}) async {
     try {
       var socket;
-      if (socketFactory != null) {
-        socket = await socketFactory(host, port);
-      } else {
-        socket = await RawSocket.connect(host, port);
-      }
+      socket = await socketFactory(host, port);
       var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError);
       if (onConnection != null) {
         onConnection(bufferedSocket);
