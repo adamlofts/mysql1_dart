@@ -13,14 +13,10 @@ void runRowTests(String user, String password, String db, int port, String host)
       pool.closeConnectionsNow();
     });
 
-    test('store data', () {
+    test('store data', () async {
       var c = new Completer();
-      pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)').then((query) {
-        query.execute([0, 'Bob', 'Thing', 5000]).then((Results results) {
-          c.complete();
-        });
-      });
-      return c.future;
+      var query = await pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
+      var results = await query.execute([0, 'Bob', 'Thing', 5000]);
     });
 
     test('first field is empty', () async {
@@ -30,38 +26,36 @@ void runRowTests(String user, String password, String db, int port, String host)
       expect(results.map((r) => [r[0].toString(), r[1]]).toList().first, equals(['', 5000]));
     });
 
-    test('select from stream using query and listen', () {
+    test('select from stream using query and listen', () async {
       var futures = [];
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
-        pool.query('select * from row').then((Results results) {
-          results.listen((row) {
-            expect(row.id, equals(0));
-            expect(row.name.toString(), equals("Bob"));
-            // length is a getter on List, so it isn't mapped to the result field
-            expect(row.length, equals(4));
-          }, onDone: () {
-            c.complete();
-          });
+        var results = await pool.query('select * from row');
+        results.listen((row) {
+          expect(row.id, equals(0));
+          expect(row.name.toString(), equals("Bob"));
+          // length is a getter on List, so it isn't mapped to the result field
+          expect(row.length, equals(4));
+        }, onDone: () {
+          c.complete();
         });
         futures.add(c.future);
       }
       return Future.wait(futures);
     });
 
-    test('select from stream using prepareExecute and listen', () {
+    test('select from stream using prepareExecute and listen', () async {
       var futures = [];
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
-        pool.prepareExecute('select * from row where id = ?',[0]).then((Results results) {
-          results.listen((row) {
-            expect(row.id, equals(0));
-            expect(row.name.toString(), equals("Bob"));
-            // length is a getter on List, so it isn't mapped to the result field
-            expect(row.length, equals(4));
-          }, onDone: () {
-            c.complete();
-          });
+        var results = await pool.prepareExecute('select * from row where id = ?',[0]);
+        results.listen((row) {
+          expect(row.id, equals(0));
+          expect(row.name.toString(), equals("Bob"));
+          // length is a getter on List, so it isn't mapped to the result field
+          expect(row.length, equals(4));
+        }, onDone: () {
+          c.complete();
         });
         futures.add(c.future);
       }

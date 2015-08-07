@@ -12,8 +12,8 @@ void runIntTests(String user, String password, String db, int port, String host)
       await new TableDropper(pool, ["test1"]).dropTables();
     });
 
-    test('create tables', () {
-      return pool.query("create table test1 ("
+    test('create tables', () async {
+      var results = await pool.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
         "adecimal decimal(20,10), afloat float, adouble double, areal real, "
         "aboolean boolean, abit bit(20), aserial serial, "
@@ -22,13 +22,11 @@ void runIntTests(String user, String password, String db, int port, String host)
         "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
         "abinary binary(10), avarbinary varbinary(10), "
         "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)").then((Results results) {
-          expect(results.affectedRows, equals(0));
-          expect(results.insertId, equals(0));
-          return results.toList().then((list) {
-            expect(list, hasLength(0));
-          });
-        });
+        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
+      expect(results.affectedRows, equals(0));
+      expect(results.insertId, equals(0));
+      var list = await results.toList();
+      expect(list, hasLength(0));
     });
 
     test('show tables', () async {
@@ -44,69 +42,51 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('describe stuff', () async {
-      var c = new Completer();
       var results = await pool.query("describe test1");
       print("table test1");
-      showResults(results).then((_) {
-        c.complete();
-      });
-      return c.future;
+      await showResults(results);
     });
 
-    test('small blobs', () {
+    test('small blobs', () async {
       var c = new Completer();
-      pool.prepare("insert into test1 (atext) values (?)").then((query) {
-        var longstring = "";
-        for (var i = 0; i < 200; i++) {
-          longstring += "x";
-        }
-        return query.execute([new Blob.fromString(longstring)]);
-      }).then((results) {
-        expect(results.affectedRows, equals(1));
+      var query = await pool.prepare("insert into test1 (atext) values (?)");
+      var longstring = "";
+      for (var i = 0; i < 200; i++) {
+        longstring += "x";
+      }
+      var results = await query.execute([new Blob.fromString(longstring)]);
+      expect(results.affectedRows, equals(1));
 
-//        return pool.query("select atext from test1 where length(atext) > 1000");
-        return pool.query("select atext from test1");
-      }).then((results) {
-        return results.toList();
-      }).then((list) {
-        expect(list.length, equals(1));
-        expect((list[0][0] as Blob).toString().length, equals(200));
-        c.complete();
-      });
-      return c.future;
+      results = await pool.query("select atext from test1");
+      var list = await results.toList();
+      expect(list.length, equals(1));
+      expect((list[0][0] as Blob).toString().length, equals(200));
     });
 
-    test('medium blobs', () {
+    test('medium blobs', () async {
       var c = new Completer();
-      pool.prepare("insert into test1 (atext) values (?)").then((query) {
-        var longstring = "";
-        for (var i = 0; i < 2000; i++) {
-          longstring += "x";
-        }
-        return query.execute([new Blob.fromString(longstring)]);
-      }).then((results) {
-        expect(results.affectedRows, equals(1));
+      var query = await pool.prepare("insert into test1 (atext) values (?)");
+      var longstring = "";
+      for (var i = 0; i < 2000; i++) {
+        longstring += "x";
+      }
+      var results = await query.execute([new Blob.fromString(longstring)]);
+      expect(results.affectedRows, equals(1));
 
-//        return pool.query("select atext from test1 where length(atext) > 1000");
-        return pool.query("select atext from test1");
-      }).then((results) {
-        return results.toList();
-      }).then((list) {
-        expect(list.length, equals(2));
-        expect((list[1][0] as Blob).toString().length, equals(2000));
-        c.complete();
-      });
-      return c.future;
+      results = await pool.query("select atext from test1");
+      var list = await results.toList();
+      expect(list.length, equals(2));
+      expect((list[1][0] as Blob).toString().length, equals(2000));
     });
 
     test('clear stuff', () {
       return pool.query('delete from test1');
     });
 
-    test('insert stuff', () {
+    test('insert stuff', () async {
       var c = new Completer();
       print("insert stuff test");
-      pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+      var query = await pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
         "adate, adatetime, atimestamp, atime, ayear, "
@@ -119,224 +99,170 @@ void runIntTests(String user, String password, String db, int port, String host)
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)").then((Query query) {
-          var values = [];
-          values.add(126);
-          values.add(164);
-          values.add(165);
-          values.add(166);
-          values.add(167);
+        "?, ?)");
+      var values = [];
+      values.add(126);
+      values.add(164);
+      values.add(165);
+      values.add(166);
+      values.add(167);
 
-          values.add(592);
-          values.add(123.456);
-          values.add(123.456);
-          values.add(123.456);
+      values.add(592);
+      values.add(123.456);
+      values.add(123.456);
+      values.add(123.456);
 
-          values.add(true);
-          values.add(0x010203);//[1, 2, 3]);
-          values.add(123);
+      values.add(true);
+      values.add(0x010203);//[1, 2, 3]);
+      values.add(123);
 
-          values.add(new DateTime.now());
-          values.add(new DateTime.now());
-          values.add(new DateTime.now());
-          values.add(new DateTime.now());
-          values.add(2012);
+      values.add(new DateTime.now());
+      values.add(new DateTime.now());
+      values.add(new DateTime.now());
+      values.add(new DateTime.now());
+      values.add(2012);
 
-          values.add("Hello");
-          values.add("Hey");
-          values.add("Hello there");
-          values.add("Good morning");
-          values.add("Habari boss");
-          values.add("Bonjour");
+      values.add("Hello");
+      values.add("Hey");
+      values.add("Hello there");
+      values.add("Good morning");
+      values.add("Habari boss");
+      values.add("Bonjour");
 
-          values.add([65, 66, 67, 68]);
-          values.add([65, 66, 67, 68]);
-          values.add([65, 66, 67, 68]);
-          values.add([65, 66, 67, 68]);
-          values.add([65, 66, 67, 68]);
-          values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
+      values.add([65, 66, 67, 68]);
 
-          values.add("a");
-          values.add("a,b");
+      values.add("a");
+      values.add("a,b");
 
-          print("executing");
-          expect(1, equals(1)); // put some real expectations here
-          return query.execute(values);
-        }).then((results) {
-          print("updated ${results.affectedRows} ${results.insertId}");
-          expect(results.affectedRows, equals(1));
-          c.complete();
-        });
-      return c.future;
+      print("executing");
+      expect(1, equals(1)); // put some real expectations here
+      var results = await query.execute(values);
+      print("updated ${results.affectedRows} ${results.insertId}");
+      expect(results.affectedRows, equals(1));
     });
 
-    test('select everything', () {
-      var c = new Completer();
-      pool.query('select * from test1').then((results) {
-        results.toList().then((list) {
-          expect(list.length, equals(1));
-          var row = list.first;
-          expect(row[10], equals(0x010203));
-          c.complete();
-        });
-      });
-      return c.future;
+    test('select everything', () async {
+      var results = await pool.query('select * from test1');
+      var list = await results.toList();
+      expect(list.length, equals(1));
+      var row = list.first;
+      expect(row[10], equals(0x010203));
     });
 
-    test('update', () {
+    test('update', () async {
       var c = new Completer();
       Query preparedQuery;
-      pool.prepare("update test1 set atinyint = ?, adecimal = ?").then((query) {
-        preparedQuery = query;
-        expect(1, equals(1)); // put some real expectations here
-        return query.execute([127, "123456789.987654321"]);
-      }).then((results) {
-        preparedQuery.close();
-        c.complete();
-      });
-      return c.future;
+      var query = await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
+      preparedQuery = query;
+      expect(1, equals(1)); // put some real expectations here
+      var results = await query.execute([127, "123456789.987654321"]);
+      preparedQuery.close();
     });
 
-    test('select stuff', () {
-      var c = new Completer();
-      pool.query("select atinyint, adecimal from test1").then((results) {
-        results.toList().then((list) {
-          var row = list[0];
-          expect(row[0], equals(127));
-          expect(row[1], equals(123456789.987654321));
-          c.complete();
-        });
-      });
-      return c.future;
+    test('select stuff', () async {
+      var results = await pool.query("select atinyint, adecimal from test1");
+      var list = await results.toList();
+      var row = list[0];
+      expect(row[0], equals(127));
+      expect(row[1], equals(123456789.987654321));
     });
 
-    test('prepare execute', () {
+    test('prepare execute', () async {
       var c = new Completer();
-      pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]).then((results) {
-        expect(results.affectedRows, equals(1));
-        c.complete();
-      });
-      return c.future;
+      var results = await pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]);
+      expect(results.affectedRows, equals(1));
     });
 
     List<Field> preparedFields;
     List<dynamic> values;
 
-    test('data types (prepared)', () {
+    test('data types (prepared)', () async {
       var c = new Completer();
-      pool.prepareExecute('select * from test1', []).then((results) {
-        print("----------- prepared results ---------------");
-        preparedFields = results.fields;
-        results.toList().then((list) {
-          values = list[0];
-          for (var i = 0; i < results.fields.length; i++) {
-            var field = results.fields[i];
-            print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
-          }
-          c.complete();
-        });
-      });
-      return c.future;
+      var results = await pool.prepareExecute('select * from test1', []);
+      print("----------- prepared results ---------------");
+      preparedFields = results.fields;
+      var list = await results.toList();
+      values = list[0];
+      for (var i = 0; i < results.fields.length; i++) {
+        var field = results.fields[i];
+        print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
+      }
     });
 
-    test('data types (query)', () {
-      var c = new Completer();
-      pool.query('select * from test1').then((results) {
-        print("----------- query results ---------------");
-        results.toList().then((list) {
-          var row = list[0];
-          for (var i = 0; i < results.fields.length; i++) {
-            var field = results.fields[i];
+    test('data types (query)', () async {
+      var results = await pool.query('select * from test1');
+      print("----------- query results ---------------");
+      var list = await results.toList();
+      var row = list[0];
+      for (var i = 0; i < results.fields.length; i++) {
+        var field = results.fields[i];
 
-            // make sure field types returned by both queries are the same
-            expect(field.type, equals(preparedFields[i].type));
-            // make sure results types are the same
-            expect(typeof(row[i]), equals(typeof(values[i])));
-            // make sure the values are the same
-            if (row[i] is double) {
-              // or at least close
-              expect(row[i], closeTo(values[i], 0.1));
-  //          } else if (row[i] is Collection) {
-  //            expect(row[i], equals(values[i]));
-            } else {
-              expect(row[i], equals(values[i]));
-            }
-            print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
-          }
-          c.complete();
-        });
-      });
-      return c.future;
+        // make sure field types returned by both queries are the same
+        expect(field.type, equals(preparedFields[i].type));
+        // make sure results types are the same
+        expect(typeof(row[i]), equals(typeof(values[i])));
+        // make sure the values are the same
+        if (row[i] is double) {
+          // or at least close
+          expect(row[i], closeTo(values[i], 0.1));
+        } else {
+          expect(row[i], equals(values[i]));
+        }
+        print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
+      }
     });
 
-    test('multi queries', () {
-      var c = new Completer();
-      pool.startTransaction().then((trans) {
-        var start = new DateTime.now();
-        trans.prepare('insert into test1 (aint) values (?)').then((query) {
-          var params = [];
-          for (var i = 0; i < 50; i++) {
-            params.add([i]);
-          }
-          query.executeMulti(params).then((resultList) {
-            var end = new DateTime.now();
-            print(end.difference(start));
-            expect(resultList.length, equals(50));
-            trans.commit().then((_) {
-              c.complete();
-            });
-          });
-        });
-      });
-      return c.future;
+    test('multi queries', () async {
+      var trans = await pool.startTransaction();
+      var start = new DateTime.now();
+      var query = await trans.prepare('insert into test1 (aint) values (?)');
+      var params = [];
+      for (var i = 0; i < 50; i++) {
+        params.add([i]);
+      }
+      var resultList = await query.executeMulti(params);
+      var end = new DateTime.now();
+      print(end.difference(start));
+      expect(resultList.length, equals(50));
+      await trans.commit();
     });
 
-    test('blobs in prepared queries', () {
+    test('blobs in prepared queries', () async {
       var c = new Completer();
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
-      pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]).then((results) {
-        expect(1, equals(1)); // put some real expectations here
-        return pool.prepareExecute("select atext from test1 where aint = 12344", []);
-      }).then((results) {
-        results.toList().then((list) {
-          expect(list.length, equals(1));
-          values = list[0];
-          expect(values[0].toString(), equals("ABC\u0000DEF"));
-          c.complete();
-        });
-      });
-      return c.future;
+      var results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
+      expect(1, equals(1)); // put some real expectations here
+      results = await pool.prepareExecute("select atext from test1 where aint = 12344", []);
+      var list = await results.toList();
+      expect(list.length, equals(1));
+      values = list[0];
+      expect(values[0].toString(), equals("ABC\u0000DEF"));
     });
 
-    test('blobs with nulls', () {
-      var c = new Completer();
-      pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")").then((results) {
-        expect(1, equals(1)); // put some real expectations here
-        return pool.query("select atext from test1 where aint = 12345");
-      }).then((results) {
-        return results.toList();
-      }).then((results) {
-        expect(results.length, equals(1));
-        values = results[0];
-        expect(values[0].toString(), equals("ABC\u0000DEF"));
+    test('blobs with nulls', () async {
+      var results = await pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")");
+      expect(1, equals(1)); // put some real expectations here
+      results = await pool.query("select atext from test1 where aint = 12345");
+      results = await results.toList();
+      expect(results.length, equals(1));
+      values = results[0];
+      expect(values[0].toString(), equals("ABC\u0000DEF"));
 
-        return pool.query("delete from test1 where aint = 12345");
-      }).then((results) {
-        var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
-        expect(1, equals(1)); // put some real expectations here
-        return pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
-      }).then((results) {
-        expect(1, equals(1)); // put some real expectations here
-        return pool.prepareExecute("select atext from test1 where aint = 12345", []);
-      }).then((results) {
-        return results.toList();
-      }).then((results) {
-        expect(results.length, equals(1));
-        values = results[0];
-        expect(values[0].toString(), equals("ABC\u0000DEF"));
-        c.complete();
-      });
-      return c.future;
+      results = await pool.query("delete from test1 where aint = 12345");
+      var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
+      expect(1, equals(1)); // put some real expectations here
+      results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
+      expect(1, equals(1)); // put some real expectations here
+      results = await pool.prepareExecute("select atext from test1 where aint = 12345", []);
+      results = await results.toList();
+      expect(results.length, equals(1));
+      values = results[0];
+      expect(values[0].toString(), equals("ABC\u0000DEF"));
     });
 
     test('close connection', () {

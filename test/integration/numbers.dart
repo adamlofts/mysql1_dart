@@ -1,11 +1,9 @@
 part of integrationtests;
 
-Future deleteInsertSelect(ConnectionPool pool, table, insert, select) {
-  return pool.query('delete from $table').then((_) {
-    return pool.query(insert);
-  }).then((_) {
-    return pool.query(select);
-  });
+Future deleteInsertSelect(ConnectionPool pool, table, insert, select) async {
+  await pool.query('delete from $table');
+  await pool.query(insert);
+  return pool.query(select);
 }
 
 void runNumberTests(String user, String password, String db, int port, String host) {
