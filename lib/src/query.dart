@@ -83,7 +83,7 @@ class Query extends Object with _ConnectionHelpers {
   }
 
   /// Closes this query and removes it from all connections in the pool.
-  void close() {
+  close() async {
     _pool._closeQuery(this, _inTransaction);
   }
   

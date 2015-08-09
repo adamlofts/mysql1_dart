@@ -22,6 +22,7 @@ part 'integration/row.dart';
 part 'integration/errors.dart';
 part 'integration/stored_procedures.dart';
 part 'integration/execute_multi.dart';
+part 'integration/prepared_query.dart';
 
 void main(List<String> args) {
   hierarchicalLoggingEnabled = true;
@@ -51,6 +52,7 @@ void main(List<String> args) {
   var db = options.getString('db');
   var host = options.getString('host', 'localhost');
 
+  runPreparedQueryTests(user, password, db, port, host);
   runIntTests(user, password, db, port, host);
   runIntTests2(user, password, db, port, host);
   runCharsetTests(user, password, db, port, host);

@@ -18,12 +18,18 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   final int _maxPacketSize;
   int _max;
 
-/*
+  /*
    * The pool maintains a queue of connection requests. When a connection completes, if there
    * is a connection in the queue then it is 'activated' - that is, the future returned
    * by _getConnection() completes.
    */
   final Queue<Completer<_Connection>> _pendingConnections;
+  /*
+   * If you need a particular connection, put an entry in _requestedConnections. As soon as
+   * that connection is free then the completer completes. _requestedConnections is
+   * checked before _pendingConnections.
+   */
+  final Map<_Connection, Queue<Completer>> _requestedConnections;
   final List<_Connection> _pool;
 
 /**
@@ -40,6 +46,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 //      bool useCompression: false,
       bool useSSL: false}) :
   _pendingConnections = new Queue<Completer<_Connection>>(),
+  _requestedConnections = new Map<_Connection, Queue<Completer>>(),
   _pool = new List<_Connection>(),
   _host = host,
   _port = port,
@@ -122,6 +129,14 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 
     if (cnx.inUse) {
       _log.finest("cnx#${cnx.number} already reused");
+      return;
+    }
+
+    if (_requestedConnections.containsKey(cnx) && _requestedConnections[cnx].length > 0) {
+      _log.finest("Reusing cnx#${cnx.number} for a requested operation");
+      var c = _requestedConnections[cnx].removeFirst();
+      cnx.use();
+      c.complete(cnx);
       return;
     }
 
@@ -217,6 +232,9 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     }
   }
 
+  // Close a prepared query on all connections which have this query.
+  // This may take some time if it has to wait a long time for a
+  // connection to become free.
   _closeQuery(Query q, bool retain) async {
     _log.finest("Closing query: ${q.sql}");
     var thePool = new List<_Connection>();
@@ -224,6 +242,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     for (var cnx in thePool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
       if (preparedQuery != null) {
+        _log.finest("Connection not ready");
         await _waitUntilReady(cnx);
         _log.finest("Connection ready - closing query: ${q.sql}");
         var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
@@ -233,17 +252,22 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     }
   }
 
-/**
-   * The future returned by [_waitUntilReady] fires when all queued operations in the pool
-   * have completed, and the connection is free to be used again.
+  /**
+   * The future returned by [_waitUntilReady] fires when the connection is next available
+   * to be used.
    */
   Future<_Connection> _waitUntilReady(_Connection cnx) {
     var c = new Completer<_Connection>();
     if (!cnx.inUse) {
+      // connection isn't in use, so use it straight away
       cnx.use();
       c.complete(cnx);
     } else {
-      _pendingConnections.add(c);
+      // Connection is in use, so request we get it the next time it's available.
+      if (!_requestedConnections.containsKey(cnx)) {
+        _requestedConnections[cnx] = new Queue<Completer>();
+      }
+      _requestedConnections[cnx].add(c);
     }
     return c.future;
   }
