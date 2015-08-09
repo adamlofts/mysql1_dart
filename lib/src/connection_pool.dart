@@ -76,27 +76,29 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     return c.future;
   }
 
-  _createConnection(Completer c) {
+  _createConnection(Completer c) async {
     var cnx = new _Connection(this, _pool.length, _maxPacketSize);
     cnx.use();
     cnx.autoRelease = false;
     _pool.add(cnx);
-    cnx.connect(
-        host: _host,
-        port: _port,
-        user: _user,
-        password: _password,
-        db: _db,
-        useCompression: _useCompression,
-        useSSL: _useSSL)
-    .then((_) {
+    try {
+      await cnx.connect(
+          host: _host,
+          port: _port,
+          user: _user,
+          password: _password,
+          db: _db,
+          useCompression: _useCompression,
+          useSSL: _useSSL);
       cnx.autoRelease = true;
       _log.finest("Logged in on cnx#${cnx.number}");
       c.complete(cnx);
-    })
-    .catchError((e) {
-      _releaseReuseCompleteError(cnx, c, e);
-    });
+    } catch (e) {
+      if (!(e is MySqlException)) {
+        _removeConnection(cnx);
+      }
+      c.completeError(e);
+    }
   }
 
   _removeConnection(_Connection cnx) {
@@ -172,74 +174,61 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     }
   }
 
-  Future<Results> query(String sql) {
+  Future<Results> query(String sql) async {
     _log.info("Running query: ${sql}");
 
-    return _getConnection()
-    .then((cnx) {
-      var c = new Completer<Results>();
-      _log.fine("Got cnx#${cnx.number} for query");
-      cnx.processHandler(new _QueryStreamHandler(sql))
-      .then((results) {
-        _log.fine("Got query results on #${cnx.number} for: ${sql}");
-        c.complete(results);
-      })
-      .catchError((e) {
-        _releaseReuseCompleteError(cnx, c, e);
-      });
-      return c.future;
-    });
+    var cnx = await _getConnection();
+    _log.fine("Got cnx#${cnx.number} for query");
+    try {
+      var results = await cnx.processHandler(new _QueryStreamHandler(sql));
+      _log.fine("Got query results on #${cnx.number} for: ${sql}");
+      return results;
+    } catch (e) {
+      _releaseReuseThrow(cnx, e);
+    }
   }
 
 /**
    * Pings the server. Returns a [Future] that completes when the server replies.
    */
-  Future ping() {
+  Future ping() async {
     _log.info("Pinging server");
 
-    return _getConnection()
-    .then((cnx) {
-      return cnx.processHandler(new _PingHandler())
-      .then((x) {
-        _log.fine("Pinged");
-        return x;
-      });
-    });
+    var cnx = await _getConnection();
+    var x = await cnx.processHandler(new _PingHandler());
+    _log.fine("Pinged");
+    return x;
   }
 
 /**
    * Sends a debug message to the server. Returns a [Future] that completes
    * when the server replies.
    */
-  Future debug() {
+  Future debug() async {
     _log.info("Sending debug message");
 
-    return _getConnection()
-    .then((cnx) {
-      var c = new Completer();
-      cnx.processHandler(new _DebugHandler())
-      .then((x) {
-        _log.fine("Message sent");
-        return x;
-      })
-      .catchError((e) {
-        _releaseReuseCompleteError(cnx, c, e);
-      });
-      return c.future;
-    });
+    var cnx = await _getConnection();
+    try {
+      var x = await cnx.processHandler(new _DebugHandler());
+      _log.fine("Message sent");
+      return x;
+    } catch (e) {
+      _releaseReuseThrow(cnx, e);
+    }
   }
 
-  void _closeQuery(Query q, bool retain) {
+  _closeQuery(Query q, bool retain) async {
     _log.finest("Closing query: ${q.sql}");
-    for (var cnx in _pool) {
+    var thePool = new List<_Connection>();
+    thePool.addAll(_pool); // prevent concurrent modification
+    for (var cnx in thePool) {
       var preparedQuery = cnx.removePreparedQueryFromCache(q.sql);
       if (preparedQuery != null) {
-        _waitUntilReady(cnx).then((_) {
-          _log.finest("Connection ready - closing query: ${q.sql}");
-          var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
-          cnx.autoRelease = !retain;
-          cnx.processHandler(handler, noResponse: true);
-        });
+        await _waitUntilReady(cnx);
+        _log.finest("Connection ready - closing query: ${q.sql}");
+        var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
+        cnx.autoRelease = !retain;
+        cnx.processHandler(handler, noResponse: true);
       }
     }
   }
@@ -259,13 +248,11 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     return c.future;
   }
 
-  Future<Query> prepare(String sql) {
+  Future<Query> prepare(String sql) async {
     var query = new Query._internal(this, sql);
-    return query._prepare(false)
-    .then((preparedQuery) {
-      _log.info("Got prepared query");
-      return query;
-    });
+    await query._prepare(false);
+    _log.info("Got prepared query");
+    return query;
   }
 
 /**
@@ -279,30 +266,24 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * and [Transaction.rollback] methods to commit and roll back, otherwise
    * the connection will not be released.
    */
-  Future<Transaction> startTransaction({bool consistent: false}) {
+  Future<Transaction> startTransaction({bool consistent: false}) async {
     _log.info("Starting transaction");
 
-    return _getConnection()
-    .then((cnx) {
-      cnx.inTransaction = true;
-      var c = new Completer<Transaction>();
-      var sql;
-      if (consistent) {
-        sql = "start transaction with consistent snapshot";
-      } else {
-        sql = "start transaction";
-      }
-      cnx.processHandler(new _QueryStreamHandler(sql))
-      .then((results) {
-        _log.fine("Transaction started on cnx#${cnx.number}");
-        var transaction = new _TransactionImpl._(cnx, this);
-        c.complete(transaction);
-      })
-      .catchError((e) {
-        _releaseReuseCompleteError(cnx, c, e);
-      });
-      return c.future;
-    });
+    var cnx = await _getConnection();
+    cnx.inTransaction = true;
+    var sql;
+    if (consistent) {
+      sql = "start transaction with consistent snapshot";
+    } else {
+      sql = "start transaction";
+    }
+    try {
+      await cnx.processHandler(new _QueryStreamHandler(sql));
+      _log.fine("Transaction started on cnx#${cnx.number}");
+      return new _TransactionImpl._(cnx, this);
+    } catch (e) {
+      _releaseReuseThrow(cnx, e);
+    }
   }
 
 /**
@@ -318,20 +299,17 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
    * You must use [RetainedConnection.release] when you have finished with the
    * connection, otherwise it will not be available in the pool again.
    */
-  Future<RetainedConnection> getConnection() {
+  Future<RetainedConnection> getConnection() async {
     _log.info("Retaining connection");
 
-    return _getConnection()
-    .then((cnx) {
-      cnx.inTransaction = true;
-      return new _RetainedConnectionImpl._(cnx, this);
-    });
+    var cnx = await _getConnection();
+    cnx.inTransaction = true;
+    return new _RetainedConnectionImpl._(cnx, this);
   }
 
-  Future<Results> prepareExecute(String sql, List parameters) {
-    return prepare(sql).then((query) {
-      return query.execute(parameters);
-    });
+  Future<Results> prepareExecute(String sql, List parameters) async {
+    var query = await prepare(sql);
+    return query.execute(parameters);
   }
 
 //  dynamic fieldList(String table, [String column]);
@@ -350,12 +328,11 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 }
 
 abstract class _ConnectionHelpers {
-  _releaseReuseCompleteError(_Connection cnx, Completer c, dynamic e) {
-    if (e is MySqlException) {
-    } else {
+  _releaseReuseThrow(_Connection cnx, dynamic e) {
+    if (!(e is MySqlException)) {
       _removeConnection(cnx);
     }
-    c.completeError(e);
+    throw e;
   }
 
   _removeConnection(cnx);

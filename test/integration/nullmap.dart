@@ -8,14 +8,9 @@ void runNullMapTests(String user, String password, String db, int port, String h
       return setup(pool, "nullmap", "create table nullmap (a text, b text, c text, d text)");
     });
     
-    test('store data', () {
-      var c = new Completer();
-      pool.prepare('insert into nullmap (a, b, c, d) values (?, ?, ?, ?)').then((query) {
-        query.execute([null, 'b', 'c', 'd']).then((Results results) {
-          c.complete();
-        });
-      });
-      return c.future;
+    test('store data', () async {
+      var query = await pool.prepare('insert into nullmap (a, b, c, d) values (?, ?, ?, ?)');
+      await query.execute([null, 'b', 'c', 'd']);
     });
 
     test('read data', () {

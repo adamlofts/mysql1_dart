@@ -9,29 +9,22 @@ void runExecuteMultiTests(String user, String password, String db, int port, Str
       "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
     });
 
-    test('store data', () {
-      var c = new Completer();
-      var theValues;
-      pool.prepare('select * from stream where id = ?').then((query) {
-        return query.executeMulti([[1], [2], [3]]);
-      }).then((values) {
-        theValues = values;
-        expect(values, hasLength(3));
-        return theValues[0].toList();
-      }).then((resultList) {
-        expect(resultList[0][0], equals(1));
-        expect(resultList[0][1].toString(), equals('A'));
-        return theValues[1].toList();
-      }).then((resultList) {
-        expect(resultList[0][0], equals(2));
-        expect(resultList[0][1].toString(), equals('B'));
-        return theValues[2].toList();
-      }).then((resultList) {
-        expect(resultList[0][0], equals(3));
-        expect(resultList[0][1].toString(), equals('C'));
-        c.complete(null);
-      });
-      return c.future;
+    test('store data', () async {
+      var query = await pool.prepare('select * from stream where id = ?');
+      var values = await query.executeMulti([[1], [2], [3]]);
+      expect(values, hasLength(3));
+
+      var resultList = await values[0].toList();
+      expect(resultList[0][0], equals(1));
+      expect(resultList[0][1].toString(), equals('A'));
+
+      resultList = await values[1].toList();
+      expect(resultList[0][0], equals(2));
+      expect(resultList[0][1].toString(), equals('B'));
+
+      resultList = await values[2].toList();
+      expect(resultList[0][0], equals(3));
+      expect(resultList[0][1].toString(), equals('C'));
     });
 
     test('close connection', () {

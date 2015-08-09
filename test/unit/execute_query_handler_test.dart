@@ -78,7 +78,7 @@ void runExecuteQueryHandlerTests() {
 
     test('can write values for unexecuted query', () {
       var preparedQuery = new MockPreparedQuery();
-      preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
+      when(preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, false, []);
       handler._preparedValues = [];
@@ -89,7 +89,7 @@ void runExecuteQueryHandlerTests() {
 
     test('can write values for executed query', () {
       var preparedQuery = new MockPreparedQuery();
-      preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
+      when(preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, true, []);
       handler._preparedValues = [];
@@ -100,7 +100,7 @@ void runExecuteQueryHandlerTests() {
 
     test('can write values for executed query with nullmap', () {
       var preparedQuery = new MockPreparedQuery();
-      preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
+      when(preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = new _ExecuteQueryHandler(preparedQuery, true, []);
       handler._preparedValues = [];
@@ -111,7 +111,7 @@ void runExecuteQueryHandlerTests() {
 
     test('can write values for unexecuted query with values', () {
       var preparedQuery = new MockPreparedQuery();
-      preparedQuery.when(callsTo('get statementHandlerId')).alwaysReturn(123);
+      when(preparedQuery.statementHandlerId).thenReturn(123);
 
       types = [100];
       var handler = new _ExecuteQueryHandler(preparedQuery, false, [123]);

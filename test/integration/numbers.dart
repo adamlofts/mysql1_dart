@@ -1,11 +1,9 @@
 part of integrationtests;
 
-Future deleteInsertSelect(ConnectionPool pool, table, insert, select) {
-  return pool.query('delete from $table').then((_) {
-    return pool.query(insert);
-  }).then((_) {
-    return pool.query(select);
-  });
+Future deleteInsertSelect(ConnectionPool pool, table, insert, select) async {
+  await pool.query('delete from $table');
+  await pool.query(insert);
+  return pool.query(select);
 }
 
 void runNumberTests(String user, String password, String db, int port, String host) {
@@ -21,19 +19,18 @@ void runNumberTests(String user, String password, String db, int port, String ho
         "-128, -32768, -8388608, -2147483648, -9223372036854775808)");
     });
 
-    test('minimum values', () {
+    test('minimum values', () async {
       var c = new Completer();
-      pool.query('select atinyint, asmallint, amediumint, aint, abigint from nums').then(expectAsync1((Results results) {
-        results.listen((row) {
-          expect(row[0], equals(-128));
-          expect(row[1], equals(-32768));
-          expect(row[2], equals(-8388608));
-          expect(row[3], equals(-2147483648));
-          expect(row[4], equals(-9223372036854775808));
-        }, onDone: () {
-          c.complete();
-        });
-      }));
+      var results = await pool.query('select atinyint, asmallint, amediumint, aint, abigint from nums');
+      results.listen((row) {
+        expect(row[0], equals(-128));
+        expect(row[1], equals(-32768));
+        expect(row[2], equals(-8388608));
+        expect(row[3], equals(-2147483648));
+        expect(row[4], equals(-9223372036854775808));
+      }, onDone: () {
+        c.complete();
+      });
       return c.future;
     });
     

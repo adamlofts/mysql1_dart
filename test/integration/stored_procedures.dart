@@ -8,8 +8,7 @@ void runStoredProcedureTests(String user, String password, String db, int port, 
 //      return setup(pool, "stream", "create table stream (id integer, name text)");
     });
     
-    test('store data', () {
-      var c = new Completer();
+    test('store data', () async {
 //      pool.query('''
 //CREATE PROCEDURE getall ()
 //BEGIN
@@ -17,12 +16,9 @@ void runStoredProcedureTests(String user, String password, String db, int port, 
 //END
 //''').then((results) {
 //        return query.query('call getall()');
-      pool.query('call getall()')
-      .then((results) {
-        results.listen((row) {
-        }, onDone: () {
-          c.complete();
-        });
+      var results = await pool.query('call getall()');
+      results.listen((row) {
+      }, onDone: () {
         c.complete();
       });
       return c.future;

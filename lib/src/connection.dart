@@ -88,7 +88,7 @@ class _Connection {
    * is succesful.
    */
   Future connect({String host, int port, String user, 
-      String password, String db, bool useCompression, bool useSSL}) {
+      String password, String db, bool useCompression, bool useSSL}) async {
     if (_socket != null) {
       throw new MySqlClientError._("Cannot connect to server while a connection is already open");
     }
@@ -120,10 +120,8 @@ class _Connection {
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
     //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
     if (useSSL) {
-      return _completer.future
-      .then((_) {
-        return _useDatabase(db);
-      });
+      await _completer.future;
+      return _useDatabase(db);
     } else {
       return _completer.future;
     }
@@ -134,24 +132,27 @@ class _Connection {
     return processHandler(handler);
   }
 
-  void _readPacket() {
+  _readPacket() async {
     log.fine("readPacket readyForHeader=${_readyForHeader}");
     if (_readyForHeader) {
       _readyForHeader = false;
-      _socket.readBuffer(_headerBuffer).then(_handleHeader);      
+      var buffer = await _socket.readBuffer(_headerBuffer);
+      _handleHeader(buffer);
     }
   }
 
-  void _handleHeader(buffer) {
+  _handleHeader(buffer) async {
     _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
     _dataBuffer = new Buffer(_dataSize);
     log.fine("buffer size=${_dataBuffer.length}");
     if (_dataSize == 0xffffff || _largePacketBuffers.length > 0) {
-      _socket.readBuffer(_dataBuffer).then(_handleMoreData);
+      var buffer = await _socket.readBuffer(_dataBuffer);
+      _handleMoreData(buffer);
     } else {
-      _socket.readBuffer(_dataBuffer).then(_dataHandler);
+      var buffer = await _socket.readBuffer(_dataBuffer);
+      _dataHandler(buffer);
     }
   }
 
@@ -176,7 +177,7 @@ class _Connection {
     }
   }
   
-  void _handleData(buffer) {
+  _handleData(buffer) async {
     _readyForHeader = true;
     //log.fine("read all data: ${_dataBuffer._list}");
     //log.fine("read all data: ${Buffer.listChars(_dataBuffer._list)}");
@@ -191,19 +192,16 @@ class _Connection {
       if (response.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now
         _handler = response.nextHandler;
-        _sendBuffer(_handler.createRequest()).then((_) {
-          if (_useSSL && _handler is _SSLHandler) {
-            log.fine("Use SSL");
-            _socket.startSSL().then((_) {
-              _secure = true;
-              _handler = (_handler as _SSLHandler).nextHandler;
-              _sendBuffer(_handler.createRequest()).then((_) {
-                log.fine("Sent buffer");
-              });
-            });
-            return;
-          }
-        });
+        await _sendBuffer(_handler.createRequest());
+        if (_useSSL && _handler is _SSLHandler) {
+          log.fine("Use SSL");
+          await _socket.startSSL();
+          _secure = true;
+          _handler = (_handler as _SSLHandler).nextHandler;
+          await _sendBuffer(_handler.createRequest());
+          log.fine("Sent buffer");
+          return;
+        }
       }
       if (response.finished) {
         _finishAndReuse();
@@ -264,7 +262,7 @@ class _Connection {
     }
   }
 
-  Future<Buffer> _sendBufferPart(Buffer buffer, int start) {
+  Future<Buffer> _sendBufferPart(Buffer buffer, int start) async {
     var len = math.min(buffer.length - start, 0xFFFFFF);
 
     _headerBuffer[0] = len & 0xFF;
@@ -272,16 +270,14 @@ class _Connection {
     _headerBuffer[2] = (len & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
     log.fine("sending header, packet $_packetNumber");
-    return _socket.writeBuffer(_headerBuffer).then((_) {
-      log.fine("sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
-      return _socket.writeBufferPart(buffer, start, len);
-    }).then((_) {
-      if (len == 0xFFFFFF) {
-        return _sendBufferPart(buffer, start + len);
-      } else {
-        return buffer;
-      }
-    });
+    await _socket.writeBuffer(_headerBuffer);
+    log.fine("sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
+    await _socket.writeBufferPart(buffer, start, len);
+    if (len == 0xFFFFFF) {
+      return _sendBufferPart(buffer, start + len);
+    } else {
+      return buffer;
+    }
   }
 
   /**
@@ -290,7 +286,7 @@ class _Connection {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) {
+  Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) async {
     if (_handler != null) {
       throw new MySqlClientError._("Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");
     }
@@ -300,11 +296,10 @@ class _Connection {
     if (!noResponse) {
       _handler = handler;
     }
-    _sendBuffer(handler.createRequest()).then((_) {
-      if (noResponse) {
-        _finishAndReuse();
-      }
-    });
+    await _sendBuffer(handler.createRequest());
+    if (noResponse) {
+      _finishAndReuse();
+    }
     return _completer.future;
   }
   

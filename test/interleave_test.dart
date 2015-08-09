@@ -2,7 +2,7 @@ import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:options_file/options_file.dart';
 import 'package:logging/logging.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'dart:async';
 import 'dart:math';
@@ -20,33 +20,22 @@ class Example {
   
   Example(this.pool);
   
-  Future run() {
-    var completer = new Completer();
+  Future run() async {
     // drop the tables if they already exist
-    var future = dropTables().then((_) {
-      print("dropped tables");
-      // then recreate the tables
-      return createTables();
-    }).then((_) {
-      print("created tables");
-      // add some data
-      var futures = new List<Future>();
-      for (var i = 0; i < 10; i++) {
-        futures.add(addDataInTransaction());
-//        futures.add(addData());
-        futures.add(readData());
-      }
-      print("queued all operations");
-      return Future.wait(futures);
-    }).then((_) {
-      print("data added and read");
-      completer.complete(null);
-    }, onError: (e) {
-      print("Exception: $e");
-      completer.complete(null);
-      return true;
-    });
-    return completer.future;
+    await dropTables();
+    print("dropped tables");
+    // then recreate the tables
+    await createTables();
+    print("created tables");
+    // add some data
+    var futures = new List<Future>();
+    for (var i = 0; i < 10; i++) {
+      futures.add(addDataInTransaction());
+      futures.add(readData());
+    }
+    print("queued all operations");
+    await Future.wait(futures);
+    print("data added and read");
   }
 
   Future dropTables() {
@@ -73,113 +62,82 @@ class Example {
     return querier.executeQueries();
   }
   
-  Future addData() {
+  Future addData() async {
     print("adding");
-    var completer = new Completer();
-    pool.prepare("insert into people (name, age) values (?, ?)").then((query) {
-      var parameters = [
-          ["Dave", 15],
-          ["John", 16],
-          ["Mavis", 93]
-        ];
-      return query.executeMulti(parameters);
-    }).then((results) {
-      return pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-    }).then((query) {
-      var parameters = [
-          ["Rover", "Dog", 1],
-          ["Daisy", "Cow", 2],
-          ["Spot", "Dog", 2]];
-      return query.executeMulti(parameters);
-    }).then((results) {
-      completer.complete(null);
-    });
-    return completer.future;
+    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    var parameters = [
+        ["Dave", 15],
+        ["John", 16],
+        ["Mavis", 93]
+      ];
+    var results = await query.executeMulti(parameters);
+    query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+    parameters = [
+        ["Rover", "Dog", 1],
+        ["Daisy", "Cow", 2],
+        ["Spot", "Dog", 2]];
+    results = await query.executeMulti(parameters);
   }
   
-  Future addDataInTransaction() {
+  Future addDataInTransaction() async {
     print("adding");
-    var completer = new Completer();
     var ids = [];
-    pool.startTransaction().then((trans) {
-      trans.prepare("insert into people (name, age) values (?, ?)").then((query) {
-        var parameters = [
-            ["Dave", 15],
-            ["John", 16],
-            ["Mavis", 93]
-          ];
-        return query.executeMulti(parameters);
-      }).then((results) {
-        return results;
-      }).then((results) {
-        for (var result in results) {
-          ids.add(result.insertId);
-        }
-        print("added people");
-        return trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
-      }).then((query) {
-        var id1, id2, id3;
-        if (insertedIds.length < 3) {
-          id1 = ids[0];
-          id2 = ids[1];
-          id3 = ids[2];
-        } else {
-          id1 = insertedIds[rnd.nextInt(insertedIds.length)];
-          id2 = insertedIds[rnd.nextInt(insertedIds.length)];
-          id3 = insertedIds[rnd.nextInt(insertedIds.length)];
-        }
-        var parameters = [
-            ["Rover", "Dog", id1],
-            ["Daisy", "Cow", id2],
-            ["Spot", "Dog", id3]];
-        var c = new Completer();
-        print("adding pets");
-        query.executeMulti(parameters).then((_) {
-          print("added pets");
-          c.complete(null);
-        }, onError: (e) {
-          print("Exception: $e");
-          c.complete(null);
-          return true;
-        });
-        return c.future;
-      }).then((results) {
-        print("committing");
-        return trans.commit();
-      }).then((_) {
-        print("committed");
-        insertedIds.addAll(ids);
-        completer.complete(null);
-      }, onError: (e) {
-        print("Exception: $e");
-        completer.complete(null);
-        return true;
-      });
-    });
-    return completer.future;
+    var trans = await pool.startTransaction();
+    var query = await trans.prepare("insert into people (name, age) values (?, ?)");
+    var parameters = [
+        ["Dave", 15],
+        ["John", 16],
+        ["Mavis", 93]
+      ];
+    var results = await query.executeMulti(parameters);
+    for (var result in results) {
+      ids.add(result.insertId);
+    }
+    print("added people");
+    query = await trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+    var id1, id2, id3;
+    if (insertedIds.length < 3) {
+      id1 = ids[0];
+      id2 = ids[1];
+      id3 = ids[2];
+    } else {
+      id1 = insertedIds[rnd.nextInt(insertedIds.length)];
+      id2 = insertedIds[rnd.nextInt(insertedIds.length)];
+      id3 = insertedIds[rnd.nextInt(insertedIds.length)];
+    }
+    parameters = [
+        ["Rover", "Dog", id1],
+        ["Daisy", "Cow", id2],
+        ["Spot", "Dog", id3]];
+    print("adding pets");
+    try {
+      results = await query.executeMulti(parameters);
+      print("added pets");
+    } catch (e) {
+      print("Exception: $e");
+    }
+    print("committing");
+    await trans.commit();
+    print("committed");
+    insertedIds.addAll(ids);
   }
   
-  Future readData() {
-    var completer = new Completer();
+  Future readData() async {
     print("querying");
-    pool.query('select p.id, p.name, p.age, t.name, t.species '
+    var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
         'from people p '
-        'left join pets t on t.owner_id = p.id').then((result) {
-      print("got results");
-      result.toList().then((list) {
-        if (list != null) {
-          for (var row in list) {
-            if (row[3] == null) {
-              print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
-            } else {
-              print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
-            }
-          }
+        'left join pets t on t.owner_id = p.id');
+    print("got results");
+    var list = await result.toList();
+    if (list != null) {
+      for (var row in list) {
+        if (row[3] == null) {
+          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
+        } else {
+          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
         }
-        completer.complete(null);
-      });
-    });
-    return completer.future;
+      }
+    }
   }
 }
 
@@ -197,7 +155,7 @@ void main() {
   log.level = Level.ALL;
   
   group('interleave', () {
-    test('should complete interleaved operations', () {
+    test('should complete interleaved operations', () async {
 
       var options = new OptionsFile('connection.options');
       var user = options.getString('user');
@@ -215,13 +173,12 @@ void main() {
       var example = new Example(pool);
       // run the example
       log.fine("running example");
-      example.run().then(expectAsync1((_) {
-        // finally, close the connection
-        log.fine("closing");
-        pool.closeConnectionsWhenNotInUse();
-        // not much of a test, is it?
-        expect(true, isTrue);
-      }));
+      await example.run();
+      // finally, close the connection
+      log.fine("closing");
+      pool.closeConnectionsWhenNotInUse();
+      // not much of a test, is it?
+      expect(true, isTrue);
     });
   });
 }

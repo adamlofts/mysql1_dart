@@ -9,8 +9,8 @@ import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
-import 'package:unittest/unittest.dart';
-import 'package:unittest/mock.dart';
+import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
 
 import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';

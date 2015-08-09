@@ -13,23 +13,20 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
     return _cnx.processHandler(handler);
   }
   
-  Future<Query> prepare(String sql) {
+  Future<Query> prepare(String sql) async {
     _checkReleased();
     var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
-    return query._prepare(true).then((preparedQuery) => new Future.value(query));
+    await query._prepare(true);
+    return new Future.value(query);
   }
   
-  Future<Results> prepareExecute(String sql, List parameters) {
+  Future<Results> prepareExecute(String sql, List parameters) async {
     _checkReleased();
-    return prepare(sql)
-      .then((query) {
-        return query.execute(parameters)
-          .then((results) {
-            //TODO is it right to close here? Query might still be running
-            query.close();
-            return new Future.value(results);
-          });
-      });
+    var query = await prepare(sql);
+    var results = await query.execute(parameters);
+    //TODO is it right to close here? Query might still be running
+    query.close();
+    return new Future.value(results);
   }
 
   void _checkReleased();
