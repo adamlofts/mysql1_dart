@@ -47,7 +47,7 @@ class _AuthHandler extends _Handler {
     // calculate the mysql password hash
     var hash = _getHash();
 
-    var encodedUsername = UTF8.encode(_username);
+    var encodedUsername = _username == null ? [] : UTF8.encode(_username);
     var encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
