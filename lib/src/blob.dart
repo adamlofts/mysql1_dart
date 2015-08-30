@@ -27,7 +27,7 @@ class Blob {
     if (_string != null) {
       return _string;
     }
-    return UTF8.decode(_codeUnits);
+    return UTF8.decode(_codeUnits, allowMalformed: true);
   }
   
   /// Returns the value of the blob as a list of code units.
@@ -43,7 +43,7 @@ class Blob {
       if (_string != null) {
         _hashcode = _string.hashCode;
       } else {
-        _hashcode = UTF8.decode(_codeUnits).hashCode;
+        _hashcode = UTF8.decode(_codeUnits, allowMalformed: true).hashCode;
       }
     }
     return _hashcode;
