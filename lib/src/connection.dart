@@ -212,11 +212,14 @@ class _Connection {
         }
         _completer.complete(response.result);
       }
-    } catch (e) {
+    } catch (e, st) {
       autoRelease = true;
       _finishAndReuse();
       log.fine("completing with exception: $e");
-      _completer.completeError(e);
+      if (_completer.isCompleted) {
+        throw e;
+      }
+      _completer.completeError(e, st);
     }
   }
   

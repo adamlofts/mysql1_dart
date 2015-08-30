@@ -100,11 +100,11 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       cnx.autoRelease = true;
       _log.finest("Logged in on cnx#${cnx.number}");
       c.complete(cnx);
-    } catch (e) {
+    } catch (e, st) {
       if (!(e is MySqlException)) {
         _removeConnection(cnx);
       }
-      c.completeError(e);
+      c.completeError(e, st);
     }
   }
 
