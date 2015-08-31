@@ -8,6 +8,7 @@ import 'buffer.dart';
 typedef ErrorHandler(AsyncError);
 typedef DoneHandler();
 typedef DataReadyHandler();
+typedef ClosedHandler();
 
 typedef Future<RawSocket> SocketFactory(host, int port);
 typedef OnConnection(BufferedSocket);
@@ -17,6 +18,8 @@ class BufferedSocket {
 
   ErrorHandler onError;
   DoneHandler onDone;
+  ClosedHandler onClosed;
+
   /**
    * When data arrives and there is no read currently in progress, the onDataReady handler is called.
    */
@@ -35,7 +38,7 @@ class BufferedSocket {
   StreamSubscription _subscription;
   bool _closed = false;
 
-  BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError)
+  BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError, this.onClosed)
       : log = new Logger("BufferedSocket") {
     _subscription = _socket.listen(_onData, onError: _onSocketError, 
         onDone: _onSocketDone, cancelOnError: true);
@@ -59,13 +62,14 @@ class BufferedSocket {
   static Future<BufferedSocket> connect(String host, int port,
       {DataReadyHandler onDataReady,
       DoneHandler onDone, 
-      ErrorHandler onError, 
+      ErrorHandler onError,
+      ClosedHandler onClosed,
       SocketFactory socketFactory : defaultSocketFactory,
       OnConnection onConnection}) async {
     try {
       var socket;
       socket = await socketFactory(host, port);
-      var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError);
+      var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
       if (onConnection != null) {
         onConnection(bufferedSocket);
       }
@@ -87,6 +91,12 @@ class BufferedSocket {
         _readBuffer();
       }
     } else if (event == RawSocketEvent.READ_CLOSED) {
+      log.fine("READ_CLOSED");
+      if (this.onClosed != null) {
+        this.onClosed();
+      }
+    } else if (event == RawSocketEvent.CLOSED) {
+      log.fine("CLOSED");
     } else if (event == RawSocketEvent.WRITE) {
       log.fine("WRITE data");
       if (_writingBuffer != null) {

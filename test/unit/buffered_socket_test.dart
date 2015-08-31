@@ -36,6 +36,10 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     _streamController.add(RawSocketEvent.READ);
   }
 
+  closeRead() {
+    _streamController.add(RawSocketEvent.READ_CLOSED);
+  }
+
   InternetAddress get address => null;
 
   Future<RawSocket> close() {}
@@ -184,6 +188,17 @@ void runBufferedSocketTests() {
       when(buffer.writeToSocket(any, any, any)).thenReturn(25);
       await socket.writeBufferPart(buffer, 25, 50);
       verify(buffer.writeToSocket(any, any, any)).called(2);
+    });
+
+    test('should send close event', () async {
+      var closed = false;
+      var onClosed = () {
+        closed = true;
+      };
+      var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
+      onClosed: onClosed, socketFactory: factory);
+      await rawSocket.closeRead();
+      expect(closed, equals(true));
     });
   });
 }

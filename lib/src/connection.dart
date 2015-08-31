@@ -116,6 +116,9 @@ class _Connection {
         } else {
           _completer.completeError(error);
         }
+      },
+      onClosed: () {
+        close();
       });
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
     //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
