@@ -4,7 +4,7 @@ author: James Ots <code@jamesots.com>
 description: A MySQL connector
 homepage: https://github.com/jamesots/sqljocky
 environment:
-  sdk: '>=0.11.0 <2.0.0'
+  sdk: '>=1.11.0 <2.0.0'
 documentation: http://jamesots.github.io/sqljocky/docs
 dependencies:
   crypto: '>=0.9.0 <0.10.0'
