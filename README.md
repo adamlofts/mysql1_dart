@@ -21,7 +21,7 @@ Create a connection pool:
 
 Execute a query:
 
-	pool.query('select name, email from users').then((result) {...});
+	var results = await pool.query('select name, email from users');
 
 Use the results: (*Note: forEach is asynchronous.*)
 
@@ -37,11 +37,11 @@ Or access the fields by name:
 
 Prepare a query:
 
-	pool.prepare('insert into users (name, email, age) values (?, ?, ?)').then((query) {...});
+	var query = await pool.prepare('insert into users (name, email, age) values (?, ?, ?)');
 
 Execute the query:
 
-	query.execute(['Bob', 'bob@bob.com', 25]).then((result) {...});
+	var result = await query.execute(['Bob', 'bob@bob.com', 25]);
 
 An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
 
@@ -49,9 +49,9 @@ An insert query's results will be empty, but will have an id if there was an aut
 
 Execute a query with multiple sets of parameters:
 
-	query.executeMulti([['Bob', 'bob@bob.com', 25],
+	var results = await query.executeMulti([['Bob', 'bob@bob.com', 25],
 			['Bill', 'bill@bill.com', 26],
-			['Joe', 'joe@joe.com', 37]]).then((results) {...}); 
+			['Joe', 'joe@joe.com', 37]]);
 			
 Use the list of results:
 
@@ -61,11 +61,9 @@ Use the list of results:
 
 Use a transaction:
 
-	pool.startTransaction().then((trans) {
-		trans.query('...').then((result) {
-			trans.commit().then(() {...});
-		});
-	});
+	var trans = await pool.startTransaction();
+	var result = await trans.query('...');
+	await trans.commit();
 
 Development
 -----------

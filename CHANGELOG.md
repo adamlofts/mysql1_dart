@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.14.0
+* Requires Dart 1.11
+* Use newer logging library
+* Use async/await in library code and examples.
+* Fix bug with closing prepared queries, where it sometimes tried to close a query which was in use.
+* Don't throw an error if username is null.
+* Fix bug in blobs, where it was trying to decode binary blobs as UTF-8 strings.
+* Close connections and return them to the pool when a connection times out on the server.
+
 v0.13.0
 -------
 * Fixes an issue with executeMulti being broken.
