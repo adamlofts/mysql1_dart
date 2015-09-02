@@ -17,6 +17,7 @@ class _ExecuteQueryHandler extends _Handler {
   List _preparedValues;
   _OkPacket _okPacket;
   bool _executed;
+  bool _cancelled = false;
   
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed, List this._values) {
     _fieldPackets = <_FieldImpl>[];
@@ -290,6 +291,10 @@ class _ExecuteQueryHandler extends _Handler {
 
   _HandlerResponse processResponse(Buffer response) {
     var packet;
+    if (_cancelled) {
+      _streamController.close();
+      return new _HandlerResponse(finished: true);
+    }
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);
     }
@@ -326,6 +331,9 @@ class _ExecuteQueryHandler extends _Handler {
   _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
     _streamController = new StreamController<Row>();
+    _streamController.onCancel = () {
+      _cancelled = true;
+    };
     this._fieldIndex = _createFieldIndex();
     return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
   }

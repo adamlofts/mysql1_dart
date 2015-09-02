@@ -5,7 +5,7 @@ class _PreparedQuery {
   final List<_FieldImpl> parameters;
   final List<_FieldImpl> columns;
   final int statementHandlerId;
-  dynamic cnx; // should be a Connection
+  _Connection cnx;
 
   _PreparedQuery(_PrepareHandler handler) :
       sql = handler.sql,
