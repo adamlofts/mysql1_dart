@@ -4,13 +4,15 @@ void runBlobTests(String user, String password, String db, int port, String host
   ConnectionPool pool;
   group('charset tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       return setup(pool, "blobtest", "create table blobtest (stuff blob)");
     });
 
     test('write blob', () async {
       var query = await pool.prepare("insert into blobtest (stuff) values (?)");
-      await query.execute([[0xc3, 0x28]]);  // this is an invalid UTF8 string
+      await query.execute([
+        [0xc3, 0x28]
+      ]); // this is an invalid UTF8 string
     });
 
     test('read data', () async {

@@ -7,7 +7,7 @@ abstract class Field {
   String get db;
   String get table;
   String get orgTable;
-  
+
   /// The name of the field
   String get name;
   String get orgName;

@@ -17,9 +17,9 @@ class Example {
   var insertedIds = [];
   var rnd = new Random();
   ConnectionPool pool;
-  
+
   Example(this.pool);
-  
+
   Future run() async {
     // drop the tables if they already exist
     await dropTables();
@@ -43,52 +43,53 @@ class Example {
     var dropper = new TableDropper(pool, ['pets', 'people']);
     return dropper.dropTables();
   }
-  
+
   Future createTables() {
     print("creating tables");
-    var querier = new QueryRunner(pool, ['create table people (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'age integer, '
-                                        'primary key (id))',
-                                        
-                                        'create table pets (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'species varchar(255), '
-                                        'owner_id integer, '
-                                        'primary key (id),'
-                                        'foreign key (owner_id) references people (id))'
-                                        ]);
+    var querier = new QueryRunner(pool, [
+      'create table people (id integer not null auto_increment, '
+          'name varchar(255), '
+          'age integer, '
+          'primary key (id))',
+      'create table pets (id integer not null auto_increment, '
+          'name varchar(255), '
+          'species varchar(255), '
+          'owner_id integer, '
+          'primary key (id),'
+          'foreign key (owner_id) references people (id))'
+    ]);
     print("executing queries");
     return querier.executeQueries();
   }
-  
+
   Future addData() async {
     print("adding");
     var query = await pool.prepare("insert into people (name, age) values (?, ?)");
     var parameters = [
-        ["Dave", 15],
-        ["John", 16],
-        ["Mavis", 93]
-      ];
+      ["Dave", 15],
+      ["John", 16],
+      ["Mavis", 93]
+    ];
     var results = await query.executeMulti(parameters);
     query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
     parameters = [
-        ["Rover", "Dog", 1],
-        ["Daisy", "Cow", 2],
-        ["Spot", "Dog", 2]];
+      ["Rover", "Dog", 1],
+      ["Daisy", "Cow", 2],
+      ["Spot", "Dog", 2]
+    ];
     results = await query.executeMulti(parameters);
   }
-  
+
   Future addDataInTransaction() async {
     print("adding");
     var ids = [];
     var trans = await pool.startTransaction();
     var query = await trans.prepare("insert into people (name, age) values (?, ?)");
     var parameters = [
-        ["Dave", 15],
-        ["John", 16],
-        ["Mavis", 93]
-      ];
+      ["Dave", 15],
+      ["John", 16],
+      ["Mavis", 93]
+    ];
     var results = await query.executeMulti(parameters);
     for (var result in results) {
       ids.add(result.insertId);
@@ -106,9 +107,10 @@ class Example {
       id3 = insertedIds[rnd.nextInt(insertedIds.length)];
     }
     parameters = [
-        ["Rover", "Dog", id1],
-        ["Daisy", "Cow", id2],
-        ["Spot", "Dog", id3]];
+      ["Rover", "Dog", id1],
+      ["Daisy", "Cow", id2],
+      ["Spot", "Dog", id3]
+    ];
     print("adding pets");
     try {
       results = await query.executeMulti(parameters);
@@ -121,7 +123,7 @@ class Example {
     print("committed");
     insertedIds.addAll(ids);
   }
-  
+
   Future readData() async {
     print("querying");
     var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
@@ -153,10 +155,9 @@ void main() {
 
   var log = new Logger("Interleave");
   log.level = Level.ALL;
-  
+
   group('interleave', () {
     test('should complete interleaved operations', () async {
-
       var options = new OptionsFile('connection.options');
       var user = options.getString('user');
       var password = options.getString('password');
@@ -166,8 +167,7 @@ void main() {
 
       // create a connection
       log.fine("opening connection");
-      var pool = new ConnectionPool(host: host, port: port, user: user,
-          password: password, db: db, max: 5);
+      var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: 5);
       log.fine("connection open");
       // create an example class
       var example = new Example(pool);

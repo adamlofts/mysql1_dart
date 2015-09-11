@@ -10,7 +10,7 @@ class _PrepareOkPacket {
   int get columnCount => _columnCount;
   int get parameterCount => _parameterCount;
   int get warningCount => _warningCount;
-  
+
   _PrepareOkPacket(Buffer buffer) {
     buffer.seek(1);
     _statementHandlerId = buffer.readUint32();
@@ -19,7 +19,7 @@ class _PrepareOkPacket {
     buffer.skip(1);
     _warningCount = buffer.readUint16();
   }
-  
+
   String toString() => "OK: statement handler id: $_statementHandlerId, columns: $_columnCount, "
       "parameters: $_parameterCount, warnings: $_warningCount";
 }

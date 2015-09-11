@@ -12,7 +12,7 @@ class TableDropper {
    * a list of [tables].
    */
   TableDropper(this.pool, this.tables);
-  
+
   /**
    * Drops the tables this [TableDropper] was created with. The 
    * returned [Future] completes when all the tables have been dropped.
@@ -46,7 +46,7 @@ class QueryRunner {
    * a list of [queries]. 
    */
   QueryRunner(this.pool, this.queries);
-  
+
   /**
    * Executes the queries this [QueryRunner] was created with. The
    * returned [Future] completes when all the queries have been executed.

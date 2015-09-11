@@ -10,13 +10,16 @@ void runNumberTests(String user, String password, String db, int port, String ho
   ConnectionPool pool;
   group('number tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
-      return setup(pool, "nums", "create table nums ("
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
+      return setup(
+          pool,
+          "nums",
+          "create table nums ("
           "atinyint tinyint, asmallint smallint, amediumint mediumint, aint int, abigint bigint, "
           "utinyint tinyint unsigned, usmallint smallint unsigned, umediumint mediumint unsigned, uint int unsigned, ubigint bigint unsigned, "
           "adecimal decimal(20,10), afloat float, adouble double, areal real)",
-        "insert into nums (atinyint, asmallint, amediumint, aint, abigint) values ("
-        "-128, -32768, -8388608, -2147483648, -9223372036854775808)");
+          "insert into nums (atinyint, asmallint, amediumint, aint, abigint) values ("
+          "-128, -32768, -8388608, -2147483648, -9223372036854775808)");
     });
 
     test('minimum values', () async {
@@ -33,14 +36,16 @@ void runNumberTests(String user, String password, String db, int port, String ho
       });
       return c.future;
     });
-    
+
     test('maximum values', () {
       var c = new Completer();
-      deleteInsertSelect(pool, 'nums', 
+      deleteInsertSelect(
+          pool,
+          'nums',
           "insert into nums (atinyint, asmallint, amediumint, aint, abigint, "
           "adecimal, afloat, adouble, areal) values ("
           "127, 32767, 8388607, 2147483647, 9223372036854775807, "
-          "0, 0, 0, 0)", 
+          "0, 0, 0, 0)",
           'select atinyint, asmallint, amediumint, aint, abigint from nums').then((results) {
         results.listen((row) {
           expect(row[0], equals(127));
@@ -57,7 +62,9 @@ void runNumberTests(String user, String password, String db, int port, String ho
 
     test('maximum unsigned values', () {
       var c = new Completer();
-      deleteInsertSelect(pool, 'nums',
+      deleteInsertSelect(
+          pool,
+          'nums',
           "insert into nums (utinyint, usmallint, umediumint, uint, ubigint) values ("
           "255, 65535, 12777215, 4294967295, 18446744073709551615)",
           'select utinyint, usmallint, umediumint, uint, ubigint from nums').then((results) {
@@ -76,7 +83,9 @@ void runNumberTests(String user, String password, String db, int port, String ho
 
     test('max decimal', () {
       var c = new Completer();
-      deleteInsertSelect(pool, 'nums',
+      deleteInsertSelect(
+          pool,
+          'nums',
           "insert into nums (adecimal) values ("
           "99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {
@@ -91,7 +100,9 @@ void runNumberTests(String user, String password, String db, int port, String ho
 
     test('min decimal', () {
       var c = new Completer();
-      deleteInsertSelect(pool, 'nums',
+      deleteInsertSelect(
+          pool,
+          'nums',
           "insert into nums (adecimal) values ("
           "-99999999999999999999.9999999999)",
           'select adecimal from nums').then((results) {

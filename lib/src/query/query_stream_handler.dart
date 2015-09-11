@@ -6,19 +6,19 @@ class _QueryStreamHandler extends _Handler {
   static const int STATE_ROW_PACKETS = 2;
   final String _sql;
   int _state = STATE_HEADER_PACKET;
-  
+
   _OkPacket _okPacket;
   _ResultSetHeaderPacket _resultSetHeaderPacket;
   List<_FieldImpl> _fieldPackets;
   Map<Symbol, int> _fieldIndex;
 
   StreamController<Row> _streamController;
-  
+
   _QueryStreamHandler(String this._sql) {
     log = new Logger("QueryStreamHandler");
     _fieldPackets = <_FieldImpl>[];
   }
-  
+
   Buffer createRequest() {
     var encoded = UTF8.encode(_sql);
     var buffer = new Buffer(encoded.length + 1);
@@ -39,17 +39,17 @@ class _QueryStreamHandler extends _Handler {
         }
       } else {
         switch (_state) {
-        case STATE_HEADER_PACKET:
-          _handleHeaderPacket(response);
-          break;
-        case STATE_FIELD_PACKETS:
-          _handleFieldPacket(response);
-          break;
-        case STATE_ROW_PACKETS:
-          _handleRowPacket(response);
-          break;
+          case STATE_HEADER_PACKET:
+            _handleHeaderPacket(response);
+            break;
+          case STATE_FIELD_PACKETS:
+            _handleFieldPacket(response);
+            break;
+          case STATE_ROW_PACKETS:
+            _handleRowPacket(response);
+            break;
         }
-      } 
+      }
     } else if (packet is _OkPacket) {
       return _handleOkPacket(packet);
     }
@@ -100,10 +100,11 @@ class _QueryStreamHandler extends _Handler {
     }
 
     //TODO is this finished value right?
-    return new _HandlerResponse(finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
+    return new _HandlerResponse(
+        finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
   }
 
-  Map<Symbol,int> _createFieldIndex() {
+  Map<Symbol, int> _createFieldIndex() {
     var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
     var fieldIndex = new Map<Symbol, int>();
     for (var i = 0; i < _fieldPackets.length; i++) {

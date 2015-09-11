@@ -4,10 +4,10 @@ void runNullMapTests(String user, String password, String db, int port, String h
   ConnectionPool pool;
   group('nullmap tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       return setup(pool, "nullmap", "create table nullmap (a text, b text, c text, d text)");
     });
-    
+
     test('store data', () async {
       var query = await pool.prepare('insert into nullmap (a, b, c, d) values (?, ?, ?, ?)');
       await query.execute([null, 'b', 'c', 'd']);

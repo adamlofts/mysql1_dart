@@ -7,5 +7,4 @@ part of results;
  * identifiers, and which aren't part of the List object, can be used.
  */
 @proxy
-abstract class Row extends ListBase<dynamic> {
-}
+abstract class Row extends ListBase<dynamic> {}

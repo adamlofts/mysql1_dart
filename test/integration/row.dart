@@ -5,7 +5,7 @@ void runRowTests(String user, String password, String db, int port, String host)
     ConnectionPool pool;
 
     setUp(() {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       return setup(pool, "row", "create table row (id integer, name text, `the field` text, length integer)");
     });
 
@@ -48,7 +48,7 @@ void runRowTests(String user, String password, String db, int port, String host)
       var futures = [];
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
-        var results = await pool.prepareExecute('select * from row where id = ?',[0]);
+        var results = await pool.prepareExecute('select * from row where id = ?', [0]);
         results.listen((row) {
           expect(row.id, equals(0));
           expect(row.name.toString(), equals("Bob"));

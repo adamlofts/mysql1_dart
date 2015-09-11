@@ -4,14 +4,18 @@ void runExecuteMultiTests(String user, String password, String db, int port, Str
   ConnectionPool pool;
   group('executeMulti tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:2);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 2);
       return setup(pool, "stream", "create table stream (id integer, name text)",
-      "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
+          "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
     });
 
     test('store data', () async {
       var query = await pool.prepare('select * from stream where id = ?');
-      var values = await query.executeMulti([[1], [2], [3]]);
+      var values = await query.executeMulti([
+        [1],
+        [2],
+        [3]
+      ]);
       expect(values, hasLength(3));
 
       var resultList = await values[0].toList();

@@ -7,7 +7,7 @@ void runBinaryDataPacketTests() {
       var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
       var buffer = new Buffer.fromList([1, 32]);
       var value = packet._readField(field, buffer);
-      
+
       expect(value, new isInstanceOf<Blob>());
       expect((value as Blob).toString(), equals(" "));
     });
@@ -15,14 +15,14 @@ void runBinaryDataPacketTests() {
     test('can read long blob', () {
       var packet = new _BinaryDataPacket._forTests(null, null);
       var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
-      
+
       var buffer = new Buffer(500 + 3);
       buffer.writeLengthCodedBinary(500);
       for (int i = 0; i < 500; i++) {
         buffer.writeByte(32);
       }
       var value = packet._readField(field, buffer);
-      
+
       expect(value, new isInstanceOf<Blob>());
       expect((value as Blob).toString(), hasLength(500));
     });
@@ -37,7 +37,7 @@ void runBinaryDataPacketTests() {
         buffer.writeByte(32);
       }
       var value = packet._readField(field, buffer);
-      
+
       expect(value, new isInstanceOf<Blob>());
       expect((value as Blob).toString(), hasLength(50000));
     });

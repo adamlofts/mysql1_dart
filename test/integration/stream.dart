@@ -4,10 +4,10 @@ void runStreamTests(String user, String password, String db, int port, String ho
   ConnectionPool pool;
   group('stream tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       return setup(pool, "stream", "create table stream (id integer, name text)");
     });
-    
+
     test('store data', () async {
       var query = await pool.prepare('insert into stream (id, name) values (?, ?)');
       await query.execute([0, 'Bob']);
@@ -18,8 +18,7 @@ void runStreamTests(String user, String password, String db, int port, String ho
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
         var results = await pool.query('select * from stream');
-        results.listen((row) {
-        }, onDone: () {
+        results.listen((row) {}, onDone: () {
           c.complete();
         });
         futures.add(c.future);
@@ -32,8 +31,7 @@ void runStreamTests(String user, String password, String db, int port, String ho
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
         var results = await pool.query('select * from stream where id=5');
-        results.listen((row) {
-        }, onDone: () {
+        results.listen((row) {}, onDone: () {
           c.complete();
         });
         futures.add(c.future);
@@ -61,8 +59,7 @@ void runStreamTests(String user, String password, String db, int port, String ho
         var c = new Completer();
         var query = await pool.prepare('select * from stream');
         var results = await query.execute();
-        results.listen((row) {
-        }, onDone: () {
+        results.listen((row) {}, onDone: () {
           c.complete();
         });
         futures.add(c.future);
@@ -76,8 +73,7 @@ void runStreamTests(String user, String password, String db, int port, String ho
         var c = new Completer();
         var query = await pool.prepare('select * from stream where id=5');
         var results = await query.execute();
-        results.listen((row) {
-        }, onDone: () {
+        results.listen((row) {}, onDone: () {
           c.complete();
         });
         futures.add(c.future);

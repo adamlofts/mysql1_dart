@@ -4,9 +4,9 @@ void runCharsetTests(String user, String password, String db, int port, String h
   ConnectionPool pool;
   group('charset tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       return setup(pool, "cset", "create table cset (stuff text character set utf8)",
-        "insert into cset (stuff) values ('здрасти')");
+          "insert into cset (stuff) values ('здрасти')");
     });
 
     test('read data', () async {

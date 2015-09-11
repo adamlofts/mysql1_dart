@@ -15,7 +15,7 @@ void runFieldByNameTests() {
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
-      
+
       field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
       field._name = "abc";
       handler._fieldPackets.add(field);
@@ -38,7 +38,7 @@ void runFieldByNameTests() {
       fieldIndex[new Symbol("two")] = 1;
       fieldIndex[new Symbol("three")] = 2;
       var values = [5, "hello", null];
-      
+
       Row row = new _StandardDataPacket._forTests(values, fieldIndex);
       expect(row.one, equals(5));
       expect(row.two, equals("hello"));
@@ -48,12 +48,12 @@ void runFieldByNameTests() {
     test('should fail for non-existent properties', () {
       var fieldIndex = new Map<Symbol, int>();
       var values = [];
-      
+
       Row row = new _StandardDataPacket._forTests(values, fieldIndex);
       try {
-        var x =row.one;
+        var x = row.one;
         expect(true, isFalse);
-      } on NoSuchMethodError catch (e) { 
+      } on NoSuchMethodError catch (e) {
         expect(true, isTrue);
       }
     });
@@ -73,7 +73,7 @@ void runFieldByNameTests() {
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
-      
+
       field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
       field._name = "abc";
       handler._fieldPackets.add(field);
@@ -96,7 +96,7 @@ void runFieldByNameTests() {
       fieldIndex[new Symbol("two")] = 1;
       fieldIndex[new Symbol("three")] = 2;
       var values = [5, "hello", null];
-      
+
       Row row = new _BinaryDataPacket._forTests(values, fieldIndex);
       expect(row.one, equals(5));
       expect(row.two, equals("hello"));
@@ -106,12 +106,12 @@ void runFieldByNameTests() {
     test('should fail for non-existent properties', () {
       var fieldIndex = new Map<Symbol, int>();
       var values = [];
-      
+
       Row row = new _BinaryDataPacket._forTests(values, fieldIndex);
       try {
-        var x =row.one;
+        var x = row.one;
         expect(true, isFalse);
-      } on NoSuchMethodError catch (e) { 
+      } on NoSuchMethodError catch (e) {
         expect(true, isTrue);
       }
     });

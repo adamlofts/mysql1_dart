@@ -6,7 +6,7 @@ class _CloseStatementHandler extends _Handler {
   _CloseStatementHandler(int this._handle) {
     log = new Logger("CloseStatementHandler");
   }
-  
+
   Buffer createRequest() {
     var buffer = new Buffer(5);
     buffer.writeByte(COM_STMT_CLOSE);

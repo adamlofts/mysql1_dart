@@ -4,25 +4,25 @@ void runIntTests(String user, String password, String db, int port, String host)
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host);
       expect(pool, isNotNull);
     });
-    
+
     test('dropTables', () async {
       await new TableDropper(pool, ["test1"]).dropTables();
     });
 
     test('create tables', () async {
       var results = await pool.query("create table test1 ("
-        "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
-        "adecimal decimal(20,10), afloat float, adouble double, areal real, "
-        "aboolean boolean, abit bit(20), aserial serial, "
-        "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
-        "achar char(10), avarchar varchar(10), "
-        "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-        "abinary binary(10), avarbinary varbinary(10), "
-        "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
+          "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+          "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+          "aboolean boolean, abit bit(20), aserial serial, "
+          "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+          "achar char(10), avarchar varchar(10), "
+          "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+          "abinary binary(10), avarbinary varbinary(10), "
+          "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+          "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
       expect(results.affectedRows, equals(0));
       expect(results.insertId, equals(0));
       var list = await results.toList();
@@ -87,19 +87,19 @@ void runIntTests(String user, String password, String db, int port, String host)
       var c = new Completer();
       print("insert stuff test");
       var query = await pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
-        "adecimal, afloat, adouble, areal, "
-        "aboolean, abit, aserial, "
-        "adate, adatetime, atimestamp, atime, ayear, "
-        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
-        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
-        "aenum, aset) values"
-        "(?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, "
-        "?, ?, ?, "
-        "?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, ?, ?, "
-        "?, ?)");
+          "adecimal, afloat, adouble, areal, "
+          "aboolean, abit, aserial, "
+          "adate, adatetime, atimestamp, atime, ayear, "
+          "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+          "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+          "aenum, aset) values"
+          "(?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, "
+          "?, ?, ?, "
+          "?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, ?, ?, "
+          "?, ?)");
       var values = [];
       values.add(126);
       values.add(164);
@@ -113,7 +113,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       values.add(123.456);
 
       values.add(true);
-      values.add(0x010203);//[1, 2, 3]);
+      values.add(0x010203); //[1, 2, 3]);
       values.add(123);
 
       values.add(new DateTime.now());
@@ -283,7 +283,7 @@ Future showResults(Results results) {
   }, onDone: () {
     c.complete(null);
   });
-  
+
   return c.future;
 }
 
@@ -306,5 +306,5 @@ String typeof(dynamic item) {
     return "Duration";
   } else {
     return "Unknown";
-}
+  }
 }

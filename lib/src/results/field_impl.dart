@@ -13,7 +13,7 @@ class _FieldImpl implements Field {
   int _flags;
   int _decimals;
   int _defaultValue;
-  
+
   String get catalog => _catalog;
   String get db => _db;
   String get table => _table;
@@ -47,9 +47,9 @@ class _FieldImpl implements Field {
       _defaultValue = buffer.readLengthCodedBinary();
     }
   }
-  
-  String toString() => "Catalog: $_catalog, DB: $_db, Table: $_table, Org Table: $_orgTable, " 
-       "Name: $_name, Org Name: $_orgName, Character Set: $_characterSet, "
-       "Length: $_length, Type: $_type, Flags: $_flags, Decimals: $_decimals, "
-       "Default Value: $_defaultValue";
+
+  String toString() => "Catalog: $_catalog, DB: $_db, Table: $_table, Org Table: $_orgTable, "
+      "Name: $_name, Org Name: $_orgName, Character Set: $_characterSet, "
+      "Length: $_length, Type: $_type, Flags: $_flags, Decimals: $_decimals, "
+      "Default Value: $_defaultValue";
 }

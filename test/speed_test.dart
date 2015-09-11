@@ -9,13 +9,12 @@ class SpeedTest {
   static const SIMPLE_INSERTS = 200;
   static const PREPARED_INSERTS = 200;
   static const POOL_SIZE = 1;
-  
+
   ConnectionPool pool;
   Logger log;
-  
-  SpeedTest(this.pool) :
-    log = new Logger("Speed");
-  
+
+  SpeedTest(this.pool) : log = new Logger("Speed");
+
   Future run() async {
     await dropTables();
     await createTables();
@@ -23,31 +22,31 @@ class SpeedTest {
     await insertPreparedData();
     await pool.closeConnectionsWhenNotInUse();
   }
-  
+
   Future dropTables() {
     log.fine("dropping tables");
     var dropper = new TableDropper(pool, ['pets', 'people']);
     return dropper.dropTables();
   }
-  
+
   Future createTables() {
     log.fine("creating tables");
-    var querier = new QueryRunner(pool, ['create table people (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'age integer, '
-                                        'primary key (id))',
-                                        
-                                        'create table pets (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'species varchar(255), '
-                                        'owner_id integer, '
-                                        'primary key (id),'
-                                        'foreign key (owner_id) references people (id))'
-                                        ]);
+    var querier = new QueryRunner(pool, [
+      'create table people (id integer not null auto_increment, '
+          'name varchar(255), '
+          'age integer, '
+          'primary key (id))',
+      'create table pets (id integer not null auto_increment, '
+          'name varchar(255), '
+          'species varchar(255), '
+          'owner_id integer, '
+          'primary key (id),'
+          'foreign key (owner_id) references people (id))'
+    ]);
     log.fine("executing queries");
     return querier.executeQueries();
   }
-  
+
   Future insertSimpleData() async {
     log.fine("inserting simple data");
     var sw = new Stopwatch()..start();
@@ -59,7 +58,7 @@ class SpeedTest {
     logTime("simple insertions", sw);
     log.fine("inserted");
   }
-  
+
   Future insertPreparedData() async {
     log.fine("inserting prepared data");
     var sw = new Stopwatch()..start();
@@ -72,10 +71,10 @@ class SpeedTest {
     logTime("prepared insertions", sw);
     log.fine("inserted");
   }
-  
+
   void logTime(String operation, Stopwatch sw) {
     var time = sw.elapsedMicroseconds;
-    var seconds = time/1000000;
+    var seconds = time / 1000000;
     log.fine("$operation took: ${seconds}s");
   }
 }
@@ -92,7 +91,7 @@ main() async {
 
   var log = new Logger("Speed");
   log.level = Level.ALL;
-  
+
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
   var password = options.getString('password');
@@ -102,13 +101,13 @@ main() async {
 
   // create a connection
   log.fine("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user,
-      password: password, db: db, max: SpeedTest.POOL_SIZE);
+  var pool =
+      new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: SpeedTest.POOL_SIZE);
   log.fine("connection open");
 
   var stopwatch = new Stopwatch()..start();
   await new SpeedTest(pool).run();
   var time = stopwatch.elapsedMicroseconds;
-  var seconds = time/1000000;
+  var seconds = time / 1000000;
   log.fine("Time taken: ${seconds}s");
 }

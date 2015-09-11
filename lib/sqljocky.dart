@@ -1,5 +1,5 @@
 library sqljocky;
-// named after Jocky Wilson, the late, great darts player 
+// named after Jocky Wilson, the late, great darts player
 
 import 'dart:async';
 import 'dart:collection';

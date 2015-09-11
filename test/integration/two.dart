@@ -4,10 +4,10 @@ void runIntTests2(String user, String password, String db, int port, String host
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host, max:1);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
       expect(pool, isNotNull);
     });
-    
+
     test('four pings', () {
       var c1 = new Completer();
       var c2 = new Completer();
@@ -26,17 +26,16 @@ void runIntTests2(String user, String password, String db, int port, String host
           c4.complete();
         });
         print("ping 4 sent");
-        
       });
       print("ping 1 sent");
-      
+
       pool.ping().then((_) {
         finished.add(2);
         print("ping 2 received");
         c2.complete();
       });
       print("ping 2 sent");
-      
+
       pool.ping().then((_) {
         finished.add(3);
         print("ping 3 received");
@@ -45,7 +44,7 @@ void runIntTests2(String user, String password, String db, int port, String host
       print("ping 3 sent");
 
       expect(finished, equals([]));
-      
+
       return Future.wait(futures).then((_) {
         expect(finished, contains(1));
         expect(finished, contains(2));

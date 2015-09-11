@@ -4,8 +4,13 @@ const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
 void runHandshakeHandlerTests() {
   createHandshake(protocolVersion, serverVersion, threadId, scrambleBuffer, serverCapabilities,
-                  [serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-                  pluginName, pluginNameNull]) {
+      [serverLanguage,
+      serverStatus,
+      serverCapabilities2,
+      scrambleLength,
+      scrambleBuffer2,
+      pluginName,
+      pluginNameNull]) {
     var length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
     if (serverLanguage != null) {
       length += 1 + 2 + 2 + 1 + 10;
@@ -69,8 +74,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
-          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       handler._readResponseBuffer(responseBuffer);
 
       expect(handler.serverVersion, equals(serverVersion));
@@ -115,9 +120,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
-          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-          pluginName, false);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, false);
       handler._readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
@@ -138,9 +142,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
-          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-          pluginName, true);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler._readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
@@ -161,9 +164,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = null;
       var scrambleLength = scrambleBuffer1.length;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
-          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-          pluginName, true);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler._readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
@@ -184,9 +186,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrst";
       var scrambleLength = 5;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1,
-          serverCapabilities1, serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-          pluginName, true);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler._readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
@@ -216,8 +217,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
-          serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
       expect(handler.useCompression, isFalse);
@@ -226,8 +227,8 @@ void runHandshakeHandlerTests() {
       expect(response, new isInstanceOf<_HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
 
-      int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
-          | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+      int clientFlags =
+          CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
 
       _AuthHandler authHandler = response.nextHandler;
       expect(authHandler._characterSet, equals(CharacterSet.UTF8));
@@ -253,9 +254,19 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
-          serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2,
-          _HandshakeHandler.MYSQL_NATIVE_PASSWORD, true);
+      var responseBuffer = createHandshake(
+          10,
+          serverVersion,
+          threadId,
+          scrambleBuffer1,
+          serverCapabilities1,
+          serverLanguage,
+          serverStatus,
+          serverCapabilities2,
+          scrambleLength,
+          scrambleBuffer2,
+          _HandshakeHandler.MYSQL_NATIVE_PASSWORD,
+          true);
       var response = handler.processResponse(responseBuffer);
 
       expect(handler.useCompression, isFalse);
@@ -299,8 +310,19 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
-          serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, "some_random_plugin", true);
+      var responseBuffer = createHandshake(
+          10,
+          serverVersion,
+          threadId,
+          scrambleBuffer1,
+          serverCapabilities1,
+          serverLanguage,
+          serverStatus,
+          serverCapabilities2,
+          scrambleLength,
+          scrambleBuffer2,
+          "some_random_plugin",
+          true);
 
       expect(() {
         handler.processResponse(responseBuffer);
@@ -321,8 +343,8 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1, serverLanguage,
-      serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
+      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+          serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
       expect(handler.useCompression, isFalse);
@@ -331,9 +353,12 @@ void runHandshakeHandlerTests() {
       expect(response, new isInstanceOf<_HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_SSLHandler>());
 
-      int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
-          | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION
-          | CLIENT_SSL;
+      int clientFlags = CLIENT_PROTOCOL_41 |
+          CLIENT_LONG_PASSWORD |
+          CLIENT_LONG_FLAG |
+          CLIENT_TRANSACTIONS |
+          CLIENT_SECURE_CONNECTION |
+          CLIENT_SSL;
 
       _SSLHandler sslHandler = response.nextHandler;
       expect(sslHandler.nextHandler, new isInstanceOf<_AuthHandler>());

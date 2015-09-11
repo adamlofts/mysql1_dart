@@ -11,9 +11,9 @@ import 'dart:async';
 
 class Example {
   ConnectionPool pool;
-  
+
   Example(this.pool);
-  
+
   Future run() async {
     // drop the tables if they already exist
     await dropTables();
@@ -32,33 +32,33 @@ class Example {
     var dropper = new TableDropper(pool, ['pets', 'people']);
     return dropper.dropTables();
   }
-  
+
   Future createTables() {
     print("creating tables");
-    var querier = new QueryRunner(pool, ['create table people (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'age integer, '
-                                        'primary key (id))',
-                                        
-                                        'create table pets (id integer not null auto_increment, '
-                                        'name varchar(255), '
-                                        'species text, '
-                                        'owner_id integer, '
-                                        'primary key (id),'
-                                        'foreign key (owner_id) references people (id))'
-                                        ]);
+    var querier = new QueryRunner(pool, [
+      'create table people (id integer not null auto_increment, '
+          'name varchar(255), '
+          'age integer, '
+          'primary key (id))',
+      'create table pets (id integer not null auto_increment, '
+          'name varchar(255), '
+          'species text, '
+          'owner_id integer, '
+          'primary key (id),'
+          'foreign key (owner_id) references people (id))'
+    ]);
     print("executing queries");
     return querier.executeQueries();
   }
-  
+
   Future addData() async {
     var query = await pool.prepare("insert into people (name, age) values (?, ?)");
     print("prepared query 1");
     var parameters = [
-        ["Dave", 15],
-        ["John", 16],
-        ["Mavis", 93]
-      ];
+      ["Dave", 15],
+      ["John", 16],
+      ["Mavis", 93]
+    ];
     var results = await query.executeMulti(parameters);
 
     print("executed query 1");
@@ -66,15 +66,16 @@ class Example {
 
     print("prepared query 2");
     parameters = [
-        ["Rover", "Dog", 1],
-        ["Daisy", "Cow", 2],
-        ["Spot", "Dog", 2]];
+      ["Rover", "Dog", 1],
+      ["Daisy", "Cow", 2],
+      ["Spot", "Dog", 2]
+    ];
 //          ["Spot", "D\u0000og", 2]];
     results = await query.executeMulti(parameters);
 
     print("executed query 2");
   }
-  
+
   Future readData() async {
     print("querying");
     var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
@@ -101,7 +102,7 @@ main() async {
 
   // create a connection
   print("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max:1);
+  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: 1);
   print("connection open");
   // create an example class
   var example = new Example(pool);
