@@ -59,7 +59,7 @@ class Example {
       ["John", 16],
       ["Mavis", 93]
     ];
-    var results = await query.executeMulti(parameters);
+    await query.executeMulti(parameters);
 
     print("executed query 1");
     query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
@@ -71,7 +71,7 @@ class Example {
       ["Spot", "Dog", 2]
     ];
 //          ["Spot", "D\u0000og", 2]];
-    results = await query.executeMulti(parameters);
+    await query.executeMulti(parameters);
 
     print("executed query 2");
   }

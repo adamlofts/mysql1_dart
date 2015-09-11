@@ -83,7 +83,6 @@ void runStreamTests(String user, String password, String db, int port, String ho
 
     test('select from stream using prepare and first', () async {
       for (var i = 0; i < 5; i++) {
-        var c = new Completer();
         var query = await pool.prepare('select * from stream');
         var results = await query.execute();
         await results.first;
@@ -92,7 +91,6 @@ void runStreamTests(String user, String password, String db, int port, String ho
 
     test('select from stream using prepare and drain', () async {
       for (var i = 0; i < 5; i++) {
-        var c = new Completer();
         var query = await pool.prepare('select * from stream');
         var results = await query.execute();
         await results.drain();

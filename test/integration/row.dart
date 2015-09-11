@@ -14,9 +14,8 @@ void runRowTests(String user, String password, String db, int port, String host)
     });
 
     test('store data', () async {
-      var c = new Completer();
       var query = await pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
-      var results = await query.execute([0, 'Bob', 'Thing', 5000]);
+      await query.execute([0, 'Bob', 'Thing', 5000]);
     });
 
     test('first field is empty', () async {

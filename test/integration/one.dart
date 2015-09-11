@@ -48,7 +48,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('small blobs', () async {
-      var c = new Completer();
       var query = await pool.prepare("insert into test1 (atext) values (?)");
       var longstring = "";
       for (var i = 0; i < 200; i++) {
@@ -64,7 +63,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('medium blobs', () async {
-      var c = new Completer();
       var query = await pool.prepare("insert into test1 (atext) values (?)");
       var longstring = "";
       for (var i = 0; i < 2000; i++) {
@@ -84,7 +82,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('insert stuff', () async {
-      var c = new Completer();
       print("insert stuff test");
       var query = await pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
           "adecimal, afloat, adouble, areal, "
@@ -155,12 +152,11 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('update', () async {
-      var c = new Completer();
       Query preparedQuery;
       var query = await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
       preparedQuery = query;
       expect(1, equals(1)); // put some real expectations here
-      var results = await query.execute([127, "123456789.987654321"]);
+      await query.execute([127, "123456789.987654321"]);
       preparedQuery.close();
     });
 
@@ -173,7 +169,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('prepare execute', () async {
-      var c = new Completer();
       var results = await pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]);
       expect(results.affectedRows, equals(1));
     });
@@ -182,7 +177,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     List<dynamic> values;
 
     test('data types (prepared)', () async {
-      var c = new Completer();
       var results = await pool.prepareExecute('select * from test1', []);
       print("----------- prepared results ---------------");
       preparedFields = results.fields;
@@ -233,7 +227,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('blobs in prepared queries', () async {
-      var c = new Completer();
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
       var results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
       expect(1, equals(1)); // put some real expectations here

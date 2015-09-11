@@ -53,7 +53,7 @@ void runFieldByNameTests() {
       try {
         var x = row.one;
         expect(true, isFalse);
-      } on NoSuchMethodError catch (e) {
+      } on NoSuchMethodError {
         expect(true, isTrue);
       }
     });
@@ -111,7 +111,7 @@ void runFieldByNameTests() {
       try {
         var x = row.one;
         expect(true, isFalse);
-      } on NoSuchMethodError catch (e) {
+      } on NoSuchMethodError {
         expect(true, isTrue);
       }
     });

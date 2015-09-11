@@ -70,14 +70,14 @@ class Example {
       ["John", 16],
       ["Mavis", 93]
     ];
-    var results = await query.executeMulti(parameters);
+    await query.executeMulti(parameters);
     query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
     parameters = [
       ["Rover", "Dog", 1],
       ["Daisy", "Cow", 2],
       ["Spot", "Dog", 2]
     ];
-    results = await query.executeMulti(parameters);
+    await query.executeMulti(parameters);
   }
 
   Future addDataInTransaction() async {
