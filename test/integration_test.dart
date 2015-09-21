@@ -1,29 +1,29 @@
 library integrationtests;
 
-import 'package:sqljocky/sqljocky.dart';
-import 'package:sqljocky/constants.dart';
-import 'package:options_file/options_file.dart';
-import 'package:test/test.dart';
-import 'package:logging/logging.dart';
-import 'package:args/args.dart';
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:args/args.dart';
+import 'package:logging/logging.dart';
+import 'package:options_file/options_file.dart';
+import 'package:sqljocky/constants.dart';
+import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
+import 'package:test/test.dart';
 
 part 'integration/base.dart';
-part 'integration/one.dart';
-part 'integration/two.dart';
-part 'integration/charset.dart';
-part 'integration/nullmap.dart';
-part 'integration/largeblob.dart';
-part 'integration/numbers.dart';
-part 'integration/stream.dart';
-part 'integration/row.dart';
-part 'integration/errors.dart';
-part 'integration/stored_procedures.dart';
-part 'integration/execute_multi.dart';
-part 'integration/prepared_query.dart';
 part 'integration/blob.dart';
+part 'integration/charset.dart';
+part 'integration/errors.dart';
+part 'integration/execute_multi.dart';
+part 'integration/largeblob.dart';
+part 'integration/nullmap.dart';
+part 'integration/numbers.dart';
+part 'integration/one.dart';
+part 'integration/prepared_query.dart';
+part 'integration/row.dart';
+part 'integration/stored_procedures.dart';
+part 'integration/stream.dart';
+part 'integration/two.dart';
 
 void main(List<String> args) {
   hierarchicalLoggingEnabled = true;

@@ -1,11 +1,11 @@
-import 'package:sqljocky/sqljocky.dart';
-import 'package:sqljocky/utils.dart';
-import 'package:options_file/options_file.dart';
-import 'package:logging/logging.dart';
-import 'package:test/test.dart';
-
 import 'dart:async';
 import 'dart:math';
+
+import 'package:logging/logging.dart';
+import 'package:options_file/options_file.dart';
+import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky/utils.dart';
+import 'package:test/test.dart';
 
 /*
  * This example drops a couple of tables if they exist, before recreating them.
