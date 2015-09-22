@@ -70,9 +70,7 @@ void runPreparedStatementTests() {
 
     test('can read SHORTs', () {
       var dataPacket = new _BinaryDataPacket._forTests(null, null);
-      var buffer = new Buffer.fromList([0, 0,
-          255, 255,
-          255, 0]);
+      var buffer = new Buffer.fromList([0, 0, 255, 255, 255, 0]);
       var field = new _FieldImpl._forTests(FIELD_TYPE_SHORT);
 
       var value = dataPacket._readField(field, buffer);
@@ -90,9 +88,7 @@ void runPreparedStatementTests() {
 
     test('can read INT24s', () {
       var dataPacket = new _BinaryDataPacket._forTests(null, null);
-      var buffer = new Buffer.fromList([0, 0, 0, 0,
-          255, 255, 255, 255,
-          255, 0, 0, 0]);
+      var buffer = new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
 
       var value = dataPacket._readField(field, buffer);
@@ -110,9 +106,7 @@ void runPreparedStatementTests() {
 
     test('can read LONGs', () {
       var dataPacket = new _BinaryDataPacket._forTests(null, null);
-      var buffer = new Buffer.fromList([0, 0, 0, 0,
-          255, 255, 255, 255,
-          255, 0, 0, 0]);
+      var buffer = new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new _FieldImpl._forTests(FIELD_TYPE_LONG);
 
       var value = dataPacket._readField(field, buffer);
@@ -130,9 +124,8 @@ void runPreparedStatementTests() {
 
     test('can read LONGLONGs', () {
       var dataPacket = new _BinaryDataPacket._forTests(null, null);
-      var buffer = new Buffer.fromList([0, 0, 0, 0, 0, 0, 0, 0,
-          255, 255, 255, 255, 255, 255, 255, 255,
-          255, 0, 0, 0, 0, 0, 0, 0]);
+      var buffer = new Buffer.fromList(
+          [0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0]);
       var field = new _FieldImpl._forTests(FIELD_TYPE_LONGLONG);
 
       var value = dataPacket._readField(field, buffer);
@@ -163,8 +156,31 @@ void runPreparedStatementTests() {
 
     test('can read BITs', () {
       var dataPacket = new _BinaryDataPacket._forTests(null, null);
-      var buffer = new Buffer.fromList([1, 123, 20, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00,
-          0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x10]);
+      var buffer = new Buffer.fromList([
+        1,
+        123,
+        20,
+        0x01,
+        0x02,
+        0x03,
+        0x04,
+        0x05,
+        0x06,
+        0x07,
+        0x08,
+        0x09,
+        0x00,
+        0x11,
+        0x12,
+        0x13,
+        0x14,
+        0x15,
+        0x16,
+        0x17,
+        0x18,
+        0x19,
+        0x10
+      ]);
       var field = new _FieldImpl._forTests(FIELD_TYPE_BIT);
 
       var value = dataPacket._readField(field, buffer);

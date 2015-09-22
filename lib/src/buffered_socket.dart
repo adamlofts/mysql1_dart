@@ -40,16 +40,15 @@ class BufferedSocket {
 
   BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError, this.onClosed)
       : log = new Logger("BufferedSocket") {
-    _subscription = _socket.listen(_onData, onError: _onSocketError, 
-        onDone: _onSocketDone, cancelOnError: true);
+    _subscription = _socket.listen(_onData, onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
   }
-  
+
   _onSocketError(error) {
     if (onError != null) {
       onError(error);
     }
   }
-  
+
   _onSocketDone() {
     if (onDone != null) {
       onDone();
@@ -58,13 +57,13 @@ class BufferedSocket {
   }
 
   static defaultSocketFactory(host, port) => RawSocket.connect(host, port);
-  
+
   static Future<BufferedSocket> connect(String host, int port,
       {DataReadyHandler onDataReady,
-      DoneHandler onDone, 
+      DoneHandler onDone,
       ErrorHandler onError,
       ClosedHandler onClosed,
-      SocketFactory socketFactory : defaultSocketFactory,
+      SocketFactory socketFactory: defaultSocketFactory,
       OnConnection onConnection}) async {
     try {
       var socket;
@@ -192,15 +191,13 @@ class BufferedSocket {
     _socket.close();
     _closed = true;
   }
-  
+
   Future startSSL() async {
     log.fine("Securing socket");
-    var socket = await RawSecureSocket.secure(_socket, subscription: _subscription,
-        onBadCertificate: (cert) => true);
+    var socket = await RawSecureSocket.secure(_socket, subscription: _subscription, onBadCertificate: (cert) => true);
     log.fine("Socket is secure");
     _socket = socket;
-    _subscription = _socket.listen(_onData, onError: _onSocketError,
-        onDone: _onSocketDone, cancelOnError: true);
+    _subscription = _socket.listen(_onData, onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
     _socket.writeEventsEnabled = true;
     _socket.readEventsEnabled = true;
   }

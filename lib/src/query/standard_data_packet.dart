@@ -3,11 +3,10 @@ part of sqljocky;
 class _StandardDataPacket extends Row {
   final List<dynamic> values;
   final Map<Symbol, int> _fieldIndex;
-  
-  _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets, this._fieldIndex) :
-    values = new List<dynamic>(fieldPackets.length) {
-    for (var i = 0; i < fieldPackets.length; i++) {
 
+  _StandardDataPacket(Buffer buffer, List<_FieldImpl> fieldPackets, this._fieldIndex)
+      : values = new List<dynamic>(fieldPackets.length) {
+    for (var i = 0; i < fieldPackets.length; i++) {
       var list;
       int length = buffer.readLengthCodedBinary();
       if (length != null) {
@@ -47,9 +46,12 @@ class _StandardDataPacket extends Row {
         case FIELD_TYPE_TIME: // time
           var s = UTF8.decode(list);
           var parts = s.split(":");
-          values[i] = new Duration(days: 0, hours: int.parse(parts[0]),
-            minutes: int.parse(parts[1]), seconds: int.parse(parts[2]), 
-            milliseconds: 0);
+          values[i] = new Duration(
+              days: 0,
+              hours: int.parse(parts[0]),
+              minutes: int.parse(parts[1]),
+              seconds: int.parse(parts[2]),
+              milliseconds: 0);
           break;
         case FIELD_TYPE_YEAR: // year
           var s = UTF8.decode(list);
@@ -72,19 +74,19 @@ class _StandardDataPacket extends Row {
   }
 
   _StandardDataPacket._forTests(this.values, this._fieldIndex);
-  
+
   int get length => values.length;
 
-  dynamic operator[](int index) => values[index];
+  dynamic operator [](int index) => values[index];
 
-  void operator[]=(int index, dynamic value) {
+  void operator []=(int index, dynamic value) {
     throw new UnsupportedError("Cannot modify row");
   }
 
   void set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
   }
-  
+
   noSuchMethod(Invocation invocation) {
     var name = invocation.memberName;
     if (invocation.isGetter) {
@@ -95,6 +97,6 @@ class _StandardDataPacket extends Row {
     }
     return super.noSuchMethod(invocation);
   }
-  
+
   String toString() => "Value: $values";
 }

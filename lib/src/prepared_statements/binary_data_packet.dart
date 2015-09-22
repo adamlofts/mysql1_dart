@@ -7,8 +7,7 @@ class _BinaryDataPacket extends Row {
 
   _BinaryDataPacket._forTests(this.values, this._fieldIndex) : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields, this._fieldIndex) :
-      log = new Logger("BinaryDataPacket") {
+  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields, this._fieldIndex) : log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
@@ -24,7 +23,7 @@ class _BinaryDataPacket extends Row {
         byte++;
       }
     }
-    
+
     values = new List(fields.length);
     for (var i = 0; i < fields.length; i++) {
       log.fine("$i: ${fields[i].name}");
@@ -121,8 +120,7 @@ class _BinaryDataPacket extends Row {
             minutes = date[5];
             seconds = date[6];
             if (date.length > 7) {
-              billionths = date[7] + (date[8] << 0x08)
-                  + (date[9] << 0x10) + (date[10] << 0x18);
+              billionths = date[7] + (date[8] << 0x08) + (date[9] << 0x10) + (date[10] << 0x18);
             }
           }
         }
@@ -183,7 +181,7 @@ class _BinaryDataPacket extends Row {
         return value;
       case FIELD_TYPE_NEWDATE:
       case FIELD_TYPE_DECIMAL:
-        //TODO pre 5.0.3 will return old decimal values
+      //TODO pre 5.0.3 will return old decimal values
       case FIELD_TYPE_SET:
       case FIELD_TYPE_ENUM:
       case FIELD_TYPE_TINY_BLOB:
@@ -203,9 +201,9 @@ class _BinaryDataPacket extends Row {
 
   int get length => values.length;
 
-  dynamic operator[](int index) => values[index];
+  dynamic operator [](int index) => values[index];
 
-  void operator[]=(int index, dynamic value) {
+  void operator []=(int index, dynamic value) {
     throw new UnsupportedError("Cannot modify row");
   }
 

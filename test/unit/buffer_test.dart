@@ -7,14 +7,14 @@ void runBufferTests() {
       buffer.writeByte(15);
       expect(buffer.list[0], equals(15));
     });
-    
+
     test('can write int16 to buffer', () {
       var buffer = new Buffer(2);
       buffer.writeInt16(12345);
       expect(buffer.list[0], equals(0x39));
       expect(buffer.list[1], equals(0x30));
     });
-    
+
     test('can read int16 from buffer', () {
       var buffer = new Buffer(2);
       buffer.list[0] = 0x39;

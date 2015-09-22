@@ -5,11 +5,9 @@ part of sqljocky;
  */
 class MySqlProtocolError extends Error {
   final String message;
-  
+
   /**
    * Create a [MySqlProtocolError]
    */
   MySqlProtocolError._(this.message);
 }
-
-

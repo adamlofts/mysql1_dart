@@ -153,8 +153,8 @@ void runConnectionTests() {
       expect(buffer.list[buffer.list.length - 1], equals(4));
     });
   });
-
 }
 
 class MockSocket extends Mock implements BufferedSocket {}
+
 class MockConnection extends Mock implements _Connection {}

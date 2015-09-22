@@ -15,17 +15,17 @@ class Query extends Object with _ConnectionHelpers {
   final Logger _log;
   final _inTransaction;
   bool _executed = false;
-  
-  Query._internal(this._pool, this.sql) :
-      _cnx = null,
-      _inTransaction = false,
-      _log = new Logger("Query");
 
-  Query._forTransaction(this._pool, _Connection cnx, this.sql) :
-      _cnx = cnx,
-      _inTransaction = true,
-      _log = new Logger("Query");
-  
+  Query._internal(this._pool, this.sql)
+      : _cnx = null,
+        _inTransaction = false,
+        _log = new Logger("Query");
+
+  Query._forTransaction(this._pool, _Connection cnx, this.sql)
+      : _cnx = cnx,
+        _inTransaction = true,
+        _log = new Logger("Query");
+
   Future<_Connection> _getConnection() async {
     if (_cnx != null) {
       return _cnx;
@@ -35,7 +35,7 @@ class Query extends Object with _ConnectionHelpers {
 
   Future<_PreparedQuery> _prepare(bool retainConnection) async {
     _log.fine("Getting prepared query for: $sql");
-    
+
     var cnx = await _getConnection();
     cnx.autoRelease = !retainConnection;
     _log.fine("Got cnx#${cnx.number}");
@@ -52,7 +52,7 @@ class Query extends Object with _ConnectionHelpers {
       return await _prepareAndCacheQuery(cnx, retainConnection);
     }
   }
-  
+
   /**
    * Returns true if there was already a cached query which has been used.
    */
@@ -65,7 +65,7 @@ class Query extends Object with _ConnectionHelpers {
     _log.fine("Got prepared query from cache in cnx#${cnx.number} for: $sql");
     return preparedQuery;
   }
-  
+
   _prepareAndCacheQuery(_Connection cnx, retainConnection) async {
     _log.fine("Preparing new query in cnx#${cnx.number} for: $sql");
     var handler = new _PrepareHandler(sql);
@@ -86,7 +86,7 @@ class Query extends Object with _ConnectionHelpers {
   close() async {
     _pool._closeQuery(this, _inTransaction);
   }
-  
+
   /**
    * Executes the query, returning a future [Results] object.
    */
@@ -98,9 +98,8 @@ class Query extends Object with _ConnectionHelpers {
     _log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
     return results;
   }
-  
-  Future<Results> _execute(_PreparedQuery preparedQuery, List values,
-      {bool retainConnection: false}) async {
+
+  Future<Results> _execute(_PreparedQuery preparedQuery, List values, {bool retainConnection: false}) async {
     _log.finest("About to execute");
     var handler = new _ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
@@ -140,7 +139,7 @@ class Query extends Object with _ConnectionHelpers {
     preparedQuery.cnx.release();
     return resultList;
   }
-  
+
   _removeConnection(_Connection cnx) {
     if (!_inTransaction) {
       _pool._removeConnection(cnx);

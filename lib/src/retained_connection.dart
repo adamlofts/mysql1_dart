@@ -4,22 +4,22 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
   _Connection _cnx;
   ConnectionPool _pool;
   bool _released;
-  
+
   _RetainedConnectionBase._(this._cnx, this._pool) : _released = false;
-  
+
   Future<Results> query(String sql) {
     _checkReleased();
     var handler = new _QueryStreamHandler(sql);
     return _cnx.processHandler(handler);
   }
-  
+
   Future<Query> prepare(String sql) async {
     _checkReleased();
     var query = new Query._forTransaction(new _TransactionPool(_cnx), _cnx, sql);
     await query._prepare(true);
     return new Future.value(query);
   }
-  
+
   Future<Results> prepareExecute(String sql, List parameters) async {
     _checkReleased();
     var query = await prepare(sql);
@@ -34,9 +34,8 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
   _removeConnection(_Connection cnx) {
     _pool._removeConnection(cnx);
   }
-  
-  
-  bool get usingSSL => _cnx.usingSSL; 
+
+  bool get usingSSL => _cnx.usingSSL;
 }
 
 /**
@@ -58,7 +57,7 @@ class _RetainedConnectionImpl extends _RetainedConnectionBase implements Retaine
   Future release() {
     _checkReleased();
     _released = true;
-  
+
     _cnx.inTransaction = false;
     _cnx.release();
     _pool._reuseConnectionForQueuedOperations(_cnx);
@@ -70,5 +69,3 @@ class _RetainedConnectionImpl extends _RetainedConnectionBase implements Retaine
     }
   }
 }
-
-

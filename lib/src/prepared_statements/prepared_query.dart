@@ -7,10 +7,9 @@ class _PreparedQuery {
   final int statementHandlerId;
   _Connection cnx;
 
-  _PreparedQuery(_PrepareHandler handler) :
-      sql = handler.sql,
-      parameters = handler.parameters,
-      columns = handler.columns,
-      
-      statementHandlerId = handler.okPacket.statementHandlerId;
+  _PreparedQuery(_PrepareHandler handler)
+      : sql = handler.sql,
+        parameters = handler.parameters,
+        columns = handler.columns,
+        statementHandlerId = handler.okPacket.statementHandlerId;
 }

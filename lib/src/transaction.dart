@@ -22,11 +22,11 @@ abstract class Transaction extends QueriableConnection {
 
 class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
   _TransactionImpl._(cnx, pool) : super._(cnx, pool);
-  
+
   Future commit() async {
     _checkReleased();
     _released = true;
-  
+
     var handler = new _QueryStreamHandler("commit");
     var results = await _cnx.processHandler(handler);
     _cnx.inTransaction = false;
@@ -34,11 +34,11 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
     _pool._reuseConnectionForQueuedOperations(_cnx);
     return results;
   }
-  
+
   Future rollback() async {
     _checkReleased();
     _released = true;
-  
+
     var handler = new _QueryStreamHandler("rollback");
     var results = await _cnx.processHandler(handler);
     _cnx.inTransaction = false;
@@ -56,11 +56,10 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
 
 class _TransactionPool extends ConnectionPool {
   final _Connection cnx;
-  
+
   _TransactionPool(this.cnx);
-  
+
   Future<_Connection> _getConnection() => new Future.value(cnx);
-  
-  _removeConnection(_Connection cnx) {
-  }
+
+  _removeConnection(_Connection cnx) {}
 }

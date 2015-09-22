@@ -14,7 +14,7 @@ class _Connection {
 
   // this is for unit testing, so we can replace this method with a spy
   var _dataHandler;
-  
+
   BufferedSocket _socket;
   var _largePacketBuffers = new List<Buffer>();
 
@@ -23,9 +23,9 @@ class _Connection {
   Buffer _dataBuffer;
   bool _readyForHeader = true;
   bool _closeRequested = false;
-  
+
   int _packetNumber = 0;
-  
+
   int _compressedPacketNumber = 0;
   bool _useCompression = false;
   bool _useSSL = false;
@@ -37,22 +37,22 @@ class _Connection {
   String _user;
   String _password;
   final int number;
-  
+
   bool _inUse;
   bool autoRelease;
   bool inTransaction = false;
   final Map<String, _PreparedQuery> _preparedQueryCache;
 
-  _Connection(this._pool, this.number, this._maxPacketSize) :
-      log = new Logger("Connection"),
-      lifecycleLog = new Logger("Connection.Lifecycle"),
-      _headerBuffer = new Buffer(HEADER_SIZE),
-      _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
-      _preparedQueryCache = new Map<String, _PreparedQuery>(),
-      _inUse = false {
+  _Connection(this._pool, this.number, this._maxPacketSize)
+      : log = new Logger("Connection"),
+        lifecycleLog = new Logger("Connection.Lifecycle"),
+        _headerBuffer = new Buffer(HEADER_SIZE),
+        _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
+        _preparedQueryCache = new Map<String, _PreparedQuery>(),
+        _inUse = false {
     _dataHandler = this._handleData;
   }
-  
+
   void close() {
     if (_socket != null) {
       _socket.close();
@@ -67,32 +67,32 @@ class _Connection {
       close();
     }
   }
-  
+
   bool get inUse => _inUse;
-  
+
   void use() {
     lifecycleLog.finest("Use connection #$number");
     _inUse = true;
     autoRelease = true;
   }
-  
+
   void release() {
     _inUse = false;
     lifecycleLog.finest("Release connection #$number");
   }
-  
+
   /**
    * Connects to the given [host] on [port], authenticates using [user]
    * and [password] and connects to [db]. Returns a future which completes
    * when this has happened. The future's value is an OkPacket if the connection
    * is succesful.
    */
-  Future connect({String host, int port, String user, 
-      String password, String db, bool useCompression, bool useSSL}) async {
+  Future connect(
+      {String host, int port, String user, String password, String db, bool useCompression, bool useSSL}) async {
     if (_socket != null) {
       throw new MySqlClientError._("Cannot connect to server while a connection is already open");
     }
-    
+
     _user = user;
     _password = password;
     _handler = new _HandshakeHandler(user, password, _maxPacketSize, db, useCompression, useSSL);
@@ -100,26 +100,26 @@ class _Connection {
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
     BufferedSocket.connect(host, port,
-      onConnection: (socket) {
-        _socket = socket;
-      },
-      onDataReady: _readPacket,
-      onDone: () {
-        release();
-        log.fine("done");
-      },      
-      onError: (error) {
-        log.fine("error $error");
-        release();
-        if (_completer.isCompleted) {
-          throw error;
-        } else {
-          _completer.completeError(error);
-        }
-      },
-      onClosed: () {
-        close();
-      });
+        onConnection: (socket) {
+          _socket = socket;
+        },
+        onDataReady: _readPacket,
+        onDone: () {
+          release();
+          log.fine("done");
+        },
+        onError: (error) {
+          log.fine("error $error");
+          release();
+          if (_completer.isCompleted) {
+            throw error;
+          } else {
+            _completer.completeError(error);
+          }
+        },
+        onClosed: () {
+          close();
+        });
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
     //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
     if (useSSL) {
@@ -129,7 +129,7 @@ class _Connection {
       return _completer.future;
     }
   }
-  
+
   Future _useDatabase(String dbName) {
     var handler = new _UseDbHandler(dbName);
     return processHandler(handler);
@@ -179,7 +179,7 @@ class _Connection {
       _readPacket();
     }
   }
-  
+
   _handleData(buffer) async {
     _readyForHeader = true;
     //log.fine("read all data: ${_dataBuffer._list}");
@@ -225,9 +225,9 @@ class _Connection {
       _completer.completeError(e, st);
     }
   }
-  
+
   void _finishAndReuse() {
-    if (autoRelease && !inTransaction) { 
+    if (autoRelease && !inTransaction) {
       log.finest("Response finished for #$number, setting handler to null and waiting to release and reuse");
       new Future.delayed(new Duration(seconds: 0), () {
         if (_closeRequested) {
@@ -246,7 +246,7 @@ class _Connection {
       _handler = null;
     }
   }
-  
+
   Future _sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
       throw new MySqlClientError._("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
@@ -292,9 +292,10 @@ class _Connection {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(_Handler handler, {bool noResponse:false}) async {
+  Future<dynamic> processHandler(_Handler handler, {bool noResponse: false}) async {
     if (_handler != null) {
-      throw new MySqlClientError._("Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");
+      throw new MySqlClientError._(
+          "Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _packetNumber = -1;
     _compressedPacketNumber = -1;
@@ -308,7 +309,7 @@ class _Connection {
     }
     return _completer.future;
   }
-  
+
   _PreparedQuery removePreparedQueryFromCache(String sql) {
     var preparedQuery = null;
     if (_preparedQueryCache.containsKey(sql)) {
@@ -317,14 +318,14 @@ class _Connection {
     }
     return preparedQuery;
   }
-  
+
   _PreparedQuery getPreparedQueryFromCache(String sql) {
     return _preparedQueryCache[sql];
   }
-  
+
   putPreparedQueryInCache(String sql, _PreparedQuery preparedQuery) {
     _preparedQueryCache[sql] = preparedQuery;
   }
-  
-  bool get usingSSL => _secure; 
+
+  bool get usingSSL => _secure;
 }

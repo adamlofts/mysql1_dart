@@ -11,17 +11,17 @@ class Blob {
   String _string;
   List<int> _codeUnits;
   int _hashcode;
-  
+
   /// Create a [Blob] from a [string].
   Blob.fromString(String string) {
     this._string = string;
   }
-  
+
   /// Create a [Blob] from a list of [codeUnits].
   Blob.fromBytes(List<int> codeUnits) {
     this._codeUnits = codeUnits;
   }
-  
+
   /// Returns the value of the blob as a [String].
   String toString() {
     if (_string != null) {
@@ -29,7 +29,7 @@ class Blob {
     }
     return UTF8.decode(_codeUnits, allowMalformed: true);
   }
-  
+
   /// Returns the value of the blob as a list of code units.
   List<int> toBytes() {
     if (_codeUnits != null) {
@@ -37,7 +37,7 @@ class Blob {
     }
     return UTF8.encode(_string);
   }
-  
+
   int get hashCode {
     if (_hashcode == null) {
       if (_string != null) {
@@ -48,6 +48,6 @@ class Blob {
     }
     return _hashcode;
   }
-  
+
   bool operator ==(other) => toString() == other.toString();
 }

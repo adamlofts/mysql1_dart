@@ -41,23 +41,29 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
  * will happen when the pool is used. If you need to find out if the connection
  * details are correct you might want to run a dummy query such as 'SELECT 1'.
  */
-  ConnectionPool({String host: 'localhost', int port: 3306, String user,
-      String password, String db, int max: 5, int maxPacketSize: 16 * 1024 * 1024,
+  ConnectionPool(
+      {String host: 'localhost',
+      int port: 3306,
+      String user,
+      String password,
+      String db,
+      int max: 5,
+      int maxPacketSize: 16 * 1024 * 1024,
 //      bool useCompression: false,
-      bool useSSL: false}) :
-  _pendingConnections = new Queue<Completer<_Connection>>(),
-  _requestedConnections = new Map<_Connection, Queue<Completer>>(),
-  _pool = new List<_Connection>(),
-  _host = host,
-  _port = port,
-  _user = user,
-  _password = password,
-  _db = db,
-  _maxPacketSize = maxPacketSize,
-  _max = max,
+      bool useSSL: false})
+      : _pendingConnections = new Queue<Completer<_Connection>>(),
+        _requestedConnections = new Map<_Connection, Queue<Completer>>(),
+        _pool = new List<_Connection>(),
+        _host = host,
+        _port = port,
+        _user = user,
+        _password = password,
+        _db = db,
+        _maxPacketSize = maxPacketSize,
+        _max = max,
 //  _useCompression = useCompression,
-  _useSSL = useSSL,
-  _log = new Logger("ConnectionPool");
+        _useSSL = useSSL,
+        _log = new Logger("ConnectionPool");
 
   Future<_Connection> _getConnection() {
     _log.finest("Getting a connection");

@@ -5,6 +5,8 @@ connection.options
 *.iml
 examples
 docs
+.packages
+.pub
 packages
 pubspec.lock
 *~

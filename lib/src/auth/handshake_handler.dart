@@ -21,9 +21,10 @@ class _HandshakeHandler extends _Handler {
   bool useSSL = false;
 
   _HandshakeHandler(String this._user, String this._password, int this._maxPacketSize,
-                    [String db, bool useCompression, bool useSSL])
-      : _db = db, this.useCompression = useCompression,
-      this.useSSL = useSSL {
+      [String db, bool useCompression, bool useSSL])
+      : _db = db,
+        this.useCompression = useCompression,
+        this.useSSL = useSSL {
     log = new Logger("HandshakeHandler");
   }
 
@@ -32,7 +33,7 @@ class _HandshakeHandler extends _Handler {
    * so a request will never be created.
    */
   Buffer createRequest() {
-    throw new MySqlClientError._("Cannot create a handshake request"); 
+    throw new MySqlClientError._("Cannot create a handshake request");
   }
 
   _readResponseBuffer(Buffer response) {
@@ -74,7 +75,7 @@ class _HandshakeHandler extends _Handler {
       }
     }
   }
-  
+
   /**
    * After receiving the handshake packet, if all is well, an [_AuthHandler]
    * is created and returned to handle authentication.
@@ -96,30 +97,36 @@ class _HandshakeHandler extends _Handler {
     if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 && pluginName != MYSQL_NATIVE_PASSWORD) {
       throw new MySqlClientError._("Authentication plugin not supported: $pluginName");
     }
-    
-    int clientFlags = CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD
-      | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
-    
+
+    int clientFlags =
+        CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout("Compression enabled");
       clientFlags |= CLIENT_COMPRESS;
     } else {
       useCompression = false;
     }
-    
+
     if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
       log.shout("SSL enabled");
       clientFlags |= CLIENT_SSL | CLIENT_SECURE_CONNECTION;
     } else {
       useSSL = false;
     }
-    
+
     if (useSSL) {
-      return new _HandlerResponse(nextHandler: new _SSLHandler(clientFlags, _maxPacketSize, CharacterSet.UTF8,
-          new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8, ssl: true)));
+      return new _HandlerResponse(
+          nextHandler: new _SSLHandler(
+              clientFlags,
+              _maxPacketSize,
+              CharacterSet.UTF8,
+              new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8,
+                  ssl: true)));
     }
-    
-    return new _HandlerResponse(nextHandler: new _AuthHandler(_user, _password, _db, scrambleBuffer,
-      clientFlags, _maxPacketSize, CharacterSet.UTF8));
+
+    return new _HandlerResponse(
+        nextHandler:
+            new _AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8));
   }
 }

@@ -7,16 +7,16 @@ class _PrepareHandler extends _Handler {
   int _columnsToRead;
   List<_FieldImpl> _parameters;
   List<_FieldImpl> _columns;
-  
+
   String get sql => _sql;
   _PrepareOkPacket get okPacket => _okPacket;
   List<_FieldImpl> get parameters => _parameters;
   List<_FieldImpl> get columns => _columns;
-  
+
   _PrepareHandler(String this._sql) {
     log = new Logger("PrepareHandler");
   }
-  
+
   Buffer createRequest() {
     var encoded = UTF8.encode(_sql);
     var buffer = new Buffer(encoded.length + 1);
@@ -34,7 +34,8 @@ class _PrepareHandler extends _Handler {
         if (response[0] == PACKET_EOF) {
           log.fine("EOF");
           if (_parametersToRead != 0) {
-            throw new MySqlProtocolError._("Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
+            throw new MySqlProtocolError._(
+                "Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
           }
         } else {
           var fieldPacket = new _FieldImpl._(response);
@@ -69,7 +70,7 @@ class _PrepareHandler extends _Handler {
         _columnsToRead = -1;
       }
     }
-    
+
     if (_parametersToRead == -1 && _columnsToRead == -1) {
       log.fine("finished");
       return new _HandlerResponse(finished: true, result: new _PreparedQuery(this));

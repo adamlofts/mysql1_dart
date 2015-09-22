@@ -4,25 +4,25 @@ void runIntTests(String user, String password, String db, int port, String host)
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {
-      pool = new ConnectionPool(user:user, password:password, db:db, port:port, host:host);
+      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host);
       expect(pool, isNotNull);
     });
-    
+
     test('dropTables', () async {
       await new TableDropper(pool, ["test1"]).dropTables();
     });
 
     test('create tables', () async {
       var results = await pool.query("create table test1 ("
-        "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
-        "adecimal decimal(20,10), afloat float, adouble double, areal real, "
-        "aboolean boolean, abit bit(20), aserial serial, "
-        "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
-        "achar char(10), avarchar varchar(10), "
-        "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-        "abinary binary(10), avarbinary varbinary(10), "
-        "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
+          "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+          "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+          "aboolean boolean, abit bit(20), aserial serial, "
+          "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+          "achar char(10), avarchar varchar(10), "
+          "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+          "abinary binary(10), avarbinary varbinary(10), "
+          "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+          "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
       expect(results.affectedRows, equals(0));
       expect(results.insertId, equals(0));
       var list = await results.toList();
@@ -48,7 +48,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('small blobs', () async {
-      var c = new Completer();
       var query = await pool.prepare("insert into test1 (atext) values (?)");
       var longstring = "";
       for (var i = 0; i < 200; i++) {
@@ -64,7 +63,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('medium blobs', () async {
-      var c = new Completer();
       var query = await pool.prepare("insert into test1 (atext) values (?)");
       var longstring = "";
       for (var i = 0; i < 2000; i++) {
@@ -84,22 +82,21 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('insert stuff', () async {
-      var c = new Completer();
       print("insert stuff test");
       var query = await pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
-        "adecimal, afloat, adouble, areal, "
-        "aboolean, abit, aserial, "
-        "adate, adatetime, atimestamp, atime, ayear, "
-        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
-        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
-        "aenum, aset) values"
-        "(?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, "
-        "?, ?, ?, "
-        "?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, ?, ?, "
-        "?, ?, ?, ?, ?, ?, "
-        "?, ?)");
+          "adecimal, afloat, adouble, areal, "
+          "aboolean, abit, aserial, "
+          "adate, adatetime, atimestamp, atime, ayear, "
+          "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+          "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+          "aenum, aset) values"
+          "(?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, "
+          "?, ?, ?, "
+          "?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, ?, ?, "
+          "?, ?, ?, ?, ?, ?, "
+          "?, ?)");
       var values = [];
       values.add(126);
       values.add(164);
@@ -113,7 +110,7 @@ void runIntTests(String user, String password, String db, int port, String host)
       values.add(123.456);
 
       values.add(true);
-      values.add(0x010203);//[1, 2, 3]);
+      values.add(0x010203); //[1, 2, 3]);
       values.add(123);
 
       values.add(new DateTime.now());
@@ -155,12 +152,11 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('update', () async {
-      var c = new Completer();
       Query preparedQuery;
       var query = await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
       preparedQuery = query;
       expect(1, equals(1)); // put some real expectations here
-      var results = await query.execute([127, "123456789.987654321"]);
+      await query.execute([127, "123456789.987654321"]);
       preparedQuery.close();
     });
 
@@ -173,7 +169,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('prepare execute', () async {
-      var c = new Completer();
       var results = await pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]);
       expect(results.affectedRows, equals(1));
     });
@@ -182,7 +177,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     List<dynamic> values;
 
     test('data types (prepared)', () async {
-      var c = new Completer();
       var results = await pool.prepareExecute('select * from test1', []);
       print("----------- prepared results ---------------");
       preparedFields = results.fields;
@@ -233,7 +227,6 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('blobs in prepared queries', () async {
-      var c = new Completer();
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
       var results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
       expect(1, equals(1)); // put some real expectations here
@@ -283,7 +276,7 @@ Future showResults(Results results) {
   }, onDone: () {
     c.complete(null);
   });
-  
+
   return c.future;
 }
 
@@ -306,5 +299,5 @@ String typeof(dynamic item) {
     return "Duration";
   } else {
     return "Unknown";
-}
+  }
 }

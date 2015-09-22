@@ -9,8 +9,7 @@ import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/buffer.dart';
 
 class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
-    MockSocket(StreamController<RawSocketEvent> streamController) :
-      super(streamController.stream) {
+  MockSocket(StreamController<RawSocketEvent> streamController) : super(streamController.stream) {
     _streamController = streamController;
     _data = new List<int>();
   }
@@ -19,7 +18,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   List<int> _data;
   int available() => _data.length;
 
-  List<int> read([int len])  {
+  List<int> read([int len]) {
     var count = len;
     if (count > _data.length) {
       count = _data.length;
@@ -90,16 +89,12 @@ void runBufferedSocketTests() {
       var c = new Completer();
 
       var socket;
-      var thesocket = await BufferedSocket.connect('localhost', 100,
-          onDataReady: () async {
-            var buffer = new Buffer(4);
-            await socket.readBuffer(buffer);
-            expect(buffer.list, equals([1, 2, 3, 4]));
-            c.complete();
-          },
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+      var thesocket = await BufferedSocket.connect('localhost', 100, onDataReady: () async {
+        var buffer = new Buffer(4);
+        await socket.readBuffer(buffer);
+        expect(buffer.list, equals([1, 2, 3, 4]));
+        c.complete();
+      }, onDone: () {}, onError: (e) {}, socketFactory: factory);
       socket = thesocket;
       rawSocket.addData([1, 2, 3, 4]);
       return c.future;
@@ -109,18 +104,14 @@ void runBufferedSocketTests() {
       var c = new Completer();
 
       var socket;
-      var thesocket = await BufferedSocket.connect('localhost', 100,
-          onDataReady: () async {
-            var buffer = new Buffer(4);
-            socket.readBuffer(buffer).then((_) {
-              expect(buffer.list, equals([1, 2, 3, 4]));
-              c.complete();
-            });
-            rawSocket.addData([3, 4]);
-          },
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+      var thesocket = await BufferedSocket.connect('localhost', 100, onDataReady: () async {
+        var buffer = new Buffer(4);
+        socket.readBuffer(buffer).then((_) {
+          expect(buffer.list, equals([1, 2, 3, 4]));
+          c.complete();
+        });
+        rawSocket.addData([3, 4]);
+      }, onDone: () {}, onError: (e) {}, socketFactory: factory);
       socket = thesocket;
       rawSocket.addData([1, 2]);
       return c.future;
@@ -129,8 +120,7 @@ void runBufferedSocketTests() {
     test('can read data which is not yet available', () async {
       var c = new Completer();
       var socket = await BufferedSocket.connect('localhost', 100,
-          onDataReady: (){
-          }, onDone: (){}, onError: (e){}, socketFactory: factory);
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, socketFactory: factory);
       var buffer = new Buffer(4);
       socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -143,8 +133,7 @@ void runBufferedSocketTests() {
     test('can read data which is not yet available, arriving in two chunks', () async {
       var c = new Completer();
       var socket = await BufferedSocket.connect('localhost', 100,
-          onDataReady: (){
-          }, onDone: (){}, onError: (e){}, socketFactory: factory);
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, socketFactory: factory);
       var buffer = new Buffer(4);
       socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -157,10 +146,7 @@ void runBufferedSocketTests() {
 
     test('cannot read data when already reading', () async {
       var socket = await BufferedSocket.connect('localhost', 100,
-          onDataReady: () {},
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, socketFactory: factory);
       var buffer = new Buffer(4);
       socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -171,8 +157,8 @@ void runBufferedSocketTests() {
     });
 
     test('should write buffer', () async {
-      var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
-          socketFactory: factory);
+      var socket = await BufferedSocket.connect('localhost', 100,
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, socketFactory: factory);
       var buffer = new MockBuffer();
       when(buffer.length).thenReturn(100);
       when(buffer.writeToSocket(any, any, any)).thenReturn(25);
@@ -181,8 +167,8 @@ void runBufferedSocketTests() {
     });
 
     test('should write part of buffer', () async {
-      var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
-          socketFactory: factory);
+      var socket = await BufferedSocket.connect('localhost', 100,
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, socketFactory: factory);
       var buffer = new MockBuffer();
       when(buffer.length).thenReturn(100);
       when(buffer.writeToSocket(any, any, any)).thenReturn(25);
@@ -195,8 +181,8 @@ void runBufferedSocketTests() {
       var onClosed = () {
         closed = true;
       };
-      var socket = await BufferedSocket.connect('localhost', 100, onDataReady: (){}, onDone: (){}, onError: (e){},
-      onClosed: onClosed, socketFactory: factory);
+      var socket = await BufferedSocket.connect('localhost', 100,
+          onDataReady: () {}, onDone: () {}, onError: (e) {}, onClosed: onClosed, socketFactory: factory);
       await rawSocket.closeRead();
       expect(closed, equals(true));
     });

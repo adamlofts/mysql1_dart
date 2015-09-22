@@ -4,7 +4,7 @@ class _ExecuteQueryHandler extends _Handler {
   static const int STATE_HEADER_PACKET = 0;
   static const int STATE_FIELD_PACKETS = 1;
   static const int STATE_ROW_PACKETS = 2;
-  
+
   int _state = STATE_HEADER_PACKET;
 
   _ResultSetHeaderPacket _resultSetHeaderPacket;
@@ -18,7 +18,7 @@ class _ExecuteQueryHandler extends _Handler {
   _OkPacket _okPacket;
   bool _executed;
   bool _cancelled = false;
-  
+
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed, List this._values) {
     _fieldPackets = <_FieldImpl>[];
     log = new Logger("ExecuteQueryHandler");
@@ -303,26 +303,27 @@ class _ExecuteQueryHandler extends _Handler {
         log.fine('Got an EOF');
         if (_state == STATE_FIELD_PACKETS) {
           return _handleEndOfFields();
-        } else if (_state == STATE_ROW_PACKETS){
+        } else if (_state == STATE_ROW_PACKETS) {
           return _handleEndOfRows();
         }
       } else {
         switch (_state) {
-        case STATE_HEADER_PACKET:
-          _handleHeaderPacket(response);
-          break;
-        case STATE_FIELD_PACKETS:
-          _handleFieldPacket(response);
-          break;
-        case STATE_ROW_PACKETS:
-          _handleRowPacket(response);
-          break;
+          case STATE_HEADER_PACKET:
+            _handleHeaderPacket(response);
+            break;
+          case STATE_FIELD_PACKETS:
+            _handleFieldPacket(response);
+            break;
+          case STATE_ROW_PACKETS:
+            _handleRowPacket(response);
+            break;
         }
       }
     } else if (packet is _OkPacket) {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        return new _HandlerResponse(finished: true, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
+        return new _HandlerResponse(
+            finished: true, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
     return _HandlerResponse.notFinished;
@@ -364,7 +365,7 @@ class _ExecuteQueryHandler extends _Handler {
     _streamController.add(dataPacket);
   }
 
-  Map<Symbol,int> _createFieldIndex() {
+  Map<Symbol, int> _createFieldIndex() {
     var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
     var fieldIndex = new Map<Symbol, int>();
     for (var i = 0; i < _fieldPackets.length; i++) {

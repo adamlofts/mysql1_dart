@@ -1,21 +1,20 @@
 library sqljocky;
 
-import 'dart:typed_data';
-import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 import 'dart:collection';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
-import 'package:test/test.dart';
 import 'package:mockito/mockito.dart';
-
 import 'package:sqljocky/constants.dart';
 import 'package:sqljocky/src/buffer.dart';
 import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
+import 'package:test/test.dart';
 
 import 'unit/buffered_socket_test.dart';
 
