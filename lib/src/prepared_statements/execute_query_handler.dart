@@ -15,7 +15,7 @@ class _ExecuteQueryHandler extends _Handler {
   final _PreparedQuery _preparedQuery;
   final List _values;
   List _preparedValues;
-  _OkPacket _okPacket;
+  OkPacket _okPacket;
   bool _executed;
   bool _cancelled = false;
 
@@ -319,7 +319,7 @@ class _ExecuteQueryHandler extends _Handler {
             break;
         }
       }
-    } else if (packet is _OkPacket) {
+    } else if (packet is OkPacket) {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         return new _HandlerResponse(

@@ -7,7 +7,7 @@ class _QueryStreamHandler extends _Handler {
   final String _sql;
   int _state = STATE_HEADER_PACKET;
 
-  _OkPacket _okPacket;
+  OkPacket _okPacket;
   _ResultSetHeaderPacket _resultSetHeaderPacket;
   List<_FieldImpl> _fieldPackets;
   Map<Symbol, int> _fieldIndex;
@@ -50,7 +50,7 @@ class _QueryStreamHandler extends _Handler {
             break;
         }
       }
-    } else if (packet is _OkPacket) {
+    } else if (packet is OkPacket) {
       return _handleOkPacket(packet);
     }
     return _HandlerResponse.notFinished;

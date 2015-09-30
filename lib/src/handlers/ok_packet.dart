@@ -1,6 +1,8 @@
-part of sqljocky;
+library sqljocky.ok_packet;
 
-class _OkPacket {
+import '../buffer.dart';
+
+class OkPacket {
   int _affectedRows;
   int _insertId;
   int _serverStatus;
@@ -11,7 +13,7 @@ class _OkPacket {
   int get serverStatus => _serverStatus;
   String get message => _message;
 
-  _OkPacket(Buffer buffer) {
+  OkPacket(Buffer buffer) {
     buffer.seek(1);
     _affectedRows = buffer.readLengthCodedBinary();
     _insertId = buffer.readLengthCodedBinary();

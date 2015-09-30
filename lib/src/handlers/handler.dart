@@ -63,7 +63,7 @@ abstract class _Handler {
         log.fine(okPacket.toString());
         return okPacket;
       } else {
-        var okPacket = new _OkPacket(response);
+        var okPacket = new OkPacket(response);
         log.fine(okPacket.toString());
         return okPacket;
       }
