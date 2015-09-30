@@ -68,7 +68,7 @@ abstract class _Handler {
         return okPacket;
       }
     } else if (response[0] == PACKET_ERROR) {
-      throw new MySqlException._(response);
+      throw createMySqlException(response);
     }
     return null;
   }

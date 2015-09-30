@@ -1,32 +1,36 @@
-part of sqljocky;
+library sqljocky.my_sql_exception;
+
+import 'buffer.dart';
+
+MySqlException createMySqlException(Buffer buffer) => new MySqlException._(buffer);
 
 /**
  * An exception which is returned by the MySQL server.
  */
 class MySqlException implements Exception {
-  int _errorNumber;
-  String _sqlState;
-  String _message;
-
   /// The MySQL error number
-  int get errorNumber => _errorNumber;
+  final int errorNumber;
 
   /// A five character ANSI SQLSTATE value
-  String get sqlState => _sqlState;
+  final String sqlState;
 
   /// A textual description of the error
-  String get message => _message;
+  final String message;
+
+  MySqlException._raw(this.errorNumber, this.sqlState, this.message);
 
   /**
    * Create a [MySqlException] based on an error response from the mysql server
    */
-  MySqlException._(Buffer buffer) {
+  factory MySqlException._(Buffer buffer) {
     buffer.seek(1);
-    _errorNumber = buffer.readUint16();
+    var errorNumber = buffer.readUint16();
     buffer.skip(1);
-    _sqlState = buffer.readString(5);
-    _message = buffer.readStringToEnd();
+    var sqlState = buffer.readString(5);
+    var message = buffer.readStringToEnd();
+
+    return new MySqlException._raw(errorNumber, sqlState, message);
   }
 
-  String toString() => "Error $_errorNumber ($_sqlState): $_message";
+  String toString() => "Error $errorNumber ($sqlState): $message";
 }

@@ -16,8 +16,9 @@ import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
 import 'package:test/test.dart';
 
-import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
 import 'package:sqljocky/src/handlers/ok_packet.dart';
+import 'package:sqljocky/src/mysql_exception.dart';
+import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
 
 import 'unit/buffered_socket_test.dart';
 
@@ -31,7 +32,6 @@ part '../lib/src/connection_pool.dart';
 part '../lib/src/handlers/handler.dart';
 part '../lib/src/handlers/use_db_handler.dart';
 part '../lib/src/mysql_client_error.dart';
-part '../lib/src/mysql_exception.dart';
 part '../lib/src/mysql_protocol_error.dart';
 part '../lib/src/prepared_statements/binary_data_packet.dart';
 part '../lib/src/prepared_statements/execute_query_handler.dart';

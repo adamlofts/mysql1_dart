@@ -18,6 +18,9 @@ import 'src/results.dart';
 
 import 'src/prepared_statements/prepare_ok_packet.dart';
 import 'src/handlers/ok_packet.dart';
+import 'src/mysql_exception.dart';
+
+export 'src/mysql_exception.dart' hide createMySqlException;
 
 export 'src/results.dart';
 
@@ -28,7 +31,6 @@ part 'src/connection.dart';
 part 'src/transaction.dart';
 part 'src/retained_connection.dart';
 part 'src/query.dart';
-part 'src/mysql_exception.dart';
 part 'src/mysql_protocol_error.dart';
 part 'src/mysql_client_error.dart';
 
