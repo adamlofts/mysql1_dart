@@ -7,19 +7,21 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 
 import 'constants.dart';
 
 import 'src/buffer.dart';
 import 'src/buffered_socket.dart';
+import 'src/mysql_exception.dart';
 import 'src/results.dart';
 
-import 'src/prepared_statements/prepare_ok_packet.dart';
-import 'src/handlers/ok_packet.dart';
+import 'src/auth/auth_handler.dart';
+
 import 'src/handlers/handler.dart';
-import 'src/mysql_exception.dart';
+import 'src/handlers/ok_packet.dart';
+
+import 'src/prepared_statements/prepare_ok_packet.dart';
 
 export 'src/mysql_exception.dart' hide createMySqlException;
 
@@ -44,7 +46,6 @@ part 'src/handlers/quit_handler.dart';
 
 //auth handlers
 part 'src/auth/handshake_handler.dart';
-part 'src/auth/auth_handler.dart';
 part 'src/auth/ssl_handler.dart';
 part 'src/auth/character_set.dart';
 

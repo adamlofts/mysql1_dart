@@ -1,29 +1,38 @@
-part of sqljocky;
+library sqljocky.auth_handler;
 
-class _AuthHandler extends Handler {
-  final String _username;
-  final String _password;
-  final String _db;
-  final List<int> _scrambleBuffer;
-  final int _clientFlags;
-  final int _maxPacketSize;
-  final int _characterSet;
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import '../handlers/handler.dart';
+
+class AuthHandler extends Handler {
+  final String username;
+  final String password;
+  final String db;
+  final List<int> scrambleBuffer;
+  final int clientFlags;
+  final int maxPacketSize;
+  final int characterSet;
   final bool _ssl;
 
-  _AuthHandler(String this._username, String this._password, String this._db, List<int> this._scrambleBuffer,
-      int this._clientFlags, int this._maxPacketSize, int this._characterSet,
+  AuthHandler(String this.username, String this.password, String this.db, List<int> this.scrambleBuffer,
+      int this.clientFlags, int this.maxPacketSize, int this.characterSet,
       {bool ssl: false})
       : this._ssl = false {
     log = new Logger("AuthHandler");
   }
 
-  List<int> _getHash() {
+  List<int> getHash() {
     List<int> hash;
-    if (_password == null) {
+    if (password == null) {
       hash = <int>[];
     } else {
       var hasher = new SHA1();
-      hasher.add(UTF8.encode(_password));
+      hasher.add(UTF8.encode(password));
       var hashedPassword = hasher.close();
 
       hasher = new SHA1();
@@ -31,7 +40,7 @@ class _AuthHandler extends Handler {
       var doubleHashedPassword = hasher.close();
 
       hasher = new SHA1();
-      hasher.add(_scrambleBuffer);
+      hasher.add(scrambleBuffer);
       hasher.add(doubleHashedPassword);
       var hashedSaltedPassword = hasher.close();
 
@@ -45,15 +54,15 @@ class _AuthHandler extends Handler {
 
   Buffer createRequest() {
     // calculate the mysql password hash
-    var hash = _getHash();
+    var hash = getHash();
 
-    var encodedUsername = _username == null ? [] : UTF8.encode(_username);
+    var encodedUsername = username == null ? [] : UTF8.encode(username);
     var encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
-    var clientFlags = _clientFlags;
-    if (_db != null) {
-      encodedDb = UTF8.encode(_db);
+    var clientFlags = this.clientFlags;
+    if (db != null) {
+      encodedDb = UTF8.encode(db);
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
@@ -61,14 +70,14 @@ class _AuthHandler extends Handler {
     var buffer = new Buffer(size);
     buffer.seekWrite(0);
     buffer.writeUint32(clientFlags);
-    buffer.writeUint32(_maxPacketSize);
-    buffer.writeByte(_characterSet);
+    buffer.writeUint32(maxPacketSize);
+    buffer.writeByte(characterSet);
     buffer.fill(23, 0);
     buffer.writeNullTerminatedList(encodedUsername);
     buffer.writeByte(hash.length);
     buffer.writeList(hash);
 
-    if (_db != null) {
+    if (db != null) {
       buffer.writeNullTerminatedList(encodedDb);
     }
 

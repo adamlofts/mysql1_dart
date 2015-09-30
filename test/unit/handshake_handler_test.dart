@@ -225,19 +225,19 @@ void runHandshakeHandlerTests() {
       expect(handler.useSSL, isFalse);
 
       expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
+      expect(response.nextHandler, new isInstanceOf<AuthHandler>());
 
       int clientFlags =
           CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
 
-      _AuthHandler authHandler = response.nextHandler;
-      expect(authHandler._characterSet, equals(CharacterSet.UTF8));
-      expect(authHandler._username, equals(user));
-      expect(authHandler._password, equals(password));
-      expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
-      expect(authHandler._db, equals(db));
-      expect(authHandler._clientFlags, equals(clientFlags));
-      expect(authHandler._maxPacketSize, equals(MAX_PACKET_SIZE));
+      AuthHandler authHandler = response.nextHandler;
+      expect(authHandler.characterSet, equals(CharacterSet.UTF8));
+      expect(authHandler.username, equals(user));
+      expect(authHandler.password, equals(password));
+      expect(authHandler.scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
+      expect(authHandler.db, equals(db));
+      expect(authHandler.clientFlags, equals(clientFlags));
+      expect(authHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
     });
 
     test('works when plugin name is set', () {
@@ -273,13 +273,13 @@ void runHandshakeHandlerTests() {
       expect(handler.useSSL, isFalse);
 
       expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
+      expect(response.nextHandler, new isInstanceOf<AuthHandler>());
 
-      _AuthHandler authHandler = response.nextHandler;
-      expect(authHandler._username, equals(user));
-      expect(authHandler._password, equals(password));
-      expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
-      expect(authHandler._db, equals(db));
+      AuthHandler authHandler = response.nextHandler;
+      expect(authHandler.username, equals(user));
+      expect(authHandler.password, equals(password));
+      expect(authHandler.scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
+      expect(authHandler.db, equals(db));
     });
 
     test('throws if old password authentication is requested', () {
@@ -361,19 +361,19 @@ void runHandshakeHandlerTests() {
           CLIENT_SSL;
 
       _SSLHandler sslHandler = response.nextHandler;
-      expect(sslHandler.nextHandler, new isInstanceOf<_AuthHandler>());
+      expect(sslHandler.nextHandler, new isInstanceOf<AuthHandler>());
       expect(sslHandler._characterSet, equals(CharacterSet.UTF8));
       expect(sslHandler._clientFlags, equals(clientFlags));
       expect(sslHandler._maxPacketSize, equals(MAX_PACKET_SIZE));
 
-      _AuthHandler authHandler = sslHandler.nextHandler;
-      expect(authHandler._characterSet, equals(CharacterSet.UTF8));
-      expect(authHandler._username, equals(user));
-      expect(authHandler._password, equals(password));
-      expect(authHandler._scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
-      expect(authHandler._db, equals(db));
-      expect(authHandler._clientFlags, equals(clientFlags));
-      expect(authHandler._maxPacketSize, equals(MAX_PACKET_SIZE));
+      AuthHandler authHandler = sslHandler.nextHandler;
+      expect(authHandler.characterSet, equals(CharacterSet.UTF8));
+      expect(authHandler.username, equals(user));
+      expect(authHandler.password, equals(password));
+      expect(authHandler.scrambleBuffer, equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
+      expect(authHandler.db, equals(db));
+      expect(authHandler.clientFlags, equals(clientFlags));
+      expect(authHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
     });
   });
 }

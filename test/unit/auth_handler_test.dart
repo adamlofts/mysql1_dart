@@ -3,9 +3,9 @@ part of sqljocky;
 void runAuthHandlerTests() {
   group('auth_handler:', () {
     test('hash password correctly', () {
-      var handler = new _AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
+      var handler = new AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
 
-      var hash = handler._getHash();
+      var hash = handler.getHash();
 
       expect(
           hash, equals([211, 136, 65, 109, 153, 241, 227, 117, 168, 83, 80, 136, 188, 116, 50, 54, 235, 225, 54, 225]));
@@ -17,9 +17,9 @@ void runAuthHandlerTests() {
       var characterSet = 56;
       var username = 'Boris';
       var password = 'Password';
-      var handler = new _AuthHandler(username, password, null, [1, 2, 3, 4], clientFlags, maxPacketSize, characterSet);
+      var handler = new AuthHandler(username, password, null, [1, 2, 3, 4], clientFlags, maxPacketSize, characterSet);
 
-      var hash = handler._getHash();
+      var hash = handler.getHash();
       var buffer = handler.createRequest();
 
       buffer.seek(0);
@@ -40,10 +40,10 @@ void runAuthHandlerTests() {
       var username = 'iamtheuserwantingtologin';
       var password = 'wibblededee';
       var database = 'thisisthenameofthedatabase';
-      var handler = new _AuthHandler(username, password, database, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], clientFlags,
+      var handler = new AuthHandler(username, password, database, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], clientFlags,
           maxPacketSize, characterSet);
 
-      var hash = handler._getHash();
+      var hash = handler.getHash();
       var buffer = handler.createRequest();
 
       buffer.seek(0);
@@ -63,9 +63,9 @@ void runAuthHandlerTests() {
     var username = 'Борис';
     var password = 'здрасти';
     var database = 'дтабасе';
-    var handler = new _AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
+    var handler = new AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
 
-    var hash = handler._getHash();
+    var hash = handler.getHash();
     var buffer = handler.createRequest();
 
     buffer.seek(0);

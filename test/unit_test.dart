@@ -7,7 +7,6 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 import 'package:mockito/mockito.dart';
 import 'package:sqljocky/constants.dart';
@@ -16,6 +15,7 @@ import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
 import 'package:test/test.dart';
 
+import 'package:sqljocky/src/auth/auth_handler.dart';
 import 'package:sqljocky/src/handlers/handler.dart';
 import 'package:sqljocky/src/handlers/ok_packet.dart';
 import 'package:sqljocky/src/mysql_exception.dart';
@@ -23,7 +23,6 @@ import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
 
 import 'unit/buffered_socket_test.dart';
 
-part '../lib/src/auth/auth_handler.dart';
 part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
 part '../lib/src/auth/character_set.dart';
