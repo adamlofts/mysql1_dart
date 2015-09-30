@@ -1,9 +1,10 @@
-library buffer;
+library sjljocky.buffer;
 
-import 'package:logging/logging.dart';
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:logging/logging.dart';
 
 /**
  * This provides methods to read and write strings, lists and
@@ -182,7 +183,7 @@ class Buffer {
   /**
    * Reads a length coded binary from the buffer. This is specified in the mysql docs.
    * It will read up to nine bytes from the stream, depending on the first byte.
-   * Returns an unsigned integer. 
+   * Returns an unsigned integer.
    */
   int readLengthCodedBinary() {
     int first = readByte();
@@ -266,7 +267,7 @@ class Buffer {
   }
 
   /**
-   * Returns a 16-bit integer, read from the buffer 
+   * Returns a 16-bit integer, read from the buffer
    */
   int readInt16() {
     int result = _data.getInt16(_readPos, Endianness.LITTLE_ENDIAN);
@@ -283,7 +284,7 @@ class Buffer {
   }
 
   /**
-   * Returns a 16-bit integer, read from the buffer 
+   * Returns a 16-bit integer, read from the buffer
    */
   int readUint16() {
     int result = _data.getUint16(_readPos, Endianness.LITTLE_ENDIAN);
