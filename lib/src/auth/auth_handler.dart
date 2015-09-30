@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _AuthHandler extends _Handler {
+class _AuthHandler extends Handler {
   final String _username;
   final String _password;
   final String _db;

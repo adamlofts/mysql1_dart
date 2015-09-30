@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _DebugHandler extends _Handler {
+class _DebugHandler extends Handler {
   _DebugHandler() {
     log = new Logger("DebugHandler");
   }

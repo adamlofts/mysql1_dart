@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _ExecuteQueryHandler extends _Handler {
+class _ExecuteQueryHandler extends Handler {
   static const int STATE_HEADER_PACKET = 0;
   static const int STATE_FIELD_PACKETS = 1;
   static const int STATE_ROW_PACKETS = 2;
@@ -289,11 +289,11 @@ class _ExecuteQueryHandler extends _Handler {
     return buffer;
   }
 
-  _HandlerResponse processResponse(Buffer response) {
+  HandlerResponse processResponse(Buffer response) {
     var packet;
     if (_cancelled) {
       _streamController.close();
-      return new _HandlerResponse(finished: true);
+      return new HandlerResponse(finished: true);
     }
     if (_state == STATE_HEADER_PACKET) {
       packet = checkResponse(response);
@@ -322,11 +322,11 @@ class _ExecuteQueryHandler extends _Handler {
     } else if (packet is OkPacket) {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
-        return new _HandlerResponse(
+        return new HandlerResponse(
             finished: true, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
-    return _HandlerResponse.notFinished;
+    return HandlerResponse.notFinished;
   }
 
   _handleEndOfFields() {
@@ -336,12 +336,12 @@ class _ExecuteQueryHandler extends _Handler {
       _cancelled = true;
     };
     this._fieldIndex = _createFieldIndex();
-    return new _HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+    return new HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
   }
 
   _handleEndOfRows() {
     _streamController.close();
-    return new _HandlerResponse(finished: true);
+    return new HandlerResponse(finished: true);
   }
 
   _handleHeaderPacket(Buffer response) {

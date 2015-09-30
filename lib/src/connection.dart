@@ -9,7 +9,7 @@ class _Connection {
   final Logger lifecycleLog;
 
   ConnectionPool _pool;
-  _Handler _handler;
+  Handler _handler;
   Completer<dynamic> _completer;
 
   // this is for unit testing, so we can replace this method with a spy
@@ -292,7 +292,7 @@ class _Connection {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(_Handler handler, {bool noResponse: false}) async {
+  Future<dynamic> processHandler(Handler handler, {bool noResponse: false}) async {
     if (_handler != null) {
       throw new MySqlClientError._(
           "Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");

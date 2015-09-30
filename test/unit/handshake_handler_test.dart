@@ -224,7 +224,7 @@ void runHandshakeHandlerTests() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, new isInstanceOf<_HandlerResponse>());
+      expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
 
       int clientFlags =
@@ -272,7 +272,7 @@ void runHandshakeHandlerTests() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, new isInstanceOf<_HandlerResponse>());
+      expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_AuthHandler>());
 
       _AuthHandler authHandler = response.nextHandler;
@@ -350,7 +350,7 @@ void runHandshakeHandlerTests() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isTrue);
 
-      expect(response, new isInstanceOf<_HandlerResponse>());
+      expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<_SSLHandler>());
 
       int clientFlags = CLIENT_PROTOCOL_41 |

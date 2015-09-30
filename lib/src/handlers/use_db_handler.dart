@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _UseDbHandler extends _Handler {
+class _UseDbHandler extends Handler {
   final String _dbName;
 
   _UseDbHandler(String this._dbName) {

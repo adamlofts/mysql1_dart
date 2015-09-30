@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _CloseStatementHandler extends _Handler {
+class _CloseStatementHandler extends Handler {
   final int _handle;
 
   _CloseStatementHandler(int this._handle) {

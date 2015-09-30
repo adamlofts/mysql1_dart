@@ -18,6 +18,7 @@ import 'src/results.dart';
 
 import 'src/prepared_statements/prepare_ok_packet.dart';
 import 'src/handlers/ok_packet.dart';
+import 'src/handlers/handler.dart';
 import 'src/mysql_exception.dart';
 
 export 'src/mysql_exception.dart' hide createMySqlException;
@@ -36,7 +37,6 @@ part 'src/mysql_client_error.dart';
 
 //general handlers
 part 'src/handlers/parameter_packet.dart';
-part 'src/handlers/handler.dart';
 part 'src/handlers/use_db_handler.dart';
 part 'src/handlers/ping_handler.dart';
 part 'src/handlers/debug_handler.dart';

@@ -1,4 +1,12 @@
-part of sqljocky;
+library sqljocky.handler;
+
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import '../mysql_exception.dart';
+import '../prepared_statements/prepare_ok_packet.dart';
+import 'ok_packet.dart';
 
 class _NoResult {
   const _NoResult();
@@ -14,16 +22,16 @@ const _NO_RESULT = const _NoResult();
  * is false, [nextHandler] contains the next handler which should process the
  * next packet from the server, and [result] is [_NO_RESULT].
  */
-class _HandlerResponse {
+class HandlerResponse {
   final bool finished;
-  final _Handler nextHandler;
+  final Handler nextHandler;
   final dynamic result;
 
   bool get hasResult => result != _NO_RESULT;
 
-  _HandlerResponse({this.finished: false, this.nextHandler: null, this.result: _NO_RESULT});
+  HandlerResponse({this.finished: false, this.nextHandler: null, this.result: _NO_RESULT});
 
-  static final _HandlerResponse notFinished = new _HandlerResponse();
+  static final HandlerResponse notFinished = new HandlerResponse();
 }
 
 /**
@@ -33,7 +41,7 @@ class _HandlerResponse {
  * request which the handler creates, and then parsing the result returned by
  * the mysql server, either synchronously or asynchronously.
  */
-abstract class _Handler {
+abstract class Handler {
   Logger log;
 
   /**
@@ -47,8 +55,8 @@ abstract class _Handler {
    * implementation returns a finished [_HandlerResponse] with
    * a result which is obtained by calling [checkResponse]
    */
-  _HandlerResponse processResponse(Buffer response) =>
-      new _HandlerResponse(finished: true, result: checkResponse(response));
+  HandlerResponse processResponse(Buffer response) =>
+      new HandlerResponse(finished: true, result: checkResponse(response));
 
   /**
    * Parses the response packet to recognise Ok and Error packets.

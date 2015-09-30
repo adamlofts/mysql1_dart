@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _PingHandler extends _Handler {
+class _PingHandler extends Handler {
   _PingHandler() {
     log = new Logger("PingHandler");
   }

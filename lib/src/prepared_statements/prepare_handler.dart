@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _PrepareHandler extends _Handler {
+class _PrepareHandler extends Handler {
   final String _sql;
   PrepareOkPacket _okPacket;
   int _parametersToRead;
@@ -25,7 +25,7 @@ class _PrepareHandler extends _Handler {
     return buffer;
   }
 
-  _HandlerResponse processResponse(Buffer response) {
+  HandlerResponse processResponse(Buffer response) {
     log.fine("Prepare processing response");
     var packet = checkResponse(response, true);
     if (packet == null) {
@@ -73,8 +73,8 @@ class _PrepareHandler extends _Handler {
 
     if (_parametersToRead == -1 && _columnsToRead == -1) {
       log.fine("finished");
-      return new _HandlerResponse(finished: true, result: new _PreparedQuery(this));
+      return new HandlerResponse(finished: true, result: new _PreparedQuery(this));
     }
-    return _HandlerResponse.notFinished;
+    return HandlerResponse.notFinished;
   }
 }

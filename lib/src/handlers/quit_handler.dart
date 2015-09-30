@@ -1,6 +1,6 @@
 part of sqljocky;
 
-class _QuitHandler extends _Handler {
+class _QuitHandler extends Handler {
   _QuitHandler() {
     log = new Logger("QuitHandler");
   }
