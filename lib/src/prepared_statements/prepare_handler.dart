@@ -2,14 +2,14 @@ part of sqljocky;
 
 class _PrepareHandler extends _Handler {
   final String _sql;
-  _PrepareOkPacket _okPacket;
+  PrepareOkPacket _okPacket;
   int _parametersToRead;
   int _columnsToRead;
   List<_FieldImpl> _parameters;
   List<_FieldImpl> _columns;
 
   String get sql => _sql;
-  _PrepareOkPacket get okPacket => _okPacket;
+  PrepareOkPacket get okPacket => _okPacket;
   List<_FieldImpl> get parameters => _parameters;
   List<_FieldImpl> get columns => _columns;
 
@@ -56,7 +56,7 @@ class _PrepareHandler extends _Handler {
         }
         _columnsToRead--;
       }
-    } else if (packet is _PrepareOkPacket) {
+    } else if (packet is PrepareOkPacket) {
       log.fine(packet.toString());
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;

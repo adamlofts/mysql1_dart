@@ -15,6 +15,9 @@ import 'constants.dart';
 import 'src/buffer.dart';
 import 'src/buffered_socket.dart';
 import 'src/results.dart';
+
+import 'src/prepared_statements/prepare_ok_packet.dart';
+
 export 'src/results.dart';
 
 part 'src/blob.dart';
@@ -44,7 +47,6 @@ part 'src/auth/ssl_handler.dart';
 part 'src/auth/character_set.dart';
 
 //prepared statements handlers
-part 'src/prepared_statements/prepare_ok_packet.dart';
 part 'src/prepared_statements/prepared_query.dart';
 part 'src/prepared_statements/prepare_handler.dart';
 part 'src/prepared_statements/close_statement_handler.dart';

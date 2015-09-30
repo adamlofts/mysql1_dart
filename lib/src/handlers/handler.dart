@@ -30,7 +30,7 @@ class _HandlerResponse {
  * Each command which the mysql protocol implements is handled with a [_Handler] object.
  * A handler is created with the appropriate parameters when the command is invoked
  * from the connection. The transport is then responsible for sending the
- * request which the handler creates, and then parsing the result returned by 
+ * request which the handler creates, and then parsing the result returned by
  * the mysql server, either synchronously or asynchronously.
  */
 abstract class _Handler {
@@ -45,7 +45,7 @@ abstract class _Handler {
    * Parses a [Buffer] containing the response to the command.
    * Returns a [_HandlerResponse]. The default
    * implementation returns a finished [_HandlerResponse] with
-   * a result which is obtained by calling [checkResponse] 
+   * a result which is obtained by calling [checkResponse]
    */
   _HandlerResponse processResponse(Buffer response) =>
       new _HandlerResponse(finished: true, result: checkResponse(response));
@@ -53,13 +53,13 @@ abstract class _Handler {
   /**
    * Parses the response packet to recognise Ok and Error packets.
    * Returns an [_OkPacket] if the packet was an Ok packet, throws
-   * a [MySqlException] if it was an Error packet, or returns [:null:] 
+   * a [MySqlException] if it was an Error packet, or returns [:null:]
    * if the packet has not been handled by this method.
    */
   dynamic checkResponse(Buffer response, [bool prepareStmt = false, bool isHandlingRows = false]) {
     if (response[0] == PACKET_OK && !isHandlingRows) {
       if (prepareStmt) {
-        var okPacket = new _PrepareOkPacket(response);
+        var okPacket = new PrepareOkPacket(response);
         log.fine(okPacket.toString());
         return okPacket;
       } else {
