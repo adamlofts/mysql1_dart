@@ -53,11 +53,11 @@ export 'src/results/row.dart';
 
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
-part 'src/transaction.dart';
-part 'src/retained_connection.dart';
 part 'src/query.dart';
+part 'src/retained_connection.dart';
+part 'src/transaction.dart';
 
 //prepared statements handlers
-part 'src/prepared_statements/prepared_query.dart';
-part 'src/prepared_statements/prepare_handler.dart';
 part 'src/prepared_statements/execute_query_handler.dart';
+part 'src/prepared_statements/prepare_handler.dart';
+part 'src/prepared_statements/prepared_query.dart';
