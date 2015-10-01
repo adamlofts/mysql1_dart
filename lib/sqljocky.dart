@@ -14,6 +14,7 @@ import 'constants.dart';
 import 'src/buffer.dart';
 import 'src/buffered_socket.dart';
 import 'src/mysql_exception.dart';
+import 'src/mysql_protocol_error.dart';
 import 'src/results.dart';
 
 import 'src/auth/auth_handler.dart';
@@ -24,6 +25,7 @@ import 'src/handlers/ok_packet.dart';
 import 'src/prepared_statements/prepare_ok_packet.dart';
 
 export 'src/mysql_exception.dart' hide createMySqlException;
+export 'src/mysql_protocol_error.dart' hide createMySqlProtocolError;
 
 export 'src/results.dart';
 
@@ -34,7 +36,6 @@ part 'src/connection.dart';
 part 'src/transaction.dart';
 part 'src/retained_connection.dart';
 part 'src/query.dart';
-part 'src/mysql_protocol_error.dart';
 part 'src/mysql_client_error.dart';
 
 //general handlers

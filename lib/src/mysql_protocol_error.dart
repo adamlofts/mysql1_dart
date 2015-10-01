@@ -1,4 +1,6 @@
-part of sqljocky;
+library sqljocky.mysql_protocol_error;
+
+MySqlProtocolError createMySqlProtocolError(String message) => new MySqlProtocolError._(message);
 
 /**
  * An error which is thrown when something unexpected is read from the the MySQL protocol.

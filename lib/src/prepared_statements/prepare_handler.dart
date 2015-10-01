@@ -32,7 +32,7 @@ class _PrepareHandler extends Handler {
         if (response[0] == PACKET_EOF) {
           log.fine("EOF");
           if (_parametersToRead != 0) {
-            throw new MySqlProtocolError._(
+            throw createMySqlProtocolError(
                 "Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
           }
         } else {
@@ -45,7 +45,7 @@ class _PrepareHandler extends Handler {
         if (response[0] == PACKET_EOF) {
           log.fine("EOF");
           if (_columnsToRead != 0) {
-            throw new MySqlProtocolError._("Unexpected EOF packet; was expecting another $_columnsToRead column(s)");
+            throw createMySqlProtocolError("Unexpected EOF packet; was expecting another $_columnsToRead column(s)");
           }
         } else {
           var fieldPacket = new _FieldImpl._(response);
