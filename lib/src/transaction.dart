@@ -1,4 +1,8 @@
-part of sqljocky;
+library sqljocky.transaction;
+
+import 'dart:async';
+
+import 'queriable_connection.dart';
 
 /**
  * Start a transaction by using [ConnectionPool.startTransaction]. Once a transaction
@@ -18,48 +22,4 @@ abstract class Transaction extends QueriableConnection {
    * if any queries are executed after calling rollback.
    */
   Future rollback();
-}
-
-class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
-  _TransactionImpl._(cnx, pool) : super._(cnx, pool);
-
-  Future commit() async {
-    _checkReleased();
-    _released = true;
-
-    var handler = new QueryStreamHandler("commit");
-    var results = await _cnx.processHandler(handler);
-    _cnx.inTransaction = false;
-    _cnx.release();
-    _pool._reuseConnectionForQueuedOperations(_cnx);
-    return results;
-  }
-
-  Future rollback() async {
-    _checkReleased();
-    _released = true;
-
-    var handler = new QueryStreamHandler("rollback");
-    var results = await _cnx.processHandler(handler);
-    _cnx.inTransaction = false;
-    _cnx.release();
-    _pool._reuseConnectionForQueuedOperations(_cnx);
-    return results;
-  }
-
-  void _checkReleased() {
-    if (_released) {
-      throw new StateError("Transaction has already finished");
-    }
-  }
-}
-
-class _TransactionPool extends ConnectionPool {
-  final _Connection cnx;
-
-  _TransactionPool(this.cnx);
-
-  Future<_Connection> _getConnection() => new Future.value(cnx);
-
-  _removeConnection(_Connection cnx) {}
 }

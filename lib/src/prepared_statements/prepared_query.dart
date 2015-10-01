@@ -1,13 +1,18 @@
-part of sqljocky;
+library sqljocky.prepared_query;
 
-class _PreparedQuery {
+import '../connection.dart';
+import '../results/field_impl.dart';
+
+import 'prepare_handler.dart';
+
+class PreparedQuery {
   final String sql;
   final List<FieldImpl> parameters;
   final List<FieldImpl> columns;
   final int statementHandlerId;
-  _Connection cnx;
+  Connection cnx;
 
-  _PreparedQuery(_PrepareHandler handler)
+  PreparedQuery(PrepareHandler handler)
       : sql = handler.sql,
         parameters = handler.parameters,
         columns = handler.columns,

@@ -1,6 +1,19 @@
-part of sqljocky;
+library sqljocky.prepare_handler;
 
-class _PrepareHandler extends Handler {
+import 'dart:convert';
+
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import '../mysql_protocol_error.dart';
+import '../handlers/handler.dart';
+import '../results/field_impl.dart';
+
+import 'prepared_query.dart';
+import 'prepare_ok_packet.dart';
+
+class PrepareHandler extends Handler {
   final String _sql;
   PrepareOkPacket _okPacket;
   int _parametersToRead;
@@ -13,7 +26,7 @@ class _PrepareHandler extends Handler {
   List<FieldImpl> get parameters => _parameters;
   List<FieldImpl> get columns => _columns;
 
-  _PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
+  PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
 
   Buffer createRequest() {
     var encoded = UTF8.encode(_sql);
@@ -71,7 +84,7 @@ class _PrepareHandler extends Handler {
 
     if (_parametersToRead == -1 && _columnsToRead == -1) {
       log.fine("finished");
-      return new HandlerResponse(finished: true, result: new _PreparedQuery(this));
+      return new HandlerResponse(finished: true, result: new PreparedQuery(this));
     }
     return HandlerResponse.notFinished;
   }
