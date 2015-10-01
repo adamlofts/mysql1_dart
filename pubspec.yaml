@@ -1,5 +1,5 @@
 name: sqljocky
-version: 0.14.1
+version: 0.14.2-dev
 author: James Ots <code@jamesots.com>
 description: A MySQL connector
 homepage: https://github.com/jamesots/sqljocky
@@ -11,6 +11,5 @@ dependencies:
   logging: '>=0.11.1 <0.12.0'
   options_file: '>=0.11.0 <0.12.0'
 dev_dependencies:
-  test: '>=0.12.3+9 <0.13.0'
   mockito: '>=0.10.1 <0.11.0'
-  args: any
+  test: '>=0.12.3+9 <0.13.0'

@@ -2,7 +2,6 @@ library integrationtests;
 
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:args/args.dart';
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
 import 'package:sqljocky/constants.dart';
@@ -25,7 +24,7 @@ part 'integration/stored_procedures.dart';
 part 'integration/stream.dart';
 part 'integration/two.dart';
 
-void main(List<String> args) {
+void main() {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
@@ -41,10 +40,6 @@ void main(List<String> args) {
     print("${r.time}: $name: ${r.message}");
   };
   Logger.root.onRecord.listen(listener);
-
-  var parser = new ArgParser();
-  parser.addOption('large_packets', allowed: ['true', 'false'], defaultsTo: 'true');
-  var results = parser.parse(args);
 
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
