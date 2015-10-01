@@ -22,8 +22,6 @@ import 'package:sqljocky/src/mysql_exception.dart';
 import 'package:sqljocky/src/mysql_protocol_error.dart';
 import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
 
-import 'unit/buffered_socket_test.dart';
-
 part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
 part '../lib/src/auth/character_set.dart';
@@ -42,20 +40,19 @@ part '../lib/src/query/query_stream_handler.dart';
 part '../lib/src/query/result_set_header_packet.dart';
 part '../lib/src/query/standard_data_packet.dart';
 
-part 'unit/buffer_test.dart';
-part 'unit/auth_handler_test.dart';
-part 'unit/prepared_statements_test.dart';
-part 'unit/serialize_test.dart';
-part 'unit/types_test.dart';
-part 'unit/field_by_name_test.dart';
-part 'unit/binary_data_packet_test.dart';
-part 'unit/execute_query_handler_test.dart';
-part 'unit/handshake_handler_test.dart';
-part 'unit/connection_test.dart';
+part 'unit/test_buffer.dart';
+part 'unit/test_auth_handler.dart';
+part 'unit/test_prepared_statements.dart';
+part 'unit/test_serialize.dart';
+part 'unit/test_types.dart';
+part 'unit/test_field_by_name.dart';
+part 'unit/test_binary_data_packet.dart';
+part 'unit/test_execute_query_handler.dart';
+part 'unit/test_handshake_handler.dart';
+part 'unit/test_connection.dart';
 
 void main() {
   runBufferTests();
-  runBufferedSocketTests();
   runSerializationTests();
   runTypesTests();
   runPreparedStatementTests();

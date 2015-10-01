@@ -53,7 +53,7 @@ class MockBuffer extends Mock implements Buffer {
   noSuchMethod(a) => super.noSuchMethod(a);
 }
 
-void runBufferedSocketTests() {
+void main() {
   group('buffered socket', () {
     var rawSocket;
     var factory;
@@ -170,22 +170,4 @@ void runBufferedSocketTests() {
       expect(closed, equals(true));
     });
   });
-}
-
-void main() {
-//  hierarchicalLoggingEnabled = true;
-//  Logger.root.level = Level.ALL;
-//  var listener = (LogRecord r) {
-//    var name = r.loggerName;
-//    if (name.length > 15) {
-//      name = name.substring(0, 15);
-//    }
-//    while (name.length < 15) {
-//      name = "$name ";
-//    }
-//    print("${r.time}: $name: ${r.message}");
-//  };
-//  Logger.root.onRecord.listen(listener);
-
-  runBufferedSocketTests();
 }
