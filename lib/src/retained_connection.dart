@@ -9,7 +9,7 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
 
   Future<Results> query(String sql) {
     _checkReleased();
-    var handler = new _QueryStreamHandler(sql);
+    var handler = new QueryStreamHandler(sql);
     return _cnx.processHandler(handler);
   }
 

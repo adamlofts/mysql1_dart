@@ -121,10 +121,10 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
   /**
    * Attempts to continue using a connection. If the connection isn't managed
    * by this pool, or if the connection is already in use, nothing happens.
-   * 
+   *
    * If there are operations which have been queued in this pool, starts
-   * to execute that operation. 
-   * 
+   * to execute that operation.
+   *
    * Otherwise, nothing happens.
    */
   _reuseConnectionForQueuedOperations(_Connection cnx) {
@@ -201,7 +201,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     var cnx = await _getConnection();
     _log.fine("Got cnx#${cnx.number} for query");
     try {
-      var results = await cnx.processHandler(new _QueryStreamHandler(sql));
+      var results = await cnx.processHandler(new QueryStreamHandler(sql));
       _log.fine("Got query results on #${cnx.number} for: ${sql}");
       return results;
     } catch (e) {
@@ -308,7 +308,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
       sql = "start transaction";
     }
     try {
-      await cnx.processHandler(new _QueryStreamHandler(sql));
+      await cnx.processHandler(new QueryStreamHandler(sql));
       _log.fine("Transaction started on cnx#${cnx.number}");
       return new _TransactionImpl._(cnx, this);
     } catch (e) {
@@ -318,14 +318,14 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 
 /**
    * Gets a persistent connection to the database.
-   * 
+   *
    * When you execute a query on the connection pool, it waits until a free
    * connection is available, executes the query and then returns the connection
    * back to the connection pool. Sometimes there may be cases where you want
    * to keep the same connection around for subsequent queries (such as when
    * you lock tables). Use this method to get a connection which isn't released
    * after each query.
-   * 
+   *
    * You must use [RetainedConnection.release] when you have finished with the
    * connection, otherwise it will not be available in the pool again.
    */
@@ -370,7 +370,7 @@ abstract class _ConnectionHelpers {
 
 abstract class QueriableConnection {
 /**
-   * Executes the [sql] query, returning a [Future]<[Results]> that completes 
+   * Executes the [sql] query, returning a [Future]<[Results]> that completes
    * when the results start to become available.
    */
   Future<Results> query(String sql);

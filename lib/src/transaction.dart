@@ -27,7 +27,7 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
     _checkReleased();
     _released = true;
 
-    var handler = new _QueryStreamHandler("commit");
+    var handler = new QueryStreamHandler("commit");
     var results = await _cnx.processHandler(handler);
     _cnx.inTransaction = false;
     _cnx.release();
@@ -39,7 +39,7 @@ class _TransactionImpl extends _RetainedConnectionBase implements Transaction {
     _checkReleased();
     _released = true;
 
-    var handler = new _QueryStreamHandler("rollback");
+    var handler = new QueryStreamHandler("rollback");
     var results = await _cnx.processHandler(handler);
     _cnx.inTransaction = false;
     _cnx.release();

@@ -1,10 +1,19 @@
-part of sqljocky;
+library sqljocky.standard_data_packet;
 
-class _StandardDataPacket extends Row {
+import 'dart:convert';
+
+import '../../constants.dart';
+import '../blob.dart';
+import '../buffer.dart';
+
+import '../results/row.dart';
+import '../results/field_impl.dart';
+
+class StandardDataPacket extends Row {
   final List<dynamic> values;
   final Map<Symbol, int> _fieldIndex;
 
-  _StandardDataPacket(Buffer buffer, List<FieldImpl> fieldPackets, this._fieldIndex)
+  StandardDataPacket(Buffer buffer, List<FieldImpl> fieldPackets, this._fieldIndex)
       : values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
       var list;
@@ -73,7 +82,7 @@ class _StandardDataPacket extends Row {
     }
   }
 
-  _StandardDataPacket._forTests(this.values, this._fieldIndex);
+  StandardDataPacket.forTests(this.values, this._fieldIndex);
 
   int get length => values.length;
 

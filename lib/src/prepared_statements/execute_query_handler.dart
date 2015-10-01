@@ -7,7 +7,7 @@ class _ExecuteQueryHandler extends Handler {
 
   int _state = STATE_HEADER_PACKET;
 
-  _ResultSetHeaderPacket _resultSetHeaderPacket;
+  ResultSetHeaderPacket _resultSetHeaderPacket;
   List<FieldImpl> _fieldPackets;
   Map<Symbol, int> _fieldIndex;
   StreamController<Row> _streamController;
@@ -346,7 +346,7 @@ class _ExecuteQueryHandler extends Handler {
 
   _handleHeaderPacket(Buffer response) {
     log.fine('Got a header packet');
-    _resultSetHeaderPacket = new _ResultSetHeaderPacket(response);
+    _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
     log.fine(_resultSetHeaderPacket.toString());
     _state = STATE_FIELD_PACKETS;
   }
