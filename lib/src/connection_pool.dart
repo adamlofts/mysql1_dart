@@ -251,7 +251,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
         _log.finest("Connection not ready");
         await _waitUntilReady(cnx);
         _log.finest("Connection ready - closing query: ${q.sql}");
-        var handler = new _CloseStatementHandler(preparedQuery.statementHandlerId);
+        var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
         cnx.autoRelease = !retain;
         cnx.processHandler(handler, noResponse: true);
       }

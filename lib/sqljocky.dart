@@ -27,8 +27,9 @@ import 'src/handlers/ok_packet.dart';
 import 'src/handlers/ping_handler.dart';
 import 'src/handlers/use_db_handler.dart';
 
-import 'src/prepared_statements/prepare_ok_packet.dart';
 import 'src/prepared_statements/binary_data_packet.dart';
+import 'src/prepared_statements/close_statement_handler.dart';
+import 'src/prepared_statements/prepare_ok_packet.dart';
 
 import 'src/query/result_set_header_packet.dart';
 import 'src/query/query_stream_handler.dart';
@@ -59,5 +60,4 @@ part 'src/query.dart';
 //prepared statements handlers
 part 'src/prepared_statements/prepared_query.dart';
 part 'src/prepared_statements/prepare_handler.dart';
-part 'src/prepared_statements/close_statement_handler.dart';
 part 'src/prepared_statements/execute_query_handler.dart';

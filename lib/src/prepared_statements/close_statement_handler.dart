@@ -1,9 +1,15 @@
-part of sqljocky;
+library sqljocky.close_statement_handler;
 
-class _CloseStatementHandler extends Handler {
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import '../handlers/handler.dart';
+
+class CloseStatementHandler extends Handler {
   final int _handle;
 
-  _CloseStatementHandler(int this._handle) : super(new Logger("CloseStatementHandler"));
+  CloseStatementHandler(int this._handle) : super(new Logger("CloseStatementHandler"));
 
   Buffer createRequest() {
     var buffer = new Buffer(5);
