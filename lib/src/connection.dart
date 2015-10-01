@@ -90,7 +90,7 @@ class _Connection {
   Future connect(
       {String host, int port, String user, String password, String db, bool useCompression, bool useSSL}) async {
     if (_socket != null) {
-      throw new MySqlClientError._("Cannot connect to server while a connection is already open");
+      throw createMySqlClientError("Cannot connect to server while a connection is already open");
     }
 
     _user = user;
@@ -249,7 +249,7 @@ class _Connection {
 
   Future _sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
-      throw new MySqlClientError._("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
+      throw createMySqlClientError("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
     }
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;
@@ -294,7 +294,7 @@ class _Connection {
    */
   Future<dynamic> processHandler(Handler handler, {bool noResponse: false}) async {
     if (_handler != null) {
-      throw new MySqlClientError._(
+      throw createMySqlClientError(
           "Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _packetNumber = -1;
