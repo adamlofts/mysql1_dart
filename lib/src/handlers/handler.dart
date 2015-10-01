@@ -42,7 +42,9 @@ class HandlerResponse {
  * the mysql server, either synchronously or asynchronously.
  */
 abstract class Handler {
-  Logger log;
+  final Logger log;
+
+  Handler(this.log);
 
   /**
    * Returns a [Buffer] containing the command packet.

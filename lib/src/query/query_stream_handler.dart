@@ -14,8 +14,7 @@ class _QueryStreamHandler extends Handler {
 
   StreamController<Row> _streamController;
 
-  _QueryStreamHandler(String this._sql) {
-    log = new Logger("QueryStreamHandler");
+  _QueryStreamHandler(String this._sql) : super(new Logger("QueryStreamHandler")) {
     _fieldPackets = <_FieldImpl>[];
   }
 

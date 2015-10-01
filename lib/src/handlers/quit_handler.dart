@@ -1,9 +1,7 @@
 part of sqljocky;
 
 class _QuitHandler extends Handler {
-  _QuitHandler() {
-    log = new Logger("QuitHandler");
-  }
+  _QuitHandler() : super(new Logger("QuitHandler"));
 
   Buffer createRequest() {
     var buffer = new Buffer(1);

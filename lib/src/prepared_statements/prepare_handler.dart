@@ -13,9 +13,7 @@ class _PrepareHandler extends Handler {
   List<_FieldImpl> get parameters => _parameters;
   List<_FieldImpl> get columns => _columns;
 
-  _PrepareHandler(String this._sql) {
-    log = new Logger("PrepareHandler");
-  }
+  _PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
 
   Buffer createRequest() {
     var encoded = UTF8.encode(_sql);

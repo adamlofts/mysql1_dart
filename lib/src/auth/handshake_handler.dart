@@ -24,9 +24,8 @@ class _HandshakeHandler extends Handler {
       [String db, bool useCompression, bool useSSL])
       : _db = db,
         this.useCompression = useCompression,
-        this.useSSL = useSSL {
-    log = new Logger("HandshakeHandler");
-  }
+        this.useSSL = useSSL,
+        super(new Logger("HandshakeHandler"));
 
   /**
    * The server initiates the handshake after the client connects,

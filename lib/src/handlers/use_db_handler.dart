@@ -3,9 +3,7 @@ part of sqljocky;
 class _UseDbHandler extends Handler {
   final String _dbName;
 
-  _UseDbHandler(String this._dbName) {
-    log = new Logger("UseDbHandler");
-  }
+  _UseDbHandler(String this._dbName) : super(new Logger("UseDbHandler"));
 
   Buffer createRequest() {
     var encoded = UTF8.encode(_dbName);

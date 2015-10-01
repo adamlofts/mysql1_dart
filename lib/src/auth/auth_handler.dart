@@ -22,9 +22,8 @@ class AuthHandler extends Handler {
   AuthHandler(String this.username, String this.password, String this.db, List<int> this.scrambleBuffer,
       int this.clientFlags, int this.maxPacketSize, int this.characterSet,
       {bool ssl: false})
-      : this._ssl = false {
-    log = new Logger("AuthHandler");
-  }
+      : this._ssl = false,
+        super(new Logger("AuthHandler"));
 
   List<int> getHash() {
     List<int> hash;

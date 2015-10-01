@@ -1,9 +1,7 @@
 part of sqljocky;
 
 class _PingHandler extends Handler {
-  _PingHandler() {
-    log = new Logger("PingHandler");
-  }
+  _PingHandler() : super(new Logger("PingHandler"));
 
   Buffer createRequest() {
     log.finest("Creating buffer for PingHandler");
