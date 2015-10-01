@@ -5,7 +5,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
 import 'package:mockito/mockito.dart';
@@ -42,7 +41,6 @@ part '../lib/src/query/standard_data_packet.dart';
 
 part 'unit/test_prepared_statements.dart';
 part 'unit/test_serialize.dart';
-part 'unit/test_types.dart';
 part 'unit/test_field_by_name.dart';
 part 'unit/test_binary_data_packet.dart';
 part 'unit/test_execute_query_handler.dart';
@@ -51,7 +49,6 @@ part 'unit/test_connection.dart';
 
 void main() {
   runSerializationTests();
-  runTypesTests();
   runPreparedStatementTests();
   runFieldByNameTests();
   runBinaryDataPacketTests();
