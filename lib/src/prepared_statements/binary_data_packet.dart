@@ -7,7 +7,7 @@ class _BinaryDataPacket extends Row {
 
   _BinaryDataPacket._forTests(this.values, this._fieldIndex) : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(Buffer buffer, List<_FieldImpl> fields, this._fieldIndex) : log = new Logger("BinaryDataPacket") {
+  _BinaryDataPacket(Buffer buffer, List<FieldImpl> fields, this._fieldIndex) : log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
@@ -37,7 +37,7 @@ class _BinaryDataPacket extends Row {
     }
   }
 
-  _readField(_FieldImpl field, Buffer buffer) {
+  _readField(FieldImpl field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");

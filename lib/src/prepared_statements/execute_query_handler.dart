@@ -8,7 +8,7 @@ class _ExecuteQueryHandler extends Handler {
   int _state = STATE_HEADER_PACKET;
 
   _ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<_FieldImpl> _fieldPackets;
+  List<FieldImpl> _fieldPackets;
   Map<Symbol, int> _fieldIndex;
   StreamController<Row> _streamController;
 
@@ -21,7 +21,7 @@ class _ExecuteQueryHandler extends Handler {
 
   _ExecuteQueryHandler(_PreparedQuery this._preparedQuery, bool this._executed, List this._values)
       : super(new Logger("ExecuteQueryHandler")) {
-    _fieldPackets = <_FieldImpl>[];
+    _fieldPackets = <FieldImpl>[];
   }
 
   Buffer createRequest() {
@@ -323,7 +323,7 @@ class _ExecuteQueryHandler extends Handler {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         return new HandlerResponse(
-            finished: true, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
+            finished: true, result: new ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
     return HandlerResponse.notFinished;
@@ -336,7 +336,7 @@ class _ExecuteQueryHandler extends Handler {
       _cancelled = true;
     };
     this._fieldIndex = _createFieldIndex();
-    return new HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+    return new HandlerResponse(result: new ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
   }
 
   _handleEndOfRows() {
@@ -353,7 +353,7 @@ class _ExecuteQueryHandler extends Handler {
 
   _handleFieldPacket(Buffer response) {
     log.fine('Got a field packet');
-    var fieldPacket = new _FieldImpl._(response);
+    var fieldPacket = new FieldImpl(response);
     log.fine(fieldPacket.toString());
     _fieldPackets.add(fieldPacket);
   }

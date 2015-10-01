@@ -1,4 +1,4 @@
-part of results;
+library results.field;
 
 //TODO document these fields
 /// A MySQL field

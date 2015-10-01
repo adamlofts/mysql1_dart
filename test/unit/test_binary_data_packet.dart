@@ -4,7 +4,7 @@ void runBinaryDataPacketTests() {
   group('buffer:', () {
     test('can read short blob', () {
       var packet = new _BinaryDataPacket._forTests(null, null);
-      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
+      var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
       var buffer = new Buffer.fromList([1, 32]);
       var value = packet._readField(field, buffer);
 
@@ -14,7 +14,7 @@ void runBinaryDataPacketTests() {
 
     test('can read long blob', () {
       var packet = new _BinaryDataPacket._forTests(null, null);
-      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
+      var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
 
       var buffer = new Buffer(500 + 3);
       buffer.writeLengthCodedBinary(500);
@@ -29,7 +29,7 @@ void runBinaryDataPacketTests() {
 
     test('can read very long blob', () {
       var packet = new _BinaryDataPacket._forTests(null, null);
-      var field = new _FieldImpl._forTests(FIELD_TYPE_BLOB);
+      var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
 
       var buffer = new Buffer(50000 + 3);
       buffer.writeLengthCodedBinary(50000);

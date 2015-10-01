@@ -9,13 +9,13 @@ class _QueryStreamHandler extends Handler {
 
   OkPacket _okPacket;
   _ResultSetHeaderPacket _resultSetHeaderPacket;
-  List<_FieldImpl> _fieldPackets;
+  List<FieldImpl> _fieldPackets;
   Map<Symbol, int> _fieldIndex;
 
   StreamController<Row> _streamController;
 
   _QueryStreamHandler(String this._sql) : super(new Logger("QueryStreamHandler")) {
-    _fieldPackets = <_FieldImpl>[];
+    _fieldPackets = <FieldImpl>[];
   }
 
   Buffer createRequest() {
@@ -61,7 +61,7 @@ class _QueryStreamHandler extends Handler {
       _streamController.close();
     });
     this._fieldIndex = _createFieldIndex();
-    return new HandlerResponse(result: new _ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
+    return new HandlerResponse(result: new ResultsImpl(null, null, _fieldPackets, stream: _streamController.stream));
   }
 
   _handleEndOfRows() {
@@ -79,7 +79,7 @@ class _QueryStreamHandler extends Handler {
   }
 
   _handleFieldPacket(Buffer response) {
-    var fieldPacket = new _FieldImpl._(response);
+    var fieldPacket = new FieldImpl(response);
     log.fine(fieldPacket.toString());
     _fieldPackets.add(fieldPacket);
   }
@@ -100,7 +100,7 @@ class _QueryStreamHandler extends Handler {
 
     //TODO is this finished value right?
     return new HandlerResponse(
-        finished: finished, result: new _ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
+        finished: finished, result: new ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, _fieldPackets));
   }
 
   Map<Symbol, int> _createFieldIndex() {

@@ -17,7 +17,6 @@ import 'src/buffered_socket.dart';
 import 'src/mysql_client_error.dart';
 import 'src/mysql_exception.dart';
 import 'src/mysql_protocol_error.dart';
-import 'src/results.dart';
 
 import 'src/auth/handshake_handler.dart';
 import 'src/auth/ssl_handler.dart';
@@ -27,15 +26,21 @@ import 'src/handlers/ok_packet.dart';
 
 import 'src/prepared_statements/prepare_ok_packet.dart';
 
-export 'src/auth/character_set.dart';
+import 'src/results/field_impl.dart';
+import 'src/results/results_impl.dart';
+import 'src/results/results.dart';
+import 'src/results/row.dart';
 
+export 'src/blob.dart';
 export 'src/mysql_client_error.dart' hide createMySqlClientError;
 export 'src/mysql_exception.dart' hide createMySqlException;
 export 'src/mysql_protocol_error.dart' hide createMySqlProtocolError;
 
-export 'src/results.dart';
+export 'src/auth/character_set.dart';
 
-export 'src/blob.dart';
+export 'src/results/field.dart';
+export 'src/results/results.dart';
+export 'src/results/row.dart';
 
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
@@ -59,6 +64,3 @@ part 'src/prepared_statements/binary_data_packet.dart';
 part 'src/query/result_set_header_packet.dart';
 part 'src/query/standard_data_packet.dart';
 part 'src/query/query_stream_handler.dart';
-
-part 'src/results/results_impl.dart';
-part 'src/results/field_impl.dart';

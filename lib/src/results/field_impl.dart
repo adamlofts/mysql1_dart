@@ -1,6 +1,10 @@
-part of sqljocky;
+library sqljocky.field_impl;
 
-class _FieldImpl implements Field {
+import '../buffer.dart';
+
+import 'field.dart';
+
+class FieldImpl implements Field {
   String _catalog;
   String _db;
   String _table;
@@ -27,9 +31,13 @@ class _FieldImpl implements Field {
   int get decimals => _decimals;
   int get defaultValue => _defaultValue;
 
-  _FieldImpl._forTests(this._type);
+  FieldImpl.forTests(this._type);
 
-  _FieldImpl._(Buffer buffer) {
+  void setName(String value) {
+    this._name = value;
+  }
+
+  FieldImpl(Buffer buffer) {
     _catalog = buffer.readLengthCodedString();
     _db = buffer.readLengthCodedString();
     _table = buffer.readLengthCodedString();

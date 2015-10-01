@@ -3,7 +3,7 @@ part of sqljocky;
 /**
  * Query is created by `ConnectionPool.prepare(sql)` and `Transaction.prepare(sql)`. It holds
  * a prepared query.
- * 
+ *
  * In MySQL, a query must be prepared on a specific connection. If you execute this
  * query and a connection is used from the pool which doesn't yet have the prepared query
  * in its cache, it will first prepare the query on that connection before executing it.
@@ -130,7 +130,7 @@ class Query extends Object with _ConnectionHelpers {
         _log.fine("Executing query, loop $i");
         Results results = await _execute(preparedQuery, parameters[i], retainConnection: true);
         _log.fine("Got results, loop $i");
-        Results deStreamedResults = await _ResultsImpl.destream(results);
+        Results deStreamedResults = await ResultsImpl.destream(results);
         resultList.add(deStreamedResults);
       } catch (e) {
         _releaseReuseThrow(preparedQuery.cnx, e);

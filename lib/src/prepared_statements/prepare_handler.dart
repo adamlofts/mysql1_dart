@@ -5,13 +5,13 @@ class _PrepareHandler extends Handler {
   PrepareOkPacket _okPacket;
   int _parametersToRead;
   int _columnsToRead;
-  List<_FieldImpl> _parameters;
-  List<_FieldImpl> _columns;
+  List<FieldImpl> _parameters;
+  List<FieldImpl> _columns;
 
   String get sql => _sql;
   PrepareOkPacket get okPacket => _okPacket;
-  List<_FieldImpl> get parameters => _parameters;
-  List<_FieldImpl> get columns => _columns;
+  List<FieldImpl> get parameters => _parameters;
+  List<FieldImpl> get columns => _columns;
 
   _PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
 
@@ -36,7 +36,7 @@ class _PrepareHandler extends Handler {
                 "Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
           }
         } else {
-          var fieldPacket = new _FieldImpl._(response);
+          var fieldPacket = new FieldImpl(response);
           log.fine("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] = fieldPacket;
         }
@@ -48,7 +48,7 @@ class _PrepareHandler extends Handler {
             throw createMySqlProtocolError("Unexpected EOF packet; was expecting another $_columnsToRead column(s)");
           }
         } else {
-          var fieldPacket = new _FieldImpl._(response);
+          var fieldPacket = new FieldImpl(response);
           log.fine("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
@@ -59,8 +59,8 @@ class _PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = new List<_FieldImpl>(_parametersToRead);
-      _columns = new List<_FieldImpl>(_columnsToRead);
+      _parameters = new List<FieldImpl>(_parametersToRead);
+      _columns = new List<FieldImpl>(_columnsToRead);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }

@@ -2,8 +2,8 @@ part of sqljocky;
 
 class _PreparedQuery {
   final String sql;
-  final List<_FieldImpl> parameters;
-  final List<_FieldImpl> columns;
+  final List<FieldImpl> parameters;
+  final List<FieldImpl> columns;
   final int statementHandlerId;
   _Connection cnx;
 

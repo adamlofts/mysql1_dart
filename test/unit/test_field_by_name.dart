@@ -4,27 +4,27 @@ void runFieldByNameTests() {
   group('field by name, standard data packets:', () {
     test('should create field index', () {
       var handler = new _QueryStreamHandler("");
-      var field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "123";
+      var field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("123");
       handler._fieldPackets.add(field);
       var fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "_abc";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("_abc");
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "abc";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("abc");
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(1));
       expect(fieldIndex.keys, contains(new Symbol("abc")));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "a123";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("a123");
       handler._fieldPackets.clear();
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
@@ -58,27 +58,27 @@ void runFieldByNameTests() {
   group('field by name, binary data packets:', () {
     test('should create field index', () {
       var handler = new _ExecuteQueryHandler(null, null, null);
-      var field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "123";
+      var field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("123");
       handler._fieldPackets.add(field);
       var fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "_abc";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("_abc");
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(0));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "abc";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("abc");
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
       expect(fieldIndex, hasLength(1));
       expect(fieldIndex.keys, contains(new Symbol("abc")));
 
-      field = new _FieldImpl._forTests(FIELD_TYPE_INT24);
-      field._name = "a123";
+      field = new FieldImpl.forTests(FIELD_TYPE_INT24);
+      field.setName("a123");
       handler._fieldPackets.clear();
       handler._fieldPackets.add(field);
       fieldIndex = handler._createFieldIndex();
