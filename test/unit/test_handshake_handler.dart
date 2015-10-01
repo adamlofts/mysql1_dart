@@ -53,10 +53,10 @@ void runHandshakeHandlerTests() {
 
   group('HandshakeHandler._readResponseBuffer', () {
     test('throws if handshake protocol is not 10', () {
-      var handler = new _HandshakeHandler("", "", MAX_PACKET_SIZE);
+      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
       var response = new Buffer.fromList([9]);
       expect(() {
-        handler._readResponseBuffer(response);
+        handler.readResponseBuffer(response);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
     });
 
@@ -64,7 +64,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -76,7 +76,7 @@ void runHandshakeHandlerTests() {
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
-      handler._readResponseBuffer(responseBuffer);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.serverVersion, equals(serverVersion));
       expect(handler.threadId, equals(threadId));
@@ -95,8 +95,8 @@ void runHandshakeHandlerTests() {
 
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
-      var handler = new _HandshakeHandler("", "", MAX_PACKET_SIZE);
-      handler._readResponseBuffer(responseBuffer);
+      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.serverVersion, equals(serverVersion));
       expect(handler.threadId, equals(threadId));
@@ -109,7 +109,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -122,7 +122,7 @@ void runHandshakeHandlerTests() {
       var pluginName = "plugin name";
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, false);
-      handler._readResponseBuffer(responseBuffer);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
     });
@@ -131,7 +131,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -144,7 +144,7 @@ void runHandshakeHandlerTests() {
       var pluginName = "plugin name";
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
-      handler._readResponseBuffer(responseBuffer);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
     });
@@ -153,7 +153,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -166,7 +166,7 @@ void runHandshakeHandlerTests() {
       var pluginName = "plugin name";
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
-      handler._readResponseBuffer(responseBuffer);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
     });
@@ -175,7 +175,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -188,7 +188,7 @@ void runHandshakeHandlerTests() {
       var pluginName = "plugin name";
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
-      handler._readResponseBuffer(responseBuffer);
+      handler.readResponseBuffer(responseBuffer);
 
       expect(handler.pluginName, equals(pluginName));
     });
@@ -196,7 +196,7 @@ void runHandshakeHandlerTests() {
 
   group('HandshakeHandler.processResponse', () {
     test('throws if server protocol is not 4.1', () {
-      var handler = new _HandshakeHandler("", "", MAX_PACKET_SIZE);
+      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
       var response = createHandshake(10, "version 1", 123, "abcdefgh", 0, 0, 0, 0, 0, "buffer");
       expect(() {
         handler.processResponse(response);
@@ -207,7 +207,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -244,7 +244,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -265,7 +265,7 @@ void runHandshakeHandlerTests() {
           serverCapabilities2,
           scrambleLength,
           scrambleBuffer2,
-          _HandshakeHandler.MYSQL_NATIVE_PASSWORD,
+          HandshakeHandler.MYSQL_NATIVE_PASSWORD,
           true);
       var response = handler.processResponse(responseBuffer);
 
@@ -290,7 +290,7 @@ void runHandshakeHandlerTests() {
 
       var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
-      var handler = new _HandshakeHandler("", "", MAX_PACKET_SIZE);
+      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
       expect(() {
         handler.processResponse(responseBuffer);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
@@ -300,7 +300,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -333,7 +333,7 @@ void runHandshakeHandlerTests() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler = new _HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;

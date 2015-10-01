@@ -1,6 +1,18 @@
-part of sqljocky;
+library sqljocky.handshake_handler;
 
-class _HandshakeHandler extends Handler {
+import 'dart:math' as math;
+
+import 'package:logging/logging.dart';
+
+import '../buffer.dart';
+import '../handlers/handler.dart';
+import '../mysql_client_error.dart';
+import '../../constants.dart';
+import 'character_set.dart';
+import 'ssl_handler.dart';
+import 'auth_handler.dart';
+
+class HandshakeHandler extends Handler {
   static const String MYSQL_NATIVE_PASSWORD = "mysql_native_password";
 
   final String _user;
@@ -20,7 +32,7 @@ class _HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
-  _HandshakeHandler(String this._user, String this._password, int this._maxPacketSize,
+  HandshakeHandler(String this._user, String this._password, int this._maxPacketSize,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
         this.useCompression = useCompression,
@@ -35,7 +47,7 @@ class _HandshakeHandler extends Handler {
     throw createMySqlClientError("Cannot create a handshake request");
   }
 
-  _readResponseBuffer(Buffer response) {
+  void readResponseBuffer(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
@@ -85,7 +97,7 @@ class _HandshakeHandler extends Handler {
    * exception is thrown.
    */
   HandlerResponse processResponse(Buffer response) {
-    _readResponseBuffer(response);
+    readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
       throw createMySqlClientError("Unsupported protocol (must be 4.1 or newer");

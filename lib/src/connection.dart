@@ -95,7 +95,7 @@ class _Connection {
 
     _user = user;
     _password = password;
-    _handler = new _HandshakeHandler(user, password, _maxPacketSize, db, useCompression, useSSL);
+    _handler = new HandshakeHandler(user, password, _maxPacketSize, db, useCompression, useSSL);
 
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
@@ -188,9 +188,9 @@ class _Connection {
 
     try {
       var response = _handler.processResponse(buffer);
-      if (_handler is _HandshakeHandler) {
-        _useCompression = (_handler as _HandshakeHandler).useCompression;
-        _useSSL = (_handler as _HandshakeHandler).useSSL;
+      if (_handler is HandshakeHandler) {
+        _useCompression = (_handler as HandshakeHandler).useCompression;
+        _useSSL = (_handler as HandshakeHandler).useSSL;
       }
       if (response.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now

@@ -19,13 +19,15 @@ import 'src/mysql_exception.dart';
 import 'src/mysql_protocol_error.dart';
 import 'src/results.dart';
 
-import 'src/auth/auth_handler.dart';
+import 'src/auth/handshake_handler.dart';
 import 'src/auth/ssl_handler.dart';
 
 import 'src/handlers/handler.dart';
 import 'src/handlers/ok_packet.dart';
 
 import 'src/prepared_statements/prepare_ok_packet.dart';
+
+export 'src/auth/character_set.dart';
 
 export 'src/mysql_client_error.dart' hide createMySqlClientError;
 export 'src/mysql_exception.dart' hide createMySqlException;
@@ -45,10 +47,6 @@ part 'src/query.dart';
 part 'src/handlers/use_db_handler.dart';
 part 'src/handlers/ping_handler.dart';
 part 'src/handlers/debug_handler.dart';
-
-//auth handlers
-part 'src/auth/handshake_handler.dart';
-part 'src/auth/character_set.dart';
 
 //prepared statements handlers
 part 'src/prepared_statements/prepared_query.dart';
