@@ -15,6 +15,7 @@ import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/results.dart';
 import 'package:test/test.dart';
 
+import 'package:sqljocky/src/blob.dart';
 import 'package:sqljocky/src/auth/auth_handler.dart';
 import 'package:sqljocky/src/handlers/handler.dart';
 import 'package:sqljocky/src/handlers/ok_packet.dart';
@@ -25,7 +26,6 @@ import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
 part '../lib/src/auth/handshake_handler.dart';
 part '../lib/src/auth/ssl_handler.dart';
 part '../lib/src/auth/character_set.dart';
-part '../lib/src/blob.dart';
 part '../lib/src/connection.dart';
 part '../lib/src/connection_pool.dart';
 part '../lib/src/handlers/use_db_handler.dart';

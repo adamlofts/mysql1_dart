@@ -11,6 +11,7 @@ import 'package:logging/logging.dart';
 
 import 'constants.dart';
 
+import 'src/blob.dart';
 import 'src/buffer.dart';
 import 'src/buffered_socket.dart';
 import 'src/mysql_exception.dart';
@@ -29,7 +30,7 @@ export 'src/mysql_protocol_error.dart' hide createMySqlProtocolError;
 
 export 'src/results.dart';
 
-part 'src/blob.dart';
+export 'src/blob.dart';
 
 part 'src/connection_pool.dart';
 part 'src/connection.dart';
