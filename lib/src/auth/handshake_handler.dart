@@ -118,7 +118,7 @@ class _HandshakeHandler extends Handler {
 
     if (useSSL) {
       return new HandlerResponse(
-          nextHandler: new _SSLHandler(
+          nextHandler: new SSLHandler(
               clientFlags,
               _maxPacketSize,
               CharacterSet.UTF8,

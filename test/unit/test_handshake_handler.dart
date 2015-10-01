@@ -351,7 +351,7 @@ void runHandshakeHandlerTests() {
       expect(handler.useSSL, isTrue);
 
       expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<_SSLHandler>());
+      expect(response.nextHandler, new isInstanceOf<SSLHandler>());
 
       int clientFlags = CLIENT_PROTOCOL_41 |
           CLIENT_LONG_PASSWORD |
@@ -360,11 +360,11 @@ void runHandshakeHandlerTests() {
           CLIENT_SECURE_CONNECTION |
           CLIENT_SSL;
 
-      _SSLHandler sslHandler = response.nextHandler;
+      SSLHandler sslHandler = response.nextHandler;
       expect(sslHandler.nextHandler, new isInstanceOf<AuthHandler>());
-      expect(sslHandler._characterSet, equals(CharacterSet.UTF8));
-      expect(sslHandler._clientFlags, equals(clientFlags));
-      expect(sslHandler._maxPacketSize, equals(MAX_PACKET_SIZE));
+      expect(sslHandler.characterSet, equals(CharacterSet.UTF8));
+      expect(sslHandler.clientFlags, equals(clientFlags));
+      expect(sslHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
 
       AuthHandler authHandler = sslHandler.nextHandler;
       expect(authHandler.characterSet, equals(CharacterSet.UTF8));

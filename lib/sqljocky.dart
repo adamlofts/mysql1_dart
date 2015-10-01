@@ -19,6 +19,7 @@ import 'src/mysql_protocol_error.dart';
 import 'src/results.dart';
 
 import 'src/auth/auth_handler.dart';
+import 'src/auth/ssl_handler.dart';
 
 import 'src/handlers/handler.dart';
 import 'src/handlers/ok_packet.dart';
@@ -46,7 +47,6 @@ part 'src/handlers/debug_handler.dart';
 
 //auth handlers
 part 'src/auth/handshake_handler.dart';
-part 'src/auth/ssl_handler.dart';
 part 'src/auth/character_set.dart';
 
 //prepared statements handlers
