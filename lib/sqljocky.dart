@@ -38,7 +38,6 @@ part 'src/mysql_protocol_error.dart';
 part 'src/mysql_client_error.dart';
 
 //general handlers
-part 'src/handlers/parameter_packet.dart';
 part 'src/handlers/use_db_handler.dart';
 part 'src/handlers/ping_handler.dart';
 part 'src/handlers/debug_handler.dart';
