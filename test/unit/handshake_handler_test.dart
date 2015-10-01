@@ -1,56 +1,61 @@
-part of sqljocky;
+library sqljocky.handshake_handler_test;
+
+import 'package:sqljocky/constants.dart';
+import 'package:sqljocky/src/auth/auth_handler.dart';
+import 'package:sqljocky/src/auth/character_set.dart';
+import 'package:sqljocky/src/auth/handshake_handler.dart';
+import 'package:sqljocky/src/auth/ssl_handler.dart';
+import 'package:sqljocky/src/buffer.dart';
+import 'package:sqljocky/src/handlers/handler.dart';
+import 'package:sqljocky/src/mysql_client_error.dart';
+
+import 'package:test/test.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
-void runHandshakeHandlerTests() {
-  createHandshake(protocolVersion, serverVersion, threadId, scrambleBuffer, serverCapabilities,
-      [serverLanguage,
-      serverStatus,
-      serverCapabilities2,
-      scrambleLength,
-      scrambleBuffer2,
-      pluginName,
-      pluginNameNull]) {
-    var length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
-    if (serverLanguage != null) {
-      length += 1 + 2 + 2 + 1 + 10;
-      if (scrambleBuffer2 != null) {
-        length += scrambleBuffer2.length + 1;
-      }
-      if (pluginName != null) {
-        length += pluginName.length;
-        if (pluginNameNull) {
-          length++;
-        }
+Buffer _createHandshake(protocolVersion, serverVersion, threadId, scrambleBuffer, serverCapabilities,
+    [serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, pluginNameNull]) {
+  var length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
+  if (serverLanguage != null) {
+    length += 1 + 2 + 2 + 1 + 10;
+    if (scrambleBuffer2 != null) {
+      length += scrambleBuffer2.length + 1;
+    }
+    if (pluginName != null) {
+      length += pluginName.length;
+      if (pluginNameNull) {
+        length++;
       }
     }
-
-    var response = new Buffer(length);
-    response.writeByte(protocolVersion);
-    response.writeNullTerminatedList(serverVersion.codeUnits);
-    response.writeInt32(threadId);
-    response.writeList(scrambleBuffer.codeUnits);
-    response.writeByte(0);
-    response.writeInt16(serverCapabilities);
-    if (serverLanguage != null) {
-      response.writeByte(serverLanguage);
-      response.writeInt16(serverStatus);
-      response.writeInt16(serverCapabilities2);
-      response.writeByte(scrambleLength);
-      response.fill(10, 0);
-      if (scrambleBuffer2 != null) {
-        response.writeNullTerminatedList(scrambleBuffer2.codeUnits);
-      }
-      if (pluginName != null) {
-        response.writeList(pluginName.codeUnits);
-        if (pluginNameNull) {
-          response.writeByte(0);
-        }
-      }
-    }
-    return response;
   }
 
+  var response = new Buffer(length);
+  response.writeByte(protocolVersion);
+  response.writeNullTerminatedList(serverVersion.codeUnits);
+  response.writeInt32(threadId);
+  response.writeList(scrambleBuffer.codeUnits);
+  response.writeByte(0);
+  response.writeInt16(serverCapabilities);
+  if (serverLanguage != null) {
+    response.writeByte(serverLanguage);
+    response.writeInt16(serverStatus);
+    response.writeInt16(serverCapabilities2);
+    response.writeByte(scrambleLength);
+    response.fill(10, 0);
+    if (scrambleBuffer2 != null) {
+      response.writeNullTerminatedList(scrambleBuffer2.codeUnits);
+    }
+    if (pluginName != null) {
+      response.writeList(pluginName.codeUnits);
+      if (pluginNameNull) {
+        response.writeByte(0);
+      }
+    }
+  }
+  return response;
+}
+
+void main() {
   group('HandshakeHandler._readResponseBuffer', () {
     test('throws if handshake protocol is not 10', () {
       var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
@@ -74,7 +79,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       handler.readResponseBuffer(responseBuffer);
 
@@ -93,7 +98,7 @@ void runHandshakeHandlerTests() {
       var threadId = 123882394;
       var serverCapabilities = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
 
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
       var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
       handler.readResponseBuffer(responseBuffer);
@@ -120,7 +125,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, false);
       handler.readResponseBuffer(responseBuffer);
 
@@ -142,7 +147,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler.readResponseBuffer(responseBuffer);
 
@@ -164,7 +169,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = null;
       var scrambleLength = scrambleBuffer1.length;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler.readResponseBuffer(responseBuffer);
 
@@ -186,7 +191,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer2 = "ijklmnopqrst";
       var scrambleLength = 5;
       var pluginName = "plugin name";
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2, pluginName, true);
       handler.readResponseBuffer(responseBuffer);
 
@@ -197,7 +202,7 @@ void runHandshakeHandlerTests() {
   group('HandshakeHandler.processResponse', () {
     test('throws if server protocol is not 4.1', () {
       var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
-      var response = createHandshake(10, "version 1", 123, "abcdefgh", 0, 0, 0, 0, 0, "buffer");
+      var response = _createHandshake(10, "version 1", 123, "abcdefgh", 0, 0, 0, 0, 0, "buffer");
       expect(() {
         handler.processResponse(response);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
@@ -217,7 +222,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
@@ -254,7 +259,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(
+      var responseBuffer = _createHandshake(
           10,
           serverVersion,
           threadId,
@@ -288,7 +293,7 @@ void runHandshakeHandlerTests() {
       var threadId = 123882394;
       var serverCapabilities = CLIENT_PROTOCOL_41;
 
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
       var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE);
       expect(() {
@@ -310,7 +315,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(
+      var responseBuffer = _createHandshake(
           10,
           serverVersion,
           threadId,
@@ -343,7 +348,7 @@ void runHandshakeHandlerTests() {
       var scrambleBuffer1 = "abcdefgh";
       var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var responseBuffer = createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
+      var responseBuffer = _createHandshake(10, serverVersion, threadId, scrambleBuffer1, serverCapabilities1,
           serverLanguage, serverStatus, serverCapabilities2, scrambleLength, scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
