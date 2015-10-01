@@ -1,6 +1,10 @@
-part of sqljocky;
+library sqljocky.buffer_test;
 
-void runBufferTests() {
+import 'package:sqljocky/src/buffer.dart';
+
+import 'package:test/test.dart';
+
+void main() {
   group('buffer:', () {
     test('can write byte to buffer', () {
       var buffer = new Buffer(1);
