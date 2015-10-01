@@ -40,7 +40,6 @@ part '../lib/src/query/result_set_header_packet.dart';
 part '../lib/src/query/standard_data_packet.dart';
 
 part 'unit/test_prepared_statements.dart';
-part 'unit/test_serialize.dart';
 part 'unit/test_field_by_name.dart';
 part 'unit/test_binary_data_packet.dart';
 part 'unit/test_execute_query_handler.dart';
@@ -48,7 +47,6 @@ part 'unit/test_handshake_handler.dart';
 part 'unit/test_connection.dart';
 
 void main() {
-  runSerializationTests();
   runPreparedStatementTests();
   runFieldByNameTests();
   runBinaryDataPacketTests();
