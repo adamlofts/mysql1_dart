@@ -42,7 +42,6 @@ part 'src/mysql_client_error.dart';
 part 'src/handlers/use_db_handler.dart';
 part 'src/handlers/ping_handler.dart';
 part 'src/handlers/debug_handler.dart';
-part 'src/handlers/quit_handler.dart';
 
 //auth handlers
 part 'src/auth/handshake_handler.dart';

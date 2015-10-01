@@ -1,7 +1,14 @@
-part of sqljocky;
+library sqljocky.quit_handler;
 
-class _QuitHandler extends Handler {
-  _QuitHandler() : super(new Logger("QuitHandler"));
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import '../mysql_protocol_error.dart';
+import 'handler.dart';
+
+class QuitHandler extends Handler {
+  QuitHandler() : super(new Logger("QuitHandler"));
 
   Buffer createRequest() {
     var buffer = new Buffer(1);
