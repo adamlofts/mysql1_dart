@@ -202,4 +202,6 @@ void runExecuteQueryHandlerTests() {
   });
 }
 
-class MockPreparedQuery extends Mock implements _PreparedQuery {}
+class MockPreparedQuery extends Mock implements _PreparedQuery {
+  noSuchMethod(a) => super.noSuchMethod(a);
+}

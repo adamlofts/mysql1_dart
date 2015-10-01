@@ -261,7 +261,7 @@ class _Connection {
       _compressedHeaderBuffer.writeUint24(encodedHeader.length + encodedBuffer.length);
       _compressedHeaderBuffer.writeByte(++_compressedPacketNumber);
       _compressedHeaderBuffer.writeUint24(4 + buffer.length);
-      _socket.writeBuffer(_compressedHeaderBuffer);
+      return _socket.writeBuffer(_compressedHeaderBuffer);
     } else {
       log.fine("sendBuffer header");
       return _sendBufferPart(buffer, 0);

@@ -50,12 +50,8 @@ void runFieldByNameTests() {
       var values = [];
 
       Row row = new _StandardDataPacket._forTests(values, fieldIndex);
-      try {
-        var x = row.one;
-        expect(true, isFalse);
-      } on NoSuchMethodError {
-        expect(true, isTrue);
-      }
+
+      expect(() => print(row.one), throwsNoSuchMethodError);
     });
   });
 
@@ -108,12 +104,8 @@ void runFieldByNameTests() {
       var values = [];
 
       Row row = new _BinaryDataPacket._forTests(values, fieldIndex);
-      try {
-        var x = row.one;
-        expect(true, isFalse);
-      } on NoSuchMethodError {
-        expect(true, isTrue);
-      }
+
+      expect(() => print(row.one), throwsNoSuchMethodError);
     });
   });
 }

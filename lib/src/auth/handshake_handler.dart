@@ -52,14 +52,16 @@ class _HandshakeHandler extends Handler {
       serverStatus = response.readUint16();
       serverCapabilities += (response.readUint16() << 0x10);
 
-      var secure = serverCapabilities & CLIENT_SECURE_CONNECTION;
-      var plugin = serverCapabilities & CLIENT_PLUGIN_AUTH;
+      //var secure = serverCapabilities & CLIENT_SECURE_CONNECTION;
+      //var plugin = serverCapabilities & CLIENT_PLUGIN_AUTH;
 
       scrambleLength = response.readByte();
       response.skip(10);
       if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
         var scrambleBuffer2 = response.readList(math.max(13, scrambleLength - 8) - 1);
-        var nullTerminator = response.readByte();
+
+        // read null-terminator
+        response.readByte();
         scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
         scrambleBuffer.setRange(0, 8, scrambleBuffer1);
         scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);

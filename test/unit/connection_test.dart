@@ -155,6 +155,10 @@ void runConnectionTests() {
   });
 }
 
-class MockSocket extends Mock implements BufferedSocket {}
+class MockSocket extends Mock implements BufferedSocket {
+  noSuchMethod(a) => super.noSuchMethod(a);
+}
 
-class MockConnection extends Mock implements _Connection {}
+class MockConnection extends Mock implements _Connection {
+  noSuchMethod(a) => super.noSuchMethod(a);
+}

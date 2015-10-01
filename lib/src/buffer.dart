@@ -200,6 +200,7 @@ class Buffer {
       case 254:
         return readUint64();
     }
+    throw new ArgumentError('value is out of range');
   }
 
   static int measureLengthCodedBinary(int value) {
@@ -215,6 +216,7 @@ class Buffer {
     if (value < (2 << 63)) {
       return 5;
     }
+    throw new ArgumentError('value is out of range');
   }
 
   /**

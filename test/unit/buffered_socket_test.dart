@@ -1,9 +1,10 @@
 library buffered_socket_test;
 
-import 'package:test/test.dart';
-import 'package:mockito/mockito.dart';
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
+
+import 'package:mockito/mockito.dart';
+import 'package:test/test.dart';
 
 import 'package:sqljocky/src/buffered_socket.dart';
 import 'package:sqljocky/src/buffer.dart';
@@ -39,36 +40,18 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     _streamController.add(RawSocketEvent.READ_CLOSED);
   }
 
-  InternetAddress get address => null;
-
-  Future<RawSocket> close() {}
-
-  int get port => null;
-
-  bool get readEventsEnabled => null;
-
-  void set readEventsEnabled(bool value) {}
-
-  InternetAddress get remoteAddress => null;
-
-  int get remotePort => null;
-
-  bool setOption(SocketOption option, bool enabled) {}
-
-  void shutdown(SocketDirection direction) {}
-
-  int write(List<int> buffer, [int offset, int count]) {}
-
   void set writeEventsEnabled(bool value) {
     if (value) {
       _streamController.add(RawSocketEvent.WRITE);
     }
   }
 
-  bool get writeEventsEnabled => null;
+  noSuchMethod(a) => super.noSuchMethod(a);
 }
 
-class MockBuffer extends Mock implements Buffer {}
+class MockBuffer extends Mock implements Buffer {
+  noSuchMethod(a) => super.noSuchMethod(a);
+}
 
 void runBufferedSocketTests() {
   group('buffered socket', () {
@@ -181,7 +164,7 @@ void runBufferedSocketTests() {
       var onClosed = () {
         closed = true;
       };
-      var socket = await BufferedSocket.connect('localhost', 100,
+      await BufferedSocket.connect('localhost', 100,
           onDataReady: () {}, onDone: () {}, onError: (e) {}, onClosed: onClosed, socketFactory: factory);
       await rawSocket.closeRead();
       expect(closed, equals(true));

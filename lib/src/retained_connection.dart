@@ -42,13 +42,15 @@ abstract class _RetainedConnectionBase extends Object with _ConnectionHelpers im
  * Use [ConnectionPool.getConnection] to get a connection to the database which
  * isn't released after each query. When you have finished with the connection
  * you must [release] it, otherwise it will never be available in the pool
- * again. 
+ * again.
  */
 abstract class RetainedConnection extends QueriableConnection {
   /**
    * Releases the connection back to the connection pool.
    */
   Future release();
+
+  bool get usingSSL;
 }
 
 class _RetainedConnectionImpl extends _RetainedConnectionBase implements RetainedConnection {
@@ -61,6 +63,7 @@ class _RetainedConnectionImpl extends _RetainedConnectionBase implements Retaine
     _cnx.inTransaction = false;
     _cnx.release();
     _pool._reuseConnectionForQueuedOperations(_cnx);
+    return new Future.value();
   }
 
   void _checkReleased() {

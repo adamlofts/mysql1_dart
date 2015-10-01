@@ -1,5 +1,6 @@
 part of integrationtests;
 
+/*
 void runLargeBlobTests(String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   var text;
@@ -32,3 +33,4 @@ void runLargeBlobTests(String user, String password, String db, int port, String
     });
   });
 }
+*/
