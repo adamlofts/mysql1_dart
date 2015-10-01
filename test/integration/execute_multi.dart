@@ -40,7 +40,7 @@ void runExecuteMultiTests(String user, String password, String db, int port, Str
 
       await query.close();
       await tran.rollback();
-    });
+    }, skip: "Not completely addressed - https://github.com/jamesots/sqljocky/issues/43");
 
     test('close connection', () {
       pool.closeConnectionsWhenNotInUse();
