@@ -23,97 +23,77 @@ void runNumberTests(String user, String password, String db, int port, String ho
     });
 
     test('minimum values', () async {
-      var c = new Completer();
       var results = await pool.query('select atinyint, asmallint, amediumint, aint, abigint from nums');
-      results.listen((row) {
-        expect(row[0], equals(-128));
-        expect(row[1], equals(-32768));
-        expect(row[2], equals(-8388608));
-        expect(row[3], equals(-2147483648));
-        expect(row[4], equals(-9223372036854775808));
-      }, onDone: () {
-        c.complete();
-      });
-      return c.future;
+
+      var row = await results.single;
+
+      expect(row[0], equals(-128));
+      expect(row[1], equals(-32768));
+      expect(row[2], equals(-8388608));
+      expect(row[3], equals(-2147483648));
+      expect(row[4], equals(-9223372036854775808));
     });
 
-    test('maximum values', () {
-      var c = new Completer();
-      deleteInsertSelect(
+    test('maximum values', () async {
+      var results = await deleteInsertSelect(
           pool,
           'nums',
           "insert into nums (atinyint, asmallint, amediumint, aint, abigint, "
           "adecimal, afloat, adouble, areal) values ("
           "127, 32767, 8388607, 2147483647, 9223372036854775807, "
           "0, 0, 0, 0)",
-          'select atinyint, asmallint, amediumint, aint, abigint from nums').then((results) {
-        results.listen((row) {
-          expect(row[0], equals(127));
-          expect(row[1], equals(32767));
-          expect(row[2], equals(8388607));
-          expect(row[3], equals(2147483647));
-          expect(row[4], equals(9223372036854775807));
-        }, onDone: () {
-          c.complete();
-        });
-      });
-      return c.future;
+          'select atinyint, asmallint, amediumint, aint, abigint from nums');
+
+      var row = await results.single;
+      expect(row[0], equals(127));
+      expect(row[1], equals(32767));
+      expect(row[2], equals(8388607));
+      expect(row[3], equals(2147483647));
+      expect(row[4], equals(9223372036854775807));
     });
 
-    test('maximum unsigned values', () {
-      var c = new Completer();
-      deleteInsertSelect(
+    test('maximum unsigned values', () async {
+      var results = await deleteInsertSelect(
           pool,
           'nums',
           "insert into nums (utinyint, usmallint, umediumint, uint, ubigint) values ("
           "255, 65535, 12777215, 4294967295, 18446744073709551615)",
-          'select utinyint, usmallint, umediumint, uint, ubigint from nums').then((results) {
-        results.listen((row) {
-          expect(row[0], equals(255));
-          expect(row[1], equals(65535));
-          expect(row[2], equals(12777215));
-          expect(row[3], equals(4294967295));
-          expect(row[4], equals(18446744073709551615));
-        }, onDone: () {
-          c.complete();
-        });
-      });
-      return c.future;
+          'select utinyint, usmallint, umediumint, uint, ubigint from nums');
+
+      var row = await results.single;
+
+      expect(row[0], equals(255));
+      expect(row[1], equals(65535));
+      expect(row[2], equals(12777215));
+      expect(row[3], equals(4294967295));
+      expect(row[4], equals(18446744073709551615));
     });
 
-    test('max decimal', () {
-      var c = new Completer();
-      deleteInsertSelect(
+    test('max decimal', () async {
+      var results = await deleteInsertSelect(
           pool,
           'nums',
           "insert into nums (adecimal) values ("
-          "99999999999999999999.9999999999)",
-          'select adecimal from nums').then((results) {
-        results.listen((row) {
-          expect(row[0], equals(9999999999.9999999999));
-        }, onDone: () {
-          c.complete();
-        });
-      });
-      return c.future;
-    }, skip: "Failing with Error 1264 (22003): Out of range value for column 'adecimal' at row 1");
+          "1234512345.1234512345)",
+          'select adecimal from nums');
 
-    test('min decimal', () {
-      var c = new Completer();
-      deleteInsertSelect(
+      var row = await results.single;
+
+      expect(row[0], equals(1234512345.1234512345));
+    });
+
+    test('min decimal', () async {
+      var results = await deleteInsertSelect(
           pool,
           'nums',
           "insert into nums (adecimal) values ("
-          "-99999999999999999999.9999999999)",
-          'select adecimal from nums').then((results) {
-        results.listen((row) {
-          expect(row[0], equals(-9999999999.9999999999));
-        }, onDone: () {
-          c.complete();
-        });
-      });
-      return c.future;
-    }, skip: "Failing with Error 1264 (22003): Out of range value for column 'adecimal' at row 1");
+          "-1234512345.1234512345)",
+          'select adecimal from nums');
+
+      var row = await results.single;
+
+      expect(row[0], equals(-1234512345.1234512345));
+    });
 
     test('close connection', () {
       pool.closeConnectionsWhenNotInUse();
