@@ -1,6 +1,15 @@
-part of sqljocky;
+library sqljocky.prepared_statements_test;
 
-void runPreparedStatementTests() {
+import 'package:test/test.dart';
+
+import 'package:sqljocky/constants.dart';
+import 'package:sqljocky/sqljocky.dart';
+
+import 'package:sqljocky/src/buffer.dart';
+import 'package:sqljocky/src/results/field_impl.dart';
+import 'package:sqljocky/src/prepared_statements/binary_data_packet.dart';
+
+void main() {
   group('read fields:', () {
     test('can read a tiny BLOB', () {
       var dataPacket = new BinaryDataPacket.forTests(null, null);

@@ -41,14 +41,12 @@ part '../lib/src/prepared_statements/execute_query_handler.dart';
 part '../lib/src/prepared_statements/prepared_query.dart';
 part '../lib/src/prepared_statements/prepare_handler.dart';
 
-part 'unit/test_prepared_statements.dart';
 part 'unit/test_field_by_name.dart';
 part 'unit/test_binary_data_packet.dart';
 part 'unit/test_execute_query_handler.dart';
 part 'unit/test_connection.dart';
 
 void main() {
-  runPreparedStatementTests();
   runFieldByNameTests();
   runBinaryDataPacketTests();
   runExecuteQueryHandlerTests();
