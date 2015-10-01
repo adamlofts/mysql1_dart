@@ -21,8 +21,11 @@ import 'src/mysql_protocol_error.dart';
 import 'src/auth/handshake_handler.dart';
 import 'src/auth/ssl_handler.dart';
 
+import 'src/handlers/debug_handler.dart';
 import 'src/handlers/handler.dart';
 import 'src/handlers/ok_packet.dart';
+import 'src/handlers/ping_handler.dart';
+import 'src/handlers/use_db_handler.dart';
 
 import 'src/prepared_statements/prepare_ok_packet.dart';
 import 'src/prepared_statements/binary_data_packet.dart';
@@ -51,11 +54,6 @@ part 'src/connection.dart';
 part 'src/transaction.dart';
 part 'src/retained_connection.dart';
 part 'src/query.dart';
-
-//general handlers
-part 'src/handlers/use_db_handler.dart';
-part 'src/handlers/ping_handler.dart';
-part 'src/handlers/debug_handler.dart';
 
 //prepared statements handlers
 part 'src/prepared_statements/prepared_query.dart';

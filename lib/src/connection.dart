@@ -131,7 +131,7 @@ class _Connection {
   }
 
   Future _useDatabase(String dbName) {
-    var handler = new _UseDbHandler(dbName);
+    var handler = new UseDbHandler(dbName);
     return processHandler(handler);
   }
 

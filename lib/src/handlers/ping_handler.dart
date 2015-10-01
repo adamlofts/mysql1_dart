@@ -1,7 +1,13 @@
-part of sqljocky;
+library sqljocky.ping_handler;
 
-class _PingHandler extends Handler {
-  _PingHandler() : super(new Logger("PingHandler"));
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import 'handler.dart';
+
+class PingHandler extends Handler {
+  PingHandler() : super(new Logger("PingHandler"));
 
   Buffer createRequest() {
     log.finest("Creating buffer for PingHandler");

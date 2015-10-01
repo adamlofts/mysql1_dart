@@ -1,9 +1,17 @@
-part of sqljocky;
+library sqljocky.use_db_handler;
 
-class _UseDbHandler extends Handler {
+import 'dart:convert';
+
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+import '../buffer.dart';
+import 'handler.dart';
+
+class UseDbHandler extends Handler {
   final String _dbName;
 
-  _UseDbHandler(String this._dbName) : super(new Logger("UseDbHandler"));
+  UseDbHandler(String this._dbName) : super(new Logger("UseDbHandler"));
 
   Buffer createRequest() {
     var encoded = UTF8.encode(_dbName);

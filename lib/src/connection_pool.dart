@@ -216,7 +216,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
     _log.info("Pinging server");
 
     var cnx = await _getConnection();
-    var x = await cnx.processHandler(new _PingHandler());
+    var x = await cnx.processHandler(new PingHandler());
     _log.fine("Pinged");
     return x;
   }
@@ -230,7 +230,7 @@ class ConnectionPool extends Object with _ConnectionHelpers implements Queriable
 
     var cnx = await _getConnection();
     try {
-      var x = await cnx.processHandler(new _DebugHandler());
+      var x = await cnx.processHandler(new DebugHandler());
       _log.fine("Message sent");
       return x;
     } catch (e) {
