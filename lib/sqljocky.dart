@@ -39,6 +39,7 @@ import 'src/results/results.dart';
 import 'src/results/row.dart';
 
 export 'src/blob.dart';
+export 'src/buffer.dart';
 export 'src/mysql_client_error.dart' hide createMySqlClientError;
 export 'src/mysql_exception.dart' hide createMySqlException;
 export 'src/mysql_protocol_error.dart' hide createMySqlProtocolError;
