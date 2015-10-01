@@ -360,7 +360,7 @@ class _ExecuteQueryHandler extends Handler {
 
   _handleRowPacket(Buffer response) {
     log.fine('Got a row packet');
-    var dataPacket = new _BinaryDataPacket(response, _fieldPackets, _fieldIndex);
+    var dataPacket = new BinaryDataPacket(response, _fieldPackets, _fieldIndex);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }

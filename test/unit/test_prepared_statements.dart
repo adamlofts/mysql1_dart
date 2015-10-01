@@ -3,150 +3,150 @@ part of sqljocky;
 void runPreparedStatementTests() {
   group('read fields:', () {
     test('can read a tiny BLOB', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([3, 65, 66, 67]);
       var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals("ABC"));
     });
 
     test('can read a very tiny BLOB', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0]);
       var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals(""));
     });
 
     test('can read a several BLOBs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0, 3, 65, 66, 67, 1, 65, 0, 0, 1, 65]);
       var field = new FieldImpl.forTests(FIELD_TYPE_BLOB);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals(""));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals("ABC"));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals("A"));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals(""));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals(""));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is Blob));
       expect(value.toString(), equals("A"));
     });
 
     test('can read TINYs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0, 3, 65]);
       var field = new FieldImpl.forTests(FIELD_TYPE_TINY);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(0));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(3));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(65));
     });
 
     test('can read SHORTs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0, 0, 255, 255, 255, 0]);
       var field = new FieldImpl.forTests(FIELD_TYPE_SHORT);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(0));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(-1));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(255));
     });
 
     test('can read INT24s', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new FieldImpl.forTests(FIELD_TYPE_INT24);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(0));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(-1));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(255));
     });
 
     test('can read LONGs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new FieldImpl.forTests(FIELD_TYPE_LONG);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(0));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(-1));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(255));
     });
 
     test('can read LONGLONGs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList(
           [0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0]);
       var field = new FieldImpl.forTests(FIELD_TYPE_LONGLONG);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(0));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(-1));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(true, equals(value is num));
       expect(value, equals(255));
     });
 
     test('can read NEWDECIMALs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([5, 0x31, 0x33, 0x2E, 0x39, 0x33]);
       var field = new FieldImpl.forTests(FIELD_TYPE_NEWDECIMAL);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(value is num, equals(true));
       expect(value, equals(13.93));
     });
@@ -155,7 +155,7 @@ void runPreparedStatementTests() {
     //test DOUBLE
 
     test('can read BITs', () {
-      var dataPacket = new _BinaryDataPacket._forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null, null);
       var buffer = new Buffer.fromList([
         1,
         123,
@@ -183,11 +183,11 @@ void runPreparedStatementTests() {
       ]);
       var field = new FieldImpl.forTests(FIELD_TYPE_BIT);
 
-      var value = dataPacket._readField(field, buffer);
+      var value = dataPacket.readField(field, buffer);
       expect(value is num, equals(true));
       expect(value, equals(123));
 
-      value = dataPacket._readField(field, buffer);
+      value = dataPacket.readField(field, buffer);
       expect(value is num, equals(true));
       expect(value, equals(0x0102030405060708090011121314151617181910));
     });

@@ -1,13 +1,23 @@
-part of sqljocky;
+library sqljocky.binary_data_packet;
 
-class _BinaryDataPacket extends Row {
+import 'package:logging/logging.dart';
+
+import '../../constants.dart';
+
+import '../blob.dart';
+import '../buffer.dart';
+
+import '../results/field_impl.dart';
+import '../results/row.dart';
+
+class BinaryDataPacket extends Row {
   List values;
   final Map<Symbol, int> _fieldIndex;
   final Logger log;
 
-  _BinaryDataPacket._forTests(this.values, this._fieldIndex) : log = new Logger("BinaryDataPacket");
+  BinaryDataPacket.forTests(this.values, this._fieldIndex) : log = new Logger("BinaryDataPacket");
 
-  _BinaryDataPacket(Buffer buffer, List<FieldImpl> fields, this._fieldIndex) : log = new Logger("BinaryDataPacket") {
+  BinaryDataPacket(Buffer buffer, List<FieldImpl> fields, this._fieldIndex) : log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
@@ -33,11 +43,11 @@ class _BinaryDataPacket extends Row {
         continue;
       }
       var field = fields[i];
-      values[i] = _readField(field, buffer);
+      values[i] = readField(field, buffer);
     }
   }
 
-  _readField(FieldImpl field, Buffer buffer) {
+  readField(FieldImpl field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");

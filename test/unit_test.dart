@@ -24,9 +24,12 @@ import 'package:sqljocky/src/handlers/ok_packet.dart';
 import 'package:sqljocky/src/mysql_client_error.dart';
 import 'package:sqljocky/src/mysql_exception.dart';
 import 'package:sqljocky/src/mysql_protocol_error.dart';
+
 import 'package:sqljocky/src/prepared_statements/prepare_ok_packet.dart';
+import 'package:sqljocky/src/prepared_statements/binary_data_packet.dart';
 
 import 'package:sqljocky/src/results/results_impl.dart';
+
 import 'package:sqljocky/src/query/query_stream_handler.dart';
 import 'package:sqljocky/src/query/result_set_header_packet.dart';
 import 'package:sqljocky/src/query/standard_data_packet.dart';
@@ -34,7 +37,6 @@ import 'package:sqljocky/src/query/standard_data_packet.dart';
 part '../lib/src/connection.dart';
 part '../lib/src/connection_pool.dart';
 part '../lib/src/handlers/use_db_handler.dart';
-part '../lib/src/prepared_statements/binary_data_packet.dart';
 part '../lib/src/prepared_statements/execute_query_handler.dart';
 part '../lib/src/prepared_statements/prepared_query.dart';
 part '../lib/src/prepared_statements/prepare_handler.dart';

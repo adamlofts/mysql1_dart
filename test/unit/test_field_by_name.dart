@@ -93,7 +93,7 @@ void runFieldByNameTests() {
       fieldIndex[new Symbol("three")] = 2;
       var values = [5, "hello", null];
 
-      Row row = new _BinaryDataPacket._forTests(values, fieldIndex);
+      Row row = new BinaryDataPacket.forTests(values, fieldIndex);
       expect(row.one, equals(5));
       expect(row.two, equals("hello"));
       expect(row.three, equals(null));
@@ -103,7 +103,7 @@ void runFieldByNameTests() {
       var fieldIndex = new Map<Symbol, int>();
       var values = [];
 
-      Row row = new _BinaryDataPacket._forTests(values, fieldIndex);
+      Row row = new BinaryDataPacket.forTests(values, fieldIndex);
 
       expect(() => print(row.one), throwsNoSuchMethodError);
     });
