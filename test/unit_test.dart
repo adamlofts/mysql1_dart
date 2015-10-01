@@ -41,7 +41,6 @@ part '../lib/src/query/result_set_header_packet.dart';
 part '../lib/src/query/standard_data_packet.dart';
 
 part 'unit/test_buffer.dart';
-part 'unit/test_auth_handler.dart';
 part 'unit/test_prepared_statements.dart';
 part 'unit/test_serialize.dart';
 part 'unit/test_types.dart';
@@ -56,7 +55,6 @@ void main() {
   runSerializationTests();
   runTypesTests();
   runPreparedStatementTests();
-  runAuthHandlerTests();
   runFieldByNameTests();
   runBinaryDataPacketTests();
   runExecuteQueryHandlerTests();

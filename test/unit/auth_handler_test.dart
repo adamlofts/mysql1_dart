@@ -1,6 +1,11 @@
-part of sqljocky;
+library sqljocky.auth_handler_test;
 
-void runAuthHandlerTests() {
+import 'package:sqljocky/constants.dart';
+import 'package:sqljocky/src/auth/auth_handler.dart';
+
+import 'package:test/test.dart';
+
+void main() {
   group('auth_handler:', () {
     test('hash password correctly', () {
       var handler = new AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
