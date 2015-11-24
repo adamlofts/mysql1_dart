@@ -305,7 +305,8 @@ class Buffer {
   /**
    * Returns a 24-bit integer, read from the buffer.
    */
-  int readUint24() => _list[_readPos++] + (_list[_readPos++] << 8) + (_list[_readPos++] << 16);
+  int readUint24() =>
+      _list[_readPos++] + (_list[_readPos++] << 8) + (_list[_readPos++] << 16);
 
   /**
    * Writes a 24 bit [integer] to the buffer.

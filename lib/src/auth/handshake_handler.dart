@@ -32,7 +32,8 @@ class HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
-  HandshakeHandler(String this._user, String this._password, int this._maxPacketSize,
+  HandshakeHandler(
+      String this._user, String this._password, int this._maxPacketSize,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
         this.useCompression = useCompression,
@@ -69,11 +70,13 @@ class HandshakeHandler extends Handler {
       scrambleLength = response.readByte();
       response.skip(10);
       if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
-        var scrambleBuffer2 = response.readList(math.max(13, scrambleLength - 8) - 1);
+        var scrambleBuffer2 =
+            response.readList(math.max(13, scrambleLength - 8) - 1);
 
         // read null-terminator
         response.readByte();
-        scrambleBuffer = new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+        scrambleBuffer =
+            new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
         scrambleBuffer.setRange(0, 8, scrambleBuffer1);
         scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
       } else {
@@ -100,19 +103,26 @@ class HandshakeHandler extends Handler {
     readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-      throw createMySqlClientError("Unsupported protocol (must be 4.1 or newer");
+      throw createMySqlClientError(
+          "Unsupported protocol (must be 4.1 or newer");
     }
 
     if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
-      throw createMySqlClientError("Old Password AUthentication is not supported");
+      throw createMySqlClientError(
+          "Old Password AUthentication is not supported");
     }
 
-    if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 && pluginName != MYSQL_NATIVE_PASSWORD) {
-      throw createMySqlClientError("Authentication plugin not supported: $pluginName");
+    if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
+        pluginName != MYSQL_NATIVE_PASSWORD) {
+      throw createMySqlClientError(
+          "Authentication plugin not supported: $pluginName");
     }
 
-    int clientFlags =
-        CLIENT_PROTOCOL_41 | CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | CLIENT_SECURE_CONNECTION;
+    int clientFlags = CLIENT_PROTOCOL_41 |
+        CLIENT_LONG_PASSWORD |
+        CLIENT_LONG_FLAG |
+        CLIENT_TRANSACTIONS |
+        CLIENT_SECURE_CONNECTION;
 
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout("Compression enabled");
@@ -134,12 +144,13 @@ class HandshakeHandler extends Handler {
               clientFlags,
               _maxPacketSize,
               CharacterSet.UTF8,
-              new AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8,
+              new AuthHandler(_user, _password, _db, scrambleBuffer,
+                  clientFlags, _maxPacketSize, CharacterSet.UTF8,
                   ssl: true)));
     }
 
     return new HandlerResponse(
-        nextHandler:
-            new AuthHandler(_user, _password, _db, scrambleBuffer, clientFlags, _maxPacketSize, CharacterSet.UTF8));
+        nextHandler: new AuthHandler(_user, _password, _db, scrambleBuffer,
+            clientFlags, _maxPacketSize, CharacterSet.UTF8));
   }
 }

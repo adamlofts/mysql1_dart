@@ -1,10 +1,12 @@
 part of integrationtests;
 
-void runIntTests(String user, String password, String db, int port, String host) {
+void runIntTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host);
+      pool = new ConnectionPool(
+          user: user, password: password, db: db, port: port, host: host);
       expect(pool, isNotNull);
     });
 
@@ -83,7 +85,8 @@ void runIntTests(String user, String password, String db, int port, String host)
 
     test('insert stuff', () async {
       print("insert stuff test");
-      var query = await pool.prepare("insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+      var query = await pool.prepare(
+          "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
           "adecimal, afloat, adouble, areal, "
           "aboolean, abit, aserial, "
           "adate, adatetime, atimestamp, atime, ayear, "
@@ -153,7 +156,8 @@ void runIntTests(String user, String password, String db, int port, String host)
 
     test('update', () async {
       Query preparedQuery;
-      var query = await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
+      var query =
+          await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
       preparedQuery = query;
       expect(1, equals(1)); // put some real expectations here
       await query.execute([127, "123456789.987654321"]);
@@ -169,7 +173,9 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('prepare execute', () async {
-      var results = await pool.prepareExecute('insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]);
+      var results = await pool.prepareExecute(
+          'insert into test1 (atinyint, adecimal) values (?, ?)',
+          [123, 123.321]);
       expect(results.affectedRows, equals(1));
     });
 
@@ -184,7 +190,8 @@ void runIntTests(String user, String password, String db, int port, String host)
       values = list[0];
       for (var i = 0; i < results.fields.length; i++) {
         var field = results.fields[i];
-        print("${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
+        print(
+            "${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
       }
     });
 
@@ -207,7 +214,8 @@ void runIntTests(String user, String password, String db, int port, String host)
         } else {
           expect(row[i], equals(values[i]));
         }
-        print("${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
+        print(
+            "${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
       }
     });
 
@@ -228,9 +236,11 @@ void runIntTests(String user, String password, String db, int port, String host)
 
     test('blobs in prepared queries', () async {
       var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
-      var results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
+      var results = await pool.prepareExecute(
+          "insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
       expect(1, equals(1)); // put some real expectations here
-      results = await pool.prepareExecute("select atext from test1 where aint = 12344", []);
+      results = await pool.prepareExecute(
+          "select atext from test1 where aint = 12344", []);
       var list = await results.toList();
       expect(list.length, equals(1));
       values = list[0];
@@ -238,7 +248,8 @@ void runIntTests(String user, String password, String db, int port, String host)
     });
 
     test('blobs with nulls', () async {
-      var results = await pool.query("insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")");
+      var results = await pool.query(
+          "insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")");
       expect(1, equals(1)); // put some real expectations here
       results = await pool.query("select atext from test1 where aint = 12345");
       results = await results.toList();
@@ -249,9 +260,11 @@ void runIntTests(String user, String password, String db, int port, String host)
       results = await pool.query("delete from test1 where aint = 12345");
       var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
       expect(1, equals(1)); // put some real expectations here
-      results = await pool.prepareExecute("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
+      results = await pool.prepareExecute(
+          "insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
       expect(1, equals(1)); // put some real expectations here
-      results = await pool.prepareExecute("select atext from test1 where aint = 12345", []);
+      results = await pool.prepareExecute(
+          "select atext from test1 where aint = 12345", []);
       results = await results.toList();
       expect(results.length, equals(1));
       values = results[0];

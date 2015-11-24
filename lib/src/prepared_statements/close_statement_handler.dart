@@ -9,7 +9,8 @@ import '../handlers/handler.dart';
 class CloseStatementHandler extends Handler {
   final int _handle;
 
-  CloseStatementHandler(int this._handle) : super(new Logger("CloseStatementHandler"));
+  CloseStatementHandler(int this._handle)
+      : super(new Logger("CloseStatementHandler"));
 
   Buffer createRequest() {
     var buffer = new Buffer(5);

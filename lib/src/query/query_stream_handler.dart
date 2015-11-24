@@ -33,7 +33,8 @@ class QueryStreamHandler extends Handler {
 
   StreamController<Row> _streamController;
 
-  QueryStreamHandler(String this._sql) : super(new Logger("QueryStreamHandler"));
+  QueryStreamHandler(String this._sql)
+      : super(new Logger("QueryStreamHandler"));
 
   Buffer createRequest() {
     var encoded = UTF8.encode(_sql);
@@ -78,7 +79,9 @@ class QueryStreamHandler extends Handler {
       _streamController.close();
     });
     this._fieldIndex = createFieldIndex();
-    return new HandlerResponse(result: new ResultsImpl(null, null, fieldPackets, stream: _streamController.stream));
+    return new HandlerResponse(
+        result: new ResultsImpl(null, null, fieldPackets,
+            stream: _streamController.stream));
   }
 
   _handleEndOfRows() {
@@ -102,7 +105,8 @@ class QueryStreamHandler extends Handler {
   }
 
   _handleRowPacket(Buffer response) {
-    var dataPacket = new StandardDataPacket(response, fieldPackets, _fieldIndex);
+    var dataPacket =
+        new StandardDataPacket(response, fieldPackets, _fieldIndex);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }
@@ -117,7 +121,9 @@ class QueryStreamHandler extends Handler {
 
     //TODO is this finished value right?
     return new HandlerResponse(
-        finished: finished, result: new ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, fieldPackets));
+        finished: finished,
+        result: new ResultsImpl(
+            _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
   }
 
   Map<Symbol, int> createFieldIndex() {

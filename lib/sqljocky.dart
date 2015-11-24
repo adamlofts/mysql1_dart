@@ -1,7 +1,6 @@
 library sqljocky;
 // named after Jocky Wilson, the late, great darts player
 
-
 export 'src/blob.dart';
 export 'src/buffer.dart';
 export 'src/connection_pool.dart';

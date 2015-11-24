@@ -19,8 +19,14 @@ class AuthHandler extends Handler {
   final int characterSet;
   final bool _ssl;
 
-  AuthHandler(String this.username, String this.password, String this.db, List<int> this.scrambleBuffer,
-      int this.clientFlags, int this.maxPacketSize, int this.characterSet,
+  AuthHandler(
+      String this.username,
+      String this.password,
+      String this.db,
+      List<int> this.scrambleBuffer,
+      int this.clientFlags,
+      int this.maxPacketSize,
+      int this.characterSet,
       {bool ssl: false})
       : this._ssl = false,
         super(new Logger("AuthHandler"));

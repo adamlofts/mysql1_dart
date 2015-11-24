@@ -38,9 +38,11 @@ class BufferedSocket {
   StreamSubscription _subscription;
   bool _closed = false;
 
-  BufferedSocket._(this._socket, this.onDataReady, this.onDone, this.onError, this.onClosed)
+  BufferedSocket._(
+      this._socket, this.onDataReady, this.onDone, this.onError, this.onClosed)
       : log = new Logger("BufferedSocket") {
-    _subscription = _socket.listen(_onData, onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
+    _subscription = _socket.listen(_onData,
+        onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
   }
 
   _onSocketError(error) {
@@ -68,7 +70,8 @@ class BufferedSocket {
     try {
       var socket;
       socket = await socketFactory(host, port);
-      var bufferedSocket = new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
+      var bufferedSocket =
+          new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
       if (onConnection != null) {
         onConnection(bufferedSocket);
       }
@@ -132,7 +135,8 @@ class BufferedSocket {
 
   void _writeBuffer() {
     log.fine("_writeBuffer offset=${_writeOffset}");
-    int bytesWritten = _writingBuffer.writeToSocket(_socket, _writeOffset, _writeLength - _writeOffset);
+    int bytesWritten = _writingBuffer.writeToSocket(
+        _socket, _writeOffset, _writeLength - _writeOffset);
     log.fine("Wrote $bytesWritten bytes");
     if (log.isLoggable(Level.FINE)) {
       log.fine("\n${Buffer.debugChars(_writingBuffer.list)}");
@@ -175,7 +179,8 @@ class BufferedSocket {
   }
 
   void _readBuffer() {
-    int bytesRead = _readingBuffer.readFromSocket(_socket, _readingBuffer.length - _readOffset);
+    int bytesRead = _readingBuffer.readFromSocket(
+        _socket, _readingBuffer.length - _readOffset);
     log.fine("read $bytesRead bytes");
     if (log.isLoggable(Level.FINE)) {
       log.fine("\n${Buffer.debugChars(_readingBuffer.list)}");
@@ -194,10 +199,12 @@ class BufferedSocket {
 
   Future startSSL() async {
     log.fine("Securing socket");
-    var socket = await RawSecureSocket.secure(_socket, subscription: _subscription, onBadCertificate: (cert) => true);
+    var socket = await RawSecureSocket.secure(_socket,
+        subscription: _subscription, onBadCertificate: (cert) => true);
     log.fine("Socket is secure");
     _socket = socket;
-    _subscription = _socket.listen(_onData, onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
+    _subscription = _socket.listen(_onData,
+        onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
     _socket.writeEventsEnabled = true;
     _socket.readEventsEnabled = true;
   }

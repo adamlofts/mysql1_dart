@@ -64,14 +64,16 @@ class Example {
 
   Future addData() async {
     print("adding");
-    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    var query =
+        await pool.prepare("insert into people (name, age) values (?, ?)");
     var parameters = [
       ["Dave", 15],
       ["John", 16],
       ["Mavis", 93]
     ];
     await query.executeMulti(parameters);
-    query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+    query = await pool
+        .prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
     parameters = [
       ["Rover", "Dog", 1],
       ["Daisy", "Cow", 2],
@@ -84,7 +86,8 @@ class Example {
     print("adding");
     var ids = [];
     var trans = await pool.startTransaction();
-    var query = await trans.prepare("insert into people (name, age) values (?, ?)");
+    var query =
+        await trans.prepare("insert into people (name, age) values (?, ?)");
     var parameters = [
       ["Dave", 15],
       ["John", 16],
@@ -95,7 +98,8 @@ class Example {
       ids.add(result.insertId);
     }
     print("added people");
-    query = await trans.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+    query = await trans
+        .prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
     var id1, id2, id3;
     if (insertedIds.length < 3) {
       id1 = ids[0];
@@ -126,9 +130,10 @@ class Example {
 
   Future readData() async {
     print("querying");
-    var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
-        'from people p '
-        'left join pets t on t.owner_id = p.id');
+    var result =
+        await pool.query('select p.id, p.name, p.age, t.name, t.species '
+            'from people p '
+            'left join pets t on t.owner_id = p.id');
     print("got results");
     var list = await result.toList();
     if (list != null) {
@@ -136,7 +141,8 @@ class Example {
         if (row[3] == null) {
           print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
         } else {
-          print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+          print(
+              "ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
         }
       }
     }
@@ -167,7 +173,13 @@ void main() {
 
       // create a connection
       log.fine("opening connection");
-      var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: 5);
+      var pool = new ConnectionPool(
+          host: host,
+          port: port,
+          user: user,
+          password: password,
+          db: db,
+          max: 5);
       log.fine("connection open");
       // create an example class
       var example = new Example(pool);

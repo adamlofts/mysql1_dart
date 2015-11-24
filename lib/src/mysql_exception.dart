@@ -2,7 +2,8 @@ library sqljocky.my_sql_exception;
 
 import 'buffer.dart';
 
-MySqlException createMySqlException(Buffer buffer) => new MySqlException._(buffer);
+MySqlException createMySqlException(Buffer buffer) =>
+    new MySqlException._(buffer);
 
 /**
  * An exception which is returned by the MySQL server.

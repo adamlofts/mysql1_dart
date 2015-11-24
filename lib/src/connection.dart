@@ -6,7 +6,6 @@ import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
 
-
 import 'auth/handshake_handler.dart';
 import 'auth/ssl_handler.dart';
 import 'buffer.dart';
@@ -105,12 +104,20 @@ class Connection {
    * is succesful.
    */
   Future connect(
-      {String host, int port, String user, String password, String db, bool useCompression, bool useSSL}) async {
+      {String host,
+      int port,
+      String user,
+      String password,
+      String db,
+      bool useCompression,
+      bool useSSL}) async {
     if (socket != null) {
-      throw createMySqlClientError("Cannot connect to server while a connection is already open");
+      throw createMySqlClientError(
+          "Cannot connect to server while a connection is already open");
     }
 
-    _handler = new HandshakeHandler(user, password, _maxPacketSize, db, useCompression, useSSL);
+    _handler = new HandshakeHandler(
+        user, password, _maxPacketSize, db, useCompression, useSSL);
 
     _completer = new Completer();
     log.fine("opening connection to $host:$port/$db");
@@ -183,7 +190,8 @@ class Connection {
       var combinedBuffer = new Buffer(length);
       var start = 0;
       _largePacketBuffers.forEach((aBuffer) {
-        combinedBuffer.list.setRange(start, start + aBuffer.length, aBuffer.list);
+        combinedBuffer.list
+            .setRange(start, start + aBuffer.length, aBuffer.list);
         start += aBuffer.length;
       });
       _largePacketBuffers.clear();
@@ -226,7 +234,8 @@ class Connection {
       }
       if (response.hasResult) {
         if (_completer.isCompleted) {
-          _completer.completeError(new StateError("Request has already completed"));
+          _completer
+              .completeError(new StateError("Request has already completed"));
         }
         _completer.complete(response.result);
       }
@@ -243,7 +252,8 @@ class Connection {
 
   void _finishAndReuse() {
     if (autoRelease && !inTransaction) {
-      log.finest("Response finished for #$number, setting handler to null and waiting to release and reuse");
+      log.finest(
+          "Response finished for #$number, setting handler to null and waiting to release and reuse");
       new Future.delayed(new Duration(seconds: 0), () {
         if (_closeRequested) {
           close();
@@ -264,7 +274,8 @@ class Connection {
 
   Future sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
-      throw createMySqlClientError("Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
+      throw createMySqlClientError(
+          "Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
     }
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;
@@ -273,7 +284,8 @@ class Connection {
       _headerBuffer[3] = ++_packetNumber;
       var encodedHeader = ZLIB.encode(_headerBuffer.list);
       var encodedBuffer = ZLIB.encode(buffer.list);
-      _compressedHeaderBuffer.writeUint24(encodedHeader.length + encodedBuffer.length);
+      _compressedHeaderBuffer
+          .writeUint24(encodedHeader.length + encodedBuffer.length);
       _compressedHeaderBuffer.writeByte(++_compressedPacketNumber);
       _compressedHeaderBuffer.writeUint24(4 + buffer.length);
       return socket.writeBuffer(_compressedHeaderBuffer);
@@ -292,7 +304,8 @@ class Connection {
     _headerBuffer[3] = ++_packetNumber;
     log.fine("sending header, packet $_packetNumber");
     await socket.writeBuffer(_headerBuffer);
-    log.fine("sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
+    log.fine(
+        "sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
     await socket.writeBufferPart(buffer, start, len);
     if (len == 0xFFFFFF) {
       return _sendBufferPart(buffer, start + len);
@@ -307,7 +320,8 @@ class Connection {
    *
    * Returns a future
    */
-  Future<dynamic> processHandler(Handler handler, {bool noResponse: false}) async {
+  Future<dynamic> processHandler(Handler handler,
+      {bool noResponse: false}) async {
     if (_handler != null) {
       throw createMySqlClientError(
           "Connection #$number cannot process a request for $handler while a request is already in progress for $_handler");

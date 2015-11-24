@@ -38,7 +38,8 @@ class ExecuteQueryHandler extends Handler {
   bool _executed;
   bool _cancelled = false;
 
-  ExecuteQueryHandler(PreparedQuery this._preparedQuery, bool this._executed, List this._values)
+  ExecuteQueryHandler(
+      PreparedQuery this._preparedQuery, bool this._executed, List this._values)
       : super(new Logger("ExecuteQueryHandler")) {
     fieldPackets = <FieldImpl>[];
   }
@@ -176,7 +177,8 @@ class ExecuteQueryHandler extends Handler {
   }
 
   int _measureDouble(value, preparedValue) {
-    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+    return Buffer.measureLengthCodedBinary(preparedValue.length) +
+        preparedValue.length;
   }
 
   _writeDouble(value, preparedValue, Buffer buffer) {
@@ -244,7 +246,8 @@ class ExecuteQueryHandler extends Handler {
   }
 
   int _measureBlob(value, preparedValue) {
-    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+    return Buffer.measureLengthCodedBinary(preparedValue.length) +
+        preparedValue.length;
   }
 
   _writeBlob(value, preparedValue, Buffer buffer) {
@@ -258,7 +261,8 @@ class ExecuteQueryHandler extends Handler {
   }
 
   int _measureString(value, preparedValue) {
-    return Buffer.measureLengthCodedBinary(preparedValue.length) + preparedValue.length;
+    return Buffer.measureLengthCodedBinary(preparedValue.length) +
+        preparedValue.length;
   }
 
   _writeString(value, preparedValue, Buffer buffer) {
@@ -342,7 +346,9 @@ class ExecuteQueryHandler extends Handler {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         return new HandlerResponse(
-            finished: true, result: new ResultsImpl(_okPacket.insertId, _okPacket.affectedRows, null));
+            finished: true,
+            result: new ResultsImpl(
+                _okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
     return HandlerResponse.notFinished;
@@ -355,7 +361,9 @@ class ExecuteQueryHandler extends Handler {
       _cancelled = true;
     };
     this._fieldIndex = createFieldIndex();
-    return new HandlerResponse(result: new ResultsImpl(null, null, fieldPackets, stream: _streamController.stream));
+    return new HandlerResponse(
+        result: new ResultsImpl(null, null, fieldPackets,
+            stream: _streamController.stream));
   }
 
   _handleEndOfRows() {

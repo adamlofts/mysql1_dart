@@ -49,7 +49,7 @@ abstract class ConnectionPool implements QueriableConnection {
    */
   Future<RetainedConnection> getConnection();
 
-    /**
+  /**
    * Sends a debug message to the server. Returns a [Future] that completes
    * when the server replies.
    */

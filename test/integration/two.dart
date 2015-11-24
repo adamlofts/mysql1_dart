@@ -1,10 +1,17 @@
 part of integrationtests;
 
-void runIntTests2(String user, String password, String db, int port, String host) {
+void runIntTests2(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('some tests:', () {
     test('create pool', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 1);
       expect(pool, isNotNull);
     });
 

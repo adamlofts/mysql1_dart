@@ -1,6 +1,7 @@
 library sqljocky.mysql_client_error;
 
-MySqlClientError createMySqlClientError(String message) => new MySqlClientError._(message);
+MySqlClientError createMySqlClientError(String message) =>
+    new MySqlClientError._(message);
 
 /**
  * An error which is thrown when the client is used improperly.

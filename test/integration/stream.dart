@@ -1,15 +1,24 @@
 part of integrationtests;
 
-void runStreamTests(String user, String password, String db, int port, String host) {
+void runStreamTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('stream tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
-      return setup(pool, "stream", "create table stream (id integer, name text)");
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 1);
+      return setup(
+          pool, "stream", "create table stream (id integer, name text)");
     });
 
     test('store data', () async {
-      var query = await pool.prepare('insert into stream (id, name) values (?, ?)');
+      var query =
+          await pool.prepare('insert into stream (id, name) values (?, ?)');
       await query.execute([0, 'Bob']);
     });
 

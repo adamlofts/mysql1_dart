@@ -1,11 +1,21 @@
 part of integrationtests;
 
-void runExecuteMultiTests(String user, String password, String db, int port, String host) {
+void runExecuteMultiTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('executeMulti tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 2);
-      return setup(pool, "stream", "create table stream (id integer, name text)",
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 2);
+      return setup(
+          pool,
+          "stream",
+          "create table stream (id integer, name text)",
           "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
     });
 
@@ -40,7 +50,9 @@ void runExecuteMultiTests(String user, String password, String db, int port, Str
 
       await query.close();
       await tran.rollback();
-    }, skip: "Not completely addressed - https://github.com/jamesots/sqljocky/issues/43");
+    },
+        skip:
+            "Not completely addressed - https://github.com/jamesots/sqljocky/issues/43");
 
     test('close connection', () {
       pool.closeConnectionsWhenNotInUse();

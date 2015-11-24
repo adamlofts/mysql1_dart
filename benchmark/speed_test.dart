@@ -52,7 +52,8 @@ class SpeedTest {
     var sw = new Stopwatch()..start();
     var futures = <Future>[];
     for (var i = 0; i < SIMPLE_INSERTS; i++) {
-      futures.add(pool.query("insert into people (name, age) values ('person$i', $i)"));
+      futures.add(
+          pool.query("insert into people (name, age) values ('person$i', $i)"));
     }
     await Future.wait(futures);
     logTime("simple insertions", sw);
@@ -63,7 +64,8 @@ class SpeedTest {
     log.fine("inserting prepared data");
     var sw = new Stopwatch()..start();
     var futures = <Future>[];
-    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    var query =
+        await pool.prepare("insert into people (name, age) values (?, ?)");
     for (var i = 0; i < PREPARED_INSERTS; i++) {
       futures.add(query.execute(["person$i", i]));
     }
@@ -101,8 +103,13 @@ main() async {
 
   // create a connection
   log.fine("opening connection");
-  var pool =
-      new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: SpeedTest.POOL_SIZE);
+  var pool = new ConnectionPool(
+      host: host,
+      port: port,
+      user: user,
+      password: password,
+      db: db,
+      max: SpeedTest.POOL_SIZE);
   log.fine("connection open");
 
   var stopwatch = new Stopwatch()..start();

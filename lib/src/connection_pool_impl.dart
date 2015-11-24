@@ -25,7 +25,9 @@ import 'query/query_stream_handler.dart';
 
 import 'results/results.dart';
 
-class ConnectionPoolImpl extends Object with ConnectionHelpers implements ConnectionPool, QueriableConnection {
+class ConnectionPoolImpl extends Object
+    with ConnectionHelpers
+    implements ConnectionPool, QueriableConnection {
   final Logger _log;
 
   final String _host;
@@ -79,11 +81,13 @@ class ConnectionPoolImpl extends Object with ConnectionHelpers implements Connec
     var c = new Completer<Connection>();
 
     if (_log.isLoggable(Level.FINEST)) {
-      var inUseCount = _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
+      var inUseCount =
+          _pool.fold(0, (value, cnx) => cnx.inUse ? value + 1 : value);
       _log.finest("Number of in-use connections: $inUseCount");
     }
 
-    var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse, orElse: () => null);
+    var cnx = _pool.firstWhere((aConnection) => !aConnection.inUse,
+        orElse: () => null);
     if (cnx != null) {
       _log.finest("Using open pooled cnx#${cnx.number}");
       cnx.use();
@@ -147,7 +151,8 @@ class ConnectionPoolImpl extends Object with ConnectionHelpers implements Connec
       return;
     }
 
-    if (_requestedConnections.containsKey(cnx) && _requestedConnections[cnx].length > 0) {
+    if (_requestedConnections.containsKey(cnx) &&
+        _requestedConnections[cnx].length > 0) {
       _log.finest("Reusing cnx#${cnx.number} for a requested operation");
       var c = _requestedConnections[cnx].removeFirst();
       cnx.use();
@@ -260,7 +265,8 @@ class ConnectionPoolImpl extends Object with ConnectionHelpers implements Connec
         _log.finest("Connection not ready");
         await _waitUntilReady(cnx);
         _log.finest("Connection ready - closing query: ${q.sql}");
-        var handler = new CloseStatementHandler(preparedQuery.statementHandlerId);
+        var handler =
+            new CloseStatementHandler(preparedQuery.statementHandlerId);
         cnx.autoRelease = !retain;
         cnx.processHandler(handler, noResponse: true);
       }

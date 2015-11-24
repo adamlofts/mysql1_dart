@@ -1,12 +1,20 @@
 part of integrationtests;
 
-void runRowTests(String user, String password, String db, int port, String host) {
+void runRowTests(
+    String user, String password, String db, int port, String host) {
   group('row tests:', () {
     ConnectionPool pool;
 
     setUp(() {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
-      return setup(pool, "row", "create table row (id integer, name text, `the field` text, length integer)");
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 1);
+      return setup(pool, "row",
+          "create table row (id integer, name text, `the field` text, length integer)");
     });
 
     tearDown(() {
@@ -14,15 +22,19 @@ void runRowTests(String user, String password, String db, int port, String host)
     });
 
     test('store data', () async {
-      var query = await pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
+      var query = await pool.prepare(
+          'insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
       await query.execute([0, 'Bob', 'Thing', 5000]);
     });
 
     test('first field is empty', () async {
-      final query = await pool.prepare('insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
+      final query = await pool.prepare(
+          'insert into row (id, name, `the field`, length) values (?, ?, ?, ?)');
       await (await query.execute([1, '', 'Thing', 5000])).toList();
-      Iterable<Row> results = await (await pool.query("select name, length from row")).toList();
-      expect(results.map((r) => [r[0].toString(), r[1]]).toList().first, equals(['', 5000]));
+      Iterable<Row> results =
+          await (await pool.query("select name, length from row")).toList();
+      expect(results.map((r) => [r[0].toString(), r[1]]).toList().first,
+          equals(['', 5000]));
     });
 
     test('select from stream using query and listen', () async {
@@ -47,7 +59,8 @@ void runRowTests(String user, String password, String db, int port, String host)
       var futures = [];
       for (var i = 0; i < 5; i++) {
         var c = new Completer();
-        var results = await pool.prepareExecute('select * from row where id = ?', [0]);
+        var results =
+            await pool.prepareExecute('select * from row where id = ?', [0]);
         results.listen((row) {
           expect(row.id, equals(0));
           expect(row.name.toString(), equals("Bob"));

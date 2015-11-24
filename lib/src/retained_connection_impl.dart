@@ -59,7 +59,9 @@ class _TransactionPool extends ConnectionPoolImpl {
   removeConnection(Connection cnx) {}
 }
 
-abstract class _RetainedConnectionBase extends Object with ConnectionHelpers implements QueriableConnection {
+abstract class _RetainedConnectionBase extends Object
+    with ConnectionHelpers
+    implements QueriableConnection {
   Connection _cnx;
   ConnectionPoolImpl _pool;
   bool _released;
@@ -74,7 +76,8 @@ abstract class _RetainedConnectionBase extends Object with ConnectionHelpers imp
 
   Future<Query> prepare(String sql) async {
     _checkReleased();
-    var query = new QueryImpl.forTransaction(new _TransactionPool(_cnx), _cnx, sql);
+    var query =
+        new QueryImpl.forTransaction(new _TransactionPool(_cnx), _cnx, sql);
     await query.prepare(true);
     return new Future.value(query);
   }
@@ -97,7 +100,8 @@ abstract class _RetainedConnectionBase extends Object with ConnectionHelpers imp
   bool get usingSSL => _cnx.usingSSL;
 }
 
-class RetainedConnectionImpl extends _RetainedConnectionBase implements RetainedConnection {
+class RetainedConnectionImpl extends _RetainedConnectionBase
+    implements RetainedConnection {
   RetainedConnectionImpl(cnx, pool) : super(cnx, pool);
 
   Future release() {

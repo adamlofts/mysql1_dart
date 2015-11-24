@@ -12,7 +12,8 @@ class SSLHandler extends Handler {
 
   final Handler nextHandler;
 
-  SSLHandler(this.clientFlags, this.maxPacketSize, this.characterSet, this.nextHandler)
+  SSLHandler(
+      this.clientFlags, this.maxPacketSize, this.characterSet, this.nextHandler)
       : super(new Logger("SSLHandler"));
 
   Buffer createRequest() {

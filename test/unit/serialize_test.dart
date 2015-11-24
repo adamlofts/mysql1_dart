@@ -9,8 +9,10 @@ final double LARGEST_POSITIVE_SUBNORMAL_FLOAT = 1.1754942106924411E-38;
 final double SMALLEST_POSITIVE_NORMAL_FLOAT = 1.1754943508222875E-38;
 final double LARGEST_POSITIVE_NORMAL_FLOAT = 3.4028234663852886E+38;
 
-final double LARGEST_NEGATIVE_NORMAL_FLOAT = -1.1754943508222875E-38; // closest to zero
-final double SMALLEST_NEGATIVE_NORMAL_FLOAT = -3.4028234663852886E+38; // most negative
+final double LARGEST_NEGATIVE_NORMAL_FLOAT =
+    -1.1754943508222875E-38; // closest to zero
+final double SMALLEST_NEGATIVE_NORMAL_FLOAT =
+    -3.4028234663852886E+38; // most negative
 final double LARGEST_NEGATIVE_SUBNORMAL_FLOAT = -1.1754942106924411E-38;
 final double SMALLEST_NEGATIVE_SUBNORMAL_FLOAT = -1.4012984643248170E-45;
 
@@ -19,15 +21,18 @@ final double LARGEST_POSITIVE_SUBNORMAL_DOUBLE = 2.2250738585072010E-308;
 final double SMALLEST_POSITIVE_NORMAL_DOUBLE = 2.2250738585072014E-308;
 final double LARGEST_POSITIVE_NORMAL_DOUBLE = 1.7976931348623157E+308;
 
-final double LARGEST_NEGATIVE_NORMAL_DOUBLE = -2.2250738585072014E-308; // closest to zero
-final double SMALLEST_NEGATIVE_NORMAL_DOUBLE = -1.7976931348623157E+308; // most negative
+final double LARGEST_NEGATIVE_NORMAL_DOUBLE =
+    -2.2250738585072014E-308; // closest to zero
+final double SMALLEST_NEGATIVE_NORMAL_DOUBLE =
+    -1.7976931348623157E+308; // most negative
 final double LARGEST_NEGATIVE_SUBNORMAL_DOUBLE = -4.9406564584124654E-324;
 final double SMALLEST_NEGATIVE_SUBNORMAL_DOUBLE = -2.2250738585072010E-308;
 
 String _bufferToHexString(Buffer list, [bool reverse = false]) {
   var s = new StringBuffer();
   for (int i = 0; i < list.length; i++) {
-    var x = list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
+    var x =
+        list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
     if (x.length == 1) {
       s.write("0");
     }

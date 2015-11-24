@@ -13,7 +13,8 @@ class StandardDataPacket extends Row {
   final List<dynamic> values;
   final Map<Symbol, int> _fieldIndex;
 
-  StandardDataPacket(Buffer buffer, List<FieldImpl> fieldPackets, this._fieldIndex)
+  StandardDataPacket(
+      Buffer buffer, List<FieldImpl> fieldPackets, this._fieldIndex)
       : values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
       var list;

@@ -28,7 +28,8 @@ class TableDropper {
       try {
         await pool.query('drop table $table');
       } catch (e) {
-        if (e is MySqlException && (e as MySqlException).errorNumber == ERROR_UNKNOWN_TABLE) {
+        if (e is MySqlException &&
+            (e as MySqlException).errorNumber == ERROR_UNKNOWN_TABLE) {
           // if it's an unknown table, ignore the error and continue
         } else {
           rethrow;

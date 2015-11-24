@@ -56,7 +56,8 @@ class FieldImpl implements Field {
     }
   }
 
-  String toString() => "Catalog: $_catalog, DB: $_db, Table: $_table, Org Table: $_orgTable, "
+  String toString() =>
+      "Catalog: $_catalog, DB: $_db, Table: $_table, Org Table: $_orgTable, "
       "Name: $_name, Org Name: $_orgName, Character Set: $_characterSet, "
       "Length: $_length, Type: $_type, Flags: $_flags, Decimals: $_decimals, "
       "Default Value: $_defaultValue";

@@ -1,11 +1,21 @@
 part of integrationtests;
 
-void runCharsetTests(String user, String password, String db, int port, String host) {
+void runCharsetTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('charset tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
-      return setup(pool, "cset", "create table cset (stuff text character set utf8)",
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 1);
+      return setup(
+          pool,
+          "cset",
+          "create table cset (stuff text character set utf8)",
           "insert into cset (stuff) values ('здрасти')");
     });
 

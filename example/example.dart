@@ -52,7 +52,8 @@ class Example {
   }
 
   Future addData() async {
-    var query = await pool.prepare("insert into people (name, age) values (?, ?)");
+    var query =
+        await pool.prepare("insert into people (name, age) values (?, ?)");
     print("prepared query 1");
     var parameters = [
       ["Dave", 15],
@@ -62,7 +63,8 @@ class Example {
     await query.executeMulti(parameters);
 
     print("executed query 1");
-    query = await pool.prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
+    query = await pool
+        .prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
 
     print("prepared query 2");
     parameters = [
@@ -78,15 +80,17 @@ class Example {
 
   Future readData() async {
     print("querying");
-    var result = await pool.query('select p.id, p.name, p.age, t.name, t.species '
-        'from people p '
-        'left join pets t on t.owner_id = p.id');
+    var result =
+        await pool.query('select p.id, p.name, p.age, t.name, t.species '
+            'from people p '
+            'left join pets t on t.owner_id = p.id');
     print("got results");
     return result.forEach((row) {
       if (row[3] == null) {
         print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, No Pets");
       } else {
-        print("ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
+        print(
+            "ID: ${row[0]}, Name: ${row[1]}, Age: ${row[2]}, Pet Name: ${row[3]}, Pet Species ${row[4]}");
       }
     });
   }
@@ -102,7 +106,8 @@ main() async {
 
   // create a connection
   print("opening connection");
-  var pool = new ConnectionPool(host: host, port: port, user: user, password: password, db: db, max: 1);
+  var pool = new ConnectionPool(
+      host: host, port: port, user: user, password: password, db: db, max: 1);
   print("connection open");
   // create an example class
   var example = new Example(pool);

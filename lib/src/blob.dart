@@ -17,7 +17,8 @@ class Blob {
   final List<int> _codeUnits;
 
   /// Create a [Blob] from a [string].
-  factory Blob.fromString(String string) => new Blob.fromBytes(UTF8.encode(string));
+  factory Blob.fromString(String string) =>
+      new Blob.fromBytes(UTF8.encode(string));
 
   /// Create a [Blob] from a list of [codeUnits].
   Blob.fromBytes(List<int> codeUnits) : this._codeUnits = codeUnits;
@@ -30,5 +31,6 @@ class Blob {
 
   int get hashCode => _listQuality.hash(_codeUnits);
 
-  bool operator ==(Object other) => other is Blob && _listQuality.equals(_codeUnits, other.toBytes());
+  bool operator ==(Object other) =>
+      other is Blob && _listQuality.equals(_codeUnits, other.toBytes());
 }

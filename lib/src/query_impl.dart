@@ -1,6 +1,5 @@
 library sqljocky.query_impl;
 
-
 import 'dart:async';
 
 import 'package:logging/logging.dart';
@@ -16,7 +15,6 @@ import 'prepared_statements/prepared_query.dart';
 
 import 'results/results_impl.dart';
 import 'results/results.dart';
-
 
 class QueryImpl extends Object with ConnectionHelpers implements Query {
   final ConnectionPoolImpl _pool;
@@ -104,12 +102,15 @@ class QueryImpl extends Object with ConnectionHelpers implements Query {
     _log.fine("Prepare...");
     var preparedQuery = await prepare(true);
     _log.fine("Prepared, now to execute");
-    Results results = await _execute(preparedQuery, values == null ? [] : values);
-    _log.fine("Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
+    Results results =
+        await _execute(preparedQuery, values == null ? [] : values);
+    _log.fine(
+        "Got prepared query results on #${preparedQuery.cnx.number} for: ${sql}");
     return results;
   }
 
-  Future<Results> _execute(PreparedQuery preparedQuery, List values, {bool retainConnection: false}) async {
+  Future<Results> _execute(PreparedQuery preparedQuery, List values,
+      {bool retainConnection: false}) async {
     _log.finest("About to execute");
     var handler = new ExecuteQueryHandler(preparedQuery, _executed, values);
     preparedQuery.cnx.autoRelease = !retainConnection;
@@ -132,13 +133,15 @@ class QueryImpl extends Object with ConnectionHelpers implements Query {
    */
   Future<List<Results>> executeMulti(List<List> parameters) async {
     var preparedQuery = await prepare(true);
-    _log.fine("Prepared query for multi execution. Number of values: ${parameters.length}");
+    _log.fine(
+        "Prepared query for multi execution. Number of values: ${parameters.length}");
     var resultList = new List<Results>();
 
     for (int i = 0; i < parameters.length; i++) {
       try {
         _log.fine("Executing query, loop $i");
-        Results results = await _execute(preparedQuery, parameters[i], retainConnection: true);
+        Results results = await _execute(preparedQuery, parameters[i],
+            retainConnection: true);
         _log.fine("Got results, loop $i");
         Results deStreamedResults = await ResultsImpl.destream(results);
         resultList.add(deStreamedResults);

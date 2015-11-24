@@ -8,12 +8,35 @@ import 'package:test/test.dart';
 void main() {
   group('auth_handler:', () {
     test('hash password correctly', () {
-      var handler = new AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
+      var handler = new AuthHandler(
+          'username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
 
       var hash = handler.getHash();
 
       expect(
-          hash, equals([211, 136, 65, 109, 153, 241, 227, 117, 168, 83, 80, 136, 188, 116, 50, 54, 235, 225, 54, 225]));
+          hash,
+          equals([
+            211,
+            136,
+            65,
+            109,
+            153,
+            241,
+            227,
+            117,
+            168,
+            83,
+            80,
+            136,
+            188,
+            116,
+            50,
+            54,
+            235,
+            225,
+            54,
+            225
+          ]));
     });
 
     test('hash password correctly', () {
@@ -22,7 +45,8 @@ void main() {
       var characterSet = 56;
       var username = 'Boris';
       var password = 'Password';
-      var handler = new AuthHandler(username, password, null, [1, 2, 3, 4], clientFlags, maxPacketSize, characterSet);
+      var handler = new AuthHandler(username, password, null, [1, 2, 3, 4],
+          clientFlags, maxPacketSize, characterSet);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
@@ -45,8 +69,14 @@ void main() {
       var username = 'iamtheuserwantingtologin';
       var password = 'wibblededee';
       var database = 'thisisthenameofthedatabase';
-      var handler = new AuthHandler(username, password, database, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], clientFlags,
-          maxPacketSize, characterSet);
+      var handler = new AuthHandler(
+          username,
+          password,
+          database,
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+          clientFlags,
+          maxPacketSize,
+          characterSet);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
@@ -68,7 +98,8 @@ void main() {
     var username = 'Борис';
     var password = 'здрасти';
     var database = 'дтабасе';
-    var handler = new AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
+    var handler =
+        new AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
 
     var hash = handler.getHash();
     var buffer = handler.createRequest();

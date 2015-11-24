@@ -32,49 +32,59 @@ void main() {
     });
 
     test('can build map with eight nulls', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, null, null, null, null, null, null, null]);
+      var handler = new ExecuteQueryHandler(
+          null, false, [null, null, null, null, null, null, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([255]));
     });
 
     test('can build map with eight not nulls', () {
-      var handler = new ExecuteQueryHandler(null, false, [0, 0, 0, 0, 0, 0, 0, 0]);
+      var handler =
+          new ExecuteQueryHandler(null, false, [0, 0, 0, 0, 0, 0, 0, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([0]));
     });
 
     test('can build map with some nulls and some not', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+      var handler =
+          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map with some nulls and some not', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+      var handler =
+          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map which is more than one byte', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, 0, 0, 0]);
+      var handler = new ExecuteQueryHandler(
+          null, false, [null, 0, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, 0, 0, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null, 0]);
+      var handler = new ExecuteQueryHandler(
+          null, false, [null, 0, 0, 0, 0, 0, 0, null, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte with a null', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null, null]);
+      var handler = new ExecuteQueryHandler(
+          null, false, [null, 0, 0, 0, 0, 0, 0, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 1]));
     });
 
-    test('can build map which just is more than one byte with a null, another pattern', () {
-      var handler = new ExecuteQueryHandler(null, false, [null, 0, null, 0, 0, 0, 0, null, null]);
+    test(
+        'can build map which just is more than one byte with a null, another pattern',
+        () {
+      var handler = new ExecuteQueryHandler(
+          null, false, [null, 0, null, 0, 0, 0, 0, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129 + 4, 1]));
     });
@@ -117,7 +127,8 @@ void main() {
       handler.preparedValues = [];
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 0, types);
       expect(buffer.length, equals(14));
-      expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 0]));
+      expect(
+          buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 0]));
     });
 
     test('can write values for unexecuted query with values', () {
@@ -129,7 +140,33 @@ void main() {
       handler.preparedValues = [123];
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 8, types);
       expect(buffer.length, equals(23));
-      expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 5, 6, 7, 1, 100, 123, 0, 0, 0, 0, 0, 0, 0]));
+      expect(
+          buffer.list,
+          equals([
+            23,
+            123,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            5,
+            6,
+            7,
+            1,
+            100,
+            123,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]));
     });
   });
 
@@ -168,7 +205,8 @@ void main() {
     });
 
     test('can prepare blob values correctly', () {
-      expect(handler.prepareValue(new Blob.fromString("hello")), equals(UTF8.encode("hello")));
+      expect(handler.prepareValue(new Blob.fromString("hello")),
+          equals(UTF8.encode("hello")));
     });
   });
 
@@ -194,19 +232,22 @@ void main() {
     test('can measure longer string correctly', () {
       var string = new String.fromCharCodes(new List.filled(300, 65));
       var preparedString = UTF8.encode(string);
-      expect(handler.measureValue(string, preparedString), equals(3 + string.length));
+      expect(handler.measureValue(string, preparedString),
+          equals(3 + string.length));
     });
 
     test('can measure even longer string correctly', () {
       var string = new String.fromCharCodes(new List.filled(70000, 65));
       var preparedString = UTF8.encode(string);
-      expect(handler.measureValue(string, preparedString), equals(4 + string.length));
+      expect(handler.measureValue(string, preparedString),
+          equals(4 + string.length));
     });
 
     test('can measure even very long string correctly', () {
       var string = new String.fromCharCodes(new List.filled(2 << 23 + 1, 65));
       var preparedString = UTF8.encode(string);
-      expect(handler.measureValue(string, preparedString), equals(5 + string.length));
+      expect(handler.measureValue(string, preparedString),
+          equals(5 + string.length));
     });
 
     //etc

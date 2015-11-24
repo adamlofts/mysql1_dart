@@ -1,6 +1,7 @@
 part of integrationtests;
 
-void runErrorTests(String user, String password, String db, int port, String host) {
+void runErrorTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('error tests:', () {
     test('setup', () async {
@@ -16,11 +17,13 @@ void runErrorTests(String user, String password, String db, int port, String hos
       var cnx = await pool.getConnection();
       print("Connection secure: ${cnx.usingSSL}");
       cnx.release();
-      return setup(pool, "stream", "create table stream (id integer, name text)");
+      return setup(
+          pool, "stream", "create table stream (id integer, name text)");
     });
 
     test('store data', () async {
-      var query = await pool.prepare('insert into stream (id, name) values (?, ?)');
+      var query =
+          await pool.prepare('insert into stream (id, name) values (?, ?)');
       await query.execute([0, 'Bob']);
     });
 

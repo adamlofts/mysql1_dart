@@ -6,11 +6,18 @@ Future deleteInsertSelect(ConnectionPool pool, table, insert, select) async {
   return pool.query(select);
 }
 
-void runNumberTests(String user, String password, String db, int port, String host) {
+void runNumberTests(
+    String user, String password, String db, int port, String host) {
   ConnectionPool pool;
   group('number tests:', () {
     test('setup', () {
-      pool = new ConnectionPool(user: user, password: password, db: db, port: port, host: host, max: 1);
+      pool = new ConnectionPool(
+          user: user,
+          password: password,
+          db: db,
+          port: port,
+          host: host,
+          max: 1);
       return setup(
           pool,
           "nums",
@@ -23,7 +30,8 @@ void runNumberTests(String user, String password, String db, int port, String ho
     });
 
     test('minimum values', () async {
-      var results = await pool.query('select atinyint, asmallint, amediumint, aint, abigint from nums');
+      var results = await pool.query(
+          'select atinyint, asmallint, amediumint, aint, abigint from nums');
 
       var row = await results.single;
 
