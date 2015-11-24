@@ -6,13 +6,6 @@ Future setup(ConnectionPool pool, String tableName, String createSql,
   var result = await pool.query(createSql);
   expect(result, isNotNull);
   if (insertSql != null) {
-    return pool.query(insertSql);
-  } else {
-    return new Future.value(null);
+    await pool.query(insertSql);
   }
-}
-
-// thinking of putting other stuff in here too.
-void close(ConnectionPool pool) {
-  pool.closeConnectionsWhenNotInUse();
 }
