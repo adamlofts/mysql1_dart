@@ -1,4 +1,10 @@
-part of integrationtests;
+library sqljocky.test.test_util;
+
+import 'dart:async';
+
+import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky/utils.dart';
+import 'package:test/test.dart';
 
 Future setup(ConnectionPool pool, String tableName, String createSql,
     [String insertSql]) async {

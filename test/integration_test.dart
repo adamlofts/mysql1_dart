@@ -2,6 +2,7 @@ library integrationtests;
 
 import 'dart:async';
 import 'dart:typed_data';
+
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
 import 'package:sqljocky/constants.dart';
@@ -9,7 +10,8 @@ import 'package:sqljocky/sqljocky.dart';
 import 'package:sqljocky/utils.dart';
 import 'package:test/test.dart';
 
-part 'integration/base.dart';
+import 'test_util.dart';
+
 part 'integration/blob.dart';
 part 'integration/charset.dart';
 part 'integration/errors.dart';
