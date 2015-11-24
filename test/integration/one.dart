@@ -46,7 +46,7 @@ void runIntTests(
     test('describe stuff', () async {
       var results = await pool.query("describe test1");
       print("table test1");
-      await showResults(results);
+      await _showResults(results);
     });
 
     test('small blobs', () async {
@@ -191,7 +191,7 @@ void runIntTests(
       for (var i = 0; i < results.fields.length; i++) {
         var field = results.fields[i];
         print(
-            "${field.name} ${fieldTypeToString(field.type)} ${typeof(values[i])}");
+            "${field.name} ${fieldTypeToString(field.type)} ${_typeof(values[i])}");
       }
     });
 
@@ -206,7 +206,7 @@ void runIntTests(
         // make sure field types returned by both queries are the same
         expect(field.type, equals(preparedFields[i].type));
         // make sure results types are the same
-        expect(typeof(row[i]), equals(typeof(values[i])));
+        expect(_typeof(row[i]), equals(_typeof(values[i])));
         // make sure the values are the same
         if (row[i] is double) {
           // or at least close
@@ -215,7 +215,7 @@ void runIntTests(
           expect(row[i], equals(values[i]));
         }
         print(
-            "${field.name} ${fieldTypeToString(field.type)} ${typeof(row[i])}");
+            "${field.name} ${fieldTypeToString(field.type)} ${_typeof(row[i])}");
       }
     });
 
@@ -277,7 +277,7 @@ void runIntTests(
   });
 }
 
-Future showResults(Results results) {
+Future _showResults(Results results) {
   var c = new Completer();
   var fieldNames = <String>[];
   for (var field in results.fields) {
@@ -293,7 +293,7 @@ Future showResults(Results results) {
   return c.future;
 }
 
-String typeof(dynamic item) {
+String _typeof(dynamic item) {
   if (item is String) {
     return "String";
   } else if (item is int) {
