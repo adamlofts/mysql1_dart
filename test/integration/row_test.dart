@@ -22,9 +22,13 @@ void main() {
   test('first field is empty', () async {
     final query = await pool.prepare(
         'insert into $tableName (id, name, `the field`, length) values (?, ?, ?, ?)');
-    await (await query.execute([1, '', 'Thing', 5000])).toList();
-    Iterable<Row> results = await (await pool
-        .query("select name, length from $tableName")).toList();
+    var result = await query.execute([1, '', 'Thing', 5000]);
+    await result.toList();
+
+    result = await pool
+        .query("select name, length from $tableName");
+
+    Iterable<Row> results = await result.toList();
     expect(results.map((r) => [r[0].toString(), r[1]]).toList().first,
         equals(['', 5000]));
   });
