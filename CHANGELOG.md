@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.14.5
+-------
+* Fix package references
+
 v0.14.3
 -------
 * Merged in Kevin Moore's PR from original SQLJockey
