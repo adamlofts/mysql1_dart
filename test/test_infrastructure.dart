@@ -1,7 +1,7 @@
 library sqljocky.test.test_infrastructure;
 
 import 'package:options_file/options_file.dart';
-import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky2/sqljocky.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';

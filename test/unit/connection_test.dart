@@ -4,10 +4,10 @@ import 'dart:async';
 
 import 'package:mockito/mockito.dart';
 
-import 'package:sqljocky/src/connection.dart';
-import 'package:sqljocky/src/buffer.dart';
-import 'package:sqljocky/src/buffered_socket.dart';
-import 'package:sqljocky/src/mysql_client_error.dart';
+import 'package:sqljocky2/src/connection.dart';
+import 'package:sqljocky2/src/buffer.dart';
+import 'package:sqljocky2/src/buffered_socket.dart';
+import 'package:sqljocky2/src/mysql_client_error.dart';
 
 import 'package:test/test.dart';
 

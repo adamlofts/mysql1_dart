@@ -1,12 +1,12 @@
 library sqljocky.test.unit.field_by_name_test;
 
-import 'package:sqljocky/constants.dart';
-import 'package:sqljocky/src/prepared_statements/binary_data_packet.dart';
-import 'package:sqljocky/src/prepared_statements/execute_query_handler.dart';
-import 'package:sqljocky/src/query/query_stream_handler.dart';
-import 'package:sqljocky/src/query/standard_data_packet.dart';
-import 'package:sqljocky/src/results/field_impl.dart';
-import 'package:sqljocky/src/results/row.dart';
+import 'package:sqljocky2/constants.dart';
+import 'package:sqljocky2/src/prepared_statements/binary_data_packet.dart';
+import 'package:sqljocky2/src/prepared_statements/execute_query_handler.dart';
+import 'package:sqljocky2/src/query/query_stream_handler.dart';
+import 'package:sqljocky2/src/query/standard_data_packet.dart';
+import 'package:sqljocky2/src/results/field_impl.dart';
+import 'package:sqljocky2/src/results/row.dart';
 
 import 'package:test/test.dart';
 

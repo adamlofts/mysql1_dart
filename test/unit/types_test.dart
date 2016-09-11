@@ -2,7 +2,7 @@ library sqljocky.types_test;
 
 import 'dart:typed_data';
 
-import 'package:sqljocky/src/blob.dart';
+import 'package:sqljocky2/src/blob.dart';
 
 import 'package:test/test.dart';
 

@@ -1,6 +1,6 @@
 library sqljocky.serialize_test;
 
-import 'package:sqljocky/src/buffer.dart';
+import 'package:sqljocky2/src/buffer.dart';
 
 import 'package:test/test.dart';
 

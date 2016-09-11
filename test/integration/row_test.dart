@@ -2,7 +2,7 @@ library sqljocky.test.row_test;
 
 import 'dart:async';
 
-import 'package:sqljocky/sqljocky.dart';
+import 'package:sqljocky2/sqljocky.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';

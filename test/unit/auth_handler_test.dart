@@ -1,7 +1,7 @@
 library sqljocky.auth_handler_test;
 
-import 'package:sqljocky/constants.dart';
-import 'package:sqljocky/src/auth/auth_handler.dart';
+import 'package:sqljocky2/constants.dart';
+import 'package:sqljocky2/src/auth/auth_handler.dart';
 
 import 'package:test/test.dart';
 

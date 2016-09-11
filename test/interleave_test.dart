@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
-import 'package:sqljocky/sqljocky.dart';
-import 'package:sqljocky/utils.dart';
+import 'package:sqljocky2/sqljocky.dart';
+import 'package:sqljocky2/utils.dart';
 import 'package:test/test.dart';
 
 /*
