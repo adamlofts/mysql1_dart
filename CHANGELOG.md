@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.14.3
+-------
+* Merged in Kevin Moore's PR from original SQLJockey
+
 v0.14.1
 -------
 * Fix the changelog formatting, so you can actually see what changed in v0.14.0

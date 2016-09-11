@@ -1,8 +1,11 @@
-name: sqljocky
-version: 0.14.2-dev
-author: James Ots <code@jamesots.com>
+name: sqljocky2
+version: 0.14.3-dev
+author:
+authors:
+- James Ots <code@jamesots.com>
+- Faisal Abid <faisal.abid@gmail.com>
 description: A MySQL connector
-homepage: https://github.com/jamesots/sqljocky
+homepage: https://github.com/VenChat/sqljockey2
 environment:
   sdk: '>=1.11.0 <2.0.0'
 documentation: http://jamesots.github.io/sqljocky/docs
