@@ -2,8 +2,8 @@ library sqljocky.test.test_util;
 
 import 'dart:async';
 
-import 'package:sqljocky/sqljocky.dart';
-import 'package:sqljocky/utils.dart';
+import 'package:sqljocky2/sqljocky.dart';
+import 'package:sqljocky2/utils.dart';
 import 'package:test/test.dart';
 
 Future setup(ConnectionPool pool, String tableName, String createSql,

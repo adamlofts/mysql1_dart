@@ -1,9 +1,9 @@
 library sqljocky.binary_data_packet_test;
 
-import 'package:sqljocky/sqljocky.dart';
-import 'package:sqljocky/constants.dart';
-import 'package:sqljocky/src/prepared_statements/binary_data_packet.dart';
-import 'package:sqljocky/src/results/field_impl.dart';
+import 'package:sqljocky2/sqljocky.dart';
+import 'package:sqljocky2/constants.dart';
+import 'package:sqljocky2/src/prepared_statements/binary_data_packet.dart';
+import 'package:sqljocky2/src/results/field_impl.dart';
 
 import 'package:test/test.dart';
 
