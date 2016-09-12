@@ -70,6 +70,8 @@ class BufferedSocket {
     try {
       var socket;
       socket = await socketFactory(host, port);
+      socket.setOption(SocketOption.TCP_NODELAY, true);
+
       var bufferedSocket =
           new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
       if (onConnection != null) {
@@ -153,7 +155,7 @@ class BufferedSocket {
   /**
    * Reads into [buffer] from the socket, and returns the same buffer in a [Future] which
    * completes when enough bytes have been read to fill the buffer.
-   *  
+   *
    * This must not be called while there is still a read ongoing, but may be called before
    * onDataReady is called, in which case onDataReady will not be called when data arrives,
    * and the read will start instead.
@@ -203,6 +205,7 @@ class BufferedSocket {
         subscription: _subscription, onBadCertificate: (cert) => true);
     log.fine("Socket is secure");
     _socket = socket;
+    _socket.setOption(SocketOption.TCP_NODELAY, true);
     _subscription = _socket.listen(_onData,
         onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
     _socket.writeEventsEnabled = true;

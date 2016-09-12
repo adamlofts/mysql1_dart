@@ -20,6 +20,7 @@ class SpeedTest {
     await createTables();
     await insertSimpleData();
     await insertPreparedData();
+    await selectPreparedData();
     await pool.closeConnectionsWhenNotInUse();
   }
 
@@ -72,6 +73,19 @@ class SpeedTest {
     await Future.wait(futures);
     logTime("prepared insertions", sw);
     log.fine("inserted");
+  }
+
+  Future selectPreparedData() async {
+    log.fine("inserting prepared data");
+    var sw = new Stopwatch()..start();
+    var futures = <Future>[];
+    var query = await pool.prepare("select * from people where id = ?");
+    for (var i = 0; i < PREPARED_INSERTS; i++) {
+      futures.add(query.execute([1]));
+    }
+    await Future.wait(futures);
+    logTime("prepared selections", sw);
+    log.fine("selected");
   }
 
   void logTime(String operation, Stopwatch sw) {
