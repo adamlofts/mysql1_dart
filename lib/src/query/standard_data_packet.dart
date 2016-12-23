@@ -10,7 +10,11 @@ import '../results/row.dart';
 import '../results/field_impl.dart';
 
 class StandardDataPacket extends Row {
+  /// Values as List
   final List<dynamic> values;
+
+  final Map<String, dynamic> fields = {};
+
   final Map<Symbol, int> _fieldIndex;
 
   StandardDataPacket(
@@ -80,6 +84,7 @@ class StandardDataPacket extends Row {
           values[i] = s;
           break;
       }
+      fields[fieldPackets[i].name] = values[i];
     }
   }
 
@@ -108,5 +113,5 @@ class StandardDataPacket extends Row {
     return super.noSuchMethod(invocation);
   }
 
-  String toString() => "Value: $values";
+  String toString() => "Fields: $fields";
 }
