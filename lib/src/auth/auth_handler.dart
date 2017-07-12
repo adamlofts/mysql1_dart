@@ -36,18 +36,12 @@ class AuthHandler extends Handler {
     if (password == null) {
       hash = <int>[];
     } else {
-      var hasher = new SHA1();
-      hasher.add(UTF8.encode(password));
-      var hashedPassword = hasher.close();
+      final hashedPassword = sha1.convert(UTF8.encode(password)).bytes;
+      final doubleHashedPassword = sha1.convert(hashedPassword).bytes;
 
-      hasher = new SHA1();
-      hasher.add(hashedPassword);
-      var doubleHashedPassword = hasher.close();
-
-      hasher = new SHA1();
-      hasher.add(scrambleBuffer);
-      hasher.add(doubleHashedPassword);
-      var hashedSaltedPassword = hasher.close();
+      final bytes = new List<int>.from(scrambleBuffer)
+        ..addAll(doubleHashedPassword);
+      final hashedSaltedPassword = sha1.convert(bytes).bytes;
 
       hash = new List<int>(hashedSaltedPassword.length);
       for (var i = 0; i < hash.length; i++) {

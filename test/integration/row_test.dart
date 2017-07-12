@@ -25,8 +25,7 @@ void main() {
     var result = await query.execute([1, '', 'Thing', 5000]);
     await result.toList();
 
-    result = await pool
-        .query("select name, length from $tableName");
+    result = await pool.query("select name, length from $tableName");
 
     Iterable<Row> results = await result.toList();
     expect(results.map((r) => [r[0].toString(), r[1]]).toList().first,
@@ -55,8 +54,8 @@ void main() {
     var futures = [];
     for (var i = 0; i < 5; i++) {
       var c = new Completer();
-      var results = await pool.prepareExecute(
-          'select * from $tableName where id = ?', [0]);
+      var results = await pool
+          .prepareExecute('select * from $tableName where id = ?', [0]);
       results.listen((row) {
         expect(row.id, equals(0));
         expect(row.name.toString(), equals("Bob"));

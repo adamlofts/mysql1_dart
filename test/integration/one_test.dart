@@ -242,8 +242,8 @@ void main() {
     var results = await pool.prepareExecute(
         "insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
     expect(1, equals(1)); // put some real expectations here
-    results = await pool.prepareExecute(
-        "select atext from test1 where aint = 12344", []);
+    results = await pool
+        .prepareExecute("select atext from test1 where aint = 12344", []);
     var list = await results.toList();
     expect(list.length, equals(1));
     values = list[0];
@@ -266,8 +266,8 @@ void main() {
     results = await pool.prepareExecute(
         "insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
     expect(1, equals(1)); // put some real expectations here
-    results = await pool.prepareExecute(
-        "select atext from test1 where aint = 12345", []);
+    results = await pool
+        .prepareExecute("select atext from test1 where aint = 12345", []);
     results = await results.toList();
     expect(results.length, equals(1));
     values = results[0];
