@@ -1,7 +1,7 @@
-SQLJocky2
+SQLJocky5
 ========
 
-** This is a fork of the original SQLJocky. The goal is to maintain SqlJocky2 and give Dart a proper
+** This is a fork of the original SQLJocky. The goal is to maintain SQLJocky5 and give Dart a proper
 MySQL connector **
 
 This is a MySQL connector for the Dart programming language. It isn't finished, but should

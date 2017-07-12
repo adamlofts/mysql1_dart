@@ -2,9 +2,9 @@ library sqljocky.test.one_test;
 
 import 'dart:async';
 
-import 'package:sqljocky2/sqljocky.dart';
-import 'package:sqljocky2/constants.dart';
-import 'package:sqljocky2/utils.dart';
+import 'package:sqljocky5/sqljocky.dart';
+import 'package:sqljocky5/constants.dart';
+import 'package:sqljocky5/utils.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';

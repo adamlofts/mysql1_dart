@@ -1,5 +1,5 @@
-import 'package:sqljocky2/sqljocky.dart';
-import 'package:sqljocky2/utils.dart';
+import 'package:sqljocky5/sqljocky.dart';
+import 'package:sqljocky5/utils.dart';
 import 'package:options_file/options_file.dart';
 import 'dart:async';
 

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
-import 'package:sqljocky2/sqljocky.dart';
-import 'package:sqljocky2/utils.dart';
+import 'package:sqljocky5/sqljocky.dart';
+import 'package:sqljocky5/utils.dart';
 
 class SpeedTest {
   static const SIMPLE_INSERTS = 200;

@@ -1,6 +1,6 @@
 library sqljocky.buffer_test;
 
-import 'package:sqljocky2/src/buffer.dart';
+import 'package:sqljocky5/src/buffer.dart';
 
 import 'package:test/test.dart';
 
