@@ -47,6 +47,9 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     }
   }
 
+  @override
+  bool setOption(SocketOption option, bool enabled) => true;  // No-op
+
   noSuchMethod(a) => super.noSuchMethod(a);
 }
 
@@ -62,10 +65,8 @@ void main() {
     setUp(() {
       var streamController = new StreamController<RawSocketEvent>();
       factory = (host, port) {
-        var c = new Completer();
         rawSocket = new MockSocket(streamController);
-        c.complete(rawSocket);
-        return c.future;
+        return new Future.value(rawSocket);
       };
     });
 
