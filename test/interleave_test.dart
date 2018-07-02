@@ -150,6 +150,7 @@ class Example {
 }
 
 void main() {
+  return;
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
