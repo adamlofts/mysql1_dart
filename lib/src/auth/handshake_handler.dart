@@ -145,7 +145,7 @@ class HandshakeHandler extends Handler {
           nextHandler: new SSLHandler(
               clientFlags,
               _maxPacketSize,
-              CharacterSet.UTF8,
+              CharacterSet.UTF8MB4,
               new AuthHandler(_user, _password, _db, scrambleBuffer,
                   clientFlags, _maxPacketSize, CharacterSet.UTF8,
                   ssl: true)));
@@ -153,6 +153,6 @@ class HandshakeHandler extends Handler {
 
     return new HandlerResponse(
         nextHandler: new AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, CharacterSet.UTF8));
+            clientFlags, _maxPacketSize, CharacterSet.UTF8MB4));
   }
 }
