@@ -31,7 +31,7 @@ void main() {
     var host = options.getString('host', 'localhost');
 
     // create a connection
-    var conn = await SingleConnection.connect(
+    var conn = await MySQLConnection.connect(
         host: host,
         port: port,
         user: user,

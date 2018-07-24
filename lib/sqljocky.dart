@@ -11,7 +11,7 @@ export 'src/query.dart';
 export 'src/queriable_connection.dart';
 export 'src/retained_connection.dart';
 export 'src/transaction.dart';
-export 'src/single_connection.dart' show SingleConnection, ReadResults;
+export 'src/single_connection.dart' show MySQLConnection, ReadResults;
 
 export 'src/auth/character_set.dart';
 

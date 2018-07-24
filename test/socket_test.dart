@@ -21,7 +21,7 @@ void main() {
 
   test('connection fail connect test', () async {
     try {
-      await SingleConnection.connect(
+      await MySQLConnection.connect(
           host: 'localhost',
           port: 12345);
     } on SocketException catch (e) {
@@ -35,7 +35,7 @@ void main() {
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12346);
-      await SingleConnection.connect(
+      await MySQLConnection.connect(
           host: 'localhost',
           port: 12346,
           timeout: new Duration(microseconds: 5));
@@ -51,7 +51,7 @@ void main() {
     _MockReqResp m = new _MockReqResp();
     when(m.processHandlerNoResponse(any)).thenReturn(new Completer().future);
 
-    SingleConnection conn = new SingleConnection(const Duration(microseconds: 5), m);
+    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), m);
     await conn.close();  // does not timeout the test.
   });
 
@@ -59,7 +59,7 @@ void main() {
     _MockReqResp m = new _MockReqResp();
     when(m.processHandler(any)).thenReturn(new Completer().future);
 
-    SingleConnection conn = new SingleConnection(const Duration(microseconds: 5), m);
+    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), m);
     expect(conn.query("SELECT 1"), throwsA(timeoutMatcher));
   });
 
@@ -71,7 +71,7 @@ void main() {
       sock.listen((socket) {
         socket.close();
       });
-      await SingleConnection.connect(
+      await MySQLConnection.connect(
           host: 'localhost',
           port: 12347,
       );
@@ -94,7 +94,7 @@ void main() {
         socket.add([255, 16, 4, 84, 111, 111, 32, 109, 97, 110, 121, 32, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 115]);
         socket.close();
       });
-      await SingleConnection.connect(
+      await MySQLConnection.connect(
           host: 'localhost',
           port: 12348,
       );
@@ -117,7 +117,7 @@ void main() {
         socket.add([9]);
         socket.close();
       });
-      await SingleConnection.connect(
+      await MySQLConnection.connect(
           host: 'localhost',
           port: 12348,
       );

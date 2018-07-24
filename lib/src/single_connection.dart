@@ -26,13 +26,13 @@ final Logger _log = new Logger("SingleConnection");
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
-class SingleConnection {
+class MySQLConnection {
   final Duration _timeout;
 
   ReqRespConnection _conn;
   bool _sentClose = false;
 
-  SingleConnection(this._timeout, this._conn);
+  MySQLConnection(this._timeout, this._conn);
 
   /// Close the connection
   ///
@@ -53,7 +53,7 @@ class SingleConnection {
     _conn.close();
   }
 
-  static Future<SingleConnection> _connect(
+  static Future<MySQLConnection> _connect(
       Duration timeout,
       {String host,
       int port,
@@ -70,7 +70,7 @@ class SingleConnection {
 
     var handshakeCompleter = new Completer();
     ReqRespConnection conn;
-    SingleConnection sc;
+    MySQLConnection sc;
 
     _log.fine("opening connection to $host:$port/$db");
     BufferedSocket.connect(host, port,
@@ -104,7 +104,7 @@ class SingleConnection {
 //      return _useDatabase(db);
 //    } else {
     return handshakeCompleter.future.then((_) {
-      sc = new SingleConnection(timeout, conn);
+      sc = new MySQLConnection(timeout, conn);
       return sc;
     });
 //    }
@@ -115,7 +115,7 @@ class SingleConnection {
   ///
   /// [timeout] is used as the connection timeout and the default timeout for all socket
   /// communication.
-  static Future<SingleConnection> connect(
+  static Future<MySQLConnection> connect(
       {String host,
         int port,
         String user,
