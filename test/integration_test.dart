@@ -11,7 +11,6 @@ import 'test_util.dart';
 
 part 'integration/charset.dart';
 part 'integration/errors.dart';
-part 'integration/execute_multi.dart';
 part 'integration/largeblob.dart';
 part 'integration/nullmap.dart';
 part 'integration/numbers.dart';
@@ -52,7 +51,6 @@ void main() {
   runStreamTests(user, password, db, port, host);
   runErrorTests(user, password, db, port, host);
 //  runStoredProcedureTests(user, password, db, port, host);
-  runExecuteMultiTests(user, password, db, port, host);
 //  if (results['large_packets'] == 'true') {
 //    runLargeBlobTests(user, password, db, port, host);
 //  }

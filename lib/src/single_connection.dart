@@ -165,7 +165,34 @@ class MySQLConnection {
       }
     }
   }
+
+  Future transaction(Future queryBlock(TransactionContext connection)) async {
+    await query("start transaction");
+    try {
+      await queryBlock(new TransactionContext._(this));
+    } catch (e) {
+      await query("rollback");
+      if (e is! _RollbackError) {
+        rethrow;
+      }
+      return e;
+    }
+    await query("commit");
+  }
 }
+
+class TransactionContext {
+  final MySQLConnection _conn;
+  TransactionContext._(this._conn);
+
+  Future<ReadResults> query(String sql, [List values]) => _conn.query(sql, values);
+  void rollback() => throw new _RollbackError();
+}
+
+class _RollbackError {
+
+}
+
 
 class ReadResults extends IterableBase<Row> {
   final int insertId;

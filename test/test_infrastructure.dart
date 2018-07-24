@@ -12,7 +12,7 @@ ConnectionPool _pool;
 MySQLConnection get conn => _conn;
 MySQLConnection _conn;
 
-void initializeTest([String tableName, String createSql]) {
+void initializeTest([String tableName, String createSql, String insertSql]) {
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
   var password = options.getString('password', null);
@@ -41,7 +41,7 @@ void initializeTest([String tableName, String createSql]) {
         user: user, password: password, db: db, port: port, host: host, max: 1);
 
     if (tableName != null) {
-      await setup(pool, tableName, createSql);
+      await setup(pool, tableName, createSql, insertSql);
     }
   });
 
