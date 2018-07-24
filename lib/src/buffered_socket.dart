@@ -38,6 +38,8 @@ class BufferedSocket {
   StreamSubscription _subscription;
   bool _closed = false;
 
+  bool get closed => _closed;
+
   BufferedSocket._(
       this._socket, this.onDataReady, this.onDone, this.onError, this.onClosed)
       : log = new Logger("BufferedSocket") {
@@ -84,6 +86,10 @@ class BufferedSocket {
   }
 
   void _onData(RawSocketEvent event) {
+    if (_closed) {
+      return;
+    }
+
     if (event == RawSocketEvent.READ) {
       log.fine("READ data");
       if (_readingBuffer == null) {

@@ -100,6 +100,8 @@ class HandshakeHandler extends Handler {
    * exception is thrown.
    */
   HandlerResponse processResponse(Buffer response) {
+    checkResponse(response);
+
     readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {

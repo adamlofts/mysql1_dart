@@ -81,22 +81,20 @@ class SingleConnection {
           conn?._readPacket();
         },
         onDone: () {
-          conn?.close();
           _log.fine("done");
         },
         onError: (error) {
-          _log.severe("socket error: $error");
-          // If the error happens during connect then propagate in the future.
-          // otherwise send to the socket.
-          if (!handshakeCompleter.isCompleted) {
+          _log.warning("socket error: $error");
+
+          // If conn has not been connected there was a connection error.
+          if (conn == null) {
             handshakeCompleter.completeError(error);
-            return;
           } else {
-            conn?.close();
+            conn.handleError(error);
           }
         },
         onClosed: () {
-          conn?.close();
+          conn.handleError(new SocketException.closed());
         });
 
     //TODO Only useDatabase if connection actually ended up as an SSL connection?
@@ -223,9 +221,12 @@ class ReqRespConnection {
 
   void close() => _socket.close();
 
-  void socketError(e) {
+  void handleError(e, [st]) {
     if (_completer != null) {
-      _completer.completeError(e);
+      if (_completer.isCompleted) {
+        throw e;
+      }
+      _completer.completeError(e, st);
     }
     close();
   }
@@ -311,12 +312,8 @@ class ReqRespConnection {
         _completer.complete(response.result);
       }
     } catch (e, st) {
-      _finishAndReuse();
       _log.fine("completing with exception: $e");
-      if (_completer.isCompleted) {
-        throw e;
-      }
-      _completer.completeError(e, st);
+      handleError(e, st);
     }
   }
 
