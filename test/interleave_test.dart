@@ -150,7 +150,6 @@ class Example {
 }
 
 void main() {
-  return;
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
 //  new Logger("ConnectionPool").level = Level.ALL;
@@ -193,5 +192,6 @@ void main() {
       // not much of a test, is it?
       expect(true, isTrue);
     });
-  });
+  }, skip:
+  "Skipped for now");
 }

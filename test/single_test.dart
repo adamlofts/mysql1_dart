@@ -5,11 +5,9 @@ import 'package:logging/logging.dart';
 import 'package:mockito/mockito.dart';
 import 'package:options_file/options_file.dart';
 import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/src/buffered_socket.dart';
-import 'package:sqljocky5/src/handlers/handler.dart';
 import 'package:sqljocky5/src/single_connection.dart';
-import 'package:sqljocky5/utils.dart';
 import 'package:test/test.dart';
+import 'test_infrastructure.dart';
 
 void main() {
   hierarchicalLoggingEnabled = true;
@@ -20,6 +18,8 @@ void main() {
   Logger.root.onRecord.listen((LogRecord r) {
     print("${r.time}: ${r.loggerName}: ${r.message}");
   });
+
+  initializeTest();
 
   test('connection test', () async {
     var options = new OptionsFile('connection.options');
@@ -70,7 +70,7 @@ void main() {
           host: 'localhost',
           port: 12346,
           timeout: new Duration(microseconds: 5));
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       thrown = true;
     } finally {
       sock?.close();

@@ -18,6 +18,14 @@ void initializeTest([String tableName, String createSql]) {
   var host = options.getString('host', 'localhost');
 
   setUp(() async {
+    var conn = await SingleConnection.connect(
+      host: "localhost",
+      port: 3306,
+      user: "root",
+    );
+    await conn.query("CREATE DATABASE IF NOT EXISTS sqljockeytest CHARACTER SET utf8");
+    await conn.close();
+
     _pool = new ConnectionPool(
         user: user, password: password, db: db, port: port, host: host, max: 1);
 
@@ -33,3 +41,4 @@ void initializeTest([String tableName, String createSql]) {
     }
   });
 }
+
