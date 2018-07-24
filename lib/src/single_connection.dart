@@ -317,12 +317,12 @@ class ReqRespConnection {
       if (response.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now
         _handler = response.nextHandler;
-        await _sendBuffer(_handler.createRequest());
+        await sendBuffer(_handler.createRequest());
         if (_useSSL && _handler is SSLHandler) {
           _log.fine("Use SSL");
           await _socket.startSSL();
           _handler = (_handler as SSLHandler).nextHandler;
-          await _sendBuffer(_handler.createRequest());
+          await sendBuffer(_handler.createRequest());
           _log.fine("Sent buffer");
           return;
         }
@@ -348,7 +348,7 @@ class ReqRespConnection {
     _handler = null;
   }
 
-  Future _sendBuffer(Buffer buffer) {
+  Future sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
       throw createMySqlClientError(
           "Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
@@ -398,7 +398,7 @@ class ReqRespConnection {
     }
     _packetNumber = -1;
     _compressedPacketNumber = -1;
-    return _sendBuffer(handler.createRequest());
+    return sendBuffer(handler.createRequest());
   }
 
   /**
@@ -415,7 +415,7 @@ class ReqRespConnection {
     _compressedPacketNumber = -1;
     _completer = new Completer<dynamic>();
     _handler = handler;
-    await _sendBuffer(handler.createRequest());
+    await sendBuffer(handler.createRequest());
     return _completer.future;
   }
 }

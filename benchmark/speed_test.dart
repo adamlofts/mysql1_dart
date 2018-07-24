@@ -1,9 +1,11 @@
+@Skip("API Update")
+
 import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
 import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/utils.dart';
+import 'package:test/test.dart';
 
 class SpeedTest {
   static const SIMPLE_INSERTS = 200;

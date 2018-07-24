@@ -42,8 +42,5 @@ void runErrorTests(
       }
       return Future.wait(futures);
     });
-    test('close connection', () {
-      pool.closeConnectionsWhenNotInUse();
-    });
   });
 }

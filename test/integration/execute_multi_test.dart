@@ -10,7 +10,7 @@ void main() {
       "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
 
   test('store data', () async {
-    var query = await pool.prepare('select * from stream where id = ?');
+    var query;// = await pool.prepare('select * from stream where id = ?');
     var values = await query.executeMulti([
       [1],
       [2],
