@@ -9,6 +9,9 @@ import 'test_util.dart';
 ConnectionPool get pool => _pool;
 ConnectionPool _pool;
 
+SingleConnection get conn => _conn;
+SingleConnection _conn;
+
 void initializeTest([String tableName, String createSql]) {
   var options = new OptionsFile('connection.options');
   var user = options.getString('user');
@@ -18,13 +21,21 @@ void initializeTest([String tableName, String createSql]) {
   var host = options.getString('host', 'localhost');
 
   setUp(() async {
-    var conn = await SingleConnection.connect(
+    // Ensure db exists
+    final c = await SingleConnection.connect(
       host: "localhost",
       port: 3306,
       user: "root",
     );
-    await conn.query("CREATE DATABASE IF NOT EXISTS sqljockeytest CHARACTER SET utf8");
-    await conn.close();
+    await c.query("CREATE DATABASE IF NOT EXISTS sqljockeytest CHARACTER SET utf8");
+    await c.close();
+
+    _conn = await SingleConnection.connect(
+      host: "localhost",
+      port: 3306,
+      user: "root",
+      db: db
+    );
 
     _pool = new ConnectionPool(
         user: user, password: password, db: db, port: port, host: host, max: 1);
@@ -34,11 +45,12 @@ void initializeTest([String tableName, String createSql]) {
     }
   });
 
-  tearDown(() {
+  tearDown(() async {
     if (_pool != null) {
       _pool.closeConnectionsNow();
       _pool = null;
     }
+    await _conn?.close();
   });
 }
 
