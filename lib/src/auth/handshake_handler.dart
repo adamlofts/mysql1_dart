@@ -33,8 +33,8 @@ class HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
-  HandshakeHandler(
-      String this._user, String this._password, int this._maxPacketSize, int this._characterSet,
+  HandshakeHandler(String this._user, String this._password,
+      int this._maxPacketSize, int this._characterSet,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
         this.useCompression = useCompression,
@@ -147,9 +147,15 @@ class HandshakeHandler extends Handler {
               clientFlags,
               _maxPacketSize,
               _characterSet,
-              new AuthHandler(_user, _password, _db, scrambleBuffer,
-                  clientFlags, _maxPacketSize, _characterSet,
-                  )));
+              new AuthHandler(
+                _user,
+                _password,
+                _db,
+                scrambleBuffer,
+                clientFlags,
+                _maxPacketSize,
+                _characterSet,
+              )));
     }
 
     return new HandlerResponse(

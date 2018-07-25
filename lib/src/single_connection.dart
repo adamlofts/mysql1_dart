@@ -51,8 +51,7 @@ class ConnectionSettings {
       bool this.useSSL: false,
       int this.maxPacketSize: 16 * 1024 * 1024,
       Duration this.timeout: const Duration(seconds: 30),
-      int this.characterSet: CharacterSet.UTF8MB4
-      });
+      int this.characterSet: CharacterSet.UTF8MB4});
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -123,8 +122,8 @@ class MySqlConnection {
       conn.handleError(new SocketException.closed());
     });
 
-    Handler handler = new HandshakeHandler(
-        c.user, c.password, c.maxPacketSize, c.characterSet, c.db, c.useCompression, c.useSSL);
+    Handler handler = new HandshakeHandler(c.user, c.password, c.maxPacketSize,
+        c.characterSet, c.db, c.useCompression, c.useSSL);
     handshakeCompleter = new Completer();
     conn = new ReqRespConnection(
         socket, handler, handshakeCompleter, c.maxPacketSize);

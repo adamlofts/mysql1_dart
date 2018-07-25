@@ -65,7 +65,8 @@ Buffer _createHandshake(protocolVersion, serverVersion, threadId,
 void main() {
   group('HandshakeHandler._readResponseBuffer', () {
     test('throws if handshake protocol is not 10', () {
-      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+      var handler =
+          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       var response = new Buffer.fromList([9]);
       expect(() {
         handler.readResponseBuffer(response);
@@ -76,8 +77,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -119,7 +120,8 @@ void main() {
       var responseBuffer = _createHandshake(
           10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
-      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+      var handler =
+          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       handler.readResponseBuffer(responseBuffer);
 
       expect(handler.serverVersion, equals(serverVersion));
@@ -133,8 +135,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -167,8 +169,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -201,8 +203,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -235,8 +237,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -268,7 +270,8 @@ void main() {
 
   group('HandshakeHandler.processResponse', () {
     test('throws if server protocol is not 4.1', () {
-      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+      var handler =
+          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       var response = _createHandshake(
           10, "version 1", 123, "abcdefgh", 0, 0, 0, 0, 0, "buffer");
       expect(() {
@@ -280,8 +283,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -331,8 +334,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -380,7 +383,8 @@ void main() {
       var responseBuffer = _createHandshake(
           10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
-      var handler = new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+      var handler =
+          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       expect(() {
         handler.processResponse(responseBuffer);
       }, throwsA(new isInstanceOf<MySqlClientError>()));
@@ -390,8 +394,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -424,8 +428,8 @@ void main() {
       var user = "bob";
       var password = "password";
       var db = "db";
-      var handler =
-          new HandshakeHandler(user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true, true);
+      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+          CharacterSet.UTF8MB4, db, true, true);
       var serverVersion = "version 1";
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -469,7 +473,7 @@ void main() {
       expect(sslHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
 
       AuthHandler authHandler = sslHandler.nextHandler;
-      expect(authHandler.characterSet, equals(CharacterSet.UTF8));
+      expect(authHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(authHandler.username, equals(user));
       expect(authHandler.password, equals(password));
       expect(authHandler.scrambleBuffer,
