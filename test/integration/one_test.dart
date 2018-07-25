@@ -1,8 +1,4 @@
-@Skip("API Update")
-
 library sqljocky.test.one_test;
-
-import 'dart:async';
 
 import 'package:sqljocky5/sqljocky.dart';
 import 'package:sqljocky5/constants.dart';
@@ -12,24 +8,181 @@ import '../test_infrastructure.dart';
 
 import 'dart:typed_data';
 
-void main() {
-  initializeTest("test1");
+DateTime dt = new DateTime.now();
 
-  test('create tables', () async {
-    Results results = await conn.query("create table test1 ("
-        "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
-        "adecimal decimal(20,10), afloat float, adouble double, areal real, "
-        "aboolean boolean, abit bit(20), aserial serial, "
-        "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
-        "achar char(10), avarchar varchar(10), "
-        "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-        "abinary binary(10), avarbinary varbinary(10), "
-        "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-        "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
-    expect(results.affectedRows, equals(0));
-    expect(results.insertId, equals(0));
-    expect(results.length, 0);
-  });
+List get insertValues {
+  var values = [];
+  values.add(126);
+  values.add(164);
+  values.add(165);
+  values.add(166);
+  values.add(167);
+
+  values.add(592);
+  values.add(123.456);
+  values.add(123.456);
+  values.add(123.456);
+
+  values.add(true);
+  values.add(0x010203); //[1, 2, 3]);
+  values.add(123);
+
+  values.add(dt);
+  values.add(dt);
+  values.add(dt);
+  values.add(dt);
+  values.add(2012);
+
+  values.add("Hello");
+  values.add("Hey");
+  values.add("Hello there");
+  values.add("Good morning");
+  values.add("Habari boss");
+  values.add("Bonjour");
+
+  values.add([65, 66, 67, 68]);
+  values.add([65, 66, 67, 68]);
+  values.add([65, 66, 67, 68]);
+  values.add([65, 66, 67, 68]);
+  values.add([65, 66, 67, 68]);
+  values.add([65, 66, 67, 68]);
+
+  values.add("a");
+  values.add("a,b");
+  return values;
+}
+
+List get responseValues {
+  var values = [];
+  values.add(126);
+  values.add(164);
+  values.add(165);
+  values.add(166);
+  values.add(167);
+
+  values.add(592);
+  values.add(123.456);
+  values.add(123.456);
+  values.add(123.456);
+
+  values.add(1);
+  values.add(0x010203); //[1, 2, 3]);
+  values.add(123);
+
+  values.add(new DateTime(
+      dt.year, dt.month, dt.day)); // date has zero'd out time value
+  // Datetime has no millis
+  values.add(
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+  values.add(
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+  values.add(
+      new Duration(hours: dt.hour, minutes: dt.minute, seconds: dt.second));
+  values.add(2012);
+
+  values.add("Hello");
+  values.add("Hey");
+  values.add(new Blob.fromString("Hello there"));
+  values.add(new Blob.fromString("Good morning"));
+  values.add(new Blob.fromString("Habari boss"));
+  values.add(new Blob.fromString("Bonjour"));
+
+  values.add('ABCD\x00\x00\x00\x00\x00\x00');
+  values.add('ABCD');
+  values.add(new Blob.fromString('ABCD'));
+  values.add(new Blob.fromString('ABCD'));
+  values.add(new Blob.fromString('ABCD'));
+  values.add(new Blob.fromString('ABCD'));
+
+  values.add("a");
+  values.add("a,b");
+  values.add(null);
+  return values;
+}
+
+List<String> valueTypes = [
+  "int",
+  "int",
+  "int",
+  "int",
+  "int",
+  "double",
+  "double",
+  "double",
+  "double",
+  "int",
+  "int",
+  "int",
+  "Date",
+  "Date",
+  "Date",
+  "Duration",
+  "int",
+  "String",
+  "String",
+  "Unknown",
+  "Unknown",
+  "Unknown",
+  "Unknown",
+  "String",
+  "String",
+  "Unknown",
+  "Unknown",
+  "Unknown",
+  "Unknown",
+  "String",
+  "String",
+  "Unknown"
+];
+
+List<String> fieldTypes = [
+  "TINY",
+  "SHORT",
+  "INT24",
+  "LONGLONG",
+  "LONG",
+  "NEWDECIMAL",
+  "FLOAT",
+  "DOUBLE",
+  "DOUBLE",
+  "TINY",
+  "BIT",
+  "LONGLONG",
+  "DATE",
+  "DATETIME",
+  "TIMESTAMP",
+  "TIME",
+  "YEAR",
+  "STRING",
+  "VAR_STRING",
+  "BLOB",
+  "BLOB",
+  "BLOB",
+  "BLOB",
+  "STRING",
+  "VAR_STRING",
+  "BLOB",
+  "BLOB",
+  "BLOB",
+  "BLOB",
+  "STRING",
+  "STRING",
+  "GEOMETRY"
+];
+
+void main() {
+  initializeTest(
+      "test1",
+      "create table test1 ("
+      "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+      "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+      "aboolean boolean, abit bit(20), aserial serial, "
+      "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+      "achar char(10), avarchar varchar(10), "
+      "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+      "abinary binary(10), avarbinary varbinary(10), "
+      "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+      "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
 
   test('show tables', () async {
     var results = await conn.query("show tables");
@@ -56,31 +209,31 @@ void main() {
 
     results = await conn.query("select atext from test1");
     expect(results.length, equals(1));
-    expect((results[0][0] as Blob).toString().length, equals(200));
+    expect((results.first[0] as Blob).toString().length, equals(200));
   });
 
   test('medium blobs', () async {
-    var query = await pool.prepare("insert into test1 (atext) values (?)");
     var longstring = "";
     for (var i = 0; i < 2000; i++) {
       longstring += "x";
     }
-    var results = await query.execute([new Blob.fromString(longstring)]);
-    expect(results.affectedRows, equals(1));
+    var query = await conn.query("insert into test1 (atext) values (?)",
+        [new Blob.fromString(longstring)]);
+    expect(query.affectedRows, equals(1));
 
-    results = await pool.query("select atext from test1");
+    var results = await conn.query("select atext from test1");
     var list = await results.toList();
-    expect(list.length, equals(2));
-    expect((list[1][0] as Blob).toString().length, equals(2000));
-  });
+    expect(list.length, equals(1));
+    expect((list.first[0] as Blob).toString().length, equals(2000));
 
-  test('clear stuff', () {
-    return pool.query('delete from test1');
+    await conn.query('delete from test1');
+    results = await conn.query("select atext from test1");
+    list = await results.toList();
+    expect(list.isEmpty, true);
   });
 
   test('insert stuff', () async {
-    print("insert stuff test");
-    var query = await pool.prepare(
+    var results = await conn.query(
         "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
         "adecimal, afloat, adouble, areal, "
         "aboolean, abit, aserial, "
@@ -94,122 +247,57 @@ void main() {
         "?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
         "?, ?, ?, ?, ?, ?, "
-        "?, ?)");
-    var values = [];
-    values.add(126);
-    values.add(164);
-    values.add(165);
-    values.add(166);
-    values.add(167);
+        "?, ?)",
+        insertValues);
 
-    values.add(592);
-    values.add(123.456);
-    values.add(123.456);
-    values.add(123.456);
-
-    values.add(true);
-    values.add(0x010203); //[1, 2, 3]);
-    values.add(123);
-
-    values.add(new DateTime.now());
-    values.add(new DateTime.now());
-    values.add(new DateTime.now());
-    values.add(new DateTime.now());
-    values.add(2012);
-
-    values.add("Hello");
-    values.add("Hey");
-    values.add("Hello there");
-    values.add("Good morning");
-    values.add("Habari boss");
-    values.add("Bonjour");
-
-    values.add([65, 66, 67, 68]);
-    values.add([65, 66, 67, 68]);
-    values.add([65, 66, 67, 68]);
-    values.add([65, 66, 67, 68]);
-    values.add([65, 66, 67, 68]);
-    values.add([65, 66, 67, 68]);
-
-    values.add("a");
-    values.add("a,b");
-
-    print("executing");
-    expect(1, equals(1)); // put some real expectations here
-    var results = await query.execute(values);
-    print("updated ${results.affectedRows} ${results.insertId}");
     expect(results.affectedRows, equals(1));
-  });
 
-  test('select everything', () async {
-    var results = await pool.query('select * from test1');
-    var list = await results.toList();
-    expect(list.length, equals(1));
-    var row = list.first;
-    expect(row[10], equals(0x010203));
-  });
+    await conn.query("update test1 set atinyint = ?, adecimal = ?",
+        [127, "123456789.987654321"]);
 
-  test('update', () async {
-    Query preparedQuery;
-    var query =
-        await pool.prepare("update test1 set atinyint = ?, adecimal = ?");
-    preparedQuery = query;
-    expect(1, equals(1)); // put some real expectations here
-    await query.execute([127, "123456789.987654321"]);
-    preparedQuery.close();
-  });
-
-  test('select stuff', () async {
-    var results = await pool.query("select atinyint, adecimal from test1");
+    results = await conn.query("select atinyint, adecimal from test1");
     var list = await results.toList();
     var row = list[0];
     expect(row[0], equals(127));
     expect(row[1], equals(123456789.987654321));
   });
 
-  test('prepare execute', () async {
-    var results = await pool.prepareExecute(
-        'insert into test1 (atinyint, adecimal) values (?, ?)', [123, 123.321]);
-    expect(results.affectedRows, equals(1));
-  });
-
-  List<Field> preparedFields;
-  List<dynamic> values;
-
-  test('data types (prepared)', () async {
-    var results = await pool.prepareExecute('select * from test1', []);
-    print("----------- prepared results ---------------");
-    preparedFields = results.fields;
-    var list = await results.toList();
-    values = list[0];
-    for (var i = 0; i < results.fields.length; i++) {
-      var field = results.fields[i];
-      print(
-          "${field.name} ${fieldTypeToString(field.type)} ${_typeof(values[i])}");
-    }
-  });
-
   test('data types (query)', () async {
-    var results = await pool.query('select * from test1');
-    print("----------- query results ---------------");
+    await conn.query(
+        "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, "
+        "adate, adatetime, atimestamp, atime, ayear, "
+        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+        "aenum, aset) values"
+        "(?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, "
+        "?, ?, ?, "
+        "?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?)",
+        insertValues);
+
+    var results = await conn.query('select * from test1');
     var list = await results.toList();
     var row = list[0];
-    for (var i = 0; i < results.fields.length; i++) {
-      var field = results.fields[i];
 
-      // make sure field types returned by both queries are the same
-      expect(field.type, equals(preparedFields[i].type));
+    for (var i = 0; i < results.fields.length; i++) {
+      print("i: $i");
+      var field = results.fields[i];
+      // field types
+      expect(fieldTypeToString(field.type), fieldTypes[i]);
       // make sure results types are the same
-      expect(_typeof(row[i]), equals(_typeof(values[i])));
+      expect(_typeof(row[i]), equals(valueTypes[i]));
       // make sure the values are the same
       if (row[i] is double) {
         // or at least close
-        expect(row[i], closeTo(values[i], 0.1));
+        expect(row[i], closeTo(responseValues[i], 0.1));
       } else {
-        expect(row[i], equals(values[i]));
+        expect(row[i], equals(responseValues[i]));
       }
-      print(
-          "${field.name} ${fieldTypeToString(field.type)} ${_typeof(row[i])}");
     }
   });
 
@@ -230,39 +318,36 @@ void main() {
 
   test('blobs in prepared queries', () async {
     var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
-    var results = await pool.prepareExecute(
-        "insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
-    expect(1, equals(1)); // put some real expectations here
-    results = await pool
-        .prepareExecute("select atext from test1 where aint = 12344", []);
+    var results = await conn
+        .query("insert into test1 (aint, atext) values (?, ?)", [12344, abc]);
+    results =
+        await conn.query("select atext from test1 where aint = 12344", []);
     var list = await results.toList();
     expect(list.length, equals(1));
-    values = list[0];
+    var values = list[0];
     expect(values[0].toString(), equals("ABC\u0000DEF"));
   });
 
   test('blobs with nulls', () async {
-    var results = await pool.query(
+    await conn.query(
         "insert into test1 (aint, atext) values (12345, \"ABC\u0000DEF\")");
-    expect(1, equals(1)); // put some real expectations here
-    results = await pool.query("select atext from test1 where aint = 12345");
-    results = await results.toList();
+    var results =
+        (await conn.query("select atext from test1 where aint = 12345"))
+            .toList();
     expect(results.length, equals(1));
-    values = results[0];
-    expect(values[0].toString(), equals("ABC\u0000DEF"));
+    var v = results.first;
+    expect(v[0].toString(), equals("ABC\u0000DEF"));
 
-    results = await pool.query("delete from test1 where aint = 12345");
+    await conn.query("delete from test1 where aint = 12345");
     var abc = new String.fromCharCodes([65, 66, 67, 0, 68, 69, 70]);
-    expect(1, equals(1)); // put some real expectations here
-    results = await pool.prepareExecute(
-        "insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
-    expect(1, equals(1)); // put some real expectations here
-    results = await pool
-        .prepareExecute("select atext from test1 where aint = 12345", []);
-    results = await results.toList();
+    await conn
+        .query("insert into test1 (aint, atext) values (?, ?)", [12345, abc]);
+    results =
+        (await conn.query("select atext from test1 where aint = 12345", []))
+            .toList();
     expect(results.length, equals(1));
-    values = results[0];
-    expect(values[0].toString(), equals("ABC\u0000DEF"));
+    v = results[0];
+    expect(v[0].toString(), equals("ABC\u0000DEF"));
   });
 }
 
