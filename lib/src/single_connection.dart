@@ -92,51 +92,44 @@ class MySqlConnection {
     _conn.close();
   }
 
-  static Future<MySqlConnection> _connect(ConnectionSettings c) {
+  static Future<MySqlConnection> _connect(ConnectionSettings c) async {
 
     assert(!c.useSSL);  // Not implemented
     assert(!c.useCompression);
 
-    var handshakeCompleter = new Completer();
     ReqRespConnection conn;
+    Completer handshakeCompleter;
 
     _log.fine("opening connection to ${c.host}:${c.port}/${c.db}");
-    BufferedSocket.connect(c.host, c.port,
-        onConnection: (socket) {
-          Handler handler = new HandshakeHandler(
-              c.user, c.password, c.maxPacketSize, c.db, c.useCompression, c.useSSL);
-          conn = new ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
-        },
-        onDataReady: () {
-          conn?._readPacket();
-        },
-        onDone: () {
-          _log.fine("done");
-        },
-        onError: (error) {
-          _log.warning("socket error: $error");
 
-          // If conn has not been connected there was a connection error.
-          if (conn == null) {
-            handshakeCompleter.completeError(error);
-          } else {
-            conn.handleError(error);
-          }
-        },
-        onClosed: () {
-          conn.handleError(new SocketException.closed());
-        });
+    BufferedSocket socket = await BufferedSocket.connect(c.host, c.port,
+      onDataReady: () {
+        conn?._readPacket();
+      },
+      onDone: () {
+        _log.fine("done");
+      },
+      onError: (error) {
+        _log.warning("socket error: $error");
 
-    //TODO Only useDatabase if connection actually ended up as an SSL connection?
-    //TODO On the other hand, it doesn't hurt to call useDatabase anyway.
-//    if (useSSL) {
-//      await _completer.future;
-//      return _useDatabase(db);
-//    } else {
-//    }
-    return handshakeCompleter.future.then((_) {
-      return new MySqlConnection(c.timeout, conn);
-    });
+        // If conn has not been connected there was a connection error.
+        if (conn == null) {
+          handshakeCompleter.completeError(error);
+        } else {
+          conn.handleError(error);
+        }
+      },
+      onClosed: () {
+        conn.handleError(new SocketException.closed());
+      });
+
+    Handler handler = new HandshakeHandler(
+        c.user, c.password, c.maxPacketSize, c.db, c.useCompression, c.useSSL);
+    handshakeCompleter = new Completer();
+    conn = new ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
+
+    await handshakeCompleter.future;
+    return new MySqlConnection(c.timeout, conn);
   }
 
   /// Connects a MySQL server at the given [host] on [port], authenticates using [user]

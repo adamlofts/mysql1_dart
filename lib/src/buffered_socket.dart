@@ -68,21 +68,12 @@ class BufferedSocket {
       ErrorHandler onError,
       ClosedHandler onClosed,
       SocketFactory socketFactory: defaultSocketFactory,
-      OnConnection onConnection}) async {
-    try {
-      var socket;
-      socket = await socketFactory(host, port);
-      socket.setOption(SocketOption.TCP_NODELAY, true);
+      }) async {
 
-      var bufferedSocket =
-          new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
-      if (onConnection != null) {
-        onConnection(bufferedSocket);
-      }
-      return bufferedSocket;
-    } catch (e) {
-      onError(e);
-    }
+    var socket;
+    socket = await socketFactory(host, port);
+    socket.setOption(SocketOption.TCP_NODELAY, true);
+    return new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }
 
   void _onData(RawSocketEvent event) {
