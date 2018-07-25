@@ -1,14 +1,18 @@
 part of integrationtests;
 
+// TODO: Verify and test what the 'correct' behaviour
+//       of 4byte data on 3byte utf8 is or should be.
+
 void runCharsetTests(
     String user, String password, String db, int port, String host) {
   ConnectionPool pool;
-  group('charset tests:', () {
+  group('charset utf8_general_ci tests:', () {
     test('setup', () {
       pool = new ConnectionPool(
           user: user,
           password: password,
           db: db,
+          characterSet: CharacterSet.UTF8,
           port: port,
           host: host,
           max: 1);

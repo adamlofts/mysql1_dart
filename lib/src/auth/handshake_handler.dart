@@ -19,6 +19,7 @@ class HandshakeHandler extends Handler {
   final String _password;
   final String _db;
   final int _maxPacketSize;
+  final int _characterSet;
 
   int protocolVersion;
   String serverVersion;
@@ -33,7 +34,7 @@ class HandshakeHandler extends Handler {
   bool useSSL = false;
 
   HandshakeHandler(
-      String this._user, String this._password, int this._maxPacketSize,
+      String this._user, String this._password, int this._maxPacketSize, int this._characterSet,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
         this.useCompression = useCompression,
@@ -145,14 +146,14 @@ class HandshakeHandler extends Handler {
           nextHandler: new SSLHandler(
               clientFlags,
               _maxPacketSize,
-              CharacterSet.UTF8MB4,
+              _characterSet,
               new AuthHandler(_user, _password, _db, scrambleBuffer,
-                  clientFlags, _maxPacketSize, CharacterSet.UTF8,
-                  ssl: true)));
+                  clientFlags, _maxPacketSize, _characterSet,
+                  )));
     }
 
     return new HandlerResponse(
         nextHandler: new AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, CharacterSet.UTF8MB4));
+            clientFlags, _maxPacketSize, _characterSet));
   }
 }

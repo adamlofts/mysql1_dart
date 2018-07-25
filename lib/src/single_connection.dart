@@ -16,6 +16,7 @@ import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'handlers/quit_handler.dart';
 import 'package:pool/pool.dart';
+import 'package:sqljocky5/src/auth/character_set.dart';
 import 'package:sqljocky5/src/results/results_impl.dart';
 import 'prepared_statements/close_statement_handler.dart';
 import 'prepared_statements/execute_query_handler.dart';
@@ -35,6 +36,7 @@ class ConnectionSettings {
   bool useCompression;
   bool useSSL;
   int maxPacketSize;
+  int characterSet;
 
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
@@ -48,7 +50,9 @@ class ConnectionSettings {
       bool this.useCompression: false,
       bool this.useSSL: false,
       int this.maxPacketSize: 16 * 1024 * 1024,
-      Duration this.timeout: const Duration(seconds: 30)});
+      Duration this.timeout: const Duration(seconds: 30),
+      int this.characterSet: CharacterSet.UTF8MB4
+      });
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -60,6 +64,7 @@ class ConnectionSettings {
     useSSL = o.useSSL;
     maxPacketSize = o.maxPacketSize;
     timeout = o.timeout;
+    characterSet = o.characterSet;
   }
 }
 
@@ -119,7 +124,7 @@ class MySqlConnection {
     });
 
     Handler handler = new HandshakeHandler(
-        c.user, c.password, c.maxPacketSize, c.db, c.useCompression, c.useSSL);
+        c.user, c.password, c.maxPacketSize, c.characterSet, c.db, c.useCompression, c.useSSL);
     handshakeCompleter = new Completer();
     conn = new ReqRespConnection(
         socket, handler, handshakeCompleter, c.maxPacketSize);
