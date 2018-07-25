@@ -3,10 +3,12 @@ SCRIPT=$(readlink -f $0)
 SCRIPTPATH=$(dirname $SCRIPT)
 cd $SCRIPTPATH/..
 
-dartdoc --link-api --out ../sqljocky_pages/docs --package-root packages \
---exclude-lib logging,buffer,buffered_socket,crypto,unmodifiable_collection,constants \
-lib/sqljocky.dart lib/constants.dart lib/utils.dart
+#dartdoc --output ../sqljocky_pages/docs --package-root packages \
+#--exclude-lib logging,buffer,buffered_socket,crypto,unmodifiable_collection,constants \
+#lib/sqljocky.dart lib/constants.dart lib/utils.dart
 
-dartdoc --link-api --out docs --mode static --package-root packages \
---exclude-lib logging,buffer,buffered_socket,crypto,unmodifiable_collection,constants \
-lib/sqljocky.dart lib/constants.dart lib/utils.dart
+dartdoc --output docs
+ #--package-root
+#packages \
+#--exclude-lib logging,buffer,buffered_socket,crypto,unmodifiable_collection,constants \
+#lib/sqljocky.dart lib/constants.dart lib/utils.dart

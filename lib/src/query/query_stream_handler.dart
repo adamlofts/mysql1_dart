@@ -80,7 +80,7 @@ class QueryStreamHandler extends Handler {
     });
     this._fieldIndex = createFieldIndex();
     return new HandlerResponse(
-        result: new Results(null, null, fieldPackets,
+        result: new ResultsStream(null, null, fieldPackets,
             stream: _streamController.stream));
   }
 
@@ -123,7 +123,7 @@ class QueryStreamHandler extends Handler {
     //TODO is this finished value right?
     return new HandlerResponse(
         finished: finished,
-        result: new Results(
+        result: new ResultsStream(
             _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
   }
 

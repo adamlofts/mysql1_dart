@@ -28,13 +28,13 @@ final Logger _log = new Logger("SingleConnection");
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
-class MySQLConnection {
+class MySqlConnection {
   final Duration _timeout;
 
   ReqRespConnection _conn;
   bool _sentClose = false;
 
-  MySQLConnection(this._timeout, this._conn);
+  MySqlConnection(this._timeout, this._conn);
 
   /// Close the connection
   ///
@@ -54,7 +54,7 @@ class MySQLConnection {
     _conn.close();
   }
 
-  static Future<MySQLConnection> _connect(
+  static Future<MySqlConnection> _connect(
       Duration timeout,
       {String host,
       int port,
@@ -107,7 +107,7 @@ class MySQLConnection {
 //    } else {
 //    }
     return handshakeCompleter.future.then((_) {
-      return new MySQLConnection(timeout, conn);
+      return new MySqlConnection(timeout, conn);
     });
   }
 
@@ -116,7 +116,7 @@ class MySQLConnection {
   ///
   /// [timeout] is used as the connection timeout and the default timeout for all socket
   /// communication.
-  static Future<MySQLConnection> connect(
+  static Future<MySqlConnection> connect(
       {String host,
         int port,
         String user,
@@ -133,7 +133,7 @@ class MySQLConnection {
       .timeout(timeout);
   }
 
-  Future<ReadResults> query(String sql, [List values]) async {
+  Future<Results> query(String sql, [List values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(new QueryStreamHandler(sql), _timeout);
     }
@@ -173,10 +173,10 @@ class MySQLConnection {
 }
 
 class TransactionContext {
-  final MySQLConnection _conn;
+  final MySqlConnection _conn;
   TransactionContext._(this._conn);
 
-  Future<ReadResults> query(String sql, [List values]) => _conn.query(sql, values);
+  Future<Results> query(String sql, [List values]) => _conn.query(sql, values);
   void rollback() => throw new _RollbackError();
 }
 
@@ -185,17 +185,17 @@ class _RollbackError {
 }
 
 
-class ReadResults extends IterableBase<Row> {
+class Results extends IterableBase<Row> {
   final int insertId;
   final int affectedRows;
   final List<Field> fields;
   final List<Row> _rows;
 
-  ReadResults(this._rows, this.fields, this.insertId, this.affectedRows);
+  Results(this._rows, this.fields, this.insertId, this.affectedRows);
 
-  static Future<ReadResults> read(Results r) async {
+  static Future<Results> read(ResultsStream r) async {
     var rows = await r.toList();
-    return new ReadResults(rows, r.fields, r.insertId, r.affectedRows);
+    return new Results(rows, r.fields, r.insertId, r.affectedRows);
   }
 
   @override
@@ -428,14 +428,14 @@ class ReqRespConnection {
     });
   }
 
-  Future<ReadResults> processHandlerWithResults(Handler handler, Duration timeout) {
+  Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      Results results = await _processHandler(handler)
+      ResultsStream results = await _processHandler(handler)
           .timeout(timeout);
 
       // Read all of the results. This is so we can close the handler before returning to the
       // user. Obviously this is not super efficient but it guarantees correct api use.
-      ReadResults ret = await ReadResults.read(results)
+      Results ret = await Results.read(results)
         .timeout(timeout);
 
       return ret;

@@ -6,7 +6,7 @@ import 'package:sqljocky5/constants.dart';
 import 'package:sqljocky5/sqljocky.dart';
 import 'package:test/test.dart';
 
-Future setup(MySQLConnection conn, String tableName, String createSql,
+Future setup(MySqlConnection conn, String tableName, String createSql,
     [String insertSql]) async {
   await new TableDropper(conn, [tableName]).dropTables();
   if (createSql != null) {
@@ -23,7 +23,7 @@ Future setup(MySQLConnection conn, String tableName, String createSql,
  * Drops a set of tables.
  */
 class TableDropper {
-  MySQLConnection conn;
+  MySqlConnection conn;
   List<String> tables;
 
   /**

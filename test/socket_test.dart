@@ -22,7 +22,7 @@ void main() {
 
   test('connection fail connect test', () async {
     try {
-      await MySQLConnection.connect(
+      await MySqlConnection.connect(
           host: 'localhost',
           port: 12345);
     } on SocketException catch (e) {
@@ -36,7 +36,7 @@ void main() {
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12346);
-      await MySQLConnection.connect(
+      await MySqlConnection.connect(
           host: 'localhost',
           port: 12346,
           timeout: new Duration(microseconds: 5));
@@ -51,14 +51,14 @@ void main() {
   test('calling close on a broken socket should respect the socket timeout. close never throws.', () async {
     _MockBufferedSocket m = new _MockBufferedSocket();
     ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
-    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), r);
+    MySqlConnection conn = new MySqlConnection(const Duration(microseconds: 5), r);
     await conn.close();  // does not timeout the test.
   });
 
   test('calling query on a broken socket should respect the socket timeout', () async {
     _MockBufferedSocket m = new _MockBufferedSocket();
     ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
-    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), r);
+    MySqlConnection conn = new MySqlConnection(const Duration(microseconds: 5), r);
     expect(conn.query("SELECT 1"), throwsA(timeoutMatcher));
   });
 
@@ -70,7 +70,7 @@ void main() {
       sock.listen((socket) {
         socket.close();
       });
-      await MySQLConnection.connect(
+      await MySqlConnection.connect(
           host: 'localhost',
           port: 12347,
       );
@@ -93,7 +93,7 @@ void main() {
         socket.add([255, 16, 4, 84, 111, 111, 32, 109, 97, 110, 121, 32, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 115]);
         socket.close();
       });
-      await MySQLConnection.connect(
+      await MySqlConnection.connect(
           host: 'localhost',
           port: 12348,
       );
@@ -116,7 +116,7 @@ void main() {
         socket.add([9]);
         socket.close();
       });
-      await MySQLConnection.connect(
+      await MySqlConnection.connect(
           host: 'localhost',
           port: 12348,
       );

@@ -16,7 +16,7 @@ void main() {
   initializeTest("test1");
 
   test('create tables', () async {
-    ReadResults results = await conn.query("create table test1 ("
+    Results results = await conn.query("create table test1 ("
         "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
         "adecimal decimal(20,10), afloat float, adouble double, areal real, "
         "aboolean boolean, abit bit(20), aserial serial, "
@@ -265,7 +265,7 @@ void main() {
   });
 }
 
-void _showResults(ReadResults results) {
+void _showResults(Results results) {
   var fieldNames = <String>[];
   for (var field in results.fields) {
     fieldNames.add("${field.name}:${field.type}");

@@ -6,8 +6,8 @@ import 'package:test/test.dart';
 
 import 'test_util.dart';
 
-MySQLConnection get conn => _conn;
-MySQLConnection _conn;
+MySqlConnection get conn => _conn;
+MySqlConnection _conn;
 
 void initializeTest([String tableName, String createSql, String insertSql]) {
   var options = new OptionsFile('connection.options');
@@ -19,7 +19,7 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
 
   setUp(() async {
     // Ensure db exists
-    final c = await MySQLConnection.connect(
+    final c = await MySqlConnection.connect(
       host: "localhost",
       port: 3306,
       user: "root",
@@ -27,7 +27,7 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
     await c.query("CREATE DATABASE IF NOT EXISTS $db CHARACTER SET utf8");
     await c.close();
 
-    _conn = await MySQLConnection.connect(
+    _conn = await MySqlConnection.connect(
       host: "localhost",
       port: 3306,
       user: "root",
