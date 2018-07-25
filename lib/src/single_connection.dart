@@ -26,6 +26,44 @@ import 'results/row.dart';
 
 final Logger _log = new Logger("SingleConnection");
 
+class ConnectionSettings {
+  String host;
+  int port;
+  String user;
+  String password;
+  String db;
+  bool useCompression;
+  bool useSSL;
+  int maxPacketSize;
+
+  /// The timeout for connecting to the database and for all database operations.
+  Duration timeout;
+
+  ConnectionSettings({
+    String this.host: 'localhost',
+    int this.port: 3306,
+    String this.user,
+    String this.password,
+    String this.db,
+    bool this.useCompression: false,
+    bool this.useSSL: false,
+    int this.maxPacketSize: 16 * 1024 * 1024,
+    Duration this.timeout: const Duration(seconds: 30)
+  });
+
+  ConnectionSettings.copy(ConnectionSettings o) {
+    host = o.host;
+    port = o.port;
+    user = o.user;
+    password = o.password;
+    db = o.db;
+    useCompression = o.useCompression;
+    useSSL = o.useSSL;
+    maxPacketSize = o.maxPacketSize;
+    timeout = o.timeout;
+  }
+}
+
 /// Represents a connection to the database. Use [connect] to open a connection. You
 /// must call [close] when you are done.
 class MySqlConnection {
@@ -54,30 +92,20 @@ class MySqlConnection {
     _conn.close();
   }
 
-  static Future<MySqlConnection> _connect(
-      Duration timeout,
-      {String host,
-      int port,
-      String user,
-      String password,
-      String db,
-      bool useCompression: false,
-      bool useSSL: false,
-      int maxPacketSize: 16 * 1024 * 1024,
-      }) {
+  static Future<MySqlConnection> _connect(ConnectionSettings c) {
 
-    assert(!useSSL);  // Not implemented
-    assert(!useCompression);
+    assert(!c.useSSL);  // Not implemented
+    assert(!c.useCompression);
 
     var handshakeCompleter = new Completer();
     ReqRespConnection conn;
 
-    _log.fine("opening connection to $host:$port/$db");
-    BufferedSocket.connect(host, port,
+    _log.fine("opening connection to ${c.host}:${c.port}/${c.db}");
+    BufferedSocket.connect(c.host, c.port,
         onConnection: (socket) {
           Handler handler = new HandshakeHandler(
-              user, password, maxPacketSize, db, useCompression, useSSL);
-          conn = new ReqRespConnection(socket, handler, handshakeCompleter, maxPacketSize);
+              c.user, c.password, c.maxPacketSize, c.db, c.useCompression, c.useSSL);
+          conn = new ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
         },
         onDataReady: () {
           conn?._readPacket();
@@ -107,7 +135,7 @@ class MySqlConnection {
 //    } else {
 //    }
     return handshakeCompleter.future.then((_) {
-      return new MySqlConnection(timeout, conn);
+      return new MySqlConnection(c.timeout, conn);
     });
   }
 
@@ -116,21 +144,11 @@ class MySqlConnection {
   ///
   /// [timeout] is used as the connection timeout and the default timeout for all socket
   /// communication.
-  static Future<MySqlConnection> connect(
-      {String host,
-        int port,
-        String user,
-        String password,
-        String db,
-        bool useCompression: false,
-        bool useSSL: false,
-        int maxPacketSize: 16 * 1024 * 1024,
-        Duration timeout: const Duration(seconds: 30)
-      }) {
+  static Future<MySqlConnection> connect(ConnectionSettings c) {
     // In dart2 this can be replaced with a timeout parameter to connect
     return
-      _connect(timeout, host: host, port: port, user: user, password: password, db: db, useCompression: useCompression, useSSL: useSSL, maxPacketSize: maxPacketSize)
-      .timeout(timeout);
+      _connect(c)
+      .timeout(c.timeout);
   }
 
   Future<Results> query(String sql, [List values]) async {
@@ -420,10 +438,8 @@ class ReqRespConnection {
 
   Future processHandler(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      print("Start processHandler $handler");
       var ret = await _processHandler(handler)
           .timeout(timeout);
-      print("Finish handler $handler");
       return ret;
     });
   }

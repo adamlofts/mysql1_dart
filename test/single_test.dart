@@ -45,9 +45,25 @@ void main() {
     // Check the conn is still ok after the error
     r = await conn.query("SELECT * FROM `t1` WHERE a = ?", [1]);
     expect(r.length, 1);
+  });
 
 
-    await conn.close();
+  test('queued queries test', () async {
+    // Even though we do not await these queries they should be queued.
+    Future _;
+    _ = conn.query("DROP TABLE IF EXISTS t1");
+    _ = conn.query("CREATE TABLE IF NOT EXISTS t1 (a INT)");
+    Future<Results> f1 =  conn.query("SELECT * FROM `t1`");
+
+    _ =  conn.query("INSERT INTO `t1` (a) VALUES (?)", [1]);
+
+    Future<Results> f2 = conn.query("SELECT * FROM `t1` WHERE a = ?", [1]);
+
+    Results r1 = await f1;
+    Results r2 = await f2;
+
+    expect(r1.length, 0);
+    expect(r2.length, 1);
   });
 
 

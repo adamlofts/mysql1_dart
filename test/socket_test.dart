@@ -22,9 +22,8 @@ void main() {
 
   test('connection fail connect test', () async {
     try {
-      await MySqlConnection.connect(
-          host: 'localhost',
-          port: 12345);
+      await MySqlConnection.connect(new ConnectionSettings(
+          port: 12345));
     } on SocketException catch (e) {
       expect(e.osError.errorCode, 111);
     }
@@ -36,10 +35,9 @@ void main() {
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12346);
-      await MySqlConnection.connect(
-          host: 'localhost',
+      await MySqlConnection.connect(new ConnectionSettings(
           port: 12346,
-          timeout: new Duration(microseconds: 5));
+          timeout: new Duration(microseconds: 5)));
     } on TimeoutException {
       thrown = true;
     } finally {
@@ -70,10 +68,9 @@ void main() {
       sock.listen((socket) {
         socket.close();
       });
-      await MySqlConnection.connect(
-          host: 'localhost',
+      await MySqlConnection.connect(new ConnectionSettings(
           port: 12347,
-      );
+      ));
     } on SocketException catch (e) {
       thrown = true;
       expect(e.message, "Socket has been closed");
@@ -93,10 +90,9 @@ void main() {
         socket.add([255, 16, 4, 84, 111, 111, 32, 109, 97, 110, 121, 32, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 115]);
         socket.close();
       });
-      await MySqlConnection.connect(
-          host: 'localhost',
+      await MySqlConnection.connect(new ConnectionSettings(
           port: 12348,
-      );
+      ));
     } on MySqlException catch (e) {
       thrown = true;
       expect(e.message, "ny connections");
@@ -116,10 +112,9 @@ void main() {
         socket.add([9]);
         socket.close();
       });
-      await MySqlConnection.connect(
-          host: 'localhost',
+      await MySqlConnection.connect(new ConnectionSettings(
           port: 12348,
-      );
+      ));
     } on MySqlClientError catch (e) {
       thrown = true;
       expect(e.message, "Protocol not supported");
@@ -131,8 +126,6 @@ void main() {
 }
 
 class _MockBufferedSocket extends Mock implements BufferedSocket {}
-
-class _MockReqResp extends Mock implements ReqRespConnection {}
 
 final Matcher timeoutMatcher = const _TimeoutException();
 class _TimeoutException extends TypeMatcher {
