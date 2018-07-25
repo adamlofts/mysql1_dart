@@ -10,8 +10,7 @@ void main() {
       "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
 
   test('store data', () async {
-    var query; // = await pool.prepare('select * from stream where id = ?');
-    var values = await query.executeMulti([
+    var values = await conn.queryMulti('select * from stream where id = ?', [
       [1],
       [2],
       [3]
@@ -29,7 +28,7 @@ void main() {
     resultList = await values[2].toList();
     expect(resultList[0][0], equals(3));
     expect(resultList[0][1].toString(), equals('C'));
-  }, skip: "Not ported");
+  });
 
   test('issue 43', () async {
     await conn.transaction((context) async {

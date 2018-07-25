@@ -144,25 +144,28 @@ class MySqlConnection {
           new QueryStreamHandler(sql), _timeout);
     }
 
+    return (await queryMulti(sql, [values])).first;
+  }
+
+  Future<List<Results>> queryMulti(String sql, Iterable<List> values) async {
     var prepared;
-    var results;
+    var ret = <Results>[];
     try {
       prepared = await _conn.processHandler(new PrepareHandler(sql), _timeout);
-      _log.fine("Prepared new query for: $sql");
+      _log.fine("Prepared queryMulti query for: $sql");
 
-      var handler =
-          new ExecuteQueryHandler(prepared, false /* executed */, values);
-      results = _conn.processHandlerWithResults(handler, _timeout);
+      for (List v in values) {
+        var handler = new ExecuteQueryHandler(prepared, false /* executed */, v);
+        ret.add(await _conn.processHandlerWithResults(handler, _timeout));
+      }
 
-      _log.finest("Prepared query got results");
     } finally {
       if (prepared != null) {
         await _conn.processHandlerNoResponse(
             new CloseStatementHandler(prepared.statementHandlerId), _timeout);
       }
     }
-
-    return results;
+    return ret;
   }
 
   Future transaction(Future queryBlock(TransactionContext connection)) async {
@@ -185,6 +188,7 @@ class TransactionContext {
   TransactionContext._(this._conn);
 
   Future<Results> query(String sql, [List values]) => _conn.query(sql, values);
+  Future<List<Results>> queryMulti(String sql, Iterable<List> values) => _conn.queryMulti(sql, values);
   void rollback() => throw new _RollbackError();
 }
 

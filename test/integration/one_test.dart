@@ -302,19 +302,15 @@ void main() {
   });
 
   test('multi queries', () async {
-    var trans; // = await pool.startTransaction();
-    var start = new DateTime.now();
-    var query = await trans.prepare('insert into test1 (aint) values (?)');
-    var params = [];
-    for (var i = 0; i < 50; i++) {
-      params.add([i]);
-    }
-    var resultList = await query.executeMulti(params);
-    var end = new DateTime.now();
-    print(end.difference(start));
-    expect(resultList.length, equals(50));
-    await trans.commit();
-  }, skip: "No executeMulti method");
+    await conn.transaction((ctx) async {
+      var params = [];
+      for (var i = 0; i < 50; i++) {
+        params.add([i]);
+      }
+      var resultList = await ctx.queryMulti('insert into test1 (aint) values (?)', params);
+      expect(resultList.length, equals(50));
+    });
+  });
 
   test('blobs in prepared queries', () async {
     var abc = new Blob.fromBytes([65, 66, 67, 0, 68, 69, 70]);
