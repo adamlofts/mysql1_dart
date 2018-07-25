@@ -9,7 +9,7 @@ dart_task:
 # of a task instead of "name: true".
 - test
 
-- dartanalyzer: --fatal-warnings lib
+- dartanalyzer: --fatal-warnings --fatal-infos lib
 
 
 services:
