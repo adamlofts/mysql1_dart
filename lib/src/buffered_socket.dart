@@ -62,14 +62,15 @@ class BufferedSocket {
 
   static defaultSocketFactory(host, port) => RawSocket.connect(host, port);
 
-  static Future<BufferedSocket> connect(String host, int port,
-      {DataReadyHandler onDataReady,
-      DoneHandler onDone,
-      ErrorHandler onError,
-      ClosedHandler onClosed,
-      SocketFactory socketFactory: defaultSocketFactory,
-      }) async {
-
+  static Future<BufferedSocket> connect(
+    String host,
+    int port, {
+    DataReadyHandler onDataReady,
+    DoneHandler onDone,
+    ErrorHandler onError,
+    ClosedHandler onClosed,
+    SocketFactory socketFactory: defaultSocketFactory,
+  }) async {
     var socket;
     socket = await socketFactory(host, port);
     socket.setOption(SocketOption.TCP_NODELAY, true);

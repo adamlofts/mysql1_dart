@@ -91,7 +91,8 @@ void main() {
     test('should receive buffer', () async {
       final MAX_PACKET_SIZE = 16 * 1024 * 1024;
       var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
+      var cnx = new ReqRespConnection(
+          socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
 
       var c = new Completer();
 
@@ -123,7 +124,8 @@ void main() {
     test('should receive large buffer', () async {
       final MAX_PACKET_SIZE = 32 * 1024 * 1024;
       var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
+      var cnx = new ReqRespConnection(
+          socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
 
       var c = new Completer();
 

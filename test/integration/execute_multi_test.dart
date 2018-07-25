@@ -10,7 +10,7 @@ void main() {
       "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
 
   test('store data', () async {
-    var query;// = await pool.prepare('select * from stream where id = ?');
+    var query; // = await pool.prepare('select * from stream where id = ?');
     var values = await query.executeMulti([
       [1],
       [2],
@@ -43,7 +43,8 @@ void main() {
     expect(count.first.first, 3);
 
     await conn.transaction((context) async {
-      await context.query("insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
+      await context.query(
+          "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
       context.rollback();
     });
 
@@ -51,18 +52,16 @@ void main() {
     expect(count.first.first, 3);
   });
 
-
   test('transaction commit', () async {
     var count = await conn.query("SELECT COUNT(*) FROM stream");
     expect(count.first.first, 3);
 
     await conn.transaction((context) async {
-      await context.query("insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
+      await context.query(
+          "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
     });
 
     count = await conn.query("SELECT COUNT(*) FROM stream");
     expect(count.first.first, 6);
   });
-
-
 }

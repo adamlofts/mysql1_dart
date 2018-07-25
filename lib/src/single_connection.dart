@@ -39,17 +39,16 @@ class ConnectionSettings {
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
 
-  ConnectionSettings({
-    String this.host: 'localhost',
-    int this.port: 3306,
-    String this.user,
-    String this.password,
-    String this.db,
-    bool this.useCompression: false,
-    bool this.useSSL: false,
-    int this.maxPacketSize: 16 * 1024 * 1024,
-    Duration this.timeout: const Duration(seconds: 30)
-  });
+  ConnectionSettings(
+      {String this.host: 'localhost',
+      int this.port: 3306,
+      String this.user,
+      String this.password,
+      String this.db,
+      bool this.useCompression: false,
+      bool this.useSSL: false,
+      int this.maxPacketSize: 16 * 1024 * 1024,
+      Duration this.timeout: const Duration(seconds: 30)});
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -93,8 +92,7 @@ class MySqlConnection {
   }
 
   static Future<MySqlConnection> _connect(ConnectionSettings c) async {
-
-    assert(!c.useSSL);  // Not implemented
+    assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
     ReqRespConnection conn;
@@ -102,31 +100,29 @@ class MySqlConnection {
 
     _log.fine("opening connection to ${c.host}:${c.port}/${c.db}");
 
-    BufferedSocket socket = await BufferedSocket.connect(c.host, c.port,
-      onDataReady: () {
-        conn?._readPacket();
-      },
-      onDone: () {
-        _log.fine("done");
-      },
-      onError: (error) {
-        _log.warning("socket error: $error");
+    BufferedSocket socket =
+        await BufferedSocket.connect(c.host, c.port, onDataReady: () {
+      conn?._readPacket();
+    }, onDone: () {
+      _log.fine("done");
+    }, onError: (error) {
+      _log.warning("socket error: $error");
 
-        // If conn has not been connected there was a connection error.
-        if (conn == null) {
-          handshakeCompleter.completeError(error);
-        } else {
-          conn.handleError(error);
-        }
-      },
-      onClosed: () {
-        conn.handleError(new SocketException.closed());
-      });
+      // If conn has not been connected there was a connection error.
+      if (conn == null) {
+        handshakeCompleter.completeError(error);
+      } else {
+        conn.handleError(error);
+      }
+    }, onClosed: () {
+      conn.handleError(new SocketException.closed());
+    });
 
     Handler handler = new HandshakeHandler(
         c.user, c.password, c.maxPacketSize, c.db, c.useCompression, c.useSSL);
     handshakeCompleter = new Completer();
-    conn = new ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
+    conn = new ReqRespConnection(
+        socket, handler, handshakeCompleter, c.maxPacketSize);
 
     await handshakeCompleter.future;
     return new MySqlConnection(c.timeout, conn);
@@ -139,14 +135,13 @@ class MySqlConnection {
   /// communication.
   static Future<MySqlConnection> connect(ConnectionSettings c) {
     // In dart2 this can be replaced with a timeout parameter to connect
-    return
-      _connect(c)
-      .timeout(c.timeout);
+    return _connect(c).timeout(c.timeout);
   }
 
   Future<Results> query(String sql, [List values]) async {
     if (values == null || values.isEmpty) {
-      return _conn.processHandlerWithResults(new QueryStreamHandler(sql), _timeout);
+      return _conn.processHandlerWithResults(
+          new QueryStreamHandler(sql), _timeout);
     }
 
     var prepared;
@@ -155,13 +150,15 @@ class MySqlConnection {
       prepared = await _conn.processHandler(new PrepareHandler(sql), _timeout);
       _log.fine("Prepared new query for: $sql");
 
-      var handler = new ExecuteQueryHandler(prepared, false /* executed */, values);
+      var handler =
+          new ExecuteQueryHandler(prepared, false /* executed */, values);
       results = _conn.processHandlerWithResults(handler, _timeout);
 
       _log.finest("Prepared query got results");
     } finally {
       if (prepared != null) {
-        await _conn.processHandlerNoResponse(new CloseStatementHandler(prepared.statementHandlerId), _timeout);
+        await _conn.processHandlerNoResponse(
+            new CloseStatementHandler(prepared.statementHandlerId), _timeout);
       }
     }
 
@@ -191,10 +188,7 @@ class TransactionContext {
   void rollback() => throw new _RollbackError();
 }
 
-class _RollbackError {
-
-}
-
+class _RollbackError {}
 
 class Results extends IterableBase<Row> {
   final int insertId;
@@ -239,8 +233,9 @@ class ReqRespConnection {
   bool _useSSL = false;
   final int _maxPacketSize;
 
-  ReqRespConnection(this._socket, this._handler, Completer handshakeCompleter, this._maxPacketSize) :
-        _headerBuffer = new Buffer(HEADER_SIZE),
+  ReqRespConnection(this._socket, this._handler, Completer handshakeCompleter,
+      this._maxPacketSize)
+      : _headerBuffer = new Buffer(HEADER_SIZE),
         _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
         _completer = handshakeCompleter;
 
@@ -431,21 +426,18 @@ class ReqRespConnection {
 
   Future processHandler(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      var ret = await _processHandler(handler)
-          .timeout(timeout);
+      var ret = await _processHandler(handler).timeout(timeout);
       return ret;
     });
   }
 
   Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      ResultsStream results = await _processHandler(handler)
-          .timeout(timeout);
+      ResultsStream results = await _processHandler(handler).timeout(timeout);
 
       // Read all of the results. This is so we can close the handler before returning to the
       // user. Obviously this is not super efficient but it guarantees correct api use.
-      Results ret = await Results.read(results)
-        .timeout(timeout);
+      Results ret = await Results.read(results).timeout(timeout);
 
       return ret;
     });
@@ -453,8 +445,7 @@ class ReqRespConnection {
 
   Future processHandlerNoResponse(Handler handler, Duration timeout) {
     return pool.withResource(() {
-      return _processHandlerNoResponse(handler)
-          .timeout(timeout);
+      return _processHandlerNoResponse(handler).timeout(timeout);
     });
   }
 }

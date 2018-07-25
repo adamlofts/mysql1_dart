@@ -143,6 +143,4 @@ class QueryStreamHandler extends Handler {
   String toString() {
     return "QueryStreamHandler($_sql)";
   }
-
-
 }

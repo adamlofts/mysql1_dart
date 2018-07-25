@@ -18,7 +18,6 @@ Future setup(MySqlConnection conn, String tableName, String createSql,
   }
 }
 
-
 /**
  * Drops a set of tables.
  */
@@ -52,4 +51,3 @@ class TableDropper {
     }
   }
 }
-

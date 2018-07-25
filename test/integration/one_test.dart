@@ -50,7 +50,8 @@ void main() {
     for (var i = 0; i < 200; i++) {
       longstring += "x";
     }
-    var results = await conn.query("insert into test1 (atext) values (?)", [new Blob.fromString(longstring)]);
+    var results = await conn.query("insert into test1 (atext) values (?)",
+        [new Blob.fromString(longstring)]);
     expect(results.affectedRows, equals(1));
 
     results = await conn.query("select atext from test1");
