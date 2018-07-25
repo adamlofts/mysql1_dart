@@ -6,6 +6,7 @@ import 'package:mockito/mockito.dart';
 import 'package:options_file/options_file.dart';
 import 'package:sqljocky5/constants.dart';
 import 'package:sqljocky5/sqljocky.dart';
+import 'package:sqljocky5/src/buffered_socket.dart';
 import 'package:sqljocky5/src/single_connection.dart';
 import 'package:test/test.dart';
 import 'test_infrastructure.dart';
@@ -48,18 +49,16 @@ void main() {
   });
 
   test('calling close on a broken socket should respect the socket timeout. close never throws.', () async {
-    _MockReqResp m = new _MockReqResp();
-    when(m.processHandlerNoResponse(any)).thenReturn(new Completer().future);
-
-    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), m);
+    _MockBufferedSocket m = new _MockBufferedSocket();
+    ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
+    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), r);
     await conn.close();  // does not timeout the test.
   });
 
   test('calling query on a broken socket should respect the socket timeout', () async {
-    _MockReqResp m = new _MockReqResp();
-    when(m.processHandler(any)).thenReturn(new Completer().future);
-
-    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), m);
+    _MockBufferedSocket m = new _MockBufferedSocket();
+    ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
+    MySQLConnection conn = new MySQLConnection(const Duration(microseconds: 5), r);
     expect(conn.query("SELECT 1"), throwsA(timeoutMatcher));
   });
 
@@ -130,6 +129,8 @@ void main() {
     expect(thrown, true);
   });
 }
+
+class _MockBufferedSocket extends Mock implements BufferedSocket {}
 
 class _MockReqResp extends Mock implements ReqRespConnection {}
 

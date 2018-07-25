@@ -80,7 +80,7 @@ class QueryStreamHandler extends Handler {
     });
     this._fieldIndex = createFieldIndex();
     return new HandlerResponse(
-        result: new ResultsImpl(null, null, fieldPackets,
+        result: new Results(null, null, fieldPackets,
             stream: _streamController.stream));
   }
 
@@ -123,7 +123,7 @@ class QueryStreamHandler extends Handler {
     //TODO is this finished value right?
     return new HandlerResponse(
         finished: finished,
-        result: new ResultsImpl(
+        result: new Results(
             _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
   }
 
@@ -138,4 +138,11 @@ class QueryStreamHandler extends Handler {
     }
     return fieldIndex;
   }
+
+  @override
+  String toString() {
+    return "QueryStreamHandler($_sql)";
+  }
+
+
 }

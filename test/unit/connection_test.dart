@@ -16,7 +16,7 @@ void main() {
   group('Connection', () {
     test('should throw error if buffer is too big', () {
       final MAX_PACKET_SIZE = 10;
-      var cnx = new ReqRespConnection(null, MAX_PACKET_SIZE, null, null, null, false, false, null);
+      var cnx = new ReqRespConnection(null, null, null, MAX_PACKET_SIZE);
       final PACKET_SIZE = 11;
       var buffer = new Buffer(PACKET_SIZE);
       expect(() {
@@ -27,7 +27,7 @@ void main() {
     test('should send buffer', () async {
       final MAX_PACKET_SIZE = 16 * 1024 * 1024;
       var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
+      var cnx = new ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
       when(socket.writeBuffer(any)).thenReturn(new Future.value());
       when(socket.writeBufferPart(any, any, any))
@@ -61,7 +61,7 @@ void main() {
     test('should send large buffer', () async {
       final MAX_PACKET_SIZE = 32 * 1024 * 1024;
       var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
+      var cnx = new ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
       var buffers = [];
       when(socket.writeBuffer(any)).thenAnswer((mirror) {

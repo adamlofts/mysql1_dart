@@ -347,7 +347,7 @@ class ExecuteQueryHandler extends Handler {
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         return new HandlerResponse(
             finished: true,
-            result: new ResultsImpl(
+            result: new Results(
                 _okPacket.insertId, _okPacket.affectedRows, null));
       }
     }
@@ -362,7 +362,7 @@ class ExecuteQueryHandler extends Handler {
     };
     this._fieldIndex = createFieldIndex();
     return new HandlerResponse(
-        result: new ResultsImpl(null, null, fieldPackets,
+        result: new Results(null, null, fieldPackets,
             stream: _streamController.stream));
   }
 

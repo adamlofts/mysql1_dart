@@ -11,5 +11,4 @@ export 'src/single_connection.dart' show MySQLConnection, ReadResults;
 export 'src/auth/character_set.dart';
 
 export 'src/results/field.dart';
-export 'src/results/results.dart';
 export 'src/results/row.dart';

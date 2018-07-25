@@ -23,20 +23,6 @@ void main() {
   initializeTest();
 
   test('connection test', () async {
-    var options = new OptionsFile('connection.options');
-    var user = options.getString('user');
-    var password = options.getString('password');
-    var port = options.getInt('port', 3306);
-    var db = options.getString('db');
-    var host = options.getString('host', 'localhost');
-
-    // create a connection
-    var conn = await MySQLConnection.connect(
-        host: host,
-        port: port,
-        user: user,
-        password: password,
-        db: db);
 
     await conn.query("DROP TABLE IF EXISTS t1");
     await conn.query("CREATE TABLE IF NOT EXISTS t1 (a INT)");
@@ -48,6 +34,21 @@ void main() {
     r = await conn.query("SELECT * FROM `t1` WHERE a = ?", [2]);
     expect(r.length, 0);
 
+    // Drop a table which doesn't exist. This should cause an error.
+    try {
+      await conn.query("DROP TABLE doesnotexist");
+      expect(true, false); // not reached
+    } on MySqlException catch (e) {
+      expect(e.errorNumber, 1051);
+    }
+
+    // Check the conn is still ok after the error
+    r = await conn.query("SELECT * FROM `t1` WHERE a = ?", [1]);
+    expect(r.length, 1);
+
+
     await conn.close();
   });
+
+
 }

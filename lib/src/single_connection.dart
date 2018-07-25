@@ -13,13 +13,15 @@ import 'buffer.dart';
 import 'buffered_socket.dart';
 import 'handlers/handler.dart';
 import 'mysql_client_error.dart';
+import 'mysql_exception.dart';
 import 'handlers/quit_handler.dart';
+import 'package:pool/pool.dart';
+import 'package:sqljocky5/src/results/results_impl.dart';
 import 'prepared_statements/close_statement_handler.dart';
 import 'prepared_statements/execute_query_handler.dart';
 import 'prepared_statements/prepare_handler.dart';
 import 'query/query_stream_handler.dart';
 import 'results/field.dart';
-import 'results/results.dart';
 import 'results/row.dart';
 
 final Logger _log = new Logger("SingleConnection");
@@ -44,8 +46,7 @@ class MySQLConnection {
     _sentClose = true;
 
     try {
-      await _conn.processHandlerNoResponse(new QuitHandler())
-        .timeout(_timeout);
+      await _conn.processHandlerNoResponse(new QuitHandler(), _timeout);
     } catch (e) {
       _log.info("Error sending quit on connection");
     }
@@ -70,12 +71,13 @@ class MySQLConnection {
 
     var handshakeCompleter = new Completer();
     ReqRespConnection conn;
-    MySQLConnection sc;
 
     _log.fine("opening connection to $host:$port/$db");
     BufferedSocket.connect(host, port,
         onConnection: (socket) {
-          conn = new ReqRespConnection(socket, maxPacketSize, user, password, db, useCompression, useSSL, handshakeCompleter);
+          Handler handler = new HandshakeHandler(
+              user, password, maxPacketSize, db, useCompression, useSSL);
+          conn = new ReqRespConnection(socket, handler, handshakeCompleter, maxPacketSize);
         },
         onDataReady: () {
           conn?._readPacket();
@@ -103,11 +105,10 @@ class MySQLConnection {
 //      await _completer.future;
 //      return _useDatabase(db);
 //    } else {
-    return handshakeCompleter.future.then((_) {
-      sc = new MySQLConnection(timeout, conn);
-      return sc;
-    });
 //    }
+    return handshakeCompleter.future.then((_) {
+      return new MySQLConnection(timeout, conn);
+    });
   }
 
   /// Connects a MySQL server at the given [host] on [port], authenticates using [user]
@@ -134,36 +135,26 @@ class MySQLConnection {
 
   Future<ReadResults> query(String sql, [List values]) async {
     if (values == null || values.isEmpty) {
-      // Run the query without preparing it since we have no arguments.
-      var results = await _conn.processHandler(new QueryStreamHandler(sql))
-        .timeout(_timeout);
-      _log.fine("Got query results on for: ${sql}");
-      return await ReadResults.read(results);
+      return _conn.processHandlerWithResults(new QueryStreamHandler(sql), _timeout);
     }
 
     var prepared;
     var results;
     try {
-      prepared = await _conn.processHandler(new PrepareHandler(sql))
-        .timeout(_timeout);
+      prepared = await _conn.processHandler(new PrepareHandler(sql), _timeout);
       _log.fine("Prepared new query for: $sql");
 
       var handler = new ExecuteQueryHandler(prepared, false /* executed */, values);
-      results = await _conn.processHandler(handler)
-          .timeout(_timeout);
+      results = _conn.processHandlerWithResults(handler, _timeout);
 
       _log.finest("Prepared query got results");
-
-      // Read all of the results. This is so we can close the handler before returning to the
-      // user. Obviously this is not super efficient but it guarantees correct api use.
-      return await ReadResults.read(results);
-
     } finally {
       if (prepared != null) {
-        await _conn.processHandlerNoResponse(new CloseStatementHandler(prepared.statementHandlerId))
-            .timeout(_timeout);
+        await _conn.processHandlerNoResponse(new CloseStatementHandler(prepared.statementHandlerId), _timeout);
       }
     }
+
+    return results;
   }
 
   Future transaction(Future queryBlock(TransactionContext connection)) async {
@@ -222,7 +213,6 @@ class ReqRespConnection {
   Handler _handler;
   Completer _completer;
 
-
   BufferedSocket _socket;
   var _largePacketBuffers = new List<Buffer>();
 
@@ -238,24 +228,24 @@ class ReqRespConnection {
   bool _useSSL = false;
   final int _maxPacketSize;
 
-
-  ReqRespConnection(this._socket, this._maxPacketSize, user, password, db, useCompression, useSSL, Completer handshakeCompleter) :
+  ReqRespConnection(this._socket, this._handler, Completer handshakeCompleter, this._maxPacketSize) :
         _headerBuffer = new Buffer(HEADER_SIZE),
         _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
-        _handler = new HandshakeHandler(
-            user, password, _maxPacketSize, db, useCompression, useSSL),
         _completer = handshakeCompleter;
 
   void close() => _socket.close();
 
-  void handleError(e, [st]) {
+  void handleError(e, {bool keepOpen: false, st}) {
     if (_completer != null) {
       if (_completer.isCompleted) {
-        throw e;
+        _log.warning("Ignoring error because no response", e, st);
+      } else {
+        _completer.completeError(e, st);
       }
-      _completer.completeError(e, st);
     }
-    close();
+    if (!keepOpen) {
+      close();
+    }
   }
 
   Future _readPacket() async {
@@ -327,6 +317,7 @@ class ReqRespConnection {
           return;
         }
       }
+
       if (response.finished) {
         _log.fine("Finished $_handler");
         _finishAndReuse();
@@ -338,9 +329,15 @@ class ReqRespConnection {
         }
         _completer.complete(response.result);
       }
+    } on MySqlException catch (e, st) {
+      // This clause means mysql returned an error on the wire. It is not a fatal error
+      // and the connection can stay open.
+      _log.fine("completing with MySqlException: $e");
+      _finishAndReuse();
+      handleError(e, st: st, keepOpen: true);
     } catch (e, st) {
-      _log.fine("completing with exception: $e");
-      handleError(e, st);
+      // Errors here are fatal_finishAndReuse();
+      handleError(e, st: st);
     }
   }
 
@@ -391,7 +388,7 @@ class ReqRespConnection {
   }
 
   /// This method just sends the handler data.
-  Future processHandlerNoResponse(Handler handler) {
+  Future _processHandlerNoResponse(Handler handler) {
     if (_handler != null) {
       throw createMySqlClientError(
           "Connection cannot process a request for $handler while a request is already in progress for $_handler");
@@ -405,7 +402,7 @@ class ReqRespConnection {
    * Processes a handler, from sending the initial request to handling any packets returned from
    * mysql
    */
-  Future processHandler(Handler handler) async {
+  Future _processHandler(Handler handler) async {
     if (_handler != null) {
       throw createMySqlClientError(
           "Connection cannot process a request for $handler while a request is already in progress for $_handler");
@@ -417,5 +414,38 @@ class ReqRespConnection {
     _handler = handler;
     await sendBuffer(handler.createRequest());
     return _completer.future;
+  }
+
+  final Pool pool = new Pool(1);
+
+  Future processHandler(Handler handler, Duration timeout) {
+    return pool.withResource(() async {
+      print("Start processHandler $handler");
+      var ret = await _processHandler(handler)
+          .timeout(timeout);
+      print("Finish handler $handler");
+      return ret;
+    });
+  }
+
+  Future<ReadResults> processHandlerWithResults(Handler handler, Duration timeout) {
+    return pool.withResource(() async {
+      Results results = await _processHandler(handler)
+          .timeout(timeout);
+
+      // Read all of the results. This is so we can close the handler before returning to the
+      // user. Obviously this is not super efficient but it guarantees correct api use.
+      ReadResults ret = await ReadResults.read(results)
+        .timeout(timeout);
+
+      return ret;
+    });
+  }
+
+  Future processHandlerNoResponse(Handler handler, Duration timeout) {
+    return pool.withResource(() {
+      return _processHandlerNoResponse(handler)
+          .timeout(timeout);
+    });
   }
 }
