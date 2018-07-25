@@ -307,7 +307,8 @@ void main() {
       for (var i = 0; i < 50; i++) {
         params.add([i]);
       }
-      var resultList = await ctx.queryMulti('insert into test1 (aint) values (?)', params);
+      var resultList =
+          await ctx.queryMulti('insert into test1 (aint) values (?)', params);
       expect(resultList.length, equals(50));
     });
   });

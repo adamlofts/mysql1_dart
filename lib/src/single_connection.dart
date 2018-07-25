@@ -155,10 +155,10 @@ class MySqlConnection {
       _log.fine("Prepared queryMulti query for: $sql");
 
       for (List v in values) {
-        var handler = new ExecuteQueryHandler(prepared, false /* executed */, v);
+        var handler =
+            new ExecuteQueryHandler(prepared, false /* executed */, v);
         ret.add(await _conn.processHandlerWithResults(handler, _timeout));
       }
-
     } finally {
       if (prepared != null) {
         await _conn.processHandlerNoResponse(
@@ -188,7 +188,8 @@ class TransactionContext {
   TransactionContext._(this._conn);
 
   Future<Results> query(String sql, [List values]) => _conn.query(sql, values);
-  Future<List<Results>> queryMulti(String sql, Iterable<List> values) => _conn.queryMulti(sql, values);
+  Future<List<Results>> queryMulti(String sql, Iterable<List> values) =>
+      _conn.queryMulti(sql, values);
   void rollback() => throw new _RollbackError();
 }
 
