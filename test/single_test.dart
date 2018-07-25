@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:mockito/mockito.dart';
-import 'package:options_file/options_file.dart';
-import 'package:sqljocky5/constants.dart';
 import 'package:sqljocky5/sqljocky.dart';
 import 'package:sqljocky5/src/single_connection.dart';
 import 'package:test/test.dart';
+
 import 'test_infrastructure.dart';
 
 void main() {
@@ -23,7 +20,6 @@ void main() {
   initializeTest();
 
   test('connection test', () async {
-
     await conn.query("DROP TABLE IF EXISTS t1");
     await conn.query("CREATE TABLE IF NOT EXISTS t1 (a INT)");
     var r = await conn.query("INSERT INTO `t1` (a) VALUES (?)", [1]);
@@ -47,15 +43,14 @@ void main() {
     expect(r.length, 1);
   });
 
-
   test('queued queries test', () async {
     // Even though we do not await these queries they should be queued.
     Future _;
     _ = conn.query("DROP TABLE IF EXISTS t1");
     _ = conn.query("CREATE TABLE IF NOT EXISTS t1 (a INT)");
-    Future<Results> f1 =  conn.query("SELECT * FROM `t1`");
+    Future<Results> f1 = conn.query("SELECT * FROM `t1`");
 
-    _ =  conn.query("INSERT INTO `t1` (a) VALUES (?)", [1]);
+    _ = conn.query("INSERT INTO `t1` (a) VALUES (?)", [1]);
 
     Future<Results> f2 = conn.query("SELECT * FROM `t1` WHERE a = ?", [1]);
 
@@ -65,6 +60,4 @@ void main() {
     expect(r1.length, 0);
     expect(r2.length, 1);
   });
-
-
 }

@@ -98,7 +98,7 @@ class StandardDataPacket extends Row {
     throw new UnsupportedError("Cannot modify row");
   }
 
-  void set length(int newLength) {
+  set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
   }
 
