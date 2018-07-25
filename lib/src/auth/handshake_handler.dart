@@ -8,7 +8,6 @@ import '../buffer.dart';
 import '../handlers/handler.dart';
 import '../mysql_client_error.dart';
 import '../../constants.dart';
-import 'character_set.dart';
 import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
