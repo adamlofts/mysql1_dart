@@ -9,14 +9,14 @@ import 'dart:async';
  */
 
 class Example {
-  ConnectionPool pool;
+  MySqlConnection conn;
 
-  Example(this.pool);
+  Example(this.conn);
 
   Future run() async {
     // drop the tables if they already exist
-    await dropTables();
-    print("dropped tables");
+//    await dropTables();
+//    print("dropped tables");
     // then recreate the tables
     await createTables();
     print("created tables");
@@ -26,61 +26,49 @@ class Example {
     await readData();
   }
 
-  Future dropTables() {
-    print("dropping tables");
-    var dropper = new TableDropper(pool, ['pets', 'people']);
-    return dropper.dropTables();
-  }
+//  Future dropTables() {
+//    print("dropping tables");
+//    var dropper = new TableDropper(pool, ['pets', 'people']);
+//    return dropper.dropTables();
+//  }
 
-  Future createTables() {
+  Future createTables() async {
     print("creating tables");
-    var querier = new QueryRunner(pool, [
-      'create table people (id integer not null auto_increment, '
-          'name varchar(255), '
-          'age integer, '
-          'primary key (id))',
-      'create table pets (id integer not null auto_increment, '
-          'name varchar(255), '
-          'species text, '
-          'owner_id integer, '
-          'primary key (id),'
-          'foreign key (owner_id) references people (id))'
-    ]);
+    await conn.query('create table people (id integer not null auto_increment, '
+        'name varchar(255), '
+        'age integer, '
+        'primary key (id))');
+    await conn.query('create table pets (id integer not null auto_increment, '
+        'name varchar(255), '
+        'species text, '
+        'owner_id integer, '
+        'primary key (id),'
+        'foreign key (owner_id) references people (id))');
     print("executing queries");
-    return querier.executeQueries();
   }
 
   Future addData() async {
     var query =
-        await pool.prepare("insert into people (name, age) values (?, ?)");
-    print("prepared query 1");
-    var parameters = [
+        await conn.queryMulti("insert into people (name, age) values (?, ?)", [
       ["Dave", 15],
       ["John", 16],
       ["Mavis", 93]
-    ];
-    await query.executeMulti(parameters);
-
+    ]);
     print("executed query 1");
-    query = await pool
-        .prepare("insert into pets (name, species, owner_id) values (?, ?, ?)");
 
-    print("prepared query 2");
-    parameters = [
+    query = await conn.queryMulti(
+        "insert into pets (name, species, owner_id) values (?, ?, ?)", [
       ["Rover", "Dog", 1],
       ["Daisy", "Cow", 2],
       ["Spot", "Dog", 2]
-    ];
-//          ["Spot", "D\u0000og", 2]];
-    await query.executeMulti(parameters);
-
+    ]);
     print("executed query 2");
   }
 
   Future readData() async {
     print("querying");
     var result =
-        await pool.query('select p.id, p.name, p.age, t.name, t.species '
+        await conn.query('select p.id, p.name, p.age, t.name, t.species '
             'from people p '
             'left join pets t on t.owner_id = p.id');
     print("got results");
@@ -103,17 +91,19 @@ main() async {
   String db = options.getString('db');
   String host = options.getString('host', 'localhost');
 
+  ConnectionSettings settings = new ConnectionSettings(
+      host: host, port: port, user: user, password: password, db: db);
+
   // create a connection
   print("opening connection");
-  var pool = new ConnectionPool(
-      host: host, port: port, user: user, password: password, db: db, max: 1);
+  var conn = await MySqlConnection.connect(settings);
   print("connection open");
   // create an example class
-  var example = new Example(pool);
+  var example = new Example(conn);
   // run the example
   print("running example");
   await example.run();
   // finally, close the connection
   print("K THNX BYE!");
-  pool.closeConnectionsNow();
+  await conn.close();
 }

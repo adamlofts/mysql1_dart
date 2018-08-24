@@ -1,5 +1,6 @@
 part of integrationtests;
 
+/*
 void runIntTests2(
     String user, String password, String db, int port, String host) {
   ConnectionPool pool;
@@ -67,3 +68,5 @@ void runIntTests2(
     });
   });
 }
+
+*/

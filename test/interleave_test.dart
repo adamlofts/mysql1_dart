@@ -12,6 +12,11 @@ import 'package:test/test.dart';
  * You must have a connection.options file in order for this to connect.
  */
 
+main() {}
+
+/*
+SKIPPED - NEEDS MIGRATION
+
 class Example {
   var insertedIds = [];
   var rnd = new Random();
@@ -193,3 +198,4 @@ void main() {
     });
   }, skip: "Skipped for now");
 }
+*/

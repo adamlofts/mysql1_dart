@@ -18,13 +18,13 @@ class Blob {
 
   /// Create a [Blob] from a [string].
   factory Blob.fromString(String string) =>
-      new Blob.fromBytes(UTF8.encode(string));
+      new Blob.fromBytes(utf8.encode(string));
 
   /// Create a [Blob] from a list of [codeUnits].
   Blob.fromBytes(List<int> codeUnits) : this._codeUnits = codeUnits;
 
   /// Returns the value of the blob as a [String].
-  String toString() => UTF8.decode(_codeUnits, allowMalformed: true);
+  String toString() => utf8.decode(_codeUnits, allowMalformed: true);
 
   /// Returns the value of the blob as a list of code units.
   List<int> toBytes() => _codeUnits;

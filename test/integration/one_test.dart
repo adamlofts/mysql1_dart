@@ -303,7 +303,7 @@ void main() {
 
   test('multi queries', () async {
     await conn.transaction((ctx) async {
-      var params = [];
+      List<List<int>> params = [];
       for (var i = 0; i < 50; i++) {
         params.add([i]);
       }

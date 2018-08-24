@@ -29,7 +29,7 @@ class PrepareHandler extends Handler {
   PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
 
   Buffer createRequest() {
-    var encoded = UTF8.encode(_sql);
+    var encoded = utf8.encode(_sql);
     var buffer = new Buffer(encoded.length + 1);
     buffer.writeByte(COM_STMT_PREPARE);
     buffer.writeList(encoded);

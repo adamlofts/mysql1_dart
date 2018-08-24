@@ -162,7 +162,7 @@ class Buffer {
    * Returns the string, without a terminating null.
    */
   String readNullTerminatedString() {
-    return UTF8.decode(readNullTerminatedList());
+    return utf8.decode(readNullTerminatedList());
   }
 
   /**
@@ -175,7 +175,7 @@ class Buffer {
    * Reads a string of the given [length] from the buffer.
    */
   String readString(int length) {
-    String s = UTF8.decode(_list.sublist(_readPos, _readPos + length));
+    String s = utf8.decode(_list.sublist(_readPos, _readPos + length));
     _readPos += length;
     return s;
   }
@@ -272,7 +272,7 @@ class Buffer {
    * Returns a 16-bit integer, read from the buffer
    */
   int readInt16() {
-    int result = _data.getInt16(_readPos, Endianness.LITTLE_ENDIAN);
+    int result = _data.getInt16(_readPos, Endian.little);
     _readPos += 2;
     return result;
   }
@@ -281,7 +281,7 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeInt16(int integer) {
-    _data.setInt16(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setInt16(_writePos, integer, Endian.little);
     _writePos += 2;
   }
 
@@ -289,7 +289,7 @@ class Buffer {
    * Returns a 16-bit integer, read from the buffer
    */
   int readUint16() {
-    int result = _data.getUint16(_readPos, Endianness.LITTLE_ENDIAN);
+    int result = _data.getUint16(_readPos, Endian.little);
     _readPos += 2;
     return result;
   }
@@ -298,7 +298,7 @@ class Buffer {
    * Writes a 16 bit [integer] to the buffer.
    */
   void writeUint16(int integer) {
-    _data.setUint16(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint16(_writePos, integer, Endian.little);
     _writePos += 2;
   }
 
@@ -321,7 +321,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readInt32() {
-    int val = _data.getInt32(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getInt32(_readPos, Endian.little);
     _readPos += 4;
     return val;
   }
@@ -330,7 +330,7 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeInt32(int integer) {
-    _data.setInt32(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setInt32(_writePos, integer, Endian.little);
     _writePos += 4;
   }
 
@@ -338,7 +338,7 @@ class Buffer {
    * Returns a 32-bit integer, read from the buffer.
    */
   int readUint32() {
-    int val = _data.getUint32(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getUint32(_readPos, Endian.little);
     _readPos += 4;
     return val;
   }
@@ -347,7 +347,7 @@ class Buffer {
    * Writes a 32 bit [integer] to the buffer.
    */
   void writeUint32(int integer) {
-    _data.setUint32(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint32(_writePos, integer, Endian.little);
     _writePos += 4;
   }
 
@@ -355,7 +355,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readInt64() {
-    int val = _data.getInt64(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getInt64(_readPos, Endian.little);
     _readPos += 8;
     return val;
   }
@@ -364,7 +364,7 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeInt64(int integer) {
-    _data.setInt64(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setInt64(_writePos, integer, Endian.little);
     _writePos += 8;
   }
 
@@ -372,7 +372,7 @@ class Buffer {
    * Returns a 64-bit integer, read from the buffer.
    */
   int readUint64() {
-    int val = _data.getUint64(_readPos, Endianness.LITTLE_ENDIAN);
+    int val = _data.getUint64(_readPos, Endian.little);
     _readPos += 8;
     return val;
   }
@@ -381,7 +381,7 @@ class Buffer {
    * Writes a 64 bit [integer] to the buffer.
    */
   void writeUint64(int integer) {
-    _data.setUint64(_writePos, integer, Endianness.LITTLE_ENDIAN);
+    _data.setUint64(_writePos, integer, Endian.little);
     _writePos += 8;
   }
 
@@ -403,24 +403,24 @@ class Buffer {
   }
 
   double readFloat() {
-    double val = _data.getFloat32(_readPos, Endianness.LITTLE_ENDIAN);
+    double val = _data.getFloat32(_readPos, Endian.little);
     _readPos += 4;
     return val;
   }
 
   void writeFloat(double value) {
-    _data.setFloat32(_writePos, value, Endianness.LITTLE_ENDIAN);
+    _data.setFloat32(_writePos, value, Endian.little);
     _writePos += 4;
   }
 
   double readDouble() {
-    double val = _data.getFloat64(_readPos, Endianness.LITTLE_ENDIAN);
+    double val = _data.getFloat64(_readPos, Endian.little);
     _readPos += 8;
     return val;
   }
 
   void writeDouble(double value) {
-    _data.setFloat64(_writePos, value, Endianness.LITTLE_ENDIAN);
+    _data.setFloat64(_writePos, value, Endian.little);
     _writePos += 8;
   }
 

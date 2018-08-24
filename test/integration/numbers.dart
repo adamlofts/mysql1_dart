@@ -1,5 +1,6 @@
 part of integrationtests;
 
+/*
 Future deleteInsertSelect(ConnectionPool pool, table, insert, select) async {
   await pool.query('delete from $table');
   await pool.query(insert);
@@ -108,3 +109,5 @@ void runNumberTests(
     });
   });
 }
+
+*/

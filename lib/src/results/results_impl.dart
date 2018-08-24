@@ -13,7 +13,7 @@ class ResultsStream extends StreamView<Row> {
   final List<Field> fields;
 
   factory ResultsStream(int insertId, int affectedRows, List<Field> fields,
-      {Stream<Row> stream: null}) {
+      {Stream<Row> stream = null}) {
     if (stream != null) {
       var newStream = stream.transform(
           new StreamTransformer.fromHandlers(handleDone: (EventSink<Row> sink) {

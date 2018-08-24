@@ -1,5 +1,5 @@
 part of integrationtests;
-
+/*
 void runPreparedQueryTests(
     String user, String password, String db, int port, String host) {
   group('prepared query', () {
@@ -29,3 +29,4 @@ void runPreparedQueryTests(
     });
   });
 }
+*/

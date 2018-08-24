@@ -60,7 +60,7 @@ class MockBuffer extends Mock implements Buffer {
 void main() {
   group('buffered socket', () {
     var rawSocket;
-    var factory;
+    SocketFactory factory;
 
     setUp(() {
       var streamController = new StreamController<RawSocketEvent>();

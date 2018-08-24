@@ -27,7 +27,7 @@ class AuthHandler extends Handler {
       int this.clientFlags,
       int this.maxPacketSize,
       int this.characterSet,
-      {bool ssl: false})
+      {bool ssl = false})
       : /*this._ssl = false,*/
         super(new Logger("AuthHandler"));
 
@@ -36,7 +36,7 @@ class AuthHandler extends Handler {
     if (password == null) {
       hash = <int>[];
     } else {
-      final hashedPassword = sha1.convert(UTF8.encode(password)).bytes;
+      final hashedPassword = sha1.convert(utf8.encode(password)).bytes;
       final doubleHashedPassword = sha1.convert(hashedPassword).bytes;
 
       final bytes = new List<int>.from(scrambleBuffer)
@@ -55,13 +55,13 @@ class AuthHandler extends Handler {
     // calculate the mysql password hash
     var hash = getHash();
 
-    var encodedUsername = username == null ? [] : UTF8.encode(username);
+    var encodedUsername = username == null ? [] : utf8.encode(username);
     var encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = this.clientFlags;
     if (db != null) {
-      encodedDb = UTF8.encode(db);
+      encodedDb = utf8.encode(db);
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }

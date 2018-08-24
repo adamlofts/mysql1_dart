@@ -30,7 +30,9 @@ class HandlerResponse {
   bool get hasResult => result != _NO_RESULT;
 
   HandlerResponse(
-      {this.finished: false, this.nextHandler: null, this.result: _NO_RESULT});
+      {this.finished = false,
+      this.nextHandler = null,
+      this.result = _NO_RESULT});
 
   static final HandlerResponse notFinished = new HandlerResponse();
 }

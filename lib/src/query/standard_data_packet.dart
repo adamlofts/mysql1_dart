@@ -35,13 +35,13 @@ class StandardDataPacket extends Row {
         case FIELD_TYPE_INT24: // mediumint
         case FIELD_TYPE_LONGLONG: // bigint/serial
         case FIELD_TYPE_LONG: // int
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = int.parse(s);
           break;
         case FIELD_TYPE_NEWDECIMAL: // decimal
         case FIELD_TYPE_FLOAT: // float
         case FIELD_TYPE_DOUBLE: // double
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = double.parse(s);
           break;
         case FIELD_TYPE_BIT: // bit
@@ -54,11 +54,11 @@ class StandardDataPacket extends Row {
         case FIELD_TYPE_DATE: // date
         case FIELD_TYPE_DATETIME: // datetime
         case FIELD_TYPE_TIMESTAMP: // timestamp
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = DateTime.parse(s);
           break;
         case FIELD_TYPE_TIME: // time
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           var parts = s.split(":");
           values[i] = new Duration(
               days: 0,
@@ -68,19 +68,19 @@ class StandardDataPacket extends Row {
               milliseconds: 0);
           break;
         case FIELD_TYPE_YEAR: // year
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = int.parse(s);
           break;
         case FIELD_TYPE_STRING: // char/binary/enum/set
         case FIELD_TYPE_VAR_STRING: // varchar/varbinary
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = s;
           break;
         case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
           values[i] = new Blob.fromBytes(list);
           break;
         case FIELD_TYPE_GEOMETRY: // geometry
-          var s = UTF8.decode(list);
+          var s = utf8.decode(list);
           values[i] = s;
           break;
       }

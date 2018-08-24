@@ -42,16 +42,16 @@ class ConnectionSettings {
   Duration timeout;
 
   ConnectionSettings(
-      {String this.host: 'localhost',
-      int this.port: 3306,
+      {String this.host = 'localhost',
+      int this.port = 3306,
       String this.user,
       String this.password,
       String this.db,
-      bool this.useCompression: false,
-      bool this.useSSL: false,
-      int this.maxPacketSize: 16 * 1024 * 1024,
-      Duration this.timeout: const Duration(seconds: 30),
-      int this.characterSet: CharacterSet.UTF8MB4});
+      bool this.useCompression = false,
+      bool this.useSSL = false,
+      int this.maxPacketSize = 16 * 1024 * 1024,
+      Duration this.timeout = const Duration(seconds: 30),
+      int this.characterSet = CharacterSet.UTF8MB4});
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -250,7 +250,7 @@ class ReqRespConnection {
 
   void close() => _socket.close();
 
-  void handleError(e, {bool keepOpen: false, st}) {
+  void handleError(e, {bool keepOpen = false, st}) {
     if (_completer != null) {
       if (_completer.isCompleted) {
         _log.warning("Ignoring error because no response", e, st);
@@ -370,8 +370,8 @@ class ReqRespConnection {
       _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
       _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
       _headerBuffer[3] = ++_packetNumber;
-      var encodedHeader = ZLIB.encode(_headerBuffer.list);
-      var encodedBuffer = ZLIB.encode(buffer.list);
+      var encodedHeader = zlib.encode(_headerBuffer.list);
+      var encodedBuffer = zlib.encode(buffer.list);
       _compressedHeaderBuffer
           .writeUint24(encodedHeader.length + encodedBuffer.length);
       _compressedHeaderBuffer.writeByte(++_compressedPacketNumber);

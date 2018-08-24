@@ -173,7 +173,7 @@ class ExecuteQueryHandler extends Handler {
   }
 
   _prepareDouble(value) {
-    return UTF8.encode(value.toString());
+    return utf8.encode(value.toString());
   }
 
   int _measureDouble(value, preparedValue) {
@@ -257,7 +257,7 @@ class ExecuteQueryHandler extends Handler {
   }
 
   _prepareString(value) {
-    return UTF8.encode(value.toString());
+    return utf8.encode(value.toString());
   }
 
   int _measureString(value, preparedValue) {

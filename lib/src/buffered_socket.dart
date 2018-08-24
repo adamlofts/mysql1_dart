@@ -5,13 +5,12 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'buffer.dart';
 
-typedef ErrorHandler(AsyncError);
+typedef ErrorHandler(err);
 typedef DoneHandler();
 typedef DataReadyHandler();
 typedef ClosedHandler();
 
 typedef Future<RawSocket> SocketFactory(host, int port);
-typedef OnConnection(BufferedSocket);
 
 class BufferedSocket {
   final Logger log;
@@ -60,7 +59,8 @@ class BufferedSocket {
     }
   }
 
-  static defaultSocketFactory(host, port) => RawSocket.connect(host, port);
+  static Future<RawSocket> defaultSocketFactory(host, port) =>
+      RawSocket.connect(host, port);
 
   static Future<BufferedSocket> connect(
     String host,
@@ -69,11 +69,11 @@ class BufferedSocket {
     DoneHandler onDone,
     ErrorHandler onError,
     ClosedHandler onClosed,
-    SocketFactory socketFactory: defaultSocketFactory,
+    SocketFactory socketFactory = defaultSocketFactory,
   }) async {
     var socket;
     socket = await socketFactory(host, port);
-    socket.setOption(SocketOption.TCP_NODELAY, true);
+    socket.setOption(SocketOption.tcpNoDelay, true);
     return new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }
 
@@ -82,7 +82,7 @@ class BufferedSocket {
       return;
     }
 
-    if (event == RawSocketEvent.READ) {
+    if (event == RawSocketEvent.read) {
       log.fine("READ data");
       if (_readingBuffer == null) {
         log.fine("READ data: no buffer");
@@ -92,14 +92,14 @@ class BufferedSocket {
       } else {
         _readBuffer();
       }
-    } else if (event == RawSocketEvent.READ_CLOSED) {
+    } else if (event == RawSocketEvent.readClosed) {
       log.fine("READ_CLOSED");
       if (this.onClosed != null) {
         this.onClosed();
       }
-    } else if (event == RawSocketEvent.CLOSED) {
+    } else if (event == RawSocketEvent.closed) {
       log.fine("CLOSED");
-    } else if (event == RawSocketEvent.WRITE) {
+    } else if (event == RawSocketEvent.write) {
       log.fine("WRITE data");
       if (_writingBuffer != null) {
         _writeBuffer();
@@ -203,7 +203,7 @@ class BufferedSocket {
         subscription: _subscription, onBadCertificate: (cert) => true);
     log.fine("Socket is secure");
     _socket = socket;
-    _socket.setOption(SocketOption.TCP_NODELAY, true);
+    _socket.setOption(SocketOption.tcpNoDelay, true);
     _subscription = _socket.listen(_onData,
         onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
     _socket.writeEventsEnabled = true;
