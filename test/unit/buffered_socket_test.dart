@@ -64,7 +64,7 @@ void main() {
 
     setUp(() {
       var streamController = new StreamController<RawSocketEvent>();
-      factory = (host, port) {
+      factory = (host, port, timeout) {
         rawSocket = new MockSocket(streamController);
         return new Future.value(rawSocket);
       };
@@ -74,8 +74,8 @@ void main() {
       var c = new Completer();
 
       var socket;
-      var thesocket =
-          await BufferedSocket.connect('localhost', 100, onDataReady: () async {
+      var thesocket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = new Buffer(4);
         await socket.readBuffer(buffer);
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -90,8 +90,8 @@ void main() {
       var c = new Completer();
 
       var socket;
-      var thesocket =
-          await BufferedSocket.connect('localhost', 100, onDataReady: () async {
+      var thesocket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = new Buffer(4);
         socket.readBuffer(buffer).then((_) {
           expect(buffer.list, equals([1, 2, 3, 4]));
@@ -106,7 +106,8 @@ void main() {
 
     test('can read data which is not yet available', () async {
       var c = new Completer();
-      var socket = await BufferedSocket.connect('localhost', 100,
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
@@ -123,7 +124,8 @@ void main() {
     test('can read data which is not yet available, arriving in two chunks',
         () async {
       var c = new Completer();
-      var socket = await BufferedSocket.connect('localhost', 100,
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
@@ -139,7 +141,8 @@ void main() {
     });
 
     test('cannot read data when already reading', () async {
-      var socket = await BufferedSocket.connect('localhost', 100,
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
@@ -154,7 +157,8 @@ void main() {
     });
 
     test('should write buffer', () async {
-      var socket = await BufferedSocket.connect('localhost', 100,
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
@@ -167,7 +171,8 @@ void main() {
     });
 
     test('should write part of buffer', () async {
-      var socket = await BufferedSocket.connect('localhost', 100,
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
@@ -184,7 +189,7 @@ void main() {
       var onClosed = () {
         closed = true;
       };
-      await BufferedSocket.connect('localhost', 100,
+      await BufferedSocket.connect('localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},

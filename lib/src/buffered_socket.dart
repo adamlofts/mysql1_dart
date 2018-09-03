@@ -10,7 +10,7 @@ typedef DoneHandler();
 typedef DataReadyHandler();
 typedef ClosedHandler();
 
-typedef Future<RawSocket> SocketFactory(host, int port);
+typedef Future<RawSocket> SocketFactory(host, int port, Duration timeout);
 
 class BufferedSocket {
   final Logger log;
@@ -59,12 +59,13 @@ class BufferedSocket {
     }
   }
 
-  static Future<RawSocket> defaultSocketFactory(host, port) =>
-      RawSocket.connect(host, port);
+  static Future<RawSocket> defaultSocketFactory(host, port, Duration timeout) =>
+      RawSocket.connect(host, port, timeout: timeout);
 
   static Future<BufferedSocket> connect(
     String host,
-    int port, {
+    int port,
+    Duration timeout, {
     DataReadyHandler onDataReady,
     DoneHandler onDone,
     ErrorHandler onError,
@@ -72,7 +73,7 @@ class BufferedSocket {
     SocketFactory socketFactory = defaultSocketFactory,
   }) async {
     var socket;
-    socket = await socketFactory(host, port);
+    socket = await socketFactory(host, port, timeout);
     socket.setOption(SocketOption.tcpNoDelay, true);
     return new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }

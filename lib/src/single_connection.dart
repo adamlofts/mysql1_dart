@@ -88,14 +88,21 @@ class MySqlConnection {
 
     try {
       await _conn.processHandlerNoResponse(new QuitHandler(), _timeout);
-    } catch (e) {
-      _log.info("Error sending quit on connection");
+    } catch (e, st) {
+      _log.warning("Error sending quit on connection", e, st);
     }
 
     _conn.close();
   }
 
-  static Future<MySqlConnection> _connect(ConnectionSettings c) async {
+  /// Connects a MySQL server at the given [host] on [port], authenticates using [user]
+  /// and [password] and connects to [db].
+  ///
+  /// [c.timeout] is used as the connection timeout and the default timeout for all socket
+  /// communication.
+  ///
+  /// A [SocketException] is thrown on connection failure or socket timeout.
+  static Future<MySqlConnection> connect(ConnectionSettings c) async {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
@@ -104,8 +111,8 @@ class MySqlConnection {
 
     _log.fine("opening connection to ${c.host}:${c.port}/${c.db}");
 
-    BufferedSocket socket =
-        await BufferedSocket.connect(c.host, c.port, onDataReady: () {
+    BufferedSocket socket = await BufferedSocket.connect(
+        c.host, c.port, c.timeout, onDataReady: () {
       conn?._readPacket();
     }, onDone: () {
       _log.fine("done");
@@ -128,18 +135,8 @@ class MySqlConnection {
     conn = new ReqRespConnection(
         socket, handler, handshakeCompleter, c.maxPacketSize);
 
-    await handshakeCompleter.future;
+    await handshakeCompleter.future.timeout(c.timeout);
     return new MySqlConnection(c.timeout, conn);
-  }
-
-  /// Connects a MySQL server at the given [host] on [port], authenticates using [user]
-  /// and [password] and connects to [db].
-  ///
-  /// [timeout] is used as the connection timeout and the default timeout for all socket
-  /// communication.
-  static Future<MySqlConnection> connect(ConnectionSettings c) {
-    // In dart2 this can be replaced with a timeout parameter to connect
-    return _connect(c).timeout(c.timeout);
   }
 
   Future<Results> query(String sql, [List values]) async {
