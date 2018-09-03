@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.15.0
+-------
+
+* Publish first version post-fork
+
+SQLJockey historical changelog
+--
+
 v0.14.5
 -------
 * Fix package references

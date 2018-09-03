@@ -1,65 +1,42 @@
-SQLJocky5
-========
+mysql1
+======
 
-** This is a fork of the original SQLJocky. The goal is to maintain SQLJocky5 and give Dart a proper
-MySQL connector **
+MySQL driver for the Dart programming language. It will only work in the command-line VM, not in a browser.
 
-This is a MySQL connector for the Dart programming language. It isn't finished, but should
-work for most normal use. The API is getting reasonably close to where I want it to
-be now, so hopefully there shouldn't be too many breaking changes in the future.
-
-It will only work in the command-line VM, not in a browser.
-
-News
-----
-
-The changelog has now been moved to CHANGELOG.md
+This is a fork of the original SQLJocky driver and SQLJocky5 with a different API.
 
 Usage
 -----
 
-Create a connection pool:
+Connect to the database
 
 ```dart
-var pool = new ConnectionPool(
-    host: 'localhost', port: 3306,
-    user: 'bob', password: 'wibble',
-    db: 'stuff', max: 5);
+ConnectionSettings settings = new ConnectionSettings(
+  host: 'localhost', port: 3306, user: 'bob', password: 'wibble', db: 'mydb');
+var conn = await MySqlConnection.connect(settings);
 ```
 
-Execute a query:
+Execute a query with parameters:
 
 ```dart
-var results = await pool.query('select name, email from users');
+var userId = 1;
+var results = await conn.query('select name, email from users where id = ?', [userId]);
 ```
 
-Use the results: (*Note: forEach is asynchronous.*)
+Use the results:
 
 ```dart
-results.forEach((row) {
+for (var row in results) {
   print('Name: ${row[0]}, email: ${row[1]}');
 });
 ```
 
-Or access the fields by name:
-
-```dart
-results.forEach((row) {
-  print('Name: ${row.name}, email: ${row.email}');
-});
-```
-
-Prepare a query:
+Insert some data
 
 ```dart
 var query = await pool.prepare(
   'insert into users (name, email, age) values (?, ?, ?)');
-```
-
-Execute the query:
-
-```dart
-var result = await query.execute(['Bob', 'bob@bob.com', 25]);
+var result = await query.query(query, ['Bob', 'bob@bob.com', 25]);
 ```
 
 An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
@@ -71,44 +48,18 @@ print("New user's id: ${result.insertId}");
 Execute a query with multiple sets of parameters:
 
 ```dart
-var results = await query.executeMulti([['Bob', 'bob@bob.com', 25],
+var results = await query.executeMulti(
+    'insert into users (name, email, age) values (?, ?, ?)',
+    [['Bob', 'bob@bob.com', 25],
     ['Bill', 'bill@bill.com', 26],
     ['Joe', 'joe@joe.com', 37]]);
 ```
-
-Use the list of results:
-
-```dart
-for (result in results) {
-  print("New user's id: ${result.insertId}");
-}
-```
-
-Use a transaction:
-
-```dart
-var trans = await pool.startTransaction();
-var result = await trans.query('...');
-await trans.commit();
-```
-
-Development
------------
-
-To run the examples and tests, you'll need to create a 'connection.options' file by
-copying 'connection.options.example' and modifying the settings.
 
 Licence
 -------
 
 It is released under the GPL, because it uses a modified part of mysql's include/mysql_com.h in constants.dart,
 which is licensed under the GPL. I would prefer to release it under the BSD Licence, but there you go.
-
-The Name
---------
-
-It is named after [Jocky Wilson](http://en.wikipedia.org/wiki/Jocky_Wilson), the late, great
-darts player. (Hence the lack of an 'e' in Jocky.)
 
 Things to do
 ------------
