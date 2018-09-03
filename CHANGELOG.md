@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.15.1
+--
+
+* Documentation updates
+
 v0.15.0
 -------
 
