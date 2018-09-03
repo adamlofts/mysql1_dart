@@ -1,4 +1,4 @@
-library sqljocky.ssl_handler;
+library mysql1.ssl_handler;
 
 import 'package:logging/logging.dart';
 

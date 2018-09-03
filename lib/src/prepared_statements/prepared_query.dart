@@ -1,4 +1,4 @@
-library sqljocky.prepared_query;
+library mysql1.prepared_query;
 
 import '../results/field_impl.dart';
 

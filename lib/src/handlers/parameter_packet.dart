@@ -1,4 +1,4 @@
-library sqljocky.parameter_packet;
+library mysql1.parameter_packet;
 
 import '../buffer.dart';
 

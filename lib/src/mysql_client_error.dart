@@ -1,4 +1,4 @@
-library sqljocky.mysql_client_error;
+library mysql1.mysql_client_error;
 
 MySqlClientError createMySqlClientError(String message) =>
     new MySqlClientError._(message);

@@ -1,15 +1,15 @@
-library sqljocky.test.unit.connection_test;
+library mysql1.test.unit.connection_test;
 
 import 'dart:async';
 
 import 'package:mockito/mockito.dart';
 
-//import 'package:sqljocky5/src/connection.dart';
-import 'package:sqljocky5/src/buffer.dart';
-import 'package:sqljocky5/src/buffered_socket.dart';
-import 'package:sqljocky5/src/mysql_client_error.dart';
+//import 'package:mysql1/src/connection.dart';
+import 'package:mysql1/src/buffer.dart';
+import 'package:mysql1/src/buffered_socket.dart';
+import 'package:mysql1/src/mysql_client_error.dart';
 
-import 'package:sqljocky5/src/single_connection.dart';
+import 'package:mysql1/src/single_connection.dart';
 import 'package:test/test.dart';
 
 void main() {

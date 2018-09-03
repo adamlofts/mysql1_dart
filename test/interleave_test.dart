@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:logging/logging.dart';
 import 'package:options_file/options_file.dart';
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 /*

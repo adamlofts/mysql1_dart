@@ -1,4 +1,4 @@
-library sqljocky.field_impl;
+library mysql1.field_impl;
 
 import '../buffer.dart';
 

@@ -1,4 +1,4 @@
-library sqljocky.ping_handler;
+library mysql1.ping_handler;
 
 import 'package:logging/logging.dart';
 

@@ -1,13 +1,13 @@
-library sqljocky.test.unit.execute_query_handler_test;
+library mysql1.test.unit.execute_query_handler_test;
 
 import 'dart:convert';
 
 import 'package:mockito/mockito.dart';
 
-import 'package:sqljocky5/src/blob.dart';
-import 'package:sqljocky5/src/prepared_statements/execute_query_handler.dart';
+import 'package:mysql1/src/blob.dart';
+import 'package:mysql1/src/prepared_statements/execute_query_handler.dart';
 
-import 'package:sqljocky5/src/prepared_statements/prepared_query.dart';
+import 'package:mysql1/src/prepared_statements/prepared_query.dart';
 
 import 'package:test/test.dart';
 

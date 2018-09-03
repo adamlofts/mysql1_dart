@@ -1,4 +1,4 @@
-library sqljocky.mysql_protocol_error;
+library mysql1.mysql_protocol_error;
 
 MySqlProtocolError createMySqlProtocolError(String message) =>
     new MySqlProtocolError._(message);

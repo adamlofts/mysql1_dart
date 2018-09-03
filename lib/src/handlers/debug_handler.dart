@@ -1,4 +1,4 @@
-library sqljocky.debug_handler;
+library mysql1.debug_handler;
 
 import 'package:logging/logging.dart';
 

@@ -1,4 +1,4 @@
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:options_file/options_file.dart';
 import 'dart:async';
 

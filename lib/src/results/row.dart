@@ -1,4 +1,4 @@
-library sqljocky.row;
+library mysql1.row;
 
 import 'dart:collection';
 

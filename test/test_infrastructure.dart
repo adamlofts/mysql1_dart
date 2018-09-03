@@ -1,7 +1,7 @@
-library sqljocky.test.test_infrastructure;
+library mysql1.test.test_infrastructure;
 
 import 'package:options_file/options_file.dart';
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';

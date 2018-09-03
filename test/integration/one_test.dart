@@ -1,7 +1,7 @@
-library sqljocky.test.one_test;
+library mysql1.test.one_test;
 
-import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/constants.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/constants.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';

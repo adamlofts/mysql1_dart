@@ -1,4 +1,4 @@
-library sqljocky.results_impl;
+library mysql1.results_impl;
 
 import 'dart:async';
 import 'dart:collection';

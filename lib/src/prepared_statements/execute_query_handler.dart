@@ -1,4 +1,4 @@
-library sqljocky.execute_query_handler;
+library mysql1.execute_query_handler;
 
 import 'dart:async';
 import 'dart:convert';

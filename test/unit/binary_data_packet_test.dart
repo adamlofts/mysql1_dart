@@ -1,10 +1,10 @@
-library sqljocky.binary_data_packet_test;
+library mysql1.binary_data_packet_test;
 
-import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/constants.dart';
-import 'package:sqljocky5/src/buffer.dart';
-import 'package:sqljocky5/src/prepared_statements/binary_data_packet.dart';
-import 'package:sqljocky5/src/results/field_impl.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/constants.dart';
+import 'package:mysql1/src/buffer.dart';
+import 'package:mysql1/src/prepared_statements/binary_data_packet.dart';
+import 'package:mysql1/src/results/field_impl.dart';
 
 import 'package:test/test.dart';
 

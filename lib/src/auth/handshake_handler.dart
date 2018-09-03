@@ -1,4 +1,4 @@
-library sqljocky.handshake_handler;
+library mysql1.handshake_handler;
 
 import 'dart:math' as math;
 

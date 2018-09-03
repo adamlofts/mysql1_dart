@@ -6,8 +6,8 @@ import 'dart:io';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'package:sqljocky5/src/buffered_socket.dart';
-import 'package:sqljocky5/src/buffer.dart';
+import 'package:mysql1/src/buffered_socket.dart';
+import 'package:mysql1/src/buffer.dart';
 
 class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   MockSocket(StreamController<RawSocketEvent> streamController)

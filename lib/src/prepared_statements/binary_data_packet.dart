@@ -1,4 +1,4 @@
-library sqljocky.binary_data_packet;
+library mysql1.binary_data_packet;
 
 import 'package:logging/logging.dart';
 

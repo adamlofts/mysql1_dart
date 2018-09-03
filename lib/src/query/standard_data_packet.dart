@@ -1,4 +1,4 @@
-library sqljocky.standard_data_packet;
+library mysql1.standard_data_packet;
 
 import 'dart:convert';
 

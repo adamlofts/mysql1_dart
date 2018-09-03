@@ -1,8 +1,8 @@
-library sqljocky.types_test;
+library mysql1.types_test;
 
 import 'dart:typed_data';
 
-import 'package:sqljocky5/src/blob.dart';
+import 'package:mysql1/src/blob.dart';
 
 import 'package:test/test.dart';
 

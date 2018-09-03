@@ -1,4 +1,4 @@
-library sqljocky.quit_handler;
+library mysql1.quit_handler;
 
 import 'package:logging/logging.dart';
 

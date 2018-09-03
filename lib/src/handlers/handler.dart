@@ -1,4 +1,4 @@
-library sqljocky.handler;
+library mysql1.handler;
 
 import 'package:logging/logging.dart';
 

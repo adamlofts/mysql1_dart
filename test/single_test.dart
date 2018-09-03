@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
-import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/src/single_connection.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/src/single_connection.dart';
 import 'package:test/test.dart';
 
 import 'test_infrastructure.dart';

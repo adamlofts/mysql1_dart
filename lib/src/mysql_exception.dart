@@ -1,4 +1,4 @@
-library sqljocky.my_sql_exception;
+library mysql1.my_sql_exception;
 
 import 'buffer.dart';
 

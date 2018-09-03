@@ -1,13 +1,13 @@
-library sqljocky.handshake_handler_test;
+library mysql1.handshake_handler_test;
 
-import 'package:sqljocky5/constants.dart';
-import 'package:sqljocky5/src/auth/auth_handler.dart';
-import 'package:sqljocky5/src/auth/character_set.dart';
-import 'package:sqljocky5/src/auth/handshake_handler.dart';
-import 'package:sqljocky5/src/auth/ssl_handler.dart';
-import 'package:sqljocky5/src/buffer.dart';
-import 'package:sqljocky5/src/handlers/handler.dart';
-import 'package:sqljocky5/src/mysql_client_error.dart';
+import 'package:mysql1/constants.dart';
+import 'package:mysql1/src/auth/auth_handler.dart';
+import 'package:mysql1/src/auth/character_set.dart';
+import 'package:mysql1/src/auth/handshake_handler.dart';
+import 'package:mysql1/src/auth/ssl_handler.dart';
+import 'package:mysql1/src/buffer.dart';
+import 'package:mysql1/src/handlers/handler.dart';
+import 'package:mysql1/src/mysql_client_error.dart';
 
 import 'package:test/test.dart';
 

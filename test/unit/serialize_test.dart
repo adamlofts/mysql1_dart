@@ -1,6 +1,6 @@
-library sqljocky.serialize_test;
+library mysql1.serialize_test;
 
-import 'package:sqljocky5/src/buffer.dart';
+import 'package:mysql1/src/buffer.dart';
 
 import 'package:test/test.dart';
 

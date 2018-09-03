@@ -1,12 +1,12 @@
-library sqljocky.test.unit.field_by_name_test;
+library mysql1.test.unit.field_by_name_test;
 
-import 'package:sqljocky5/constants.dart';
-import 'package:sqljocky5/src/prepared_statements/binary_data_packet.dart';
-import 'package:sqljocky5/src/prepared_statements/execute_query_handler.dart';
-import 'package:sqljocky5/src/query/query_stream_handler.dart';
-import 'package:sqljocky5/src/query/standard_data_packet.dart';
-import 'package:sqljocky5/src/results/field_impl.dart';
-import 'package:sqljocky5/src/results/row.dart';
+import 'package:mysql1/constants.dart';
+import 'package:mysql1/src/prepared_statements/binary_data_packet.dart';
+import 'package:mysql1/src/prepared_statements/execute_query_handler.dart';
+import 'package:mysql1/src/query/query_stream_handler.dart';
+import 'package:mysql1/src/query/standard_data_packet.dart';
+import 'package:mysql1/src/results/field_impl.dart';
+import 'package:mysql1/src/results/row.dart';
 
 import 'package:test/test.dart';
 

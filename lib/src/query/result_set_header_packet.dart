@@ -1,4 +1,4 @@
-library sqljocky.result_set_header_packet;
+library mysql1.result_set_header_packet;
 
 import 'package:logging/logging.dart';
 

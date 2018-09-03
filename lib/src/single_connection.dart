@@ -1,4 +1,4 @@
-library sqljocky.connection;
+library mysql1.connection;
 
 import 'dart:async';
 import 'dart:collection';
@@ -16,8 +16,8 @@ import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'handlers/quit_handler.dart';
 import 'package:pool/pool.dart';
-import 'package:sqljocky5/src/auth/character_set.dart';
-import 'package:sqljocky5/src/results/results_impl.dart';
+import 'package:mysql1/src/auth/character_set.dart';
+import 'package:mysql1/src/results/results_impl.dart';
 import 'prepared_statements/close_statement_handler.dart';
 import 'prepared_statements/execute_query_handler.dart';
 import 'prepared_statements/prepare_handler.dart';

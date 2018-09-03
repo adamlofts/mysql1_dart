@@ -1,6 +1,6 @@
-library sqljocky.test.blob_test;
+library mysql1.test.blob_test;
 
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';

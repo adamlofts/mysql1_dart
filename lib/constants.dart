@@ -14,7 +14,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-library sqljocky.constants;
+library mysql1.constants;
 
 /*
  * This file is based on excerpts from include/mysql_com.h

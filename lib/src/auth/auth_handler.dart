@@ -1,4 +1,4 @@
-library sqljocky.auth_handler;
+library mysql1.auth_handler;
 
 import 'dart:convert';
 

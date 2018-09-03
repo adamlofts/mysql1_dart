@@ -1,9 +1,9 @@
-library sqljocky.test.test_util;
+library mysql1.test.test_util;
 
 import 'dart:async';
 
-import 'package:sqljocky5/constants.dart';
-import 'package:sqljocky5/sqljocky.dart';
+import 'package:mysql1/constants.dart';
+import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 Future setup(MySqlConnection conn, String tableName, String createSql,

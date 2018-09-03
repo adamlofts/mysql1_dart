@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:mockito/mockito.dart';
-import 'package:sqljocky5/sqljocky.dart';
-import 'package:sqljocky5/src/buffered_socket.dart';
-import 'package:sqljocky5/src/single_connection.dart';
+import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/src/buffered_socket.dart';
+import 'package:mysql1/src/single_connection.dart';
 import 'package:test/test.dart';
 
 void main() {

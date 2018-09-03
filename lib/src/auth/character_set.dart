@@ -1,4 +1,4 @@
-library sqljocky.character_set;
+library mysql1.character_set;
 
 class CharacterSet {
   static const int UTF8 = 33;

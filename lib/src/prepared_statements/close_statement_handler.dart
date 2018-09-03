@@ -1,4 +1,4 @@
-library sqljocky.close_statement_handler;
+library mysql1.close_statement_handler;
 
 import 'package:logging/logging.dart';
 

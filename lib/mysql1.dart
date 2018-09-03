@@ -1,5 +1,4 @@
-library sqljocky;
-// named after Jocky Wilson, the late, great darts player
+library mysql1;
 
 export 'src/blob.dart';
 export 'src/mysql_client_error.dart' hide createMySqlClientError;

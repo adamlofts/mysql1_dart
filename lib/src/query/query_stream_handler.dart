@@ -1,4 +1,4 @@
-library sqljocky.query_stream_handler;
+library mysql1.query_stream_handler;
 
 import 'dart:async';
 import 'dart:convert';

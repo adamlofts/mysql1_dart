@@ -1,6 +1,6 @@
-library sqljocky.buffer_test;
+library mysql1.buffer_test;
 
-import 'package:sqljocky5/src/buffer.dart';
+import 'package:mysql1/src/buffer.dart';
 
 import 'package:test/test.dart';
 
