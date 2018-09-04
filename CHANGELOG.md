@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.15.2
+--
+
+* Add types to `query` and `queryMulti` interface. This makes the package easier to use with `implicit-dynamic: false`
+
 v0.15.1
 --
 
