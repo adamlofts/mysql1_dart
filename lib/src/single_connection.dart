@@ -101,7 +101,10 @@ class MySqlConnection {
   /// [c.timeout] is used as the connection timeout and the default timeout for all socket
   /// communication.
   ///
-  /// A [SocketException] is thrown on connection failure or socket timeout.
+  /// A [SocketException] is thrown on connection failure or a socket timeout connecting the
+  /// socket.
+  /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
+  /// server.
   static Future<MySqlConnection> connect(ConnectionSettings c) async {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);

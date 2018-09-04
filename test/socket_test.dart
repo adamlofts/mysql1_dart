@@ -35,6 +35,8 @@ void main() {
           port: 12346, timeout: new Duration(microseconds: 5)));
     } on TimeoutException {
       thrown = true;
+    } on SocketException {
+      thrown = true;
     } finally {
       sock?.close();
     }
