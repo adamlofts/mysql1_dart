@@ -5,12 +5,13 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'buffer.dart';
 
-typedef ErrorHandler(err);
+typedef ErrorHandler(Object err);
 typedef DoneHandler();
 typedef DataReadyHandler();
 typedef ClosedHandler();
 
-typedef Future<RawSocket> SocketFactory(host, int port, Duration timeout);
+typedef Future<RawSocket> SocketFactory(
+    String host, int port, Duration timeout);
 
 class BufferedSocket {
   final Logger log;
@@ -34,7 +35,7 @@ class BufferedSocket {
   Buffer _readingBuffer;
   int _readOffset;
   Completer<Buffer> _readCompleter;
-  StreamSubscription _subscription;
+  StreamSubscription<RawSocketEvent> _subscription;
   bool _closed = false;
 
   bool get closed => _closed;
@@ -46,20 +47,21 @@ class BufferedSocket {
         onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
   }
 
-  _onSocketError(error) {
+  void _onSocketError(Object error) {
     if (onError != null) {
       onError(error);
     }
   }
 
-  _onSocketDone() {
+  void _onSocketDone() {
     if (onDone != null) {
       onDone();
       _closed = true;
     }
   }
 
-  static Future<RawSocket> defaultSocketFactory(host, port, Duration timeout) =>
+  static Future<RawSocket> defaultSocketFactory(
+          String host, int port, Duration timeout) =>
       RawSocket.connect(host, port, timeout: timeout);
 
   static Future<BufferedSocket> connect(
@@ -72,7 +74,7 @@ class BufferedSocket {
     ClosedHandler onClosed,
     SocketFactory socketFactory = defaultSocketFactory,
   }) async {
-    var socket;
+    RawSocket socket;
     socket = await socketFactory(host, port, timeout);
     socket.setOption(SocketOption.tcpNoDelay, true);
     return new BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);

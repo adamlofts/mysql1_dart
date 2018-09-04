@@ -1,3 +1,5 @@
+// ignore_for_file: argument_type_not_assignable, return_of_invalid_type, strong_mode_implicit_dynamic_return, strong_mode_implicit_dynamic_variable, invalid_assignment, strong_mode_implicit_dynamic_parameter, strong_mode_implicit_dynamic_type
+
 library mysql1.execute_query_handler;
 
 import 'dart:async';
@@ -222,7 +224,7 @@ class ExecuteQueryHandler extends Handler {
     return 1;
   }
 
-  _writeBool(value, preparedValue, Buffer buffer) {
+  _writeBool(bool value, preparedValue, Buffer buffer) {
     log.fine("BOOL: $value");
     buffer.writeByte(value ? 1 : 0);
   }

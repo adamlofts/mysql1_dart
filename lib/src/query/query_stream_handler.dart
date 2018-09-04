@@ -1,3 +1,5 @@
+// ignore_for_file: return_of_invalid_type, strong_mode_implicit_dynamic_return, strong_mode_implicit_dynamic_parameter, invalid_assignment, strong_mode_implicit_dynamic_variable
+
 library mysql1.query_stream_handler;
 
 import 'dart:async';

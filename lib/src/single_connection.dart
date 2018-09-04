@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
+import 'package:mysql1/src/prepared_statements/prepared_query.dart';
 
 import 'auth/handshake_handler.dart';
 import 'auth/ssl_handler.dart';
@@ -119,7 +120,7 @@ class MySqlConnection {
       conn?._readPacket();
     }, onDone: () {
       _log.fine("done");
-    }, onError: (error) {
+    }, onError: (Object error) {
       _log.warning("socket error: $error");
 
       // If conn has not been connected there was a connection error.
@@ -134,7 +135,7 @@ class MySqlConnection {
 
     Handler handler = new HandshakeHandler(c.user, c.password, c.maxPacketSize,
         c.characterSet, c.db, c.useCompression, c.useSSL);
-    handshakeCompleter = new Completer();
+    handshakeCompleter = new Completer<void>();
     conn = new ReqRespConnection(
         socket, handler, handshakeCompleter, c.maxPacketSize);
 
@@ -142,7 +143,7 @@ class MySqlConnection {
     return new MySqlConnection(c.timeout, conn);
   }
 
-  Future<Results> query(String sql, [List values]) async {
+  Future<Results> query(String sql, [Iterable<Object> values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(
           new QueryStreamHandler(sql), _timeout);
@@ -151,11 +152,13 @@ class MySqlConnection {
     return (await queryMulti(sql, [values])).first;
   }
 
-  Future<List<Results>> queryMulti(String sql, Iterable<List> values) async {
-    var prepared;
+  Future<List<Results>> queryMulti(
+      String sql, Iterable<Iterable<Object>> values) async {
+    PreparedQuery prepared;
     var ret = <Results>[];
     try {
-      prepared = await _conn.processHandler(new PrepareHandler(sql), _timeout);
+      prepared = await _conn.processHandler<PreparedQuery>(
+          new PrepareHandler(sql), _timeout);
       _log.fine("Prepared queryMulti query for: $sql");
 
       for (List v in values) {
@@ -250,7 +253,7 @@ class ReqRespConnection {
 
   void close() => _socket.close();
 
-  void handleError(e, {bool keepOpen = false, st}) {
+  void handleError(Object e, {bool keepOpen = false, StackTrace st}) {
     if (_completer != null) {
       if (_completer.isCompleted) {
         _log.warning("Ignoring error because no response", e, st);
@@ -272,7 +275,7 @@ class ReqRespConnection {
     }
   }
 
-  _handleHeader(buffer) async {
+  Future _handleHeader(Buffer buffer) async {
     int _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     _log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
@@ -280,17 +283,17 @@ class ReqRespConnection {
     _log.fine("buffer size=${_dataBuffer.length}");
     if (_dataSize == 0xffffff || _largePacketBuffers.length > 0) {
       var buffer = await _socket.readBuffer(_dataBuffer);
-      _handleMoreData(buffer);
+      await _handleMoreData(buffer);
     } else {
       var buffer = await _socket.readBuffer(_dataBuffer);
-      _handleData(buffer);
+      await _handleData(buffer);
     }
   }
 
-  void _handleMoreData(buffer) {
+  Future _handleMoreData(Buffer buffer) async {
     _largePacketBuffers.add(buffer);
     if (buffer.length < 0xffffff) {
-      var length = _largePacketBuffers.fold(0, (length, buf) {
+      var length = _largePacketBuffers.fold<int>(0, (length, buf) {
         return length + buf.length;
       });
       var combinedBuffer = new Buffer(length);
@@ -309,7 +312,7 @@ class ReqRespConnection {
     }
   }
 
-  _handleData(buffer) async {
+  Future _handleData(Buffer buffer) async {
     _readyForHeader = true;
     _headerBuffer.reset();
 
@@ -433,9 +436,9 @@ class ReqRespConnection {
 
   final Pool pool = new Pool(1);
 
-  Future processHandler(Handler handler, Duration timeout) {
+  Future<T> processHandler<T>(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      var ret = await _processHandler(handler).timeout(timeout);
+      T ret = await _processHandler(handler).timeout(timeout);
       return ret;
     });
   }
@@ -452,7 +455,7 @@ class ReqRespConnection {
     });
   }
 
-  Future processHandlerNoResponse(Handler handler, Duration timeout) {
+  Future<void> processHandlerNoResponse(Handler handler, Duration timeout) {
     return pool.withResource(() {
       return _processHandlerNoResponse(handler).timeout(timeout);
     });

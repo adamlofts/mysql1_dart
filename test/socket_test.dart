@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use
+
 import 'dart:async';
 import 'dart:io';
 
@@ -155,14 +157,14 @@ class _MockBufferedSocket extends Mock implements BufferedSocket {}
 
 final Matcher timeoutMatcher = const _TimeoutException();
 
-class _TimeoutException extends TypeMatcher {
+class _TimeoutException extends TypeMatcher<TimeoutException> {
   const _TimeoutException() : super("TimeoutException");
   bool matches(item, Map matchState) => item is TimeoutException;
 }
 
 Matcher socketExceptionMatcher(int code) => new _SocketException(code);
 
-class _SocketException extends TypeMatcher {
+class _SocketException extends TypeMatcher<SocketException> {
   final int errorCode;
   const _SocketException(this.errorCode) : super("SocketException");
   bool matches(item, Map matchState) =>

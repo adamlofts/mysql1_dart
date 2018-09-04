@@ -12,7 +12,7 @@ import 'package:test/test.dart';
  * You must have a connection.options file in order for this to connect.
  */
 
-main() {}
+void main() {}
 
 /*
 SKIPPED - NEEDS MIGRATION

@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_variable
+
 library mysql1.prepare_handler;
 
 import 'dart:convert';

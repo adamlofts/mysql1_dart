@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-const _listQuality = const ListEquality();
+const _listQuality = const ListEquality<int>();
 
 /**
  * Holds blob data, and can be created or accessed as either a [String] or a [List] of

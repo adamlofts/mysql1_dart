@@ -83,7 +83,7 @@ class Example {
   }
 }
 
-main() async {
+Future main() async {
   OptionsFile options = new OptionsFile('connection.options');
   String user = options.getString('user');
   String password = options.getString('password');

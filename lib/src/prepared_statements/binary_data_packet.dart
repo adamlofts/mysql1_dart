@@ -11,7 +11,7 @@ import '../results/field_impl.dart';
 import '../results/row.dart';
 
 class BinaryDataPacket extends Row {
-  List values;
+  List<Object> values;
   final Map<Symbol, int> _fieldIndex;
   final Logger log;
 
@@ -49,7 +49,7 @@ class BinaryDataPacket extends Row {
     }
   }
 
-  readField(FieldImpl field, Buffer buffer) {
+  Object readField(FieldImpl field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");
@@ -233,7 +233,7 @@ class BinaryDataPacket extends Row {
     throw new UnsupportedError("Cannot set length of results");
   }
 
-  noSuchMethod(Invocation invocation) {
+  Object noSuchMethod(Invocation invocation) {
     var name = invocation.memberName;
     if (invocation.isGetter) {
       var i = _fieldIndex[name];

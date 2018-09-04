@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_list_literal
+
 library mysql1.test.unit.execute_query_handler_test;
 
 import 'dart:convert';
@@ -91,7 +93,7 @@ void main() {
   });
 
   group('ExecuteQueryHandler.writeValuesToBuffer', () {
-    var types;
+    List<int> types;
 
     setUp(() {
       types = <int>[];
@@ -171,7 +173,7 @@ void main() {
   });
 
   group('ExecuteQueryHandler.prepareValue', () {
-    var preparedQuery;
+    MockPreparedQuery preparedQuery;
     ExecuteQueryHandler handler;
 
     setUp(() {
@@ -211,7 +213,7 @@ void main() {
   });
 
   group('ExecuteQueryHandler._measureValue', () {
-    var preparedQuery;
+    MockPreparedQuery preparedQuery;
     ExecuteQueryHandler handler;
 
     setUp(() {
@@ -254,6 +256,4 @@ void main() {
   });
 }
 
-class MockPreparedQuery extends Mock implements PreparedQuery {
-  noSuchMethod(a) => super.noSuchMethod(a);
-}
+class MockPreparedQuery extends Mock implements PreparedQuery {}

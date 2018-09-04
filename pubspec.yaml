@@ -1,5 +1,5 @@
 name: mysql1
-version: 0.15.1
+version: 0.15.2
 description: MySQL driver for Dart
 homepage: https://github.com/adamlofts/mysql1_dart
 

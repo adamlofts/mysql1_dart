@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use, strong_mode_implicit_dynamic_type
+
 library buffered_socket_test;
 
 import 'dart:async';
@@ -32,12 +34,12 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     return list;
   }
 
-  addData(List<int> data) {
+  void addData(List<int> data) {
     _data.addAll(data);
     _streamController.add(RawSocketEvent.READ);
   }
 
-  closeRead() {
+  void closeRead() {
     _streamController.add(RawSocketEvent.READ_CLOSED);
   }
 
@@ -50,12 +52,10 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   @override
   bool setOption(SocketOption option, bool enabled) => true; // No-op
 
-  noSuchMethod(a) => super.noSuchMethod(a);
+  Object noSuchMethod(a) => super.noSuchMethod(a);
 }
 
-class MockBuffer extends Mock implements Buffer {
-  noSuchMethod(a) => super.noSuchMethod(a);
-}
+class MockBuffer extends Mock implements Buffer {}
 
 void main() {
   group('buffered socket', () {

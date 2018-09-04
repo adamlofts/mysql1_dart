@@ -78,7 +78,7 @@ class Buffer {
   /**
    * Sets the int at the specified [index] to the given [value]
    */
-  void operator []=(int index, value) {
+  void operator []=(int index, int value) {
     _list[index] = value;
   }
 

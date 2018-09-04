@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use
+
 library mysql1.handshake_handler_test;
 
 import 'package:mysql1/constants.dart';
@@ -22,7 +24,7 @@ Buffer _createHandshake(protocolVersion, serverVersion, threadId,
     scrambleBuffer2,
     pluginName,
     pluginNameNull]) {
-  var length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
+  int length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
   if (serverLanguage != null) {
     length += 1 + 2 + 2 + 1 + 10;
     if (scrambleBuffer2 != null) {

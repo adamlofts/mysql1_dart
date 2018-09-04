@@ -1,3 +1,5 @@
+// ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use
+
 library mysql1.test.unit.connection_test;
 
 import 'dart:async';
@@ -67,7 +69,7 @@ void main() {
       var buffers = [];
       when(socket.writeBuffer(any)).thenAnswer((mirror) {
         var buffer = mirror.positionalArguments[0];
-        buffers.add(new List.from(buffer.list));
+        buffers.add(new List<int>.from(buffer.list));
         return new Future.value();
       });
       when(socket.writeBufferPart(any, any, any))
@@ -174,6 +176,4 @@ void main() {
   });
 }
 
-class MockSocket extends Mock implements BufferedSocket {
-  noSuchMethod(a) => super.noSuchMethod(a);
-}
+class MockSocket extends Mock implements BufferedSocket {}

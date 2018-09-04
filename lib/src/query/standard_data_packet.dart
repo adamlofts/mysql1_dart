@@ -1,3 +1,5 @@
+// ignore_for_file: argument_type_not_assignable, return_of_invalid_type, strong_mode_implicit_dynamic_return, strong_mode_implicit_dynamic_variable, invalid_assignment
+
 library mysql1.standard_data_packet;
 
 import 'dart:convert';
@@ -13,7 +15,7 @@ class StandardDataPacket extends Row {
   /// Values as List
   final List<dynamic> values;
 
-  final Map<String, dynamic> fields = {};
+  final Map<String, dynamic> fields = <String, dynamic>{};
 
   final Map<Symbol, int> _fieldIndex;
 

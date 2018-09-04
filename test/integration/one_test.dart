@@ -11,7 +11,7 @@ import 'dart:typed_data';
 DateTime dt = new DateTime.now();
 
 List get insertValues {
-  var values = [];
+  var values = <Object>[];
   values.add(126);
   values.add(164);
   values.add(165);
@@ -53,7 +53,7 @@ List get insertValues {
 }
 
 List get responseValues {
-  var values = [];
+  var values = <Object>[];
   values.add(126);
   values.add(164);
   values.add(165);
@@ -294,7 +294,7 @@ void main() {
       // make sure the values are the same
       if (row[i] is double) {
         // or at least close
-        expect(row[i], closeTo(responseValues[i], 0.1));
+        expect(row[i], closeTo(responseValues[i] as num, 0.1));
       } else {
         expect(row[i], equals(responseValues[i]));
       }
