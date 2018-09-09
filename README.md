@@ -39,9 +39,7 @@ for (var row in results) {
 Insert some data
 
 ```dart
-var query = await pool.prepare(
-  'insert into users (name, email, age) values (?, ?, ?)');
-var result = await query.query(query, ['Bob', 'bob@bob.com', 25]);
+var result = await conn.query('insert into users (name, email, age) values (?, ?, ?)', ['Bob', 'bob@bob.com', 25]);
 ```
 
 An insert query's results will be empty, but will have an id if there was an auto-increment column in the table:
