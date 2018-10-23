@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.16.2
+--
+
+23 Oct 2018
+
+* Make `Field` a concrete class
+* Breaking: Don't export `mysql.constants`. These are internal.
+
 v0.16.1
 --
 

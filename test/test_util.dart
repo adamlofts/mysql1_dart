@@ -41,8 +41,7 @@ class TableDropper {
       try {
         await conn.query('drop table $table');
       } catch (e) {
-        if (e is MySqlException &&
-            e.errorNumber == ERROR_UNKNOWN_TABLE) {
+        if (e is MySqlException && e.errorNumber == ERROR_UNKNOWN_TABLE) {
           // if it's an unknown table, ignore the error and continue
         } else {
           rethrow;
