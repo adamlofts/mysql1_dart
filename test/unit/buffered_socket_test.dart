@@ -43,7 +43,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     _streamController.add(RawSocketEvent.READ_CLOSED);
   }
 
-  void set writeEventsEnabled(bool value) {
+  set writeEventsEnabled(bool value) {
     if (value) {
       _streamController.add(RawSocketEvent.WRITE);
     }

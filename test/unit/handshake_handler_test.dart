@@ -2,7 +2,6 @@
 
 library mysql1.handshake_handler_test;
 
-import 'package:mysql1/constants.dart';
 import 'package:mysql1/src/auth/auth_handler.dart';
 import 'package:mysql1/src/auth/character_set.dart';
 import 'package:mysql1/src/auth/handshake_handler.dart';
@@ -12,6 +11,7 @@ import 'package:mysql1/src/handlers/handler.dart';
 import 'package:mysql1/src/mysql_client_error.dart';
 
 import 'package:test/test.dart';
+import 'package:mysql1/src/constants.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 

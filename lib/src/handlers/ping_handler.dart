@@ -2,7 +2,7 @@ library mysql1.ping_handler;
 
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../buffer.dart';
 import 'handler.dart';
 

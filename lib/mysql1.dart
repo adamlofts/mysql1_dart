@@ -9,5 +9,5 @@ export 'src/single_connection.dart'
 
 export 'src/auth/character_set.dart';
 
-export 'src/results/field.dart';
+export 'src/results/field.dart' show Field;
 export 'src/results/row.dart';

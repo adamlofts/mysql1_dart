@@ -6,11 +6,11 @@ import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../buffer.dart';
 import '../mysql_protocol_error.dart';
 import '../handlers/handler.dart';
-import '../results/field_impl.dart';
+import '../results/field.dart';
 
 import 'prepared_query.dart';
 import 'prepare_ok_packet.dart';
@@ -20,13 +20,13 @@ class PrepareHandler extends Handler {
   PrepareOkPacket _okPacket;
   int _parametersToRead;
   int _columnsToRead;
-  List<FieldImpl> _parameters;
-  List<FieldImpl> _columns;
+  List<Field> _parameters;
+  List<Field> _columns;
 
   String get sql => _sql;
   PrepareOkPacket get okPacket => _okPacket;
-  List<FieldImpl> get parameters => _parameters;
-  List<FieldImpl> get columns => _columns;
+  List<Field> get parameters => _parameters;
+  List<Field> get columns => _columns;
 
   PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
 
@@ -51,7 +51,7 @@ class PrepareHandler extends Handler {
                 "Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
           }
         } else {
-          var fieldPacket = new FieldImpl(response);
+          var fieldPacket = new Field(response);
           log.fine("field packet: $fieldPacket");
           _parameters[_okPacket.parameterCount - _parametersToRead] =
               fieldPacket;
@@ -65,7 +65,7 @@ class PrepareHandler extends Handler {
                 "Unexpected EOF packet; was expecting another $_columnsToRead column(s)");
           }
         } else {
-          var fieldPacket = new FieldImpl(response);
+          var fieldPacket = new Field(response);
           log.fine("field packet (column): $fieldPacket");
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
@@ -76,8 +76,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = new List<FieldImpl>(_parametersToRead);
-      _columns = new List<FieldImpl>(_columnsToRead);
+      _parameters = new List<Field>(_parametersToRead);
+      _columns = new List<Field>(_columnsToRead);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }

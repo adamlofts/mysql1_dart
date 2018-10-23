@@ -1,7 +1,7 @@
 library mysql1.auth_handler_test;
 
-import 'package:mysql1/constants.dart';
 import 'package:mysql1/src/auth/auth_handler.dart';
+import 'package:mysql1/src/constants.dart';
 
 import 'package:test/test.dart';
 

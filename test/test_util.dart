@@ -2,8 +2,8 @@ library mysql1.test.test_util;
 
 import 'dart:async';
 
-import 'package:mysql1/constants.dart';
 import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/src/constants.dart';
 import 'package:test/test.dart';
 
 Future setup(MySqlConnection conn, String tableName, String createSql,
@@ -42,7 +42,7 @@ class TableDropper {
         await conn.query('drop table $table');
       } catch (e) {
         if (e is MySqlException &&
-            (e as MySqlException).errorNumber == ERROR_UNKNOWN_TABLE) {
+            e.errorNumber == ERROR_UNKNOWN_TABLE) {
           // if it's an unknown table, ignore the error and continue
         } else {
           rethrow;

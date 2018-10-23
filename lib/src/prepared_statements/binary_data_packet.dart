@@ -2,12 +2,12 @@ library mysql1.binary_data_packet;
 
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 
 import '../blob.dart';
 import '../buffer.dart';
 
-import '../results/field_impl.dart';
+import '../results/field.dart';
 import '../results/row.dart';
 
 class BinaryDataPacket extends Row {
@@ -18,7 +18,7 @@ class BinaryDataPacket extends Row {
   BinaryDataPacket.forTests(this.values, this._fieldIndex)
       : log = new Logger("BinaryDataPacket");
 
-  BinaryDataPacket(Buffer buffer, List<FieldImpl> fields, this._fieldIndex)
+  BinaryDataPacket(Buffer buffer, List<Field> fields, this._fieldIndex)
       : log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
@@ -49,7 +49,7 @@ class BinaryDataPacket extends Row {
     }
   }
 
-  Object readField(FieldImpl field, Buffer buffer) {
+  Object readField(Field field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine("BLOB");

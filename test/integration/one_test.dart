@@ -1,7 +1,6 @@
 library mysql1.test.one_test;
 
 import 'package:mysql1/mysql1.dart';
-import 'package:mysql1/constants.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';
@@ -290,7 +289,7 @@ void main() {
       print("i: $i");
       var field = results.fields[i];
       // field types
-      expect(fieldTypeToString(field.type), fieldTypes[i]);
+      expect(field.typeString, fieldTypes[i]);
       // make sure results types are the same
       expect(_typeof(row[i]), equals(valueTypes[i]));
       // make sure the values are the same

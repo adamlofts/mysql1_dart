@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../buffer.dart';
 import '../handlers/handler.dart';
 

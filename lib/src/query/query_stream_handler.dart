@@ -7,14 +7,14 @@ import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../buffer.dart';
 
 import '../handlers/handler.dart';
 import '../handlers/ok_packet.dart';
 
 import '../results/row.dart';
-import '../results/field_impl.dart';
+import '../results/field.dart';
 import '../results/results_impl.dart';
 
 import 'result_set_header_packet.dart';
@@ -29,7 +29,7 @@ class QueryStreamHandler extends Handler {
 
   OkPacket _okPacket;
   ResultSetHeaderPacket _resultSetHeaderPacket;
-  final List<FieldImpl> fieldPackets = <FieldImpl>[];
+  final List<Field> fieldPackets = <Field>[];
 
   Map<Symbol, int> _fieldIndex;
 
@@ -102,7 +102,7 @@ class QueryStreamHandler extends Handler {
   }
 
   _handleFieldPacket(Buffer response) {
-    var fieldPacket = new FieldImpl(response);
+    var fieldPacket = new Field(response);
     log.fine(fieldPacket.toString());
     fieldPackets.add(fieldPacket);
   }

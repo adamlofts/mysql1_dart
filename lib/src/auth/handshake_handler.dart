@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import '../buffer.dart';
 import '../handlers/handler.dart';
 import '../mysql_client_error.dart';
-import '../../constants.dart';
+import '../constants.dart';
 import 'ssl_handler.dart';
 import 'auth_handler.dart';
 

@@ -2,7 +2,7 @@ library mysql1.quit_handler;
 
 import 'package:logging/logging.dart';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../buffer.dart';
 import '../mysql_protocol_error.dart';
 import 'handler.dart';

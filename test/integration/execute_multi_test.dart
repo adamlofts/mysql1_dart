@@ -1,6 +1,5 @@
 library mysql1.test.blob_test;
 
-import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';

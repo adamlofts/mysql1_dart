@@ -4,12 +4,12 @@ library mysql1.standard_data_packet;
 
 import 'dart:convert';
 
-import '../../constants.dart';
+import '../constants.dart';
 import '../blob.dart';
 import '../buffer.dart';
 
 import '../results/row.dart';
-import '../results/field_impl.dart';
+import '../results/field.dart';
 
 class StandardDataPacket extends Row {
   /// Values as List
@@ -20,7 +20,7 @@ class StandardDataPacket extends Row {
   final Map<Symbol, int> _fieldIndex;
 
   StandardDataPacket(
-      Buffer buffer, List<FieldImpl> fieldPackets, this._fieldIndex)
+      Buffer buffer, List<Field> fieldPackets, this._fieldIndex)
       : values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
       var list;
