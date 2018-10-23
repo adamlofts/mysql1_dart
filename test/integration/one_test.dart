@@ -8,7 +8,7 @@ import '../test_infrastructure.dart';
 
 import 'dart:typed_data';
 
-DateTime dt = new DateTime.now().toUtc();
+final dt = new DateTime.utc(2018, 01, 01, 7, 0);
 
 List get insertValues {
   var values = <Object>[];
@@ -365,8 +365,17 @@ void main() {
             "?, ?)",
         insertValues);
     results = await conn.query("select adatetime from test1");
+
+    // Normal
     DateTime dt = results.first[0];
     expect(dt.isUtc, isTrue);
+
+    // Binary packet
+    results = await conn.query("select adatetime from test1 WHERE atinyint = ?", [126]);
+    DateTime dt2 = results.first[0];
+    expect(dt2.isUtc, isTrue);
+
+    expect(dt, equals(dt2));
   });
 
   test('disallow non-utc datetime serialization', () async {
