@@ -4,6 +4,8 @@ Changelog
 v0.16.1
 --
 
+23 Oct 2018
+
 * Simplify example
 
 v0.16.0
