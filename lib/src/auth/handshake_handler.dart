@@ -45,14 +45,14 @@ class HandshakeHandler extends Handler {
    * so a request will never be created.
    */
   Buffer createRequest() {
-    throw createMySqlClientError("Cannot create a handshake request");
+    throw new MySqlClientError("Cannot create a handshake request");
   }
 
   void readResponseBuffer(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
-      throw createMySqlClientError("Protocol not supported");
+      throw new MySqlClientError("Protocol not supported");
     }
     serverVersion = response.readNullTerminatedString();
     threadId = response.readUint32();
@@ -105,18 +105,18 @@ class HandshakeHandler extends Handler {
     readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Unsupported protocol (must be 4.1 or newer");
     }
 
     if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Old Password AUthentication is not supported");
     }
 
     if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
         pluginName != MYSQL_NATIVE_PASSWORD) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Authentication plugin not supported: $pluginName");
     }
 
