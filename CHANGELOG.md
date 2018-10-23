@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.16.0
+--
+
+* Breaking: Validate that all `DateTime` values passed to and returned from `query` and `queryMulti` are UTC.
+
+
 v0.15.2
 --
 
