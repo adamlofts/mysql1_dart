@@ -440,7 +440,6 @@ class ReqRespConnection {
   /// Each function MUST queue the handlers in the pool and MUST tidy up the connection (leave _handler null)
   /// before finishing.
 
-
   Future<T> processHandler<T>(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {

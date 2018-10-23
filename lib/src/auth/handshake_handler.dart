@@ -105,8 +105,7 @@ class HandshakeHandler extends Handler {
     readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-      throw new MySqlClientError(
-          "Unsupported protocol (must be 4.1 or newer");
+      throw new MySqlClientError("Unsupported protocol (must be 4.1 or newer");
     }
 
     if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {

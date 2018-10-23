@@ -69,13 +69,15 @@ List get responseValues {
   values.add(0x010203); //[1, 2, 3]);
   values.add(123);
 
-  values.add(new DateTime(
-      dt.year, dt.month, dt.day).toUtc()); // date has zero'd out time value
+  values.add(new DateTime(dt.year, dt.month, dt.day)
+      .toUtc()); // date has zero'd out time value
   // Datetime has no millis
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second).toUtc());
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+          .toUtc());
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second).toUtc());
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+          .toUtc());
   values.add(
       new Duration(hours: dt.hour, minutes: dt.minute, seconds: dt.second));
   values.add(2012);
@@ -350,19 +352,19 @@ void main() {
   test('datetimes are de-serialized in UTC', () async {
     var results = await conn.query(
         "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
-            "adecimal, afloat, adouble, areal, "
-            "aboolean, abit, aserial, "
-            "adate, adatetime, atimestamp, atime, ayear, "
-            "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
-            "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
-            "aenum, aset) values"
-            "(?, ?, ?, ?, ?, "
-            "?, ?, ?, ?, "
-            "?, ?, ?, "
-            "?, ?, ?, ?, ?, "
-            "?, ?, ?, ?, ?, ?, "
-            "?, ?, ?, ?, ?, ?, "
-            "?, ?)",
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, "
+        "adate, adatetime, atimestamp, atime, ayear, "
+        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+        "aenum, aset) values"
+        "(?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, "
+        "?, ?, ?, "
+        "?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?)",
         insertValues);
     results = await conn.query("select adatetime from test1");
 
@@ -371,7 +373,8 @@ void main() {
     expect(dt.isUtc, isTrue);
 
     // Binary packet
-    results = await conn.query("select adatetime from test1 WHERE atinyint = ?", [126]);
+    results = await conn
+        .query("select adatetime from test1 WHERE atinyint = ?", [126]);
     DateTime dt2 = results.first[0];
     expect(dt2.isUtc, isTrue);
 
