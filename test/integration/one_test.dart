@@ -8,7 +8,7 @@ import '../test_infrastructure.dart';
 
 import 'dart:typed_data';
 
-DateTime dt = new DateTime.now();
+final dt = new DateTime.utc(2018, 01, 01, 7, 0);
 
 List get insertValues {
   var values = <Object>[];
@@ -69,13 +69,15 @@ List get responseValues {
   values.add(0x010203); //[1, 2, 3]);
   values.add(123);
 
-  values.add(new DateTime(
-      dt.year, dt.month, dt.day)); // date has zero'd out time value
+  values.add(new DateTime(dt.year, dt.month, dt.day)
+      .toUtc()); // date has zero'd out time value
   // Datetime has no millis
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+          .toUtc());
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+          .toUtc());
   values.add(
       new Duration(hours: dt.hour, minutes: dt.minute, seconds: dt.second));
   values.add(2012);
@@ -345,6 +347,48 @@ void main() {
     expect(results.length, equals(1));
     v = results[0];
     expect(v[0].toString(), equals("ABC\u0000DEF"));
+  });
+
+  test('datetimes are de-serialized in UTC', () async {
+    var results = await conn.query(
+        "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, "
+        "adate, adatetime, atimestamp, atime, ayear, "
+        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+        "aenum, aset) values"
+        "(?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, "
+        "?, ?, ?, "
+        "?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?)",
+        insertValues);
+    results = await conn.query("select adatetime from test1");
+
+    // Normal
+    DateTime dt = results.first[0];
+    expect(dt.isUtc, isTrue);
+
+    // Binary packet
+    results = await conn
+        .query("select adatetime from test1 WHERE atinyint = ?", [126]);
+    DateTime dt2 = results.first[0];
+    expect(dt2.isUtc, isTrue);
+
+    expect(dt, equals(dt2));
+  });
+
+  test('disallow non-utc datetime serialization', () async {
+    expect(() async {
+      var results = await conn.query(
+          "insert into test1 (adatetime) values (?)", [new DateTime.now()]);
+      results = await conn.query("select adatetime from test1");
+      DateTime dt = results.first[0];
+      expect(dt.isUtc, isTrue);
+    }, throwsA(TypeMatcher<MySqlClientError>()));
   });
 }
 

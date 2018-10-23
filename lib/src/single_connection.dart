@@ -365,7 +365,7 @@ class ReqRespConnection {
 
   Future sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
     }
     if (_useCompression) {
@@ -408,7 +408,7 @@ class ReqRespConnection {
   /// This method just sends the handler data.
   Future _processHandlerNoResponse(Handler handler) {
     if (_handler != null) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Connection cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _packetNumber = -1;
@@ -422,7 +422,7 @@ class ReqRespConnection {
    */
   Future _processHandler(Handler handler) async {
     if (_handler != null) {
-      throw createMySqlClientError(
+      throw new MySqlClientError(
           "Connection cannot process a request for $handler while a request is already in progress for $_handler");
     }
     _log.fine("start handler $handler");
@@ -436,28 +436,42 @@ class ReqRespConnection {
 
   final Pool pool = new Pool(1);
 
+  /// The 3 functions below this line are the main interface to the running handlers on the connection.
+  /// Each function MUST queue the handlers in the pool and MUST tidy up the connection (leave _handler null)
+  /// before finishing.
+
   Future<T> processHandler<T>(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      T ret = await _processHandler(handler).timeout(timeout);
-      return ret;
+      try {
+        T ret = await _processHandler(handler).timeout(timeout);
+        return ret;
+      } finally {
+        _handler = null;
+      }
     });
   }
 
   Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
-      ResultsStream results = await _processHandler(handler).timeout(timeout);
-
-      // Read all of the results. This is so we can close the handler before returning to the
-      // user. Obviously this is not super efficient but it guarantees correct api use.
-      Results ret = await Results.read(results).timeout(timeout);
-
-      return ret;
+      try {
+        ResultsStream results = await _processHandler(handler).timeout(timeout);
+        // Read all of the results. This is so we can close the handler before returning to the
+        // user. Obviously this is not super efficient but it guarantees correct api use.
+        Results ret = await Results.read(results).timeout(timeout);
+        return ret;
+      } finally {
+        _handler = null;
+      }
     });
   }
 
   Future<void> processHandlerNoResponse(Handler handler, Duration timeout) {
     return pool.withResource(() {
-      return _processHandlerNoResponse(handler).timeout(timeout);
+      try {
+        return _processHandlerNoResponse(handler).timeout(timeout);
+      } finally {
+        _handler = null;
+      }
     });
   }
 }
