@@ -1,5 +1,3 @@
-
-
 /*
  * This example drops a couple of tables if they exist, before recreating them.
  * It then stores some data in the database and reads it back out.
