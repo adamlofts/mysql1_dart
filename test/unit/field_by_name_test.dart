@@ -1,13 +1,9 @@
 library mysql1.test.unit.field_by_name_test;
 
-import 'package:mysql1/src/prepared_statements/binary_data_packet.dart';
+import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/prepared_statements/execute_query_handler.dart';
 import 'package:mysql1/src/query/query_stream_handler.dart';
-import 'package:mysql1/src/query/standard_data_packet.dart';
 import 'package:mysql1/src/results/field.dart';
-import 'package:mysql1/src/constants.dart';
-import 'package:mysql1/src/results/row.dart';
-
 import 'package:test/test.dart';
 
 void main() {
@@ -42,18 +38,18 @@ void main() {
       expect(fieldIndex.keys, contains(new Symbol("a123")));
     });
 
-    test('should call noSuchMethod', () {
-      var fieldIndex = new Map<Symbol, int>();
-      fieldIndex[new Symbol("one")] = 0;
-      fieldIndex[new Symbol("two")] = 1;
-      fieldIndex[new Symbol("three")] = 2;
-      var values = [5, "hello", null];
+//    test('should call noSuchMethod', () {
+//      var fieldIndex = new Map<Symbol, int>();
+//      fieldIndex[new Symbol("one")] = 0;
+//      fieldIndex[new Symbol("two")] = 1;
+//      fieldIndex[new Symbol("three")] = 2;
+//      var values = [5, "hello", null];
 
 //      Row row = new StandardDataPacket.forTests(values, fieldIndex);
 //      expect(row.one, equals(5));
 //      expect(row.two, equals("hello"));
 //      expect(row.three, equals(null));
-    });
+//    });
 
 //    test('should fail for non-existent properties', () {
 //      var fieldIndex = new Map<Symbol, int>();

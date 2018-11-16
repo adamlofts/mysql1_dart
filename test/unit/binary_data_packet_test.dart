@@ -16,7 +16,7 @@ void main() {
       var buffer = new Buffer.fromList([1, 32]);
       var value = packet.readField(field, buffer);
 
-      expect(value, new isInstanceOf<Blob>());
+      expect(value, TypeMatcher<Blob>());
       expect((value as Blob).toString(), equals(" "));
     });
 
@@ -31,7 +31,7 @@ void main() {
       }
       var value = packet.readField(field, buffer);
 
-      expect(value, new isInstanceOf<Blob>());
+      expect(value, TypeMatcher<Blob>());
       expect((value as Blob).toString(), hasLength(500));
     });
 
@@ -46,7 +46,7 @@ void main() {
       }
       var value = packet.readField(field, buffer);
 
-      expect(value, new isInstanceOf<Blob>());
+      expect(value, TypeMatcher<Blob>());
       expect((value as Blob).toString(), hasLength(50000));
     });
   });

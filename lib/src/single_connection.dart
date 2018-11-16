@@ -26,7 +26,7 @@ import 'query/query_stream_handler.dart';
 import 'results/field.dart';
 import 'results/row.dart';
 
-final Logger _log = new Logger("SingleConnection");
+final Logger _log = new Logger("MySqlConnection");
 
 class ConnectionSettings {
   String host;
@@ -143,6 +143,9 @@ class MySqlConnection {
     return new MySqlConnection(c.timeout, conn);
   }
 
+  /// Run [sql] query on the database using [values] as positional sql parameters.
+  ///
+  /// eg. ```query("SELECT FROM users WHERE id = ?", [userId])```.
   Future<Results> query(String sql, [Iterable<Object> values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(
@@ -152,6 +155,9 @@ class MySqlConnection {
     return (await queryMulti(sql, [values])).first;
   }
 
+  /// Run [sql] query multiple times for each set of positional sql parameters in [values].
+  ///
+  /// e.g. ```queryMulti("INSERT INTO USERS (name) VALUES (?)", ["Adam", "Eve"])```.
   Future<List<Results>> queryMulti(
       String sql, Iterable<Iterable<Object>> values) async {
     PreparedQuery prepared;
@@ -202,23 +208,22 @@ class TransactionContext {
 
 class _RollbackError {}
 
+/// An iterable of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
 class Results extends IterableBase<Row> {
   final int insertId;
   final int affectedRows;
   final List<Field> fields;
   final List<Row> _rows;
 
-  Results(this._rows, this.fields, this.insertId, this.affectedRows);
+  Results._(this._rows, this.fields, this.insertId, this.affectedRows);
 
-  static Future<Results> read(ResultsStream r) async {
+  static Future<Results> _read(ResultsStream r) async {
     var rows = await r.toList();
-    return new Results(rows, r.fields, r.insertId, r.affectedRows);
+    return new Results._(rows, r.fields, r.insertId, r.affectedRows);
   }
 
   @override
-  Iterator<Row> get iterator {
-    return _rows.iterator;
-  }
+  Iterator<Row> get iterator => _rows.iterator;
 }
 
 class ReqRespConnection {
@@ -457,7 +462,7 @@ class ReqRespConnection {
         ResultsStream results = await _processHandler(handler).timeout(timeout);
         // Read all of the results. This is so we can close the handler before returning to the
         // user. Obviously this is not super efficient but it guarantees correct api use.
-        Results ret = await Results.read(results).timeout(timeout);
+        Results ret = await Results._read(results).timeout(timeout);
         return ret;
       } finally {
         _handler = null;
