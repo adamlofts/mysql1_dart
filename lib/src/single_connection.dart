@@ -208,7 +208,7 @@ class TransactionContext {
 
 class _RollbackError {}
 
-/// A set of results returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
+/// An iterable of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
 class Results extends IterableBase<Row> {
   final int insertId;
   final int affectedRows;
