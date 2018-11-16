@@ -143,6 +143,9 @@ class MySqlConnection {
     return new MySqlConnection(c.timeout, conn);
   }
 
+  /// Run [sql] query on the database using [values] as positional sql parameters.
+  ///
+  /// eg. ```query("SELECT FROM users WHERE id = ?", [userId])```.
   Future<Results> query(String sql, [Iterable<Object> values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(
@@ -152,6 +155,9 @@ class MySqlConnection {
     return (await queryMulti(sql, [values])).first;
   }
 
+  /// Run [sql] query multiple times for each set of positional sql parameters in [values].
+  ///
+  /// e.g. ```queryMulti("INSERT INTO USERS (name) VALUES (?)", ["Adam", "Eve"])```.
   Future<List<Results>> queryMulti(
       String sql, Iterable<Iterable<Object>> values) async {
     PreparedQuery prepared;
