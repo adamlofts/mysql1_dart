@@ -168,6 +168,10 @@ class MySqlConnection {
       _log.fine("Prepared queryMulti query for: $sql");
 
       for (List v in values) {
+        if (v.length != prepared.parameterCount) {
+          throw new MySqlClientError(
+              "Length of parameters (${v.length}) does not match parameter count in query (${prepared.parameterCount})");
+        }
         var handler =
             new ExecuteQueryHandler(prepared, false /* executed */, v);
         ret.add(await _conn.processHandlerWithResults(handler, _timeout));

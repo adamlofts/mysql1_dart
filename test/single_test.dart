@@ -60,4 +60,34 @@ void main() {
     expect(r1.length, 0);
     expect(r2.length, 1);
   });
+
+//  // FIXME: This test fails travis. Different mysql version?
+//  test('bad parameter type string', () async {
+//    await conn.query("SET GLOBAL sql_mode='STRICT_TRANS_TABLES';");
+//
+//    await conn.query("DROP TABLE IF EXISTS p1");
+//    await conn.query("CREATE TABLE IF NOT EXISTS p5 (a INT)");
+//    MySqlException e;
+//    try {
+//      await conn.query("INSERT INTO `p5` (a) VALUES (?)", ["string"]);
+//    } on MySqlException catch (e1) {
+//      e = e1;
+//    }
+//    expect(e.errorNumber, 1366);
+//    expect(e.message,
+//        "Incorrect integer value: \'string\' for column \'a\' at row 1");
+//  });
+
+  test('too few parameter count test', () async {
+    await conn.query("DROP TABLE IF EXISTS p1");
+    await conn.query("CREATE TABLE IF NOT EXISTS p1 (a INT, b INT)");
+    MySqlClientError e;
+    try {
+      await conn.query("INSERT INTO `p1` (a, b) VALUES (?, ?)", [1]);
+    } on MySqlClientError catch (e1) {
+      e = e1;
+    }
+    expect(e.message,
+        "Length of parameters (1) does not match parameter count in query (2)");
+  });
 }

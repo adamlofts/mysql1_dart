@@ -53,39 +53,46 @@ class ExecuteQueryHandler extends Handler {
     var nullMap = createNullMap();
     preparedValues = new List(_values.length);
     for (var i = 0; i < _values.length; i++) {
-      types[i * 2] = _getType(_values[i]);
+      Object value = _values[i];
+      int parameterType = _getType(value);
+      types[i * 2] = parameterType;
       types[i * 2 + 1] = 0;
-      preparedValues[i] = prepareValue(_values[i]);
-      length += measureValue(_values[i], preparedValues[i]);
+      preparedValues[i] = prepareValue(value);
+      length += measureValue(value, preparedValues[i]);
     }
 
     var buffer = writeValuesToBuffer(nullMap, length, types);
-//    log.fine(Buffer.listChars(buffer._list));
     return buffer;
   }
 
-  prepareValue(value) {
-    if (value != null) {
-      if (value is int) {
-        return _prepareInt(value);
-      } else if (value is double) {
-        return _prepareDouble(value);
-      } else if (value is DateTime) {
-        return _prepareDateTime(value);
-      } else if (value is bool) {
-        return _prepareBool(value);
-      } else if (value is List<int>) {
-        return _prepareList(value);
-      } else if (value is Blob) {
-        return _prepareBlob(value);
-      } else {
-        return _prepareString(value);
-      }
+  Object prepareValue(Object value) {
+    if (value == null) {
+      return null;
     }
-    return value;
+
+    if (value is int) {
+      return _prepareInt(value);
+    }
+    if (value is double) {
+      return _prepareDouble(value);
+    }
+    if (value is DateTime) {
+      return _prepareDateTime(value);
+    }
+    if (value is bool) {
+      return _prepareBool(value);
+    }
+    if (value is List<int>) {
+      return _prepareList(value);
+    }
+    if (value is Blob) {
+      return _prepareBlob(value);
+    }
+
+    return _prepareString(value);
   }
 
-  measureValue(value, preparedValue) {
+  int measureValue(value, preparedValue) {
     if (value != null) {
       if (value is int) {
         return _measureInt(value, preparedValue);
@@ -106,26 +113,29 @@ class ExecuteQueryHandler extends Handler {
     return 0;
   }
 
-  _getType(value) {
-    if (value != null) {
-      if (value is int) {
-        return FIELD_TYPE_LONGLONG;
-      } else if (value is double) {
-        return FIELD_TYPE_VARCHAR;
-      } else if (value is DateTime) {
-        return FIELD_TYPE_DATETIME;
-      } else if (value is bool) {
-        return FIELD_TYPE_TINY;
-      } else if (value is List<int>) {
-        return FIELD_TYPE_BLOB;
-      } else if (value is Blob) {
-        return FIELD_TYPE_BLOB;
-      } else {
-        return FIELD_TYPE_VARCHAR;
-      }
-    } else {
+  int _getType(Object value) {
+    if (value == null) {
       return FIELD_TYPE_NULL;
     }
+    if (value is int) {
+      return FIELD_TYPE_LONGLONG;
+    }
+    if (value is double) {
+      return FIELD_TYPE_VARCHAR;
+    }
+    if (value is DateTime) {
+      return FIELD_TYPE_DATETIME;
+    }
+    if (value is bool) {
+      return FIELD_TYPE_TINY;
+    }
+    if (value is List<int>) {
+      return FIELD_TYPE_BLOB;
+    }
+    if (value is Blob) {
+      return FIELD_TYPE_BLOB;
+    }
+    return FIELD_TYPE_VARCHAR;
   }
 
   _writeValue(value, preparedValue, Buffer buffer) {
@@ -148,7 +158,7 @@ class ExecuteQueryHandler extends Handler {
     }
   }
 
-  _prepareInt(value) {
+  int _prepareInt(int value) {
     return value;
   }
 
