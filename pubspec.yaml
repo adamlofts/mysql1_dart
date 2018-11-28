@@ -1,6 +1,6 @@
 name: mysql1
 version: 0.16.3
-description: MySQL driver for Dart
+description: A library for connecting to and querying MySQL & MariaDB databases.
 homepage: https://github.com/adamlofts/mysql1_dart
 
 authors:
