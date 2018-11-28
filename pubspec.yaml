@@ -1,13 +1,13 @@
 name: mysql1
-version: 0.16.2
+version: 0.16.3
 description: MySQL driver for Dart
 homepage: https://github.com/adamlofts/mysql1_dart
 
 authors:
+- Adam Lofts <adam.lofts@gmail.com>
 - James Ots <code@jamesots.com>
 - Faisal Abid <faisal.abid@gmail.com>
 - Ravi Teja Gudapati <tejainece@gmail.com>
-- Adam Lofts <adam.lofts@gmail.com>
 
 environment:
   sdk: '>=2.0.0 <3.0.0'

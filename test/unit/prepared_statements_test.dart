@@ -12,7 +12,7 @@ import 'package:mysql1/src/constants.dart';
 void main() {
   group('read fields:', () {
     test('can read a tiny BLOB', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([3, 65, 66, 67]);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
       var value = dataPacket.readField(field, buffer);
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('can read a very tiny BLOB', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([0]);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
       var value = dataPacket.readField(field, buffer);
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('can read a several BLOBs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([0, 3, 65, 66, 67, 1, 65, 0, 0, 1, 65]);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
 
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('can read TINYs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([0, 3, 65]);
       var field = new Field.forTests(FIELD_TYPE_TINY);
 
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('can read SHORTs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([0, 0, 255, 255, 255, 0]);
       var field = new Field.forTests(FIELD_TYPE_SHORT);
 
@@ -96,7 +96,7 @@ void main() {
     });
 
     test('can read INT24s', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer =
           new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new Field.forTests(FIELD_TYPE_INT24);
@@ -115,7 +115,7 @@ void main() {
     });
 
     test('can read LONGs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer =
           new Buffer.fromList([0, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0]);
       var field = new Field.forTests(FIELD_TYPE_LONG);
@@ -134,7 +134,7 @@ void main() {
     });
 
     test('can read LONGLONGs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([
         0,
         0,
@@ -177,7 +177,7 @@ void main() {
     });
 
     test('can read NEWDECIMALs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([5, 0x31, 0x33, 0x2E, 0x39, 0x33]);
       var field = new Field.forTests(FIELD_TYPE_NEWDECIMAL);
 
@@ -190,7 +190,7 @@ void main() {
     //test DOUBLE
 
     test('can read BITs', () {
-      var dataPacket = new BinaryDataPacket.forTests(null, null);
+      var dataPacket = new BinaryDataPacket.forTests(null);
       var buffer = new Buffer.fromList([
         1,
         123,

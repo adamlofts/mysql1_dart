@@ -17,9 +17,7 @@ class StandardDataPacket extends Row {
 
   final Map<String, dynamic> fields = <String, dynamic>{};
 
-  final Map<Symbol, int> _fieldIndex;
-
-  StandardDataPacket(Buffer buffer, List<Field> fieldPackets, this._fieldIndex)
+  StandardDataPacket(Buffer buffer, List<Field> fieldPackets)
       : values = new List<dynamic>(fieldPackets.length) {
     for (var i = 0; i < fieldPackets.length; i++) {
       var list;
@@ -89,7 +87,7 @@ class StandardDataPacket extends Row {
     }
   }
 
-  StandardDataPacket.forTests(this.values, this._fieldIndex);
+  StandardDataPacket.forTests(this.values);
 
   int get length => values.length;
 
@@ -101,17 +99,6 @@ class StandardDataPacket extends Row {
 
   set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
-  }
-
-  noSuchMethod(Invocation invocation) {
-    var name = invocation.memberName;
-    if (invocation.isGetter) {
-      var i = _fieldIndex[name];
-      if (i != null) {
-        return values[i];
-      }
-    }
-    return super.noSuchMethod(invocation);
   }
 
   String toString() => "Fields: $fields";

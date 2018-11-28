@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 void main() {
   group('buffer:', () {
     test('can read short blob', () {
-      var packet = new BinaryDataPacket.forTests(null, null);
+      var packet = new BinaryDataPacket.forTests(null);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
       var buffer = new Buffer.fromList([1, 32]);
       var value = packet.readField(field, buffer);
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('can read long blob', () {
-      var packet = new BinaryDataPacket.forTests(null, null);
+      var packet = new BinaryDataPacket.forTests(null);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
 
       var buffer = new Buffer(500 + 3);
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('can read very long blob', () {
-      var packet = new BinaryDataPacket.forTests(null, null);
+      var packet = new BinaryDataPacket.forTests(null);
       var field = new Field.forTests(FIELD_TYPE_BLOB);
 
       var buffer = new Buffer(50000 + 3);

@@ -31,8 +31,6 @@ class QueryStreamHandler extends Handler {
   ResultSetHeaderPacket _resultSetHeaderPacket;
   final List<Field> fieldPackets = <Field>[];
 
-  Map<Symbol, int> _fieldIndex;
-
   StreamController<Row> _streamController;
 
   QueryStreamHandler(String this._sql)
@@ -80,7 +78,6 @@ class QueryStreamHandler extends Handler {
     _streamController = new StreamController<Row>(onCancel: () {
       _streamController.close();
     });
-    this._fieldIndex = createFieldIndex();
     return new HandlerResponse(
         result: new ResultsStream(null, null, fieldPackets,
             stream: _streamController.stream));
@@ -108,8 +105,7 @@ class QueryStreamHandler extends Handler {
   }
 
   _handleRowPacket(Buffer response) {
-    var dataPacket =
-        new StandardDataPacket(response, fieldPackets, _fieldIndex);
+    var dataPacket = new StandardDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }
@@ -127,18 +123,6 @@ class QueryStreamHandler extends Handler {
         finished: finished,
         result: new ResultsStream(
             _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
-  }
-
-  Map<Symbol, int> createFieldIndex() {
-    var identifierPattern = new RegExp(r'^[a-zA-Z][a-zA-Z0-9_]*$');
-    var fieldIndex = new Map<Symbol, int>();
-    for (var i = 0; i < fieldPackets.length; i++) {
-      var name = fieldPackets[i].name;
-      if (identifierPattern.hasMatch(name)) {
-        fieldIndex[new Symbol(name)] = i;
-      }
-    }
-    return fieldIndex;
   }
 
   @override

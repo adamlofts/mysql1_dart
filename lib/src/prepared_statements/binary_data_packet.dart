@@ -12,13 +12,11 @@ import '../results/row.dart';
 
 class BinaryDataPacket extends Row {
   List<Object> values;
-  final Map<Symbol, int> _fieldIndex;
   final Logger log;
 
-  BinaryDataPacket.forTests(this.values, this._fieldIndex)
-      : log = new Logger("BinaryDataPacket");
+  BinaryDataPacket.forTests(this.values) : log = new Logger("BinaryDataPacket");
 
-  BinaryDataPacket(Buffer buffer, List<Field> fields, this._fieldIndex)
+  BinaryDataPacket(Buffer buffer, List<Field> fields)
       : log = new Logger("BinaryDataPacket") {
     buffer.skip(1);
     var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
@@ -231,17 +229,6 @@ class BinaryDataPacket extends Row {
 
   set length(int newLength) {
     throw new UnsupportedError("Cannot set length of results");
-  }
-
-  Object noSuchMethod(Invocation invocation) {
-    var name = invocation.memberName;
-    if (invocation.isGetter) {
-      var i = _fieldIndex[name];
-      if (i != null) {
-        return values[i];
-      }
-    }
-    return super.noSuchMethod(invocation);
   }
 
   String toString() => "Value: $values";

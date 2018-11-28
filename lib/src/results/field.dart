@@ -3,31 +3,18 @@ library mysql1.field;
 import '../buffer.dart';
 
 class Field {
-  String _catalog;
-  String _db;
-  String _table;
-  String _orgTable;
-  String _name;
-  String _orgName;
-  int _characterSet;
-  int _length;
-  int _type;
-  int _flags;
-  int _decimals;
-  int _defaultValue;
-
-  String get catalog => _catalog;
-  String get db => _db;
-  String get table => _table;
-  String get orgTable => _orgTable;
-  String get name => _name;
-  String get orgName => _orgName;
-  int get characterSet => _characterSet;
-  int get length => _length;
-  int get type => _type;
-  int get flags => _flags;
-  int get decimals => _decimals;
-  int get defaultValue => _defaultValue;
+  final String catalog;
+  final String db;
+  final String table;
+  final String orgTable;
+  final String name;
+  final String orgName;
+  final int characterSet;
+  final int length;
+  final int type;
+  final int flags;
+  final int decimals;
+  final int defaultValue;
 
   String get typeString {
     switch (type) {
@@ -90,34 +77,57 @@ class Field {
     }
   }
 
-  Field.forTests(this._type);
+  Field._internal(
+      this.catalog,
+      this.db,
+      this.table,
+      this.orgTable,
+      this.name,
+      this.orgName,
+      this.characterSet,
+      this.length,
+      this.type,
+      this.flags,
+      this.decimals,
+      this.defaultValue);
+  Field.forTests(this.type)
+      : catalog = null,
+        this.db = null,
+        this.table = null,
+        this.orgTable = null,
+        this.name = null,
+        this.orgName = null,
+        this.characterSet = null,
+        this.length = null,
+        this.flags = null,
+        this.decimals = null,
+        defaultValue = null;
 
-  void setName(String value) {
-    this._name = value;
-  }
-
-  Field(Buffer buffer) {
-    _catalog = buffer.readLengthCodedString();
-    _db = buffer.readLengthCodedString();
-    _table = buffer.readLengthCodedString();
-    _orgTable = buffer.readLengthCodedString();
-    _name = buffer.readLengthCodedString();
-    _orgName = buffer.readLengthCodedString();
+  factory Field(Buffer buffer) {
+    final catalog = buffer.readLengthCodedString();
+    final db = buffer.readLengthCodedString();
+    final table = buffer.readLengthCodedString();
+    final orgTable = buffer.readLengthCodedString();
+    final name = buffer.readLengthCodedString();
+    final orgName = buffer.readLengthCodedString();
     buffer.skip(1);
-    _characterSet = buffer.readUint16();
-    _length = buffer.readUint32();
-    _type = buffer.readByte();
-    _flags = buffer.readUint16();
-    _decimals = buffer.readByte();
+    final characterSet = buffer.readUint16();
+    final length = buffer.readUint32();
+    final type = buffer.readByte();
+    final flags = buffer.readUint16();
+    final decimals = buffer.readByte();
     buffer.skip(2);
+    int defaultValue;
     if (buffer.canReadMore()) {
-      _defaultValue = buffer.readLengthCodedBinary();
+      defaultValue = buffer.readLengthCodedBinary();
     }
+    return new Field._internal(catalog, db, table, orgTable, name, orgName,
+        characterSet, length, type, flags, decimals, defaultValue);
   }
 
   String toString() =>
-      "Catalog: $_catalog, DB: $_db, Table: $_table, Org Table: $_orgTable, "
-      "Name: $_name, Org Name: $_orgName, Character Set: $_characterSet, "
-      "Length: $_length, Type: $_type, Flags: $_flags, Decimals: $_decimals, "
-      "Default Value: $_defaultValue";
+      "Catalog: $catalog, DB: $db, Table: $table, Org Table: $orgTable, "
+      "Name: $name, Org Name: $orgName, Character Set: $characterSet, "
+      "Length: $length, Type: $type, Flags: $flags, Decimals: $decimals, "
+      "Default Value: $defaultValue";
 }

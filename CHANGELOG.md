@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.16.3
+--
+
+28 Nov 2018
+
+* Improve docs
+* Breaking: Test for correct query parameter count on the client side
+* Breaking: Tidy up old field by name access code
+* Tidy up `Field` class
+ 
+
 v0.16.2
 --
 
