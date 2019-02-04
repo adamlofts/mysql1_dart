@@ -62,8 +62,8 @@ void main() {
   });
 
   test('Stored procedure', () async {
-    var _ = conn.query("""DROP PROCEDURE IF EXISTS p""");
-    _ = conn.query("""CREATE PROCEDURE p(DOUBLE a, DOUBLE b)
+    await conn.query("DROP PROCEDURE IF EXISTS p");
+    await conn.query("""CREATE PROCEDURE p(a DOUBLE, b DOUBLE)
 BEGIN
   SELECT a * b;
 END
