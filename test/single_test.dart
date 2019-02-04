@@ -61,6 +61,17 @@ void main() {
     expect(r2.length, 1);
   });
 
+  test('Stored procedure', () async {
+    await conn.query("DROP PROCEDURE IF EXISTS p");
+    await conn.query("""CREATE PROCEDURE p(a DOUBLE, b DOUBLE)
+BEGIN
+  SELECT a * b;
+END
+""");
+    var results = await conn.query("CALL p(2, 3)");
+    expect(results.first.first, 6);
+  });
+
 //  // FIXME: This test fails travis. Different mysql version?
 //  test('bad parameter type string', () async {
 //    await conn.query("SET GLOBAL sql_mode='STRICT_TRANS_TABLES';");

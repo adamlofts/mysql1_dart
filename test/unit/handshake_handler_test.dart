@@ -319,7 +319,8 @@ void main() {
           CLIENT_LONG_PASSWORD |
           CLIENT_LONG_FLAG |
           CLIENT_TRANSACTIONS |
-          CLIENT_SECURE_CONNECTION;
+          CLIENT_SECURE_CONNECTION |
+          CLIENT_MULTI_RESULTS;
 
       AuthHandler authHandler = response.nextHandler;
       expect(authHandler.characterSet, equals(CharacterSet.UTF8MB4));
@@ -466,7 +467,8 @@ void main() {
           CLIENT_LONG_FLAG |
           CLIENT_TRANSACTIONS |
           CLIENT_SECURE_CONNECTION |
-          CLIENT_SSL;
+          CLIENT_SSL |
+          CLIENT_MULTI_RESULTS;
 
       SSLHandler sslHandler = response.nextHandler;
       expect(sslHandler.nextHandler, new isInstanceOf<AuthHandler>());
