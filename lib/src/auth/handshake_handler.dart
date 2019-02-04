@@ -123,7 +123,8 @@ class HandshakeHandler extends Handler {
         CLIENT_LONG_PASSWORD |
         CLIENT_LONG_FLAG |
         CLIENT_TRANSACTIONS |
-        CLIENT_SECURE_CONNECTION;
+        CLIENT_SECURE_CONNECTION |
+        CLIENT_MULTI_RESULTS;
 
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout("Compression enabled");
