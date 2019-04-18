@@ -406,7 +406,8 @@ void main() {
     expect(v2, equals(v1));
 
     // Binary packet
-    results = await conn.query('select atinyint from test1 WHERE ? = ?', [1, 1]);
+    results =
+        await conn.query('select atinyint from test1 WHERE ? = ?', [1, 1]);
     int v3 = results.first.fields['atinyint'];
     int v4 = results.first['atinyint'];
     expect(v3, isNotNull);
