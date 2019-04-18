@@ -36,7 +36,7 @@ abstract class Row extends ListBase<dynamic> {
     throw new UnsupportedError("Cannot modify row");
   }
 
-  String toString() => "Value: $values";
+  String toString() => "Fields: $fields";
 
   Object readField(Field field, Buffer buffer);
 }

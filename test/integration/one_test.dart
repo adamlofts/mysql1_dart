@@ -380,6 +380,41 @@ void main() {
     expect(dt, equals(dt2));
   });
 
+  test('result fields are accessible by name', () async {
+    var results = await conn.query(
+        "insert into test1 (atinyint, asmallint, amediumint, abigint, aint, "
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, "
+        "adate, adatetime, atimestamp, atime, ayear, "
+        "achar, avarchar, atinytext, atext, amediumtext, alongtext, "
+        "abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, "
+        "aenum, aset) values"
+        "(?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, "
+        "?, ?, ?, "
+        "?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?, ?, ?, ?, ?, "
+        "?, ?)",
+        insertValues);
+
+    // Normal
+    results = await conn.query('select atinyint from test1');
+    int v1 = results.first.fields['atinyint'];
+    int v2 = results.first['atinyint'];
+    expect(v1, isNotNull);
+    expect(v2, equals(v1));
+
+    // Binary packet
+    results = await conn.query('select atinyint from test1 WHERE ? = ?', [1, 1]);
+    int v3 = results.first.fields['atinyint'];
+    int v4 = results.first['atinyint'];
+    expect(v3, isNotNull);
+    expect(v4, equals(v3));
+
+    expect(v1, equals(v3));
+  });
+
   test('disallow non-utc datetime serialization', () async {
     expect(() async {
       var results = await conn.query(
