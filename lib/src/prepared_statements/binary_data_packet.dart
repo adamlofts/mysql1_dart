@@ -42,6 +42,7 @@ class BinaryDataPacket extends Row {
       }
       var field = fieldPackets[i];
       values[i] = readField(field, buffer);
+      fields[field.name] = values[i];
     }
   }
 
