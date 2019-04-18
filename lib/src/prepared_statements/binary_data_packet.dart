@@ -11,20 +11,18 @@ import '../results/field.dart';
 import '../results/row.dart';
 
 class BinaryDataPacket extends Row {
-  List<Object> values;
-  final Logger log;
+  final Logger log = new Logger("BinaryDataPacket");
 
-  BinaryDataPacket.forTests(this.values) : log = new Logger("BinaryDataPacket");
+  BinaryDataPacket.forTests(List _values) { values = _values; }
 
-  BinaryDataPacket(Buffer buffer, List<Field> fields)
-      : log = new Logger("BinaryDataPacket") {
+  BinaryDataPacket(Buffer buffer, List<Field> fieldPackets) {
     buffer.skip(1);
-    var nulls = buffer.readList(((fields.length + 7 + 2) / 8).floor().toInt());
+    var nulls = buffer.readList(((fieldPackets.length + 7 + 2) / 8).floor().toInt());
     log.fine("Nulls: $nulls");
-    var nullMap = new List<bool>(fields.length);
+    var nullMap = new List<bool>(fieldPackets.length);
     var shift = 2;
     var byte = 0;
-    for (var i = 0; i < fields.length; i++) {
+    for (var i = 0; i < fieldPackets.length; i++) {
       var mask = 1 << shift;
       nullMap[i] = (nulls[byte] & mask) != 0;
       shift++;
@@ -34,15 +32,15 @@ class BinaryDataPacket extends Row {
       }
     }
 
-    values = new List(fields.length);
-    for (var i = 0; i < fields.length; i++) {
-      log.fine("$i: ${fields[i].name}");
+    values = new List<dynamic>(fieldPackets.length);
+    for (var i = 0; i < fieldPackets.length; i++) {
+      log.fine("$i: ${fieldPackets[i].name}");
       if (nullMap[i]) {
         log.fine("Value: null");
         values[i] = null;
         continue;
       }
-      var field = fields[i];
+      var field = fieldPackets[i];
       values[i] = readField(field, buffer);
     }
   }
@@ -218,18 +216,4 @@ class BinaryDataPacket extends Row {
     }
     return null;
   }
-
-  int get length => values.length;
-
-  dynamic operator [](int index) => values[index];
-
-  void operator []=(int index, dynamic value) {
-    throw new UnsupportedError("Cannot modify row");
-  }
-
-  set length(int newLength) {
-    throw new UnsupportedError("Cannot set length of results");
-  }
-
-  String toString() => "Value: $values";
 }
