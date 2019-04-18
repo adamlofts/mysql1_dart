@@ -93,6 +93,8 @@ class StandardDataPacket extends Row {
         var s = utf8.decode(list);
         return s;
         break;
+      default:
+        return null;
     }
   }
 
