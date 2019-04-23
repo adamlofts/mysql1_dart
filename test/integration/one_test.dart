@@ -368,13 +368,13 @@ void main() {
     results = await conn.query("select adatetime from test1");
 
     // Normal
-    DateTime dt = results.first[0];
+    DateTime dt = results.first[0] as DateTime;
     expect(dt.isUtc, isTrue);
 
     // Binary packet
     results = await conn
         .query("select adatetime from test1 WHERE atinyint = ?", [126]);
-    DateTime dt2 = results.first[0];
+    DateTime dt2 = results.first[0] as DateTime;
     expect(dt2.isUtc, isTrue);
 
     expect(dt, equals(dt2));
@@ -400,16 +400,16 @@ void main() {
 
     // Normal
     results = await conn.query('select atinyint from test1');
-    int v1 = results.first.fields['atinyint'];
-    int v2 = results.first['atinyint'];
+    int v1 = results.first.fields['atinyint'] as int;
+    int v2 = results.first['atinyint'] as int;
     expect(v1, isNotNull);
     expect(v2, equals(v1));
 
     // Binary packet
     results =
         await conn.query('select atinyint from test1 WHERE ? = ?', [1, 1]);
-    int v3 = results.first.fields['atinyint'];
-    int v4 = results.first['atinyint'];
+    int v3 = results.first.fields['atinyint'] as int;
+    int v4 = results.first['atinyint'] as int;
     expect(v3, isNotNull);
     expect(v4, equals(v3));
 
@@ -421,7 +421,7 @@ void main() {
       var results = await conn.query(
           "insert into test1 (adatetime) values (?)", [new DateTime.now()]);
       results = await conn.query("select adatetime from test1");
-      DateTime dt = results.first[0];
+      DateTime dt = results.first[0] as DateTime;
       expect(dt.isUtc, isTrue);
     }, throwsA(TypeMatcher<MySqlClientError>()));
   });
