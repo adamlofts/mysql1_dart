@@ -464,7 +464,8 @@ class ReqRespConnection {
   Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {
-        ResultsStream results = await _processHandler<ResultsStream>(handler).timeout(timeout);
+        ResultsStream results =
+            await _processHandler<ResultsStream>(handler).timeout(timeout);
         // Read all of the results. This is so we can close the handler before returning to the
         // user. Obviously this is not super efficient but it guarantees correct api use.
         Results ret = await Results._read(results).timeout(timeout);
