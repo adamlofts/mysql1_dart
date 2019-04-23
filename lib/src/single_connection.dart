@@ -146,7 +146,7 @@ class MySqlConnection {
   /// Run [sql] query on the database using [values] as positional sql parameters.
   ///
   /// eg. ```query("SELECT FROM users WHERE id = ?", [userId])```.
-  Future<Results> query(String sql, [Iterable<Object> values]) async {
+  Future<Results> query(String sql, [List<Object> values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(
           new QueryStreamHandler(sql), _timeout);
@@ -159,7 +159,7 @@ class MySqlConnection {
   ///
   /// e.g. ```queryMulti("INSERT INTO USERS (name) VALUES (?)", ["Adam", "Eve"])```.
   Future<List<Results>> queryMulti(
-      String sql, Iterable<Iterable<Object>> values) async {
+      String sql, Iterable<List<Object>> values) async {
     PreparedQuery prepared;
     var ret = <Results>[];
     try {
@@ -167,7 +167,7 @@ class MySqlConnection {
           new PrepareHandler(sql), _timeout);
       _log.fine("Prepared queryMulti query for: $sql");
 
-      for (List v in values) {
+      for (final v in values) {
         if (v.length != prepared.parameterCount) {
           throw new MySqlClientError(
               "Length of parameters (${v.length}) does not match parameter count in query (${prepared.parameterCount})");
@@ -429,7 +429,7 @@ class ReqRespConnection {
    * Processes a handler, from sending the initial request to handling any packets returned from
    * mysql
    */
-  Future _processHandler(Handler handler) async {
+  Future<T> _processHandler<T>(Handler handler) async {
     if (_handler != null) {
       throw new MySqlClientError(
           "Connection cannot process a request for $handler while a request is already in progress for $_handler");
@@ -437,10 +437,11 @@ class ReqRespConnection {
     _log.fine("start handler $handler");
     _packetNumber = -1;
     _compressedPacketNumber = -1;
-    _completer = new Completer<dynamic>();
+    final c = new Completer<T>();
+    _completer = c;
     _handler = handler;
     await sendBuffer(handler.createRequest());
-    return _completer.future;
+    return c.future;
   }
 
   final Pool pool = new Pool(1);
@@ -452,7 +453,7 @@ class ReqRespConnection {
   Future<T> processHandler<T>(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {
-        T ret = await _processHandler(handler).timeout(timeout);
+        T ret = await _processHandler<T>(handler).timeout(timeout);
         return ret;
       } finally {
         _handler = null;
@@ -463,7 +464,8 @@ class ReqRespConnection {
   Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {
-        ResultsStream results = await _processHandler(handler).timeout(timeout);
+        ResultsStream results =
+            await _processHandler<ResultsStream>(handler).timeout(timeout);
         // Read all of the results. This is so we can close the handler before returning to the
         // user. Obviously this is not super efficient but it guarantees correct api use.
         Results ret = await Results._read(results).timeout(timeout);
