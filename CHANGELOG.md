@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.17.0
+--
+
+23 Apr 2019
+
+* Make result field values accessible by name on BinaryDataPackets
+* Require `List` type in public query API
+
 v0.16.3
 --
 
