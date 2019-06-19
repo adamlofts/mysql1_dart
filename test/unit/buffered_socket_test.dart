@@ -30,7 +30,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     }
     var data = _data.getRange(0, count);
     var list = new Uint8List(data.length);
-    list.addAll(data);
+    list.setRange(0, data.length, data);
     _data.removeRange(0, count);
     return list;
   }
