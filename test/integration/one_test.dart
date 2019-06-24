@@ -175,15 +175,15 @@ void main() {
   initializeTest(
       "test1",
       "create table test1 ("
-      "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
-      "adecimal decimal(20,10), afloat float, adouble double, areal real, "
-      "aboolean boolean, abit bit(20), aserial serial, "
-      "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
-      "achar char(10), avarchar varchar(10), "
-      "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
-      "abinary binary(10), avarbinary varbinary(10), "
-      "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
-      "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
+          "atinyint tinyint, asmallint smallint, amediumint mediumint, abigint bigint, aint int, "
+          "adecimal decimal(20,10), afloat float, adouble double, areal real, "
+          "aboolean boolean, abit bit(20), aserial serial, "
+          "adate date, adatetime datetime, atimestamp timestamp, atime time, ayear year, "
+          "achar char(10), avarchar varchar(10), "
+          "atinytext tinytext, atext text, amediumtext mediumtext, alongtext longtext, "
+          "abinary binary(10), avarbinary varbinary(10), "
+          "atinyblob tinyblob, amediumblob mediumblob, ablob blob, alongblob longblob, "
+          "aenum enum('a', 'b', 'c'), aset set('a', 'b', 'c'), ageometry geometry)");
 
   test('show tables', () async {
     var results = await conn.query("show tables");

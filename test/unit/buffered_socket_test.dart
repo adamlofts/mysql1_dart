@@ -4,6 +4,7 @@ library buffered_socket_test;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -22,14 +23,14 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   List<int> _data;
   int available() => _data.length;
 
-  List<int> read([int len]) {
+  Uint8List read([int len]) {
     var count = len;
     if (count > _data.length) {
       count = _data.length;
     }
     var data = _data.getRange(0, count);
-    var list = new List<int>();
-    list.addAll(data);
+    var list = new Uint8List(data.length);
+    list.setRange(0, data.length, data);
     _data.removeRange(0, count);
     return list;
   }
