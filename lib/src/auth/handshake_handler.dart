@@ -12,7 +12,7 @@ import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
 class HandshakeHandler extends Handler {
-  static const String MYSQL_NATIVE_PASSWORD = "mysql_native_password";
+  static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
 
   final String _user;
   final String _password;
@@ -32,27 +32,26 @@ class HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
-  HandshakeHandler(String this._user, String this._password,
-      int this._maxPacketSize, int this._characterSet,
+  HandshakeHandler(
+      this._user, this._password, this._maxPacketSize, this._characterSet,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
-        this.useCompression = useCompression,
-        this.useSSL = useSSL,
-        super(new Logger("HandshakeHandler"));
+        useCompression = useCompression,
+        useSSL = useSSL,
+        super(Logger('HandshakeHandler'));
 
-  /**
-   * The server initiates the handshake after the client connects,
-   * so a request will never be created.
-   */
+  /// The server initiates the handshake after the client connects,
+  /// so a request will never be created.
+  @override
   Buffer createRequest() {
-    throw new MySqlClientError("Cannot create a handshake request");
+    throw MySqlClientError('Cannot create a handshake request');
   }
 
   void readResponseBuffer(Buffer response) {
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
-      throw new MySqlClientError("Protocol not supported");
+      throw MySqlClientError('Protocol not supported');
     }
     serverVersion = response.readNullTerminatedString();
     threadId = response.readUint32();
@@ -76,7 +75,7 @@ class HandshakeHandler extends Handler {
         // read null-terminator
         response.readByte();
         scrambleBuffer =
-            new List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+            List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
         scrambleBuffer.setRange(0, 8, scrambleBuffer1);
         scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
       } else {
@@ -92,34 +91,32 @@ class HandshakeHandler extends Handler {
     }
   }
 
-  /**
-   * After receiving the handshake packet, if all is well, an [_AuthHandler]
-   * is created and returned to handle authentication.
-   *
-   * Currently, if the client protocol version is not 4.1, an
-   * exception is thrown.
-   */
+  /// After receiving the handshake packet, if all is well, an [_AuthHandler]
+  /// is created and returned to handle authentication.
+  ///
+  /// Currently, if the client protocol version is not 4.1, an
+  /// exception is thrown.
+  @override
   HandlerResponse processResponse(Buffer response) {
     checkResponse(response);
 
     readResponseBuffer(response);
 
     if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
-      throw new MySqlClientError("Unsupported protocol (must be 4.1 or newer");
+      throw MySqlClientError('Unsupported protocol (must be 4.1 or newer');
     }
 
     if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
-      throw new MySqlClientError(
-          "Old Password AUthentication is not supported");
+      throw MySqlClientError('Old Password AUthentication is not supported');
     }
 
     if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
         pluginName != MYSQL_NATIVE_PASSWORD) {
-      throw new MySqlClientError(
-          "Authentication plugin not supported: $pluginName");
+      throw MySqlClientError(
+          'Authentication plugin not supported: $pluginName');
     }
 
-    int clientFlags = CLIENT_PROTOCOL_41 |
+    var clientFlags = CLIENT_PROTOCOL_41 |
         CLIENT_LONG_PASSWORD |
         CLIENT_LONG_FLAG |
         CLIENT_TRANSACTIONS |
@@ -127,26 +124,26 @@ class HandshakeHandler extends Handler {
         CLIENT_MULTI_RESULTS;
 
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
-      log.shout("Compression enabled");
+      log.shout('Compression enabled');
       clientFlags |= CLIENT_COMPRESS;
     } else {
       useCompression = false;
     }
 
     if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
-      log.shout("SSL enabled");
+      log.shout('SSL enabled');
       clientFlags |= CLIENT_SSL | CLIENT_SECURE_CONNECTION;
     } else {
       useSSL = false;
     }
 
     if (useSSL) {
-      return new HandlerResponse(
-          nextHandler: new SSLHandler(
+      return HandlerResponse(
+          nextHandler: SSLHandler(
               clientFlags,
               _maxPacketSize,
               _characterSet,
-              new AuthHandler(
+              AuthHandler(
                 _user,
                 _password,
                 _db,
@@ -157,8 +154,8 @@ class HandshakeHandler extends Handler {
               )));
     }
 
-    return new HandlerResponse(
-        nextHandler: new AuthHandler(_user, _password, _db, scrambleBuffer,
+    return HandlerResponse(
+        nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
             clientFlags, _maxPacketSize, _characterSet));
   }
 }

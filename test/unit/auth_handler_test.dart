@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 void main() {
   group('auth_handler:', () {
     test('hash password correctly', () {
-      var handler = new AuthHandler(
-          'username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
+      var handler =
+          AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
 
       var hash = handler.getHash();
 
@@ -45,7 +45,7 @@ void main() {
       var characterSet = 56;
       var username = 'Boris';
       var password = 'Password';
-      var handler = new AuthHandler(username, password, null, [1, 2, 3, 4],
+      var handler = AuthHandler(username, password, null, [1, 2, 3, 4],
           clientFlags, maxPacketSize, characterSet);
 
       var hash = handler.getHash();
@@ -69,7 +69,7 @@ void main() {
       var username = 'iamtheuserwantingtologin';
       var password = 'wibblededee';
       var database = 'thisisthenameofthedatabase';
-      var handler = new AuthHandler(
+      var handler = AuthHandler(
           username,
           password,
           database,
@@ -99,7 +99,7 @@ void main() {
     var password = 'здрасти';
     var database = 'дтабасе';
     var handler =
-        new AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
+        AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
 
     var hash = handler.getHash();
     var buffer = handler.createRequest();

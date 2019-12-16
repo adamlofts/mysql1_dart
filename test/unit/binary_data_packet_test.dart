@@ -11,22 +11,22 @@ import 'package:test/test.dart';
 void main() {
   group('buffer:', () {
     test('can read short blob', () {
-      var packet = new BinaryDataPacket.forTests(null);
-      var field = new Field.forTests(FIELD_TYPE_BLOB);
-      var buffer = new Buffer.fromList([1, 32]);
+      var packet = BinaryDataPacket.forTests(null);
+      var field = Field.forTests(FIELD_TYPE_BLOB);
+      var buffer = Buffer.fromList([1, 32]);
       var value = packet.readField(field, buffer);
 
       expect(value, TypeMatcher<Blob>());
-      expect((value as Blob).toString(), equals(" "));
+      expect((value as Blob).toString(), equals(' '));
     });
 
     test('can read long blob', () {
-      var packet = new BinaryDataPacket.forTests(null);
-      var field = new Field.forTests(FIELD_TYPE_BLOB);
+      var packet = BinaryDataPacket.forTests(null);
+      var field = Field.forTests(FIELD_TYPE_BLOB);
 
-      var buffer = new Buffer(500 + 3);
+      var buffer = Buffer(500 + 3);
       buffer.writeLengthCodedBinary(500);
-      for (int i = 0; i < 500; i++) {
+      for (var i = 0; i < 500; i++) {
         buffer.writeByte(32);
       }
       var value = packet.readField(field, buffer);
@@ -36,12 +36,12 @@ void main() {
     });
 
     test('can read very long blob', () {
-      var packet = new BinaryDataPacket.forTests(null);
-      var field = new Field.forTests(FIELD_TYPE_BLOB);
+      var packet = BinaryDataPacket.forTests(null);
+      var field = Field.forTests(FIELD_TYPE_BLOB);
 
-      var buffer = new Buffer(50000 + 3);
+      var buffer = Buffer(50000 + 3);
       buffer.writeLengthCodedBinary(50000);
-      for (int i = 0; i < 50000; i++) {
+      for (var i = 0; i < 50000; i++) {
         buffer.writeByte(32);
       }
       var value = packet.readField(field, buffer);

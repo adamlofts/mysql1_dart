@@ -38,7 +38,7 @@ Buffer _createHandshake(protocolVersion, serverVersion, threadId,
     }
   }
 
-  var response = new Buffer(length);
+  var response = Buffer(length);
   response.writeByte(protocolVersion);
   response.writeNullTerminatedList(serverVersion.codeUnits);
   response.writeInt32(threadId);
@@ -68,27 +68,27 @@ void main() {
   group('HandshakeHandler._readResponseBuffer', () {
     test('throws if handshake protocol is not 10', () {
       var handler =
-          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
-      var response = new Buffer.fromList([9]);
+          HandshakeHandler('', '', MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+      var response = Buffer.fromList([9]);
       expect(() {
         handler.readResponseBuffer(response);
-      }, throwsA(new isInstanceOf<MySqlClientError>()));
+      }, throwsA(isInstanceOf<MySqlClientError>()));
     });
 
     test('set values and does not throw if handshake protocol is 10', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = 0;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = _createHandshake(
           10,
@@ -114,8 +114,8 @@ void main() {
     });
 
     test('should cope with no data past first capability flags', () {
-      var serverVersion = "version 1";
-      var scrambleBuffer1 = "abcdefgh";
+      var serverVersion = 'version 1';
+      var scrambleBuffer1 = 'abcdefgh';
       var threadId = 123882394;
       var serverCapabilities = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
 
@@ -123,7 +123,7 @@ void main() {
           10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
       var handler =
-          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+          HandshakeHandler('', '', MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       handler.readResponseBuffer(responseBuffer);
 
       expect(handler.serverVersion, equals(serverVersion));
@@ -134,21 +134,21 @@ void main() {
     });
 
     test('should read plugin name', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = "plugin name";
+      var pluginName = 'plugin name';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -168,21 +168,21 @@ void main() {
     });
 
     test('should read plugin name with null', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = "plugin name";
+      var pluginName = 'plugin name';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -202,21 +202,21 @@ void main() {
     });
 
     test('should read buffer without scramble data', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = null;
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
-      var pluginName = "plugin name";
+      var pluginName = 'plugin name';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -236,21 +236,21 @@ void main() {
     });
 
     test('should read buffer with short scramble data length', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrst";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrst';
       var scrambleLength = 5;
-      var pluginName = "plugin name";
+      var pluginName = 'plugin name';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -273,28 +273,28 @@ void main() {
   group('HandshakeHandler.processResponse', () {
     test('throws if server protocol is not 4.1', () {
       var handler =
-          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+          HandshakeHandler('', '', MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       var response = _createHandshake(
-          10, "version 1", 123, "abcdefgh", 0, 0, 0, 0, 0, "buffer");
+          10, 'version 1', 123, 'abcdefgh', 0, 0, 0, 0, 0, 'buffer');
       expect(() {
         handler.processResponse(response);
-      }, throwsA(new isInstanceOf<MySqlClientError>()));
+      }, throwsA(isInstanceOf<MySqlClientError>()));
     });
 
     test('works when plugin name is not set', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = 0;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = _createHandshake(
           10,
@@ -312,10 +312,10 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<AuthHandler>());
+      expect(response, isInstanceOf<HandlerResponse>());
+      expect(response.nextHandler, isInstanceOf<AuthHandler>());
 
-      int clientFlags = CLIENT_PROTOCOL_41 |
+      var clientFlags = CLIENT_PROTOCOL_41 |
           CLIENT_LONG_PASSWORD |
           CLIENT_LONG_FLAG |
           CLIENT_TRANSACTIONS |
@@ -334,19 +334,19 @@ void main() {
     });
 
     test('works when plugin name is set', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = 0;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = _createHandshake(
           10,
@@ -366,8 +366,8 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<AuthHandler>());
+      expect(response, isInstanceOf<HandlerResponse>());
+      expect(response.nextHandler, isInstanceOf<AuthHandler>());
 
       AuthHandler authHandler = response.nextHandler;
       expect(authHandler.username, equals(user));
@@ -378,8 +378,8 @@ void main() {
     });
 
     test('throws if old password authentication is requested', () {
-      var serverVersion = "version 1";
-      var scrambleBuffer1 = "abcdefgh";
+      var serverVersion = 'version 1';
+      var scrambleBuffer1 = 'abcdefgh';
       var threadId = 123882394;
       var serverCapabilities = CLIENT_PROTOCOL_41;
 
@@ -387,26 +387,26 @@ void main() {
           10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
 
       var handler =
-          new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
+          HandshakeHandler('', '', MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       expect(() {
         handler.processResponse(responseBuffer);
-      }, throwsA(new isInstanceOf<MySqlClientError>()));
+      }, throwsA(isInstanceOf<MySqlClientError>()));
     });
 
     test('throws if plugin is set and is not mysql_native_password', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = _createHandshake(
           10,
@@ -419,29 +419,29 @@ void main() {
           serverCapabilities2,
           scrambleLength,
           scrambleBuffer2,
-          "some_random_plugin",
+          'some_random_plugin',
           true);
 
       expect(() {
         handler.processResponse(responseBuffer);
-      }, throwsA(new isInstanceOf<MySqlClientError>()));
+      }, throwsA(isInstanceOf<MySqlClientError>()));
     });
 
     test('works when ssl requested', () {
-      var user = "bob";
-      var password = "password";
-      var db = "db";
-      var handler = new HandshakeHandler(user, password, MAX_PACKET_SIZE,
+      var user = 'bob';
+      var password = 'password';
+      var db = 'db';
+      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
           CharacterSet.UTF8MB4, db, true, true);
-      var serverVersion = "version 1";
+      var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
       var serverCapabilities1 =
           CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION | CLIENT_SSL;
       var serverCapabilities2 = 0;
-      var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = "ijklmnopqrstuvwxyz";
+      var scrambleBuffer1 = 'abcdefgh';
+      var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
       var responseBuffer = _createHandshake(
           10,
@@ -459,10 +459,10 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isTrue);
 
-      expect(response, new isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, new isInstanceOf<SSLHandler>());
+      expect(response, isInstanceOf<HandlerResponse>());
+      expect(response.nextHandler, isInstanceOf<SSLHandler>());
 
-      int clientFlags = CLIENT_PROTOCOL_41 |
+      var clientFlags = CLIENT_PROTOCOL_41 |
           CLIENT_LONG_PASSWORD |
           CLIENT_LONG_FLAG |
           CLIENT_TRANSACTIONS |
@@ -471,7 +471,7 @@ void main() {
           CLIENT_MULTI_RESULTS;
 
       SSLHandler sslHandler = response.nextHandler;
-      expect(sslHandler.nextHandler, new isInstanceOf<AuthHandler>());
+      expect(sslHandler.nextHandler, isInstanceOf<AuthHandler>());
       expect(sslHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(sslHandler.clientFlags, equals(clientFlags));
       expect(sslHandler.maxPacketSize, equals(MAX_PACKET_SIZE));

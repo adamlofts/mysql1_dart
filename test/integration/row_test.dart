@@ -1,4 +1,4 @@
-@Skip("API Update")
+@Skip('API Update')
 
 library mysql1.test.row_test;
 

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../test_infrastructure.dart';
 
 void main() {
-  initializeTest("stream", "create table stream (id integer, name text)",
+  initializeTest('stream', 'create table stream (id integer, name text)',
       "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
 
   test('store data', () async {
@@ -31,13 +31,13 @@ void main() {
 
   test('issue 43', () async {
     await conn.transaction((context) async {
-      await context.query("SELECT * FROM stream");
+      await context.query('SELECT * FROM stream');
       context.rollback();
     });
   });
 
   test('transaction rollback', () async {
-    var count = await conn.query("SELECT COUNT(*) FROM stream");
+    var count = await conn.query('SELECT COUNT(*) FROM stream');
     expect(count.first.first, 3);
 
     await conn.transaction((context) async {
@@ -46,12 +46,12 @@ void main() {
       context.rollback();
     });
 
-    count = await conn.query("SELECT COUNT(*) FROM stream");
+    count = await conn.query('SELECT COUNT(*) FROM stream');
     expect(count.first.first, 3);
   });
 
   test('transaction commit', () async {
-    var count = await conn.query("SELECT COUNT(*) FROM stream");
+    var count = await conn.query('SELECT COUNT(*) FROM stream');
     expect(count.first.first, 3);
 
     await conn.transaction((context) async {
@@ -59,7 +59,7 @@ void main() {
           "insert into stream (id, name) values (1, 'A'), (2, 'B'), (3, 'C')");
     });
 
-    count = await conn.query("SELECT COUNT(*) FROM stream");
+    count = await conn.query('SELECT COUNT(*) FROM stream');
     expect(count.first.first, 6);
   });
 }

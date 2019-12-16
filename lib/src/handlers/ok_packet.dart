@@ -21,6 +21,7 @@ class OkPacket {
     _message = buffer.readStringToEnd();
   }
 
+  @override
   String toString() =>
-      "OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message";
+      'OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message';
 }

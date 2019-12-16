@@ -13,26 +13,28 @@ import '../results/row.dart';
 import '../results/field.dart';
 
 class StandardDataPacket extends Row {
-  final Logger log = new Logger("StandardDataPacket");
+  final Logger log = Logger('StandardDataPacket');
 
   /// Values as Map
+  @override
   final Map<String, dynamic> fields = <String, dynamic>{};
 
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
-    values = new List<dynamic>(fieldPackets.length);
+    values = List<dynamic>(fieldPackets.length);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
 
-      log.fine("$i: ${field.name}");
+      log.fine('$i: ${field.name}');
 
       values[i] = readField(field, buffer);
       fields[field.name] = values[i];
     }
   }
 
+  @override
   Object readField(Field field, Buffer buffer) {
     var list;
-    int length = buffer.readLengthCodedBinary();
+    var length = buffer.readLengthCodedBinary();
     if (length != null) {
       list = buffer.readList(length);
     } else {
@@ -69,8 +71,8 @@ class StandardDataPacket extends Row {
         break;
       case FIELD_TYPE_TIME: // time
         var s = utf8.decode(list);
-        var parts = s.split(":");
-        return new Duration(
+        var parts = s.split(':');
+        return Duration(
             days: 0,
             hours: int.parse(parts[0]),
             minutes: int.parse(parts[1]),
@@ -87,7 +89,7 @@ class StandardDataPacket extends Row {
         return s;
         break;
       case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
-        return new Blob.fromBytes(list);
+        return Blob.fromBytes(list);
         break;
       case FIELD_TYPE_GEOMETRY: // geometry
         var s = utf8.decode(list);
@@ -98,5 +100,6 @@ class StandardDataPacket extends Row {
     }
   }
 
-  String toString() => "Fields: $fields";
+  @override
+  String toString() => 'Fields: $fields';
 }

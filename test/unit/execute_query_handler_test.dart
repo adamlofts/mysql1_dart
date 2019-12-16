@@ -16,67 +16,66 @@ import 'package:test/test.dart';
 void main() {
   group('ExecuteQueryHandler.createNullMap', () {
     test('can build empty map', () {
-      var handler = new ExecuteQueryHandler(null, false, []);
+      var handler = ExecuteQueryHandler(null, false, []);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([]));
     });
 
     test('can build map with no nulls', () {
-      var handler = new ExecuteQueryHandler(null, false, [1]);
+      var handler = ExecuteQueryHandler(null, false, [1]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([0]));
     });
 
     test('can build map with one null', () {
-      var handler = new ExecuteQueryHandler(null, false, [null]);
+      var handler = ExecuteQueryHandler(null, false, [null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([1]));
     });
 
     test('can build map with eight nulls', () {
-      var handler = new ExecuteQueryHandler(
+      var handler = ExecuteQueryHandler(
           null, false, [null, null, null, null, null, null, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([255]));
     });
 
     test('can build map with eight not nulls', () {
-      var handler =
-          new ExecuteQueryHandler(null, false, [0, 0, 0, 0, 0, 0, 0, 0]);
+      var handler = ExecuteQueryHandler(null, false, [0, 0, 0, 0, 0, 0, 0, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([0]));
     });
 
     test('can build map with some nulls and some not', () {
       var handler =
-          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+          ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map with some nulls and some not', () {
       var handler =
-          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+          ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map which is more than one byte', () {
-      var handler = new ExecuteQueryHandler(
+      var handler = ExecuteQueryHandler(
           null, false, [null, 0, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, 0, 0, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte', () {
-      var handler = new ExecuteQueryHandler(
-          null, false, [null, 0, 0, 0, 0, 0, 0, null, 0]);
+      var handler =
+          ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null, 0]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte with a null', () {
-      var handler = new ExecuteQueryHandler(
+      var handler = ExecuteQueryHandler(
           null, false, [null, 0, 0, 0, 0, 0, 0, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 1]));
@@ -85,7 +84,7 @@ void main() {
     test(
         'can build map which just is more than one byte with a null, another pattern',
         () {
-      var handler = new ExecuteQueryHandler(
+      var handler = ExecuteQueryHandler(
           null, false, [null, 0, null, 0, 0, 0, 0, null, null]);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129 + 4, 1]));
@@ -100,10 +99,10 @@ void main() {
     });
 
     test('can write values for unexecuted query', () {
-      var preparedQuery = new MockPreparedQuery();
+      var preparedQuery = MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, false, []);
+      var handler = ExecuteQueryHandler(preparedQuery, false, []);
       handler.preparedValues = [];
       var buffer = handler.writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
@@ -111,10 +110,10 @@ void main() {
     });
 
     test('can write values for executed query', () {
-      var preparedQuery = new MockPreparedQuery();
+      var preparedQuery = MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, true, []);
+      var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
       var buffer = handler.writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
@@ -122,10 +121,10 @@ void main() {
     });
 
     test('can write values for executed query with nullmap', () {
-      var preparedQuery = new MockPreparedQuery();
+      var preparedQuery = MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, true, []);
+      var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 0, types);
       expect(buffer.length, equals(14));
@@ -134,11 +133,11 @@ void main() {
     });
 
     test('can write values for unexecuted query with values', () {
-      var preparedQuery = new MockPreparedQuery();
+      var preparedQuery = MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
       types = [100];
-      var handler = new ExecuteQueryHandler(preparedQuery, false, [123]);
+      var handler = ExecuteQueryHandler(preparedQuery, false, [123]);
       handler.preparedValues = [123];
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 8, types);
       expect(buffer.length, equals(23));
@@ -177,8 +176,8 @@ void main() {
     ExecuteQueryHandler handler;
 
     setUp(() {
-      preparedQuery = new MockPreparedQuery();
-      handler = new ExecuteQueryHandler(preparedQuery, false, []);
+      preparedQuery = MockPreparedQuery();
+      handler = ExecuteQueryHandler(preparedQuery, false, []);
     });
 
     test('can prepare int values correctly', () {
@@ -186,15 +185,15 @@ void main() {
     });
 
     test('can prepare string values correctly', () {
-      expect(handler.prepareValue("hello"), equals(utf8.encode("hello")));
+      expect(handler.prepareValue('hello'), equals(utf8.encode('hello')));
     });
 
     test('can prepare double values correctly', () {
-      expect(handler.prepareValue(123.45), equals(utf8.encode("123.45")));
+      expect(handler.prepareValue(123.45), equals(utf8.encode('123.45')));
     });
 
     test('can prepare datetime values correctly', () {
-      var dateTime = new DateTime.utc(2014, 3, 4, 5, 6, 7, 8);
+      var dateTime = DateTime.utc(2014, 3, 4, 5, 6, 7, 8);
       expect(handler.prepareValue(dateTime), equals(dateTime));
     });
 
@@ -207,8 +206,8 @@ void main() {
     });
 
     test('can prepare blob values correctly', () {
-      expect(handler.prepareValue(new Blob.fromString("hello")),
-          equals(utf8.encode("hello")));
+      expect(handler.prepareValue(Blob.fromString('hello')),
+          equals(utf8.encode('hello')));
     });
   });
 
@@ -217,8 +216,8 @@ void main() {
     ExecuteQueryHandler handler;
 
     setUp(() {
-      preparedQuery = new MockPreparedQuery();
-      handler = new ExecuteQueryHandler(preparedQuery, false, []);
+      preparedQuery = MockPreparedQuery();
+      handler = ExecuteQueryHandler(preparedQuery, false, []);
     });
 
     test('can measure int values correctly', () {
@@ -226,27 +225,27 @@ void main() {
     });
 
     test('can measure short string correctly', () {
-      var string = "a";
+      var string = 'a';
       var preparedString = utf8.encode(string);
       expect(handler.measureValue(string, preparedString), equals(2));
     });
 
     test('can measure longer string correctly', () {
-      var string = new String.fromCharCodes(new List.filled(300, 65));
+      var string = String.fromCharCodes(List.filled(300, 65));
       var preparedString = utf8.encode(string);
       expect(handler.measureValue(string, preparedString),
           equals(3 + string.length));
     });
 
     test('can measure even longer string correctly', () {
-      var string = new String.fromCharCodes(new List.filled(70000, 65));
+      var string = String.fromCharCodes(List.filled(70000, 65));
       var preparedString = utf8.encode(string);
       expect(handler.measureValue(string, preparedString),
           equals(4 + string.length));
     });
 
 //    test('can measure even very long string correctly', () {
-//      var string = new String.fromCharCodes(new List.filled(2 << 23 + 1, 65));
+//      var string = String.fromCharCodes(List.filled(2 << 23 + 1, 65));
 //      var preparedString = utf8.encode(string);
 //      expect(handler.measureValue(string, preparedString),
 //          equals(5 + string.length));

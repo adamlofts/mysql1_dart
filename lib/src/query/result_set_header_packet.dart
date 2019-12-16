@@ -12,12 +12,13 @@ class ResultSetHeaderPacket {
   int get fieldCount => _fieldCount;
 
   ResultSetHeaderPacket(Buffer buffer) {
-    log = new Logger("ResultSetHeaderPacket");
+    log = Logger('ResultSetHeaderPacket');
     _fieldCount = buffer.readLengthCodedBinary();
     if (buffer.canReadMore()) {
       _extra = buffer.readLengthCodedBinary();
     }
   }
 
-  String toString() => "Field count: $_fieldCount, Extra: $_extra";
+  @override
+  String toString() => 'Field count: $_fieldCount, Extra: $_extra';
 }

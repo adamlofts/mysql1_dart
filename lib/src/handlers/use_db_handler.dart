@@ -11,11 +11,12 @@ import 'handler.dart';
 class UseDbHandler extends Handler {
   final String _dbName;
 
-  UseDbHandler(String this._dbName) : super(new Logger("UseDbHandler"));
+  UseDbHandler(this._dbName) : super(Logger('UseDbHandler'));
 
+  @override
   Buffer createRequest() {
     var encoded = utf8.encode(_dbName);
-    var buffer = new Buffer(encoded.length + 1);
+    var buffer = Buffer(encoded.length + 1);
     buffer.writeByte(COM_INIT_DB);
     buffer.writeList(encoded);
     return buffer;

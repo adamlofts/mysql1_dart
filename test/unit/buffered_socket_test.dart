@@ -1,5 +1,4 @@
 // ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use, strong_mode_implicit_dynamic_type
-
 library buffered_socket_test;
 
 import 'dart:async';
@@ -7,6 +6,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:mockito/mockito.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'package:mysql1/src/buffered_socket.dart';
@@ -16,20 +16,22 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   MockSocket(StreamController<RawSocketEvent> streamController)
       : super(streamController.stream) {
     _streamController = streamController;
-    _data = new List<int>();
+    _data = <int>[];
   }
 
   StreamController<RawSocketEvent> _streamController;
   List<int> _data;
+  @override
   int available() => _data.length;
 
+  @override
   Uint8List read([int len]) {
     var count = len;
     if (count > _data.length) {
       count = _data.length;
     }
     var data = _data.getRange(0, count);
-    var list = new Uint8List(data.length);
+    var list = Uint8List(data.length);
     list.setRange(0, data.length, data);
     _data.removeRange(0, count);
     return list;
@@ -44,6 +46,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
     _streamController.add(RawSocketEvent.READ_CLOSED);
   }
 
+  @override
   set writeEventsEnabled(bool value) {
     if (value) {
       _streamController.add(RawSocketEvent.WRITE);
@@ -53,6 +56,7 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
   @override
   bool setOption(SocketOption option, bool enabled) => true; // No-op
 
+  @override
   Object noSuchMethod(a) => super.noSuchMethod(a);
 }
 
@@ -64,20 +68,20 @@ void main() {
     SocketFactory factory;
 
     setUp(() {
-      var streamController = new StreamController<RawSocketEvent>();
+      var streamController = StreamController<RawSocketEvent>();
       factory = (host, port, timeout) {
-        rawSocket = new MockSocket(streamController);
-        return new Future.value(rawSocket);
+        rawSocket = MockSocket(streamController);
+        return Future.value(rawSocket);
       };
     });
 
     test('can read data which is already available', () async {
-      var c = new Completer();
+      var c = Completer();
 
       var socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
-        var buffer = new Buffer(4);
+        var buffer = Buffer(4);
         await socket.readBuffer(buffer);
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
@@ -88,12 +92,12 @@ void main() {
     });
 
     test('can read data which is partially available', () async {
-      var c = new Completer();
+      var c = Completer();
 
       var socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
-        var buffer = new Buffer(4);
+        var buffer = Buffer(4);
         socket.readBuffer(buffer).then((_) {
           expect(buffer.list, equals([1, 2, 3, 4]));
           c.complete();
@@ -106,36 +110,36 @@ void main() {
     });
 
     test('can read data which is not yet available', () async {
-      var c = new Completer();
+      var c = Completer();
       var socket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
           socketFactory: factory);
-      var buffer = new Buffer(4);
-      socket.readBuffer(buffer).then((_) {
+      var buffer = Buffer(4);
+      unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
-      });
+      }));
       rawSocket.addData([1, 2, 3, 4]);
       return c.future;
     });
 
     test('can read data which is not yet available, arriving in two chunks',
         () async {
-      var c = new Completer();
+      var c = Completer();
       var socket = await BufferedSocket.connect(
-          'localhost', 100, const Duration(seconds: 5),
+          'localhost', 100, const Duration(seconds: 30),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
           socketFactory: factory);
-      var buffer = new Buffer(4);
-      socket.readBuffer(buffer).then((_) {
+      var buffer = Buffer(4);
+      unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
         c.complete();
-      });
+      }));
       rawSocket.addData([1, 2]);
       rawSocket.addData([3, 4]);
       return c.future;
@@ -148,13 +152,13 @@ void main() {
           onDone: () {},
           onError: (e) {},
           socketFactory: factory);
-      var buffer = new Buffer(4);
-      socket.readBuffer(buffer).then((_) {
+      var buffer = Buffer(4);
+      unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
-      });
+      }));
       expect(() {
         socket.readBuffer(buffer);
-      }, throwsA(new isInstanceOf<StateError>()));
+      }, throwsA(isInstanceOf<StateError>()));
     });
 
     test('should write buffer', () async {
@@ -164,7 +168,7 @@ void main() {
           onDone: () {},
           onError: (e) {},
           socketFactory: factory);
-      var buffer = new MockBuffer();
+      var buffer = MockBuffer();
       when(buffer.length).thenReturn(100);
       when(buffer.writeToSocket(any, any, any)).thenReturn(25);
       await socket.writeBuffer(buffer);
@@ -178,7 +182,7 @@ void main() {
           onDone: () {},
           onError: (e) {},
           socketFactory: factory);
-      var buffer = new MockBuffer();
+      var buffer = MockBuffer();
       when(buffer.length).thenReturn(100);
       when(buffer.writeToSocket(any, any, any)).thenReturn(25);
       await socket.writeBufferPart(buffer, 25, 50);
