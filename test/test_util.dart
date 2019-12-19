@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 Future setup(MySqlConnection conn, String tableName, String createSql,
     [String insertSql]) async {
-  await new TableDropper(conn, [tableName]).dropTables();
+  await TableDropper(conn, [tableName]).dropTables();
   if (createSql != null) {
     var result = await conn.query(createSql);
     expect(result, isNotNull);
@@ -18,24 +18,18 @@ Future setup(MySqlConnection conn, String tableName, String createSql,
   }
 }
 
-/**
- * Drops a set of tables.
- */
+/// Drops a set of tables.
 class TableDropper {
   MySqlConnection conn;
   List<String> tables;
 
-  /**
-   * Create a [TableDropper]. Needs a [pool] and
-   * a list of [tables].
-   */
+  /// Create a [TableDropper]. Needs a [pool] and
+  /// a list of [tables].
   TableDropper(this.conn, this.tables);
 
-  /**
-   * Drops the tables this [TableDropper] was created with. The
-   * returned [Future] completes when all the tables have been dropped.
-   * If a table doesn't exist, it is ignored.
-   */
+  /// Drops the tables this [TableDropper] was created with. The
+  /// returned [Future] completes when all the tables have been dropped.
+  /// If a table doesn't exist, it is ignored.
   Future dropTables() async {
     for (var table in tables) {
       try {

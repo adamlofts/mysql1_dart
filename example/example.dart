@@ -4,7 +4,7 @@ import 'package:mysql1/mysql1.dart';
 
 Future main() async {
   // Open a connection (testdb should already exist)
-  final conn = await MySqlConnection.connect(new ConnectionSettings(
+  final conn = await MySqlConnection.connect(ConnectionSettings(
       host: 'localhost', port: 3306, user: 'root', db: 'testdb'));
 
   // Create a table
@@ -15,7 +15,7 @@ Future main() async {
   var result = await conn.query(
       'insert into users (name, email, age) values (?, ?, ?)',
       ['Bob', 'bob@bob.com', 25]);
-  print("Inserted row id=${result.insertId}");
+  print('Inserted row id=${result.insertId}');
 
   // Query the database using a parameterized query
   var results = await conn

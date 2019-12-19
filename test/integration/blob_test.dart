@@ -8,10 +8,10 @@ import '../test_infrastructure.dart';
 const tableName = 'blobtable';
 
 void main() {
-  initializeTest(tableName, "create table $tableName (stuff blob)");
+  initializeTest(tableName, 'create table $tableName (stuff blob)');
 
   test('write blob', () async {
-    await conn.query("insert into $tableName (stuff) values (?)", [
+    await conn.query('insert into $tableName (stuff) values (?)', [
       [0xc3, 0x28]
     ]); // this is an invalid UTF8 string
     var results = await conn.query('select * from $tableName');

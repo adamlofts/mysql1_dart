@@ -7,11 +7,12 @@ import '../buffer.dart';
 import 'handler.dart';
 
 class PingHandler extends Handler {
-  PingHandler() : super(new Logger("PingHandler"));
+  PingHandler() : super(Logger('PingHandler'));
 
+  @override
   Buffer createRequest() {
-    log.finest("Creating buffer for PingHandler");
-    var buffer = new Buffer(1);
+    log.finest('Creating buffer for PingHandler');
+    var buffer = Buffer(1);
     buffer.writeByte(COM_PING);
     return buffer;
   }

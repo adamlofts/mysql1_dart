@@ -10,9 +10,9 @@ MySqlConnection get conn => _conn;
 MySqlConnection _conn;
 
 void initializeTest([String tableName, String createSql, String insertSql]) {
-  var options = new OptionsFile('connection.options');
+  var options = OptionsFile('connection.options');
 
-  ConnectionSettings s = new ConnectionSettings(
+  var s = ConnectionSettings(
     user: options.getString('user'),
     password: options.getString('password', null),
     port: options.getInt('port', 3306),
@@ -22,10 +22,10 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
 
   setUp(() async {
     // Ensure db exists
-    ConnectionSettings checkSettings = new ConnectionSettings.copy(s);
+    var checkSettings = ConnectionSettings.copy(s);
     checkSettings.db = null;
     final c = await MySqlConnection.connect(checkSettings);
-    await c.query("CREATE DATABASE IF NOT EXISTS ${s.db} CHARACTER SET utf8");
+    await c.query('CREATE DATABASE IF NOT EXISTS ${s.db} CHARACTER SET utf8');
     await c.close();
 
     _conn = await MySqlConnection.connect(s);

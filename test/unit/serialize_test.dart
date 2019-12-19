@@ -29,12 +29,12 @@ final double LARGEST_NEGATIVE_SUBNORMAL_DOUBLE = -4.9406564584124654E-324;
 final double SMALLEST_NEGATIVE_SUBNORMAL_DOUBLE = -2.2250738585072010E-308;
 
 String _bufferToHexString(Buffer list, [bool reverse = false]) {
-  var s = new StringBuffer();
-  for (int i = 0; i < list.length; i++) {
+  var s = StringBuffer();
+  for (var i = 0; i < list.length; i++) {
     var x =
         list[reverse ? list.length - i - 1 : i].toRadixString(16).toUpperCase();
     if (x.length == 1) {
-      s.write("0");
+      s.write('0');
     }
     s.write(x);
   }
@@ -43,143 +43,143 @@ String _bufferToHexString(Buffer list, [bool reverse = false]) {
 
 void main() {
   test('can write zero float', () {
-    var buffer = new Buffer(4);
+    var buffer = Buffer(4);
     var n = 0.0;
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("00000000"));
+    expect(_bufferToHexString(buffer, true), equals('00000000'));
   });
 
   test('can write zero double', () {
-    var buffer = new Buffer(8);
+    var buffer = Buffer(8);
     var n = 0.0;
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("0000000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('0000000000000000'));
   });
 
   test('can write one or greater float', () {
-    var buffer = new Buffer(4);
+    var buffer = Buffer(4);
     var n = 1.0;
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("3F800000"));
+    expect(_bufferToHexString(buffer, true), equals('3F800000'));
 
     n = 100.0;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("42C80000"));
+    expect(_bufferToHexString(buffer, true), equals('42C80000'));
 
     n = 123487.982374;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("47F12FFE"));
+    expect(_bufferToHexString(buffer, true), equals('47F12FFE'));
 
     n = 10000000000000000000000000000.0;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("6E013F39"));
+    expect(_bufferToHexString(buffer, true), equals('6E013F39'));
 
     // TODO: test very large numbers
   });
 
   test('can write one or greater double', () {
-    var buffer = new Buffer(8);
+    var buffer = Buffer(8);
     var n = 1.0;
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("3FF0000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('3FF0000000000000'));
 
     n = 100.0;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("4059000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('4059000000000000'));
 
     n = 123487.982374;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("40FE25FFB7CDCCA7"));
+    expect(_bufferToHexString(buffer, true), equals('40FE25FFB7CDCCA7'));
 
     n = 10000000000000000000000000000.0;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("45C027E72F1F1281"));
+    expect(_bufferToHexString(buffer, true), equals('45C027E72F1F1281'));
 
     // TODO: test very large numbers
   });
 
   test('can write less than one float', () {
-    var buffer = new Buffer(4);
+    var buffer = Buffer(4);
 
     var n = 0.1;
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("3DCCCCCD"));
+    expect(_bufferToHexString(buffer, true), equals('3DCCCCCD'));
 
     // TODO: test very small numbers
     n = 3.4028234663852886E+38;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("7F7FFFFF"));
+    expect(_bufferToHexString(buffer, true), equals('7F7FFFFF'));
 
     n = 1.1754943508222875E-38;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("00800000"));
+    expect(_bufferToHexString(buffer, true), equals('00800000'));
 
     n = SMALLEST_POSITIVE_SUBNORMAL_FLOAT / 2;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("00000000"));
+    expect(_bufferToHexString(buffer, true), equals('00000000'));
   });
 
   test('can write less than one double', () {
-    var buffer = new Buffer(8);
+    var buffer = Buffer(8);
 
     var n = 0.1;
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("3FB999999999999A"));
+    expect(_bufferToHexString(buffer, true), equals('3FB999999999999A'));
 
     // TODO: test very small numbers
     n = 1.7976931348623157E+308;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("7FEFFFFFFFFFFFFF"));
+    expect(_bufferToHexString(buffer, true), equals('7FEFFFFFFFFFFFFF'));
 
     n = -1.7976931348623157E+308;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("FFEFFFFFFFFFFFFF"));
+    expect(_bufferToHexString(buffer, true), equals('FFEFFFFFFFFFFFFF'));
   });
 
   test('can write non numbers float', () {
-    var buffer = new Buffer(4);
+    var buffer = Buffer(4);
 
     var n = 1.0 / 0.0;
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("7F800000"));
+    expect(_bufferToHexString(buffer, true), equals('7F800000'));
 
     n = -1.0 / 0.0;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("FF800000"));
+    expect(_bufferToHexString(buffer, true), equals('FF800000'));
 
     n = 0.0 / 0.0;
     buffer.reset();
     buffer.writeFloat(n);
-    expect(_bufferToHexString(buffer, true), equals("FFC00000"));
+    expect(_bufferToHexString(buffer, true), equals('FFC00000'));
   });
 
   test('can write non numbers double', () {
-    var buffer = new Buffer(8);
+    var buffer = Buffer(8);
 
     var n = 1.0 / 0.0;
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("7FF0000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('7FF0000000000000'));
 
     n = -1.0 / 0.0;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("FFF0000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('FFF0000000000000'));
 
     n = 0.0 / 0.0;
     buffer.reset();
     buffer.writeDouble(n);
-    expect(_bufferToHexString(buffer, true), equals("FFF8000000000000"));
+    expect(_bufferToHexString(buffer, true), equals('FFF8000000000000'));
   });
 }

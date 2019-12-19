@@ -33,19 +33,20 @@ class QueryStreamHandler extends Handler {
 
   StreamController<Row> _streamController;
 
-  QueryStreamHandler(String this._sql)
-      : super(new Logger("QueryStreamHandler"));
+  QueryStreamHandler(this._sql) : super(Logger('QueryStreamHandler'));
 
+  @override
   Buffer createRequest() {
     var encoded = utf8.encode(_sql);
-    var buffer = new Buffer(encoded.length + 1);
+    var buffer = Buffer(encoded.length + 1);
     buffer.writeByte(COM_QUERY);
     buffer.writeList(encoded);
     return buffer;
   }
 
+  @override
   HandlerResponse processResponse(Buffer response) {
-    log.fine("Processing query response");
+    log.fine('Processing query response');
     var packet = checkResponse(response, false, _state == STATE_ROW_PACKETS);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
@@ -73,44 +74,44 @@ class QueryStreamHandler extends Handler {
     return HandlerResponse.notFinished;
   }
 
-  _handleEndOfFields() {
+  HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
-    _streamController = new StreamController<Row>(onCancel: () {
+    _streamController = StreamController<Row>(onCancel: () {
       _streamController.close();
     });
-    return new HandlerResponse(
-        result: new ResultsStream(null, null, fieldPackets,
+    return HandlerResponse(
+        result: ResultsStream(null, null, fieldPackets,
             stream: _streamController.stream));
   }
 
-  _handleEndOfRows() {
+  HandlerResponse _handleEndOfRows() {
     // the connection's _handler field needs to have been nulled out before the stream is closed,
     // otherwise the stream will be reused in an unfinished state.
     // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
-//    new Future.delayed(new Duration(seconds: 0), _streamController.close);
+//    Future.delayed(Duration(seconds: 0), _streamController.close);
     _streamController.close();
-    return new HandlerResponse(finished: true);
+    return HandlerResponse(finished: true);
   }
 
-  _handleHeaderPacket(Buffer response) {
-    _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
+  void _handleHeaderPacket(Buffer response) {
+    _resultSetHeaderPacket = ResultSetHeaderPacket(response);
     log.fine(_resultSetHeaderPacket.toString());
     _state = STATE_FIELD_PACKETS;
   }
 
-  _handleFieldPacket(Buffer response) {
-    var fieldPacket = new Field(response);
+  void _handleFieldPacket(Buffer response) {
+    var fieldPacket = Field(response);
     log.fine(fieldPacket.toString());
     fieldPackets.add(fieldPacket);
   }
 
-  _handleRowPacket(Buffer response) {
-    var dataPacket = new StandardDataPacket(response, fieldPackets);
+  void _handleRowPacket(Buffer response) {
+    var dataPacket = StandardDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }
 
-  _handleOkPacket(packet) {
+  HandlerResponse _handleOkPacket(packet) {
     _okPacket = packet;
     var finished = false;
     // TODO: I think this is to do with multiple queries. Will probably break.
@@ -119,14 +120,14 @@ class QueryStreamHandler extends Handler {
     }
 
     //TODO is this finished value right?
-    return new HandlerResponse(
+    return HandlerResponse(
         finished: finished,
-        result: new ResultsStream(
+        result: ResultsStream(
             _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
   }
 
   @override
   String toString() {
-    return "QueryStreamHandler($_sql)";
+    return 'QueryStreamHandler($_sql)';
   }
 }

@@ -18,25 +18,24 @@ void main() {
   group('Connection', () {
     test('should throw error if buffer is too big', () {
       final MAX_PACKET_SIZE = 10;
-      var cnx = new ReqRespConnection(null, null, null, MAX_PACKET_SIZE);
+      var cnx = ReqRespConnection(null, null, null, MAX_PACKET_SIZE);
       final PACKET_SIZE = 11;
-      var buffer = new Buffer(PACKET_SIZE);
+      var buffer = Buffer(PACKET_SIZE);
       expect(() {
         cnx.sendBuffer(buffer);
-      }, throwsA(new isInstanceOf<MySqlClientError>()));
+      }, throwsA(isInstanceOf<MySqlClientError>()));
     });
 
     test('should send buffer', () async {
       final MAX_PACKET_SIZE = 16 * 1024 * 1024;
-      var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
+      var socket = MockSocket();
+      var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
-      when(socket.writeBuffer(any))
-          .thenAnswer((_) => new Future<Buffer>.value());
+      when(socket.writeBuffer(any)).thenAnswer((_) => Future<Buffer>.value());
       when(socket.writeBufferPart(any, any, any))
-          .thenAnswer((_) => new Future<Buffer>.value());
+          .thenAnswer((_) => Future<Buffer>.value());
 
-      var buffer = new Buffer.fromList([1, 2, 3]);
+      var buffer = Buffer.fromList([1, 2, 3]);
       await cnx.sendBuffer(buffer);
       var captured = verify(socket.writeBuffer(captureAny)).captured;
       expect(captured[0], hasLength(4));
@@ -48,7 +47,7 @@ void main() {
       expect(captured[1], equals(0));
       expect(captured[2], equals(3));
 
-      buffer = new Buffer.fromList([1, 2, 3]);
+      buffer = Buffer.fromList([1, 2, 3]);
       await cnx.sendBuffer(buffer);
       captured = verify(socket.writeBuffer(captureAny)).captured;
       expect(captured[0], hasLength(4));
@@ -63,20 +62,20 @@ void main() {
 
     test('should send large buffer', () async {
       final MAX_PACKET_SIZE = 32 * 1024 * 1024;
-      var socket = new MockSocket();
-      var cnx = new ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
+      var socket = MockSocket();
+      var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
       var buffers = [];
       when(socket.writeBuffer(any)).thenAnswer((mirror) {
         var buffer = mirror.positionalArguments[0];
-        buffers.add(new List<int>.from(buffer.list));
-        return new Future.value();
+        buffers.add(List<int>.from(buffer.list));
+        return Future.value();
       });
       when(socket.writeBufferPart(any, any, any))
-          .thenAnswer((_) => new Future<Buffer>.value());
+          .thenAnswer((_) => Future<Buffer>.value());
 
       final PACKET_SIZE = 17 * 1024 * 1024;
-      var buffer = new Buffer(PACKET_SIZE);
+      var buffer = Buffer(PACKET_SIZE);
       await cnx.sendBuffer(buffer);
       verify(socket.writeBuffer(any)).called(2);
       expect(buffers[0], equals([0xff, 0xff, 0xff, 1]));
@@ -93,11 +92,11 @@ void main() {
 
 //    test('should receive buffer', () async {
 //      final MAX_PACKET_SIZE = 16 * 1024 * 1024;
-//      var socket = new MockSocket();
-//      var cnx = new ReqRespConnection(
+//      var socket = MockSocket();
+//      var cnx = ReqRespConnection(
 //          socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
 //
-//      var c = new Completer();
+//      var c = Completer();
 //
 //      var buffer;
 //      cnx.dataHandler = (newBuffer) {
@@ -109,10 +108,10 @@ void main() {
 //      when(socket.readBuffer(any)).thenAnswer((_) async {
 //        if (bufferReturnCount == 0) {
 //          bufferReturnCount++;
-//          return new Buffer.fromList([3, 0, 0, 1]);
+//          return Buffer.fromList([3, 0, 0, 1]);
 //        } else {
 //          bufferReturnCount++;
-//          return new Buffer.fromList([1, 2, 3]);
+//          return Buffer.fromList([1, 2, 3]);
 //        }
 //      }); // 2
 //
@@ -126,11 +125,11 @@ void main() {
 //
 //    test('should receive large buffer', () async {
 //      final MAX_PACKET_SIZE = 32 * 1024 * 1024;
-//      var socket = new MockSocket();
-//      var cnx = new ReqRespConnection(
+//      var socket = MockSocket();
+//      var cnx = ReqRespConnection(
 //          socket, MAX_PACKET_SIZE, null, null, null, false, false, null);
 //
-//      var c = new Completer();
+//      var c = Completer();
 //
 //      var buffer;
 //      cnx.dataHandler = (newBuffer) {
@@ -142,23 +141,23 @@ void main() {
 //      var bufferReturn = (_) {
 //        if (bufferReturnCount == 0) {
 //          bufferReturnCount++;
-//          return new Future.value(new Buffer.fromList([0xff, 0xff, 0xff, 1]));
+//          return Future.value(Buffer.fromList([0xff, 0xff, 0xff, 1]));
 //        } else if (bufferReturnCount == 1) {
 //          bufferReturnCount++;
-//          var bigBuffer = new Buffer(0xffffff);
+//          var bigBuffer = Buffer(0xffffff);
 //          bigBuffer.list[0] = 1;
 //          bigBuffer.list[0xffffff - 1] = 2;
-//          return new Future.value(bigBuffer);
+//          return Future.value(bigBuffer);
 //        } else if (bufferReturnCount == 2) {
 //          bufferReturnCount++;
-//          return new Future.value(new Buffer.fromList([3, 0, 0, 2]));
+//          return Future.value(Buffer.fromList([3, 0, 0, 2]));
 //        } else {
 //          bufferReturnCount++;
 //          var bufferSize = 17 * 1024 * 1024 - 0xffffff;
-//          var littleBuffer = new Buffer(bufferSize);
+//          var littleBuffer = Buffer(bufferSize);
 //          littleBuffer[0] = 3;
 //          littleBuffer[bufferSize - 1] = 4;
-//          return new Future.value(littleBuffer);
+//          return Future.value(littleBuffer);
 //        }
 //      };
 //      when(socket.readBuffer(any)).thenAnswer(bufferReturn); // 4

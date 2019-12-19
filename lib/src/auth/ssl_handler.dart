@@ -14,10 +14,11 @@ class SSLHandler extends Handler {
 
   SSLHandler(
       this.clientFlags, this.maxPacketSize, this.characterSet, this.nextHandler)
-      : super(new Logger("SSLHandler"));
+      : super(Logger('SSLHandler'));
 
+  @override
   Buffer createRequest() {
-    var buffer = new Buffer(32);
+    var buffer = Buffer(32);
     buffer.seekWrite(0);
     buffer.writeUint32(clientFlags);
     buffer.writeUint32(maxPacketSize);

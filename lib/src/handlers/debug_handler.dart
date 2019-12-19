@@ -7,10 +7,11 @@ import '../buffer.dart';
 import 'handler.dart';
 
 class DebugHandler extends Handler {
-  DebugHandler() : super(new Logger("DebugHandler"));
+  DebugHandler() : super(Logger('DebugHandler'));
 
+  @override
   Buffer createRequest() {
-    var buffer = new Buffer(1);
+    var buffer = Buffer(1);
     buffer.writeByte(COM_DEBUG);
     return buffer;
   }

@@ -26,7 +26,7 @@ import 'query/query_stream_handler.dart';
 import 'results/field.dart';
 import 'results/row.dart';
 
-final Logger _log = new Logger("MySqlConnection");
+final Logger _log = Logger('MySqlConnection');
 
 class ConnectionSettings {
   String host;
@@ -43,16 +43,16 @@ class ConnectionSettings {
   Duration timeout;
 
   ConnectionSettings(
-      {String this.host = 'localhost',
-      int this.port = 3306,
-      String this.user,
-      String this.password,
-      String this.db,
-      bool this.useCompression = false,
-      bool this.useSSL = false,
-      int this.maxPacketSize = 16 * 1024 * 1024,
-      Duration this.timeout = const Duration(seconds: 30),
-      int this.characterSet = CharacterSet.UTF8MB4});
+      {this.host = 'localhost',
+      this.port = 3306,
+      this.user,
+      this.password,
+      this.db,
+      this.useCompression = false,
+      this.useSSL = false,
+      this.maxPacketSize = 16 * 1024 * 1024,
+      this.timeout = const Duration(seconds: 30),
+      this.characterSet = CharacterSet.UTF8MB4});
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -73,7 +73,7 @@ class ConnectionSettings {
 class MySqlConnection {
   final Duration _timeout;
 
-  ReqRespConnection _conn;
+  final ReqRespConnection _conn;
   bool _sentClose = false;
 
   MySqlConnection(this._timeout, this._conn);
@@ -88,9 +88,9 @@ class MySqlConnection {
     _sentClose = true;
 
     try {
-      await _conn.processHandlerNoResponse(new QuitHandler(), _timeout);
+      await _conn.processHandlerNoResponse(QuitHandler(), _timeout);
     } catch (e, st) {
-      _log.warning("Error sending quit on connection", e, st);
+      _log.warning('Error sending quit on connection', e, st);
     }
 
     _conn.close();
@@ -113,15 +113,15 @@ class MySqlConnection {
     ReqRespConnection conn;
     Completer handshakeCompleter;
 
-    _log.fine("opening connection to ${c.host}:${c.port}/${c.db}");
+    _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
-    BufferedSocket socket = await BufferedSocket.connect(
-        c.host, c.port, c.timeout, onDataReady: () {
+    var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
+        onDataReady: () {
       conn?._readPacket();
     }, onDone: () {
-      _log.fine("done");
+      _log.fine('done');
     }, onError: (Object error) {
-      _log.warning("socket error: $error");
+      _log.warning('socket error: $error');
 
       // If conn has not been connected there was a connection error.
       if (conn == null) {
@@ -130,26 +130,25 @@ class MySqlConnection {
         conn.handleError(error);
       }
     }, onClosed: () {
-      conn.handleError(new SocketException.closed());
+      conn.handleError(SocketException.closed());
     });
 
-    Handler handler = new HandshakeHandler(c.user, c.password, c.maxPacketSize,
+    Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
         c.characterSet, c.db, c.useCompression, c.useSSL);
-    handshakeCompleter = new Completer<void>();
-    conn = new ReqRespConnection(
-        socket, handler, handshakeCompleter, c.maxPacketSize);
+    handshakeCompleter = Completer<void>();
+    conn =
+        ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
 
     await handshakeCompleter.future.timeout(c.timeout);
-    return new MySqlConnection(c.timeout, conn);
+    return MySqlConnection(c.timeout, conn);
   }
 
   /// Run [sql] query on the database using [values] as positional sql parameters.
   ///
-  /// eg. ```query("SELECT FROM users WHERE id = ?", [userId])```.
+  /// eg. ```query('SELECT FROM users WHERE id = ?', [userId])```.
   Future<Results> query(String sql, [List<Object> values]) async {
     if (values == null || values.isEmpty) {
-      return _conn.processHandlerWithResults(
-          new QueryStreamHandler(sql), _timeout);
+      return _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
     }
 
     return (await queryMulti(sql, [values])).first;
@@ -157,46 +156,45 @@ class MySqlConnection {
 
   /// Run [sql] query multiple times for each set of positional sql parameters in [values].
   ///
-  /// e.g. ```queryMulti("INSERT INTO USERS (name) VALUES (?)", ["Adam", "Eve"])```.
+  /// e.g. ```queryMulti('INSERT INTO USERS (name) VALUES (?)', ['Adam', 'Eve'])```.
   Future<List<Results>> queryMulti(
       String sql, Iterable<List<Object>> values) async {
     PreparedQuery prepared;
     var ret = <Results>[];
     try {
       prepared = await _conn.processHandler<PreparedQuery>(
-          new PrepareHandler(sql), _timeout);
-      _log.fine("Prepared queryMulti query for: $sql");
+          PrepareHandler(sql), _timeout);
+      _log.fine('Prepared queryMulti query for: $sql');
 
       for (final v in values) {
         if (v.length != prepared.parameterCount) {
-          throw new MySqlClientError(
-              "Length of parameters (${v.length}) does not match parameter count in query (${prepared.parameterCount})");
+          throw MySqlClientError(
+              'Length of parameters (${v.length}) does not match parameter count in query (${prepared.parameterCount})');
         }
-        var handler =
-            new ExecuteQueryHandler(prepared, false /* executed */, v);
+        var handler = ExecuteQueryHandler(prepared, false /* executed */, v);
         ret.add(await _conn.processHandlerWithResults(handler, _timeout));
       }
     } finally {
       if (prepared != null) {
         await _conn.processHandlerNoResponse(
-            new CloseStatementHandler(prepared.statementHandlerId), _timeout);
+            CloseStatementHandler(prepared.statementHandlerId), _timeout);
       }
     }
     return ret;
   }
 
-  Future transaction(Future queryBlock(TransactionContext connection)) async {
-    await query("start transaction");
+  Future transaction(Function queryBlock) async {
+    await query('start transaction');
     try {
-      await queryBlock(new TransactionContext._(this));
+      await queryBlock(TransactionContext._(this));
     } catch (e) {
-      await query("rollback");
+      await query('rollback');
       if (e is! _RollbackError) {
         rethrow;
       }
       return e;
     }
-    await query("commit");
+    await query('commit');
   }
 }
 
@@ -207,7 +205,7 @@ class TransactionContext {
   Future<Results> query(String sql, [List values]) => _conn.query(sql, values);
   Future<List<Results>> queryMulti(String sql, Iterable<List> values) =>
       _conn.queryMulti(sql, values);
-  void rollback() => throw new _RollbackError();
+  void rollback() => throw _RollbackError();
 }
 
 class _RollbackError {}
@@ -223,7 +221,7 @@ class Results extends IterableBase<Row> {
 
   static Future<Results> _read(ResultsStream r) async {
     var rows = await r.toList();
-    return new Results._(rows, r.fields, r.insertId, r.affectedRows);
+    return Results._(rows, r.fields, r.insertId, r.affectedRows);
   }
 
   @override
@@ -239,8 +237,8 @@ class ReqRespConnection {
   Handler _handler;
   Completer _completer;
 
-  BufferedSocket _socket;
-  var _largePacketBuffers = new List<Buffer>();
+  final BufferedSocket _socket;
+  final _largePacketBuffers = <Buffer>[];
 
   final Buffer _headerBuffer;
   final Buffer _compressedHeaderBuffer;
@@ -256,8 +254,8 @@ class ReqRespConnection {
 
   ReqRespConnection(this._socket, this._handler, Completer handshakeCompleter,
       this._maxPacketSize)
-      : _headerBuffer = new Buffer(HEADER_SIZE),
-        _compressedHeaderBuffer = new Buffer(COMPRESSED_HEADER_SIZE),
+      : _headerBuffer = Buffer(HEADER_SIZE),
+        _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
         _completer = handshakeCompleter;
 
   void close() => _socket.close();
@@ -265,7 +263,7 @@ class ReqRespConnection {
   void handleError(Object e, {bool keepOpen = false, StackTrace st}) {
     if (_completer != null) {
       if (_completer.isCompleted) {
-        _log.warning("Ignoring error because no response", e, st);
+        _log.warning('Ignoring error because no response', e, st);
       } else {
         _completer.completeError(e, st);
       }
@@ -276,21 +274,21 @@ class ReqRespConnection {
   }
 
   Future _readPacket() async {
-    _log.fine("readPacket readyForHeader=${_readyForHeader}");
+    _log.fine('readPacket readyForHeader=${_readyForHeader}');
     if (_readyForHeader) {
       _readyForHeader = false;
       var buffer = await _socket.readBuffer(_headerBuffer);
-      _handleHeader(buffer);
+      await _handleHeader(buffer);
     }
   }
 
   Future _handleHeader(Buffer buffer) async {
-    int _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
+    var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
-    _log.fine("about to read $_dataSize bytes for packet ${_packetNumber}");
-    _dataBuffer = new Buffer(_dataSize);
-    _log.fine("buffer size=${_dataBuffer.length}");
-    if (_dataSize == 0xffffff || _largePacketBuffers.length > 0) {
+    _log.fine('about to read $_dataSize bytes for packet ${_packetNumber}');
+    _dataBuffer = Buffer(_dataSize);
+    _log.fine('buffer size=${_dataBuffer.length}');
+    if (_dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
       var buffer = await _socket.readBuffer(_dataBuffer);
       await _handleMoreData(buffer);
     } else {
@@ -305,7 +303,7 @@ class ReqRespConnection {
       var length = _largePacketBuffers.fold<int>(0, (length, buf) {
         return length + buf.length;
       });
-      var combinedBuffer = new Buffer(length);
+      var combinedBuffer = Buffer(length);
       var start = 0;
       _largePacketBuffers.forEach((aBuffer) {
         combinedBuffer.list
@@ -313,11 +311,11 @@ class ReqRespConnection {
         start += aBuffer.length;
       });
       _largePacketBuffers.clear();
-      _handleData(combinedBuffer);
+      await _handleData(combinedBuffer);
     } else {
       _readyForHeader = true;
       _headerBuffer.reset();
-      _readPacket();
+      await _readPacket();
     }
   }
 
@@ -336,30 +334,29 @@ class ReqRespConnection {
         _handler = response.nextHandler;
         await sendBuffer(_handler.createRequest());
         if (_useSSL && _handler is SSLHandler) {
-          _log.fine("Use SSL");
+          _log.fine('Use SSL');
           await _socket.startSSL();
           _handler = (_handler as SSLHandler).nextHandler;
           await sendBuffer(_handler.createRequest());
-          _log.fine("Sent buffer");
+          _log.fine('Sent buffer');
           return;
         }
       }
 
       if (response.finished) {
-        _log.fine("Finished $_handler");
+        _log.fine('Finished $_handler');
         _finishAndReuse();
       }
       if (response.hasResult) {
         if (_completer.isCompleted) {
-          _completer
-              .completeError(new StateError("Request has already completed"));
+          _completer.completeError(StateError('Request has already completed'));
         }
         _completer.complete(response.result);
       }
     } on MySqlException catch (e, st) {
       // This clause means mysql returned an error on the wire. It is not a fatal error
       // and the connection can stay open.
-      _log.fine("completing with MySqlException: $e");
+      _log.fine('completing with MySqlException: $e');
       _finishAndReuse();
       handleError(e, st: st, keepOpen: true);
     } catch (e, st) {
@@ -374,8 +371,8 @@ class ReqRespConnection {
 
   Future sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
-      throw new MySqlClientError(
-          "Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)");
+      throw MySqlClientError(
+          'Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)');
     }
     if (_useCompression) {
       _headerBuffer[0] = buffer.length & 0xFF;
@@ -390,7 +387,7 @@ class ReqRespConnection {
       _compressedHeaderBuffer.writeUint24(4 + buffer.length);
       return _socket.writeBuffer(_compressedHeaderBuffer);
     } else {
-      _log.fine("sendBuffer header");
+      _log.fine('sendBuffer header');
       return _sendBufferPart(buffer, 0);
     }
   }
@@ -402,10 +399,10 @@ class ReqRespConnection {
     _headerBuffer[1] = (len & 0xFF00) >> 8;
     _headerBuffer[2] = (len & 0xFF0000) >> 16;
     _headerBuffer[3] = ++_packetNumber;
-    _log.fine("sending header, packet $_packetNumber");
+    _log.fine('sending header, packet $_packetNumber');
     await _socket.writeBuffer(_headerBuffer);
     _log.fine(
-        "sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len");
+        'sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len');
     await _socket.writeBufferPart(buffer, start, len);
     if (len == 0xFFFFFF) {
       return _sendBufferPart(buffer, start + len);
@@ -417,34 +414,32 @@ class ReqRespConnection {
   /// This method just sends the handler data.
   Future _processHandlerNoResponse(Handler handler) {
     if (_handler != null) {
-      throw new MySqlClientError(
-          "Connection cannot process a request for $handler while a request is already in progress for $_handler");
+      throw MySqlClientError(
+          'Connection cannot process a request for $handler while a request is already in progress for $_handler');
     }
     _packetNumber = -1;
     _compressedPacketNumber = -1;
     return sendBuffer(handler.createRequest());
   }
 
-  /**
-   * Processes a handler, from sending the initial request to handling any packets returned from
-   * mysql
-   */
+  /// Processes a handler, from sending the initial request to handling any packets returned from
+  /// mysql
   Future<T> _processHandler<T>(Handler handler) async {
     if (_handler != null) {
-      throw new MySqlClientError(
-          "Connection cannot process a request for $handler while a request is already in progress for $_handler");
+      throw MySqlClientError(
+          'Connection cannot process a request for $handler while a request is already in progress for $_handler');
     }
-    _log.fine("start handler $handler");
+    _log.fine('start handler $handler');
     _packetNumber = -1;
     _compressedPacketNumber = -1;
-    final c = new Completer<T>();
+    final c = Completer<T>();
     _completer = c;
     _handler = handler;
     await sendBuffer(handler.createRequest());
     return c.future;
   }
 
-  final Pool pool = new Pool(1);
+  final Pool pool = Pool(1);
 
   /// The 3 functions below this line are the main interface to the running handlers on the connection.
   /// Each function MUST queue the handlers in the pool and MUST tidy up the connection (leave _handler null)
@@ -453,7 +448,7 @@ class ReqRespConnection {
   Future<T> processHandler<T>(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {
-        T ret = await _processHandler<T>(handler).timeout(timeout);
+        var ret = await _processHandler<T>(handler).timeout(timeout);
         return ret;
       } finally {
         _handler = null;
@@ -464,11 +459,11 @@ class ReqRespConnection {
   Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
     return pool.withResource(() async {
       try {
-        ResultsStream results =
+        var results =
             await _processHandler<ResultsStream>(handler).timeout(timeout);
         // Read all of the results. This is so we can close the handler before returning to the
         // user. Obviously this is not super efficient but it guarantees correct api use.
-        Results ret = await Results._read(results).timeout(timeout);
+        var ret = await Results._read(results).timeout(timeout);
         return ret;
       } finally {
         _handler = null;

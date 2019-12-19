@@ -19,17 +19,11 @@ class AuthHandler extends Handler {
   final int characterSet;
 //  final bool _ssl;
 
-  AuthHandler(
-      String this.username,
-      String this.password,
-      String this.db,
-      List<int> this.scrambleBuffer,
-      int this.clientFlags,
-      int this.maxPacketSize,
-      int this.characterSet,
+  AuthHandler(this.username, this.password, this.db, this.scrambleBuffer,
+      this.clientFlags, this.maxPacketSize, this.characterSet,
       {bool ssl = false})
       : /*this._ssl = false,*/
-        super(new Logger("AuthHandler"));
+        super(Logger('AuthHandler'));
 
   List<int> getHash() {
     List<int> hash;
@@ -39,11 +33,11 @@ class AuthHandler extends Handler {
       final hashedPassword = sha1.convert(utf8.encode(password)).bytes;
       final doubleHashedPassword = sha1.convert(hashedPassword).bytes;
 
-      final bytes = new List<int>.from(scrambleBuffer)
+      final bytes = List<int>.from(scrambleBuffer)
         ..addAll(doubleHashedPassword);
       final hashedSaltedPassword = sha1.convert(bytes).bytes;
 
-      hash = new List<int>(hashedSaltedPassword.length);
+      hash = List<int>(hashedSaltedPassword.length);
       for (var i = 0; i < hash.length; i++) {
         hash[i] = hashedSaltedPassword[i] ^ hashedPassword[i];
       }
@@ -51,6 +45,7 @@ class AuthHandler extends Handler {
     return hash;
   }
 
+  @override
   Buffer createRequest() {
     // calculate the mysql password hash
     var hash = getHash();
@@ -66,7 +61,7 @@ class AuthHandler extends Handler {
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
 
-    var buffer = new Buffer(size);
+    var buffer = Buffer(size);
     buffer.seekWrite(0);
     buffer.writeUint32(clientFlags);
     buffer.writeUint32(maxPacketSize);

@@ -28,45 +28,47 @@ class PrepareHandler extends Handler {
   List<Field> get parameters => _parameters;
   List<Field> get columns => _columns;
 
-  PrepareHandler(String this._sql) : super(new Logger("PrepareHandler"));
+  PrepareHandler(this._sql) : super(Logger('PrepareHandler'));
 
+  @override
   Buffer createRequest() {
     var encoded = utf8.encode(_sql);
-    var buffer = new Buffer(encoded.length + 1);
+    var buffer = Buffer(encoded.length + 1);
     buffer.writeByte(COM_STMT_PREPARE);
     buffer.writeList(encoded);
     return buffer;
   }
 
+  @override
   HandlerResponse processResponse(Buffer response) {
-    log.fine("Prepare processing response");
+    log.fine('Prepare processing response');
     var packet = checkResponse(response, true);
     if (packet == null) {
       log.fine('Not an OK packet, params to read: $_parametersToRead');
       if (_parametersToRead > -1) {
         if (response[0] == PACKET_EOF) {
-          log.fine("EOF");
+          log.fine('EOF');
           if (_parametersToRead != 0) {
             throw createMySqlProtocolError(
-                "Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)");
+                'Unexpected EOF packet; was expecting another $_parametersToRead parameter(s)');
           }
         } else {
-          var fieldPacket = new Field(response);
-          log.fine("field packet: $fieldPacket");
+          var fieldPacket = Field(response);
+          log.fine('field packet: $fieldPacket');
           _parameters[_okPacket.parameterCount - _parametersToRead] =
               fieldPacket;
         }
         _parametersToRead--;
       } else if (_columnsToRead > -1) {
         if (response[0] == PACKET_EOF) {
-          log.fine("EOF");
+          log.fine('EOF');
           if (_columnsToRead != 0) {
             throw createMySqlProtocolError(
-                "Unexpected EOF packet; was expecting another $_columnsToRead column(s)");
+                'Unexpected EOF packet; was expecting another $_columnsToRead column(s)');
           }
         } else {
-          var fieldPacket = new Field(response);
-          log.fine("field packet (column): $fieldPacket");
+          var fieldPacket = Field(response);
+          log.fine('field packet (column): $fieldPacket');
           _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
         }
         _columnsToRead--;
@@ -76,8 +78,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = new List<Field>(_parametersToRead);
-      _columns = new List<Field>(_columnsToRead);
+      _parameters = List<Field>(_parametersToRead);
+      _columns = List<Field>(_columnsToRead);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }
@@ -87,9 +89,8 @@ class PrepareHandler extends Handler {
     }
 
     if (_parametersToRead == -1 && _columnsToRead == -1) {
-      log.fine("finished");
-      return new HandlerResponse(
-          finished: true, result: new PreparedQuery(this));
+      log.fine('finished');
+      return HandlerResponse(finished: true, result: PreparedQuery(this));
     }
     return HandlerResponse.notFinished;
   }

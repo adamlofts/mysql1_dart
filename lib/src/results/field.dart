@@ -19,61 +19,61 @@ class Field {
   String get typeString {
     switch (type) {
       case 0x00:
-        return "DECIMAL";
+        return 'DECIMAL';
       case 0x01:
-        return "TINY";
+        return 'TINY';
       case 0x02:
-        return "SHORT";
+        return 'SHORT';
       case 0x03:
-        return "LONG";
+        return 'LONG';
       case 0x04:
-        return "FLOAT";
+        return 'FLOAT';
       case 0x05:
-        return "DOUBLE";
+        return 'DOUBLE';
       case 0x06:
-        return "NULL";
+        return 'NULL';
       case 0x07:
-        return "TIMESTAMP";
+        return 'TIMESTAMP';
       case 0x08:
-        return "LONGLONG";
+        return 'LONGLONG';
       case 0x09:
-        return "INT24";
+        return 'INT24';
       case 0x0a:
-        return "DATE";
+        return 'DATE';
       case 0x0b:
-        return "TIME";
+        return 'TIME';
       case 0x0c:
-        return "DATETIME";
+        return 'DATETIME';
       case 0x0d:
-        return "YEAR";
+        return 'YEAR';
       case 0x0e:
-        return "NEWDATE";
+        return 'NEWDATE';
       case 0x0f:
-        return "VARCHAR";
+        return 'VARCHAR';
       case 0x10:
-        return "BIT";
+        return 'BIT';
       case 0xf6:
-        return "NEWDECIMAL";
+        return 'NEWDECIMAL';
       case 0xf7:
-        return "ENUM";
+        return 'ENUM';
       case 0xf8:
-        return "SET";
+        return 'SET';
       case 0xf9:
-        return "TINY_BLOB";
+        return 'TINY_BLOB';
       case 0xfa:
-        return "MEDIUM_BLOB";
+        return 'MEDIUM_BLOB';
       case 0xfb:
-        return "LONG_BLOB";
+        return 'LONG_BLOB';
       case 0xfc:
-        return "BLOB";
+        return 'BLOB';
       case 0xfd:
-        return "VAR_STRING";
+        return 'VAR_STRING';
       case 0xfe:
-        return "STRING";
+        return 'STRING';
       case 0xff:
-        return "GEOMETRY";
+        return 'GEOMETRY';
       default:
-        return "UNKNOWN";
+        return 'UNKNOWN';
     }
   }
 
@@ -92,15 +92,15 @@ class Field {
       this.defaultValue);
   Field.forTests(this.type)
       : catalog = null,
-        this.db = null,
-        this.table = null,
-        this.orgTable = null,
-        this.name = null,
-        this.orgName = null,
-        this.characterSet = null,
-        this.length = null,
-        this.flags = null,
-        this.decimals = null,
+        db = null,
+        table = null,
+        orgTable = null,
+        name = null,
+        orgName = null,
+        characterSet = null,
+        length = null,
+        flags = null,
+        decimals = null,
         defaultValue = null;
 
   factory Field(Buffer buffer) {
@@ -121,13 +121,14 @@ class Field {
     if (buffer.canReadMore()) {
       defaultValue = buffer.readLengthCodedBinary();
     }
-    return new Field._internal(catalog, db, table, orgTable, name, orgName,
+    return Field._internal(catalog, db, table, orgTable, name, orgName,
         characterSet, length, type, flags, decimals, defaultValue);
   }
 
+  @override
   String toString() =>
-      "Catalog: $catalog, DB: $db, Table: $table, Org Table: $orgTable, "
-      "Name: $name, Org Name: $orgName, Character Set: $characterSet, "
-      "Length: $length, Type: $type, Flags: $flags, Decimals: $decimals, "
-      "Default Value: $defaultValue";
+      'Catalog: $catalog, DB: $db, Table: $table, Org Table: $orgTable, '
+      'Name: $name, Org Name: $orgName, Character Set: $characterSet, '
+      'Length: $length, Type: $type, Flags: $flags, Decimals: $decimals, '
+      'Default Value: $defaultValue';
 }

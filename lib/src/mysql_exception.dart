@@ -2,12 +2,9 @@ library mysql1.my_sql_exception;
 
 import 'buffer.dart';
 
-MySqlException createMySqlException(Buffer buffer) =>
-    new MySqlException._(buffer);
+MySqlException createMySqlException(Buffer buffer) => MySqlException._(buffer);
 
-/**
- * An exception which is returned by the MySQL server.
- */
+/// An exception which is returned by the MySQL server.
 class MySqlException implements Exception {
   /// The MySQL error number
   final int errorNumber;
@@ -20,9 +17,7 @@ class MySqlException implements Exception {
 
   MySqlException._raw(this.errorNumber, this.sqlState, this.message);
 
-  /**
-   * Create a [MySqlException] based on an error response from the mysql server
-   */
+  /// Create a [MySqlException] based on an error response from the mysql server
   factory MySqlException._(Buffer buffer) {
     buffer.seek(1);
     var errorNumber = buffer.readUint16();
@@ -30,8 +25,9 @@ class MySqlException implements Exception {
     var sqlState = buffer.readString(5);
     var message = buffer.readStringToEnd();
 
-    return new MySqlException._raw(errorNumber, sqlState, message);
+    return MySqlException._raw(errorNumber, sqlState, message);
   }
 
-  String toString() => "Error $errorNumber ($sqlState): $message";
+  @override
+  String toString() => 'Error $errorNumber ($sqlState): $message';
 }
