@@ -5,4 +5,3 @@ port=3306
 db=sqljockeytest
 #defaults to localhost
 host=localhost
-password=test
