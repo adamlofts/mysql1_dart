@@ -10,8 +10,7 @@ typedef DoneHandler = Function();
 typedef DataReadyHandler = Function();
 typedef ClosedHandler = Function();
 
-typedef Future<RawSocket> SocketFactory(
-    String host, int port, Duration timeout);
+typedef SocketFactory = Function(String host, int port, Duration timeout);
 
 class BufferedSocket {
   final Logger log;
