@@ -183,7 +183,7 @@ class MySqlConnection {
     return ret;
   }
 
-  Future transaction(Future queryBlock(TransactionContext connection)) async {
+  Future transaction(Function queryBlock) async {
     await query('start transaction');
     try {
       await queryBlock(TransactionContext._(this));
