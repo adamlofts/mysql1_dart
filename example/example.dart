@@ -18,20 +18,18 @@ Future main() async {
   print('Inserted row id=${result.insertId}');
 
   // Query the database using a parameterized query
-  var results = await conn
-      .query('select name, email, age from users where id = ?', [result.insertId]);
+  var results = await conn.query(
+      'select name, email, age from users where id = ?', [result.insertId]);
   for (var row in results) {
     print('Name: ${row[0]}, email: ${row[1]} age: ${row[2]}');
   }
 
   // Update some data
-  await conn.query(
-      'update users set age=? where name=?',
-      [26, 'Bob']);
+  await conn.query('update users set age=? where name=?', [26, 'Bob']);
 
   // Query again database using a parameterized query
-  var results2 = await conn
-      .query('select name, email, age from users where id = ?', [result.insertId]);
+  var results2 = await conn.query(
+      'select name, email, age from users where id = ?', [result.insertId]);
   for (var row in results2) {
     print('Name: ${row[0]}, email: ${row[1]} age: ${row[2]}');
   }
