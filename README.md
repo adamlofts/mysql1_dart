@@ -58,3 +58,11 @@ var results = await query.queryMulti(
     ['Bill', 'bill@bill.com', 26],
     ['Joe', 'joe@joe.com', 37]]);
 ```
+
+Update some data:
+
+```dart
+await conn.query(
+    'update users set age=? where name=?',
+    [26, 'Bob']);
+```
