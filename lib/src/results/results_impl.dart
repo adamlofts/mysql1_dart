@@ -15,8 +15,8 @@ class ResultsStream extends StreamView<ResultRow> {
   factory ResultsStream(int insertId, int affectedRows, List<Field> fields,
       {Stream<ResultRow> stream}) {
     if (stream != null) {
-      var newStream = stream.transform(
-          StreamTransformer.fromHandlers(handleDone: (EventSink<ResultRow> sink) {
+      var newStream = stream.transform(StreamTransformer.fromHandlers(
+          handleDone: (EventSink<ResultRow> sink) {
         sink.close();
       }));
       return ResultsStream._fromStream(
@@ -28,8 +28,8 @@ class ResultsStream extends StreamView<ResultRow> {
     }
   }
 
-  ResultsStream._fromStream(
-      this.insertId, this.affectedRows, List<Field> fields, Stream<ResultRow> stream)
+  ResultsStream._fromStream(this.insertId, this.affectedRows,
+      List<Field> fields, Stream<ResultRow> stream)
       : fields = UnmodifiableListView(fields),
         super(stream);
 
