@@ -1,5 +1,3 @@
-library mysql1.row;
-
 import 'dart:collection';
 
 import 'field.dart';
@@ -9,7 +7,7 @@ import '../buffer.dart';
 ///
 /// When retrieving a field by name, only fields which are valid Dart
 /// identifiers, and which aren't part of the List object, can be used.
-abstract class Row extends ListBase<dynamic> {
+abstract class ResultRow extends ListBase<dynamic> {
   /// Values as List
   List<dynamic> values;
 

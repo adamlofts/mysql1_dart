@@ -211,11 +211,11 @@ class TransactionContext {
 class _RollbackError {}
 
 /// An iterable of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
-class Results extends IterableBase<Row> {
+class Results extends IterableBase<ResultRow> {
   final int insertId;
   final int affectedRows;
   final List<Field> fields;
-  final List<Row> _rows;
+  final List<ResultRow> _rows;
 
   Results._(this._rows, this.fields, this.insertId, this.affectedRows);
 
@@ -225,7 +225,7 @@ class Results extends IterableBase<Row> {
   }
 
   @override
-  Iterator<Row> get iterator => _rows.iterator;
+  Iterator<ResultRow> get iterator => _rows.iterator;
 }
 
 class ReqRespConnection {

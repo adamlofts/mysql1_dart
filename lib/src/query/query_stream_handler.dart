@@ -31,7 +31,7 @@ class QueryStreamHandler extends Handler {
   ResultSetHeaderPacket _resultSetHeaderPacket;
   final List<Field> fieldPackets = <Field>[];
 
-  StreamController<Row> _streamController;
+  StreamController<ResultRow> _streamController;
 
   QueryStreamHandler(this._sql) : super(Logger('QueryStreamHandler'));
 
@@ -76,7 +76,7 @@ class QueryStreamHandler extends Handler {
 
   HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
-    _streamController = StreamController<Row>(onCancel: () {
+    _streamController = StreamController<ResultRow>(onCancel: () {
       _streamController.close();
     });
     return HandlerResponse(

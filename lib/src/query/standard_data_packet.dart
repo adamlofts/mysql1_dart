@@ -12,7 +12,7 @@ import '../buffer.dart';
 import '../results/row.dart';
 import '../results/field.dart';
 
-class StandardDataPacket extends Row {
+class StandardDataPacket extends ResultRow {
   final Logger log = Logger('StandardDataPacket');
 
   /// Values as Map

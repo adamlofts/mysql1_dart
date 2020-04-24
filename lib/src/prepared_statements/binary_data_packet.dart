@@ -10,7 +10,7 @@ import '../buffer.dart';
 import '../results/field.dart';
 import '../results/row.dart';
 
-class BinaryDataPacket extends Row {
+class BinaryDataPacket extends ResultRow {
   final Logger log = Logger('BinaryDataPacket');
 
   BinaryDataPacket.forTests(List _values) {

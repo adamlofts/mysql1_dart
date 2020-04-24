@@ -32,7 +32,7 @@ class ExecuteQueryHandler extends Handler {
   ResultSetHeaderPacket _resultSetHeaderPacket;
   List<Field> fieldPackets;
 //  Map<Symbol, int> _fieldIndex;
-  StreamController<Row> _streamController;
+  StreamController<ResultRow> _streamController;
 
   final PreparedQuery _preparedQuery;
   final List _values;
@@ -374,7 +374,7 @@ class ExecuteQueryHandler extends Handler {
 
   HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
-    _streamController = StreamController<Row>();
+    _streamController = StreamController<ResultRow>();
     _streamController.onCancel = () {
       _cancelled = true;
     };

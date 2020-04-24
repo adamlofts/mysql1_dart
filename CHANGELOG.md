@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.18.0
+--
+
+* Breaking: Rename `Row` to `ResultRow` so name doesn't conflict with `Row` from Flutter. (#10)
+
 v0.17.1
 --
 
