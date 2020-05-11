@@ -25,7 +25,6 @@ class StandardDataPacket extends ResultRow {
       var field = fieldPackets[i];
 
       log.fine('$i: ${field.name}');
-
       values[i] = readField(field, buffer);
       fields[field.name] = values[i];
     }
@@ -84,6 +83,9 @@ class StandardDataPacket extends ResultRow {
         return int.parse(s);
         break;
       case  FIELD_TYPE_JSON:
+        var s = utf8.decode(list);
+        return json.encode(s);
+        break;
       case FIELD_TYPE_STRING: // char/binary/enum/set
       case FIELD_TYPE_VAR_STRING: // varchar/varbinary
         var s = utf8.decode(list);
