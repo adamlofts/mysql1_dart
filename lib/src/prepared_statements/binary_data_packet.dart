@@ -202,6 +202,14 @@ class BinaryDataPacket extends ResultRow {
         //TODO
         var value = buffer.readList(len);
         return value;
+
+      //todo JSON
+      case FIELD_TYPE_JSON:
+        log.fine('Field type not implemented yet ${field.type}');
+        var value = buffer.readLengthCodedString();
+        log.fine('Value: ${value}');
+        return value;
+        break;
       case FIELD_TYPE_NEWDATE:
       case FIELD_TYPE_DECIMAL:
       //TODO pre 5.0.3 will return old decimal values

@@ -95,6 +95,9 @@ class StandardDataPacket extends ResultRow {
         var s = utf8.decode(list);
         return s;
         break;
+      case  FIELD_TYPE_JSON:
+        var s = utf8.decode(list);
+        return s;
       default:
         return null;
     }
