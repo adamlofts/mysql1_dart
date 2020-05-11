@@ -82,7 +82,7 @@ class StandardDataPacket extends ResultRow {
         var s = utf8.decode(list);
         return int.parse(s);
         break;
-      case  FIELD_TYPE_JSON:
+      case FIELD_TYPE_JSON:
         var s = utf8.decode(list);
         return json.encode(s);
         break;

@@ -101,7 +101,7 @@ const int FIELD_TYPE_NEWDATE = 0x0e;
 const int FIELD_TYPE_VARCHAR = 0x0f;
 const int FIELD_TYPE_BIT = 0x10;
 
-const int FIELD_TYPE_JSON= 0xf5;
+const int FIELD_TYPE_JSON = 0xf5;
 const int FIELD_TYPE_NEWDECIMAL = 0xf6;
 const int FIELD_TYPE_ENUM = 0xf7;
 const int FIELD_TYPE_SET = 0xf8;
@@ -112,7 +112,6 @@ const int FIELD_TYPE_BLOB = 0xfc;
 const int FIELD_TYPE_VAR_STRING = 0xfd;
 const int FIELD_TYPE_STRING = 0xfe;
 const int FIELD_TYPE_GEOMETRY = 0xff;
-
 
 const int NOT_NULL_FLAG = 0x0001;
 const int PRI_KEY_FLAG = 0x0002;
