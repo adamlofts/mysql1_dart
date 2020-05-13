@@ -102,15 +102,17 @@ END
         'Length of parameters (1) does not match parameter count in query (2)');
   });
 
-
   test('json type test', () async {
     await conn.query('DROP TABLE IF EXISTS tjson');
     await conn.query('CREATE TABLE tjson(a int, b json NULL)');
     MySqlClientError e;
     try {
-      await conn.query('INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3,'{"test":"test"}']);
-     var raw = await conn.query('SELECT * FROM tjson');
-     raw.forEach((element) {print(element.fields);});
+      await conn.query(
+          'INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3, '{"test":"test"}']);
+      var raw = await conn.query('SELECT * FROM tjson');
+      raw.forEach((element) {
+        print(element.fields);
+      });
     } on MySqlClientError catch (e1) {
       e = e1;
     }
