@@ -107,8 +107,6 @@ END
     await conn.query('DROP TABLE IF EXISTS tjson');
     await conn.query('CREATE TABLE tjson(a int, b json NULL)');
     MySqlClientError e;
-    var json ={'test':'test'};
-//    print(json.toString());
     try {
       await conn.query('INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3,'{"test":"test"}']);
       var raw = await conn.query('SELECT * FROM tjson');
@@ -117,7 +115,7 @@ END
       e = e1;
      print(e1);
     }
-//    expect(e,
-//        'json type  errors');
+    expect(e,
+        'json type  errors');
   });
 }

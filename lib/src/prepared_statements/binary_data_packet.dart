@@ -202,7 +202,6 @@ class BinaryDataPacket extends ResultRow {
         //TODO
         var value = buffer.readList(len);
         return value;
-      //todo JSON
       case FIELD_TYPE_JSON:
         log.fine('Field type  ${field.type}');
         var value = buffer.readLengthCodedString();
