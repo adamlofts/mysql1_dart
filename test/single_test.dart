@@ -109,10 +109,8 @@ END
     try {
       await conn.query(
           'INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3, '{"test":"test"}']);
-      var raw = await conn.query('SELECT * FROM tjson');
-      raw.forEach((element) {
-        print(element.fields);
-      });
+      var result = await conn.query('SELECT * FROM tjson');
+      print(result.first.fields);
     } on MySqlClientError catch (e1) {
       e = e1;
     }
