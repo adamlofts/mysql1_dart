@@ -148,7 +148,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -164,7 +164,7 @@ void main() {
           false);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
 
     test('should read plugin name with null', () {
@@ -182,7 +182,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -198,7 +198,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
 
     test('should read buffer without scramble data', () {
@@ -232,7 +232,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
 
     test('should read buffer with short scramble data length', () {
@@ -250,7 +250,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrst';
       var scrambleLength = 5;
-      var pluginName = 'plugin name';
+      var pluginName = 'mysql_native_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
@@ -266,7 +266,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
     });
   });
 
@@ -359,7 +359,7 @@ void main() {
           serverCapabilities2,
           scrambleLength,
           scrambleBuffer2,
-          HandshakeHandler.MYSQL_NATIVE_PASSWORD,
+          'mysql_native_password',
           true);
       var response = handler.processResponse(responseBuffer);
 
