@@ -63,15 +63,13 @@ class AuthHandler extends Handler {
         super(Logger('AuthHandler'));
 
   List<int> getHash() {
-    print("$authPlugin");
     List<int> hash;
     if (password == null) {
       hash = <int>[];
-    } else if (authPlugin == AuthPlugin.mysqlNativePassword) {
-      hash = _makeMysqlNativePassword(scrambleBuffer, password);
     } else if (authPlugin == AuthPlugin.cachingSha2Password) {
       hash = _makeCachingSha2Password(scrambleBuffer, password);
-      print(hash);
+    } else {
+      hash = _makeMysqlNativePassword(scrambleBuffer, password);
     }
     return hash;
   }
@@ -82,6 +80,7 @@ class AuthHandler extends Handler {
     var hash = getHash();
 
     var encodedUsername = username == null ? <int>[] : utf8.encode(username);
+    var encodedAuth;
     List<int> encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
@@ -90,6 +89,10 @@ class AuthHandler extends Handler {
       encodedDb = utf8.encode(db);
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
+    }
+    if (clientFlags & CLIENT_PLUGIN_AUTH > 0 && authPlugin != null) {
+      encodedAuth = utf8.encode(authPluginToString(authPlugin));
+      size += encodedAuth.length + 1;
     }
 
     var buffer = Buffer(size);
@@ -104,6 +107,9 @@ class AuthHandler extends Handler {
 
     if (db != null) {
       buffer.writeNullTerminatedList(encodedDb);
+    }
+    if (encodedAuth != null) {
+      buffer.writeNullTerminatedList(encodedAuth);
     }
 
     return buffer;

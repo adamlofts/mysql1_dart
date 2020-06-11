@@ -28,6 +28,17 @@ AuthPlugin authPluginFromString(String v) {
   }
 }
 
+String authPluginToString(AuthPlugin v) {
+  switch (v) {
+    case AuthPlugin.mysqlNativePassword:
+      return 'mysql_native_password';
+    case AuthPlugin.cachingSha2Password:
+      return 'caching_sha2_password';
+    default:
+      return '';
+  }
+}
+
 class HandshakeHandler extends Handler {
   final String _user;
   final String _password;
@@ -133,8 +144,11 @@ class HandshakeHandler extends Handler {
         CLIENT_LONG_FLAG |
         CLIENT_TRANSACTIONS |
         CLIENT_SECURE_CONNECTION |
-        CLIENT_MULTI_RESULTS |
-    CLIENT_PLUGIN_AUTH;
+        CLIENT_MULTI_RESULTS;
+
+    if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
+      clientFlags |= CLIENT_PLUGIN_AUTH;
+    }
 
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout('Compression enabled');

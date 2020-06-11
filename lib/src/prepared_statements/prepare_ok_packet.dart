@@ -19,7 +19,11 @@ class PrepareOkPacket {
     _columnCount = buffer.readUint16();
     _parameterCount = buffer.readUint16();
     buffer.skip(1);
-    _warningCount = buffer.readUint16();
+    if (buffer.canReadMore()) {
+      _warningCount = buffer.readUint16();
+    } else {
+      _warningCount = 0;
+    }
   }
 
   @override

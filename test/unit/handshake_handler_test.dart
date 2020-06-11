@@ -216,7 +216,7 @@ void main() {
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
-      var pluginName = 'plugin name';
+      var pluginName = 'caching_sha2_password';
       var responseBuffer = _createHandshake(
           10,
           serverVersion,
