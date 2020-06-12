@@ -12,9 +12,8 @@ dart_task:
 - dartfmt
 
 before_install:
-  - docker pull carlad/sinatra
   - docker run -d -p 127.0.0.1:3306:3306 mysql:5 -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_ROOT_PASSWORD=$TEST_PASSWORD
-  - docker ps -a
+  - docker run jwilder/dockerize:0.6.1 dockerize -timeout=160s -wait=tcp://127.0.0.1:3306
 
 env:
   jobs:
