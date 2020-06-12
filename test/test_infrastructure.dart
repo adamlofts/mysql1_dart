@@ -18,7 +18,8 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
 
   var s = ConnectionSettings(
     user: options.getString('user'),
-    password: options.getString('password', password?.isNotEmpty == true ? password : null),
+    password: options.getString(
+        'password', password?.isNotEmpty == true ? password : null),
     port: options.getInt('port', 3306),
     db: options.getString('db'),
     host: options.getString('host', 'localhost'),
