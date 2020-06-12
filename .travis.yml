@@ -13,7 +13,7 @@ dart_task:
 
 before_install:
   - docker pull carlad/sinatra
-  - docker run -d -p 127.0.0.1:3306:3306 mysql:5
+  - docker run -d -p 127.0.0.1:3306:3306 mysql:5 -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_ROOT_PASSWORD=$TEST_PASSWORD
   - docker ps -a
 
 env:
