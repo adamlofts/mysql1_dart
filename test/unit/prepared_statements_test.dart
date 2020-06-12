@@ -190,14 +190,31 @@ void main() {
     });
 
     //Test
-//    test('can read JSON',(){
-//      var dataPacket = BinaryDataPacket.forTests(null);
-//      var buffer = Buffer.fromList([15,0x7b, 0x22, 0x74, 0x65, 0x73, 0x74, 0x22, 0x3a, 0x22, 0x74, 0x65, 0x73, 0x74, 0x22, 0x7d]);
-//      var json = {'test':'test'};
-//      var field = Field.forTests(FIELD_TYPE_JSON);
-//      var value = dataPacket.readField(field,buffer);
-//      expect(value.toString(), equals(jsonEncode(json)));
-//    });
+    test('can read JSON', () {
+      var dataPacket = BinaryDataPacket.forTests(null);
+      var buffer = Buffer.fromList([
+        15,
+        0x7b,
+        0x22,
+        0x74,
+        0x65,
+        0x73,
+        0x74,
+        0x22,
+        0x3a,
+        0x22,
+        0x74,
+        0x65,
+        0x73,
+        0x74,
+        0x22,
+        0x7d
+      ]);
+      var json = {'test': 'test'};
+      var field = Field.forTests(FIELD_TYPE_JSON);
+      var value = dataPacket.readField(field, buffer);
+      expect(value.toString(), equals(jsonEncode(json)));
+    });
     //test FLOAT
     //test DOUBLE
     test('can read BITs', () {
