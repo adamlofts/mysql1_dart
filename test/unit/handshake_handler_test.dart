@@ -232,7 +232,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.authPlugin, equals(AuthPlugin.mysqlNativePassword));
+      expect(handler.authPlugin, equals(AuthPlugin.cachingSha2Password));
     });
 
     test('should read buffer with short scramble data length', () {

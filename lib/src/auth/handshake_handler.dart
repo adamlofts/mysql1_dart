@@ -23,8 +23,7 @@ AuthPlugin authPluginFromString(String v) {
     case 'caching_sha2_password':
       return AuthPlugin.cachingSha2Password;
     default:
-      throw MySqlClientError(
-          'Authentication plugin not supported: $v');
+      throw MySqlClientError('Authentication plugin not supported: $v');
   }
 }
 

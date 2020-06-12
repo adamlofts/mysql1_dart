@@ -36,8 +36,7 @@ List<int> _makeCachingSha2Password(List<int> scrambler, String password) {
   // SHA256(SHA256(password))
   final shaShaPwd = sha256.convert(shaPwd).bytes;
   // SHA256(SHA256(SHA256(password)), scramble)
-  final res =
-      sha256.convert(List.from(shaShaPwd)..addAll(scrambler)).bytes;
+  final res = sha256.convert(List.from(shaShaPwd)..addAll(scrambler)).bytes;
   // XOR(SHA256(password), SHA256(SHA256(SHA256(password)), scramble))
   for (var i = 0; i < res.length; i++) {
     res[i] ^= shaPwd[i];
