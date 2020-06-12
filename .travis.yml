@@ -11,10 +11,15 @@ dart_task:
 - dartanalyzer: --fatal-warnings --fatal-infos lib
 - dartfmt
 
+before_install:
+  - docker pull carlad/sinatra
+  - docker run -d -p 127.0.0.1:3006:3306 mysql:5
+  - docker ps -a
+
 env:
   jobs:
     - TEST_PASSWORD: ""
     - TEST_PASSWORD: "secure"
 
 services:
-- mysql
+- docker
