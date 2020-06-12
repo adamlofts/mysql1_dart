@@ -13,8 +13,8 @@ dart_task:
 
 env:
   jobs:
-    - PASSWORD: ""
-    - PASSWORD: "secure"
+    - TEST_PASSWORD: ""
+    - TEST_PASSWORD: "secure"
 
 services:
 - mysql

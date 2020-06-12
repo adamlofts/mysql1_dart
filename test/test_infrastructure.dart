@@ -1,5 +1,7 @@
 library mysql1.test.test_infrastructure;
 
+import 'dart:io';
+
 import 'package:options_file/options_file.dart';
 import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
@@ -12,9 +14,11 @@ MySqlConnection _conn;
 void initializeTest([String tableName, String createSql, String insertSql]) {
   var options = OptionsFile('connection.options');
 
+  final password = Platform.environment['TEST_PASSWORD'];
+
   var s = ConnectionSettings(
     user: options.getString('user'),
-    password: options.getString('password', null),
+    password: options.getString('password', password?.isNotEmpty == true ? password : null),
     port: options.getInt('port', 3306),
     db: options.getString('db'),
     host: options.getString('host', 'localhost'),
