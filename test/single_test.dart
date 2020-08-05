@@ -106,6 +106,7 @@ END
     await conn.query(
         'INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3, '{"test":"test"}']);
     var result = await conn.query('SELECT * FROM tjson');
-    expect(result.first, {"test": "test"});
+    expect(result.first.first, 3);
+    expect(result.first.last, '{"test": "test"}');
   });
 }

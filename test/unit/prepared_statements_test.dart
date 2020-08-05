@@ -1,7 +1,6 @@
 library mysql1.prepared_statements_test;
 
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:test/test.dart';
 
