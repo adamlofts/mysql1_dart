@@ -88,7 +88,6 @@ class ExecuteQueryHandler extends Handler {
     if (value is Blob) {
       return _prepareBlob(value);
     }
-
     return _prepareString(value);
   }
 
@@ -135,6 +134,7 @@ class ExecuteQueryHandler extends Handler {
     if (value is Blob) {
       return FIELD_TYPE_BLOB;
     }
+
     return FIELD_TYPE_VARCHAR;
   }
 

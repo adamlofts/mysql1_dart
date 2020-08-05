@@ -52,6 +52,8 @@ class Field {
         return 'VARCHAR';
       case 0x10:
         return 'BIT';
+      case 0xf5:
+        return 'JSON';
       case 0xf6:
         return 'NEWDECIMAL';
       case 0xf7:
