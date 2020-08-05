@@ -104,9 +104,13 @@ END
   test('json type test', () async {
     await conn.query('DROP TABLE IF EXISTS tjson');
     await conn.query('CREATE TABLE tjson(a int, b json NULL)');
-    await conn.query(
-        'INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3, '{"test":"test"}']);
+    await conn.query('INSERT INTO `tjson` (a, b) VALUES (?, ?)', [
+      3,
+      json.encode({'key': 'val'})
+    ]);
     var result = await conn.query('SELECT * FROM tjson');
-    print(result.first.fields);
+    expect(result.first.first, 3);
+    final obj = json.decode(result.first.last);
+    expect(obj, {'key': 'val'});
   });
 }
