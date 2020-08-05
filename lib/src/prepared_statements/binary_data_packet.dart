@@ -1,5 +1,7 @@
 library mysql1.binary_data_packet;
 
+import 'dart:convert';
+
 import 'package:logging/logging.dart';
 
 import '../constants.dart';

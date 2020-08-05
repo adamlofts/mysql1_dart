@@ -84,7 +84,7 @@ class StandardDataPacket extends ResultRow {
         break;
       case FIELD_TYPE_JSON:
         var s = utf8.decode(list);
-        return json.encode(s);
+        return s;
         break;
       case FIELD_TYPE_STRING: // char/binary/enum/set
       case FIELD_TYPE_VAR_STRING: // varchar/varbinary

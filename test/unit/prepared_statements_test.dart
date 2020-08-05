@@ -209,10 +209,10 @@ void main() {
         0x22,
         0x7d
       ]);
-      var json = {'test': 'test'};
+      var j = {'test': 'test'};
       var field = Field.forTests(FIELD_TYPE_JSON);
       var value = dataPacket.readField(field, buffer);
-      expect(value.toString(), equals(jsonEncode(json)));
+      expect(value, equals(json.encode(j)));
     });
     //test FLOAT
     //test DOUBLE
