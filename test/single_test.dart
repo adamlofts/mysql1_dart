@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:logging/logging.dart';
 import 'package:mysql1/mysql1.dart';
@@ -107,6 +106,6 @@ END
     await conn.query(
         'INSERT INTO `tjson` (a, b) VALUES (?, ?)', [3, '{"test":"test"}']);
     var result = await conn.query('SELECT * FROM tjson');
-    print(result.first.fields);
+    expect(result.first, {"test": "test"});
   });
 }
