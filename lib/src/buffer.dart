@@ -136,7 +136,7 @@ class Buffer {
 
   /// Reads a string of the given [length] from the buffer.
   String readString(int length) {
-    var s = utf8.decode(_list.sublist(_readPos, _readPos + length));
+    var s = utf8.decode(_list.sublist(_readPos, _readPos + length), allowMalformed: true);
     _readPos += length;
     return s;
   }
