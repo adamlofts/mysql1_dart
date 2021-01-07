@@ -38,6 +38,7 @@ class ConnectionSettings {
   bool useSSL;
   int maxPacketSize;
   int characterSet;
+  bool createDbIfNotExists;
 
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
@@ -52,7 +53,8 @@ class ConnectionSettings {
       this.useSSL = false,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
-      this.characterSet = CharacterSet.UTF8MB4});
+      this.characterSet = CharacterSet.UTF8MB4,
+      this.createDbIfNotExists = true});
 
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
@@ -134,13 +136,18 @@ class MySqlConnection {
     });
 
     Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
-        c.characterSet, c.db, c.useCompression, c.useSSL);
+        c.characterSet, null, c.useCompression, c.useSSL);
     handshakeCompleter = Completer<void>();
     conn =
         ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
 
     await handshakeCompleter.future.timeout(c.timeout);
-    return MySqlConnection(c.timeout, conn);
+    var connection = MySqlConnection(c.timeout, conn);
+    if (c.createDbIfNotExists) {
+      await connection.query('CREATE DATABASE IF NOT EXISTS ${c.db};');
+    }
+    await connection.query('USE ${c.db};');
+    return connection;
   }
 
   /// Run [sql] query on the database using [values] as positional sql parameters.
