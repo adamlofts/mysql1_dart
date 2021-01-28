@@ -91,7 +91,10 @@ class StandardDataPacket extends ResultRow {
         var s = utf8.decode(list);
         return s;
         break;
-      case FIELD_TYPE_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
+      case FIELD_TYPE_BLOB:
+      case FIELD_TYPE_TINY_BLOB:
+      case FIELD_TYPE_MEDIUM_BLOB:
+      case FIELD_TYPE_LONG_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
         return Blob.fromBytes(list);
         break;
       case FIELD_TYPE_GEOMETRY: // geometry
