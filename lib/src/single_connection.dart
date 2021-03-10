@@ -106,7 +106,8 @@ class MySqlConnection {
   /// socket.
   /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
   /// server.
-  static Future<MySqlConnection> connect(ConnectionSettings c) async {
+  static Future<MySqlConnection> connect(ConnectionSettings c,
+      {bool isUnixSocket = false}) async {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
@@ -116,7 +117,7 @@ class MySqlConnection {
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
     var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
-        onDataReady: () {
+        isUnixSocket: isUnixSocket, onDataReady: () {
       conn?._readPacket();
     }, onDone: () {
       _log.fine('done');

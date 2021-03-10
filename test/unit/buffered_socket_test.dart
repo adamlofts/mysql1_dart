@@ -69,7 +69,7 @@ void main() {
 
     setUp(() {
       var streamController = StreamController<RawSocketEvent>();
-      factory = (host, port, timeout) {
+      factory = (host, port, timeout, {bool isUnixSocket}) {
         rawSocket = MockSocket(streamController);
         return Future.value(rawSocket);
       };
