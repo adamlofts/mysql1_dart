@@ -7,17 +7,17 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 MySqlConnection get conn => _conn;
-MySqlConnection _conn;
+late MySqlConnection _conn;
 
-void initializeTest([String tableName, String createSql, String insertSql]) {
+void initializeTest([String? tableName, String? createSql, String? insertSql]) {
   var options = OptionsFile('connection.options');
 
   var s = ConnectionSettings(
     user: options.getString('user'),
     password: options.getString('password', null),
-    port: options.getInt('port', 3306),
+    port: options.getInt('port', 3306)!,
     db: options.getString('db'),
-    host: options.getString('host', 'localhost'),
+    host: options.getString('host', 'localhost')!,
   );
 
   setUp(() async {
@@ -36,6 +36,6 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
   });
 
   tearDown(() async {
-    await _conn?.close();
+    await _conn.close();
   });
 }

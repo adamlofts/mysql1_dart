@@ -13,7 +13,7 @@ import '../results/row.dart';
 class BinaryDataPacket extends ResultRow {
   final Logger log = Logger('BinaryDataPacket');
 
-  BinaryDataPacket.forTests(List _values) {
+  BinaryDataPacket.forTests(List? _values) {
     values = _values;
   }
 
@@ -22,39 +22,43 @@ class BinaryDataPacket extends ResultRow {
     var nulls =
         buffer.readList(((fieldPackets.length + 7 + 2) / 8).floor().toInt());
     log.fine('Nulls: $nulls');
-    var nullMap = List<bool>.filled(fieldPackets.length, null);
+
     var shift = 2;
     var byte = 0;
-    for (var i = 0; i < fieldPackets.length; i++) {
+    var nullMap = List<bool>.generate(fieldPackets.length, (index) {
       var mask = 1 << shift;
-      nullMap[i] = (nulls[byte] & mask) != 0;
+      final value = (nulls[byte] & mask) != 0;
       shift++;
       if (shift > 7) {
         shift = 0;
         byte++;
       }
-    }
+      return value;
+    });
 
     values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       log.fine('$i: ${fieldPackets[i].name}');
       if (nullMap[i]) {
         log.fine('Value: null');
-        values[i] = null;
+        values![i] = null;
         continue;
       }
       var field = fieldPackets[i];
-      values[i] = readField(field, buffer);
-      fields[field.name] = values[i];
+      values![i] = readField(field, buffer);
+      fields[field.name!] = values![i];
     }
   }
 
   @override
-  Object readField(Field field, Buffer buffer) {
+  Object? readField(Field field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine('BLOB');
         var len = buffer.readLengthCodedBinary();
+        if (len == null) {
+          return Blob.fromBytes([]);
+        }
         var value = Blob.fromBytes(buffer.readList(len));
         log.fine('Value: $value');
         return value;
@@ -207,7 +211,6 @@ class BinaryDataPacket extends ResultRow {
         var value = buffer.readLengthCodedString();
         log.fine('Value: $value');
         return value;
-        break;
       case FIELD_TYPE_NEWDATE:
       case FIELD_TYPE_DECIMAL:
       //TODO pre 5.0.3 will return old decimal values

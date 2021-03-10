@@ -22,7 +22,7 @@ const _NO_RESULT = _NoResult();
 /// next packet from the server, and [result] is [_NO_RESULT].
 class HandlerResponse {
   final bool finished;
-  final Handler nextHandler;
+  final Handler? nextHandler;
   final dynamic result;
 
   bool get hasResult => result != _NO_RESULT;
@@ -61,7 +61,7 @@ abstract class Handler {
   /// a [MySqlException] if it was an Error packet, or returns [:null:]
   /// if the packet has not been handled by this method.
   ///
-  dynamic checkResponse(Buffer response,
+  dynamic? checkResponse(Buffer response,
       [bool prepareStmt = false, bool isHandlingRows = false]) {
     if (response[0] == PACKET_OK && !isHandlingRows) {
       if (prepareStmt) {
