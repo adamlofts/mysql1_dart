@@ -10,7 +10,12 @@ typedef DoneHandler = Function();
 typedef DataReadyHandler = Function();
 typedef ClosedHandler = Function();
 
-typedef SocketFactory = Function(String host, int port, Duration timeout);
+typedef SocketFactory = Function(
+  String host,
+  int port,
+  Duration timeout, {
+  bool isUnixSocket,
+});
 
 class BufferedSocket {
   final Logger log;
@@ -58,13 +63,27 @@ class BufferedSocket {
   }
 
   static Future<RawSocket> defaultSocketFactory(
-          String host, int port, Duration timeout) =>
-      RawSocket.connect(host, port, timeout: timeout);
+    String host,
+    int port,
+    Duration timeout, {
+    bool isUnixSocket,
+  }) {
+    if (isUnixSocket) {
+      return RawSocket.connect(
+        InternetAddress(host, type: InternetAddressType.unix),
+        port,
+        timeout: timeout,
+      );
+    } else {
+      return RawSocket.connect(host, port, timeout: timeout);
+    }
+  }
 
   static Future<BufferedSocket> connect(
     String host,
     int port,
     Duration timeout, {
+    bool isUnixSocket,
     DataReadyHandler onDataReady,
     DoneHandler onDone,
     ErrorHandler onError,
@@ -72,8 +91,9 @@ class BufferedSocket {
     SocketFactory socketFactory = defaultSocketFactory,
   }) async {
     RawSocket socket;
-    socket = await socketFactory(host, port, timeout);
-    socket.setOption(SocketOption.tcpNoDelay, true);
+    socket =
+        await socketFactory(host, port, timeout, isUnixSocket: isUnixSocket);
+    if (!isUnixSocket) socket.setOption(SocketOption.tcpNoDelay, true);
     return BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }
 

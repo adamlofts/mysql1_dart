@@ -106,7 +106,8 @@ class MySqlConnection {
   /// socket.
   /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
   /// server.
-  static Future<MySqlConnection> connect(ConnectionSettings c) async {
+  static Future<MySqlConnection> connect(ConnectionSettings c,
+      {bool isUnixSocket = false}) async {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
@@ -115,23 +116,31 @@ class MySqlConnection {
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
-    var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
-        onDataReady: () {
-      conn?._readPacket();
-    }, onDone: () {
-      _log.fine('done');
-    }, onError: (Object error) {
-      _log.warning('socket error: $error');
+    var socket = await BufferedSocket.connect(
+      c.host,
+      c.port,
+      c.timeout,
+      isUnixSocket: isUnixSocket,
+      onDataReady: () {
+        conn?._readPacket();
+      },
+      onDone: () {
+        _log.fine('done');
+      },
+      onError: (Object error) {
+        _log.warning('socket error: $error');
 
-      // If conn has not been connected there was a connection error.
-      if (conn == null) {
-        handshakeCompleter.completeError(error);
-      } else {
-        conn.handleError(error);
-      }
-    }, onClosed: () {
-      conn.handleError(SocketException.closed());
-    });
+        // If conn has not been connected there was a connection error.
+        if (conn == null) {
+          handshakeCompleter.completeError(error);
+        } else {
+          conn.handleError(error);
+        }
+      },
+      onClosed: () {
+        conn.handleError(SocketException.closed());
+      },
+    );
 
     Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
         c.characterSet, c.db, c.useCompression, c.useSSL);
