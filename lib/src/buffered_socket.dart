@@ -93,9 +93,9 @@ class BufferedSocket {
     RawSocket socket;
     socket =
         await socketFactory(host, port, timeout, isUnixSocket: isUnixSocket);
-    //if (!isUnixSocket) {
-    socket.setOption(SocketOption.tcpNoDelay, true);
-    //}
+π    if (!isUnixSocket) {
+      socket.setOption(SocketOption.tcpNoDelay, true);
+    }
     return BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }
 
