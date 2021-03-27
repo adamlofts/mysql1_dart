@@ -1,7 +1,8 @@
 # create connection.options to define how the integration tests connect
 user=root
+password=root
 #defaults to 3306
-port=3306
+port=8889
 db=sqljockeytest
 #defaults to localhost
 host=localhost

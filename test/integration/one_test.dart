@@ -9,7 +9,7 @@ import 'dart:typed_data';
 
 final dt = DateTime.utc(2018, 01, 01, 7, 0);
 
-List get insertValues {
+List<Object>? get insertValues {
   var values = <Object>[];
   values.add(126);
   values.add(164);
@@ -52,7 +52,7 @@ List get insertValues {
 }
 
 List get responseValues {
-  var values = <Object>[];
+  var values = <Object?>[];
   values.add(126);
   values.add(164);
   values.add(165);
@@ -220,33 +220,34 @@ void main() {
     expect(query.affectedRows, equals(1));
 
     var results = await conn.query('select atext from test1');
-    var list = await results.toList();
+    var list = results.toList();
     expect(list.length, equals(1));
     expect((list.first[0] as Blob).toString().length, equals(2000));
 
     await conn.query('delete from test1');
     results = await conn.query('select atext from test1');
-    list = await results.toList();
+    list = results.toList();
     expect(list.isEmpty, true);
   });
 
   test('insert stuff', () async {
     var results = await conn.query(
-        'insert into test1 (atinyint, asmallint, amediumint, abigint, aint, '
-        'adecimal, afloat, adouble, areal, '
-        'aboolean, abit, aserial, '
-        'adate, adatetime, atimestamp, atime, ayear, '
-        'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
-        'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
-        'aenum, aset) values'
-        '(?, ?, ?, ?, ?, '
-        '?, ?, ?, ?, '
-        '?, ?, ?, '
-        '?, ?, ?, ?, ?, '
-        '?, ?, ?, ?, ?, ?, '
-        '?, ?, ?, ?, ?, ?, '
-        '?, ?)',
-        insertValues);
+      'insert into test1 (atinyint, asmallint, amediumint, abigint, aint, '
+      'adecimal, afloat, adouble, areal, '
+      'aboolean, abit, aserial, '
+      'adate, adatetime, atimestamp, atime, ayear, '
+      'achar, avarchar, atinytext, atext, amediumtext, alongtext, '
+      'abinary, avarbinary, atinyblob, amediumblob, ablob, alongblob, '
+      'aenum, aset) values'
+      '(?, ?, ?, ?, ?, '
+      '?, ?, ?, ?, '
+      '?, ?, ?, '
+      '?, ?, ?, ?, ?, '
+      '?, ?, ?, ?, ?, ?, '
+      '?, ?, ?, ?, ?, ?, '
+      '?, ?)',
+      insertValues,
+    );
 
     expect(results.affectedRows, equals(1));
 

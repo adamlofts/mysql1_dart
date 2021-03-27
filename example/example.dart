@@ -28,7 +28,9 @@ Future main() async {
 
   // Query the database using a parameterized query
   var results = await conn.query(
-      'select name, email, age from trucs where id = ?', [result.insertId]);
+    'select name, email, age from trucs where id = ?',
+    [result.insertId!],
+  );
   for (var row in results) {
     print('Name: ${row[0]}, email: ${row[1]} age: ${row[2]}');
   }
@@ -38,7 +40,9 @@ Future main() async {
 
   // Query again database using a parameterized query
   var results2 = await conn.query(
-      'select name, email, age from trucs where id = ?', [result.insertId]);
+    'select name, email, age from trucs where id = ?',
+    [result.insertId!],
+  );
   for (var row in results2) {
     print('Name: ${row[0]}, email: ${row[1]} age: ${row[2]}');
   }

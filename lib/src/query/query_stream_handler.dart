@@ -27,11 +27,11 @@ class QueryStreamHandler extends Handler {
   final String _sql;
   int _state = STATE_HEADER_PACKET;
 
-  OkPacket _okPacket;
-  ResultSetHeaderPacket _resultSetHeaderPacket;
+  OkPacket? _okPacket;
+  ResultSetHeaderPacket? _resultSetHeaderPacket;
   final List<Field> fieldPackets = <Field>[];
 
-  StreamController<ResultRow> _streamController;
+  StreamController<ResultRow>? _streamController;
 
   QueryStreamHandler(this._sql) : super(Logger('QueryStreamHandler'));
 
@@ -77,11 +77,16 @@ class QueryStreamHandler extends Handler {
   HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
     _streamController = StreamController<ResultRow>(onCancel: () {
-      _streamController.close();
+      _streamController!.close();
     });
     return HandlerResponse(
-        result: ResultsStream(null, null, fieldPackets,
-            stream: _streamController.stream));
+      result: ResultsStream(
+        null,
+        null,
+        fieldPackets,
+        stream: _streamController!.stream,
+      ),
+    );
   }
 
   HandlerResponse _handleEndOfRows() {
@@ -89,7 +94,7 @@ class QueryStreamHandler extends Handler {
     // otherwise the stream will be reused in an unfinished state.
     // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
 //    Future.delayed(Duration(seconds: 0), _streamController.close);
-    _streamController.close();
+    _streamController?.close();
     return HandlerResponse(finished: true);
   }
 
@@ -108,10 +113,10 @@ class QueryStreamHandler extends Handler {
   void _handleRowPacket(Buffer response) {
     var dataPacket = StandardDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
-    _streamController.add(dataPacket);
+    _streamController?.add(dataPacket);
   }
 
-  HandlerResponse _handleOkPacket(packet) {
+  HandlerResponse _handleOkPacket(OkPacket packet) {
     _okPacket = packet;
     var finished = false;
     // TODO: I think this is to do with multiple queries. Will probably break.
@@ -123,7 +128,7 @@ class QueryStreamHandler extends Handler {
     return HandlerResponse(
         finished: finished,
         result: ResultsStream(
-            _okPacket.insertId, _okPacket.affectedRows, fieldPackets));
+            _okPacket!.insertId, _okPacket!.affectedRows, fieldPackets));
   }
 
   @override

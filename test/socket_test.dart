@@ -23,7 +23,7 @@ void main() {
     try {
       await MySqlConnection.connect(ConnectionSettings(port: 12345));
     } on SocketException catch (e) {
-      expect(e.osError.errorCode, 111);
+      expect(e.osError?.errorCode, 111);
     }
   });
 
@@ -168,5 +168,5 @@ class _SocketException extends TypeMatcher<SocketException> {
   const _SocketException(this.errorCode) : super('SocketException');
   @override
   bool matches(item, Map matchState) =>
-      item is SocketException && item.osError.errorCode == errorCode;
+      item is SocketException && item.osError?.errorCode == errorCode;
 }

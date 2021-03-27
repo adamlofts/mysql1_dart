@@ -14,27 +14,29 @@ import 'auth_handler.dart';
 class HandshakeHandler extends Handler {
   static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
 
-  final String _user;
-  final String _password;
-  final String _db;
+  final String? _user;
+  final String? _password;
+  final String? _db;
   final int _maxPacketSize;
   final int _characterSet;
 
-  int protocolVersion;
-  String serverVersion;
-  int threadId;
-  List<int> scrambleBuffer;
-  int serverCapabilities;
-  int serverLanguage;
-  int serverStatus;
-  int scrambleLength;
-  String pluginName;
+  int? protocolVersion;
+  String? serverVersion;
+  int? threadId;
+  late List<int> scrambleBuffer;
+  late int serverCapabilities;
+  int? serverLanguage;
+  int? serverStatus;
+  int? scrambleLength;
+
+  String? pluginName;
+
   bool useCompression = false;
   bool useSSL = false;
 
   HandshakeHandler(
       this._user, this._password, this._maxPacketSize, this._characterSet,
-      [String db, bool useCompression, bool useSSL])
+      [String? db, bool useCompression = false, bool useSSL = false])
       : _db = db,
         useCompression = useCompression,
         useSSL = useSSL,
@@ -70,12 +72,14 @@ class HandshakeHandler extends Handler {
       response.skip(10);
       if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
         var scrambleBuffer2 =
-            response.readList(math.max(13, scrambleLength - 8) - 1);
+            response.readList(math.max(13, scrambleLength! - 8) - 1);
 
         // read null-terminator
         response.readByte();
-        scrambleBuffer =
-            List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+        scrambleBuffer = List<int>.generate(
+          scrambleBuffer1.length + scrambleBuffer2.length,
+          (index) => 0,
+        );
         scrambleBuffer.setRange(0, 8, scrambleBuffer1);
         scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
       } else {
@@ -84,8 +88,8 @@ class HandshakeHandler extends Handler {
 
       if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
         pluginName = response.readStringToEnd();
-        if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
-          pluginName = pluginName.substring(0, pluginName.length - 1);
+        if (pluginName?.codeUnitAt((pluginName?.length ?? 0) - 1) == 0) {
+          pluginName = pluginName!.substring(0, pluginName!.length - 1);
         }
       }
     }

@@ -92,7 +92,7 @@ void main() {
   });
 
   group('ExecuteQueryHandler.writeValuesToBuffer', () {
-    List<int> types;
+    late List<int> types;
 
     setUp(() {
       types = <int>[];
@@ -173,7 +173,7 @@ void main() {
 
   group('ExecuteQueryHandler.prepareValue', () {
     MockPreparedQuery preparedQuery;
-    ExecuteQueryHandler handler;
+    late ExecuteQueryHandler handler;
 
     setUp(() {
       preparedQuery = MockPreparedQuery();
@@ -213,7 +213,7 @@ void main() {
 
   group('ExecuteQueryHandler._measureValue', () {
     MockPreparedQuery preparedQuery;
-    ExecuteQueryHandler handler;
+    late ExecuteQueryHandler handler;
 
     setUp(() {
       preparedQuery = MockPreparedQuery();

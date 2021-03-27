@@ -14,10 +14,8 @@ class ParameterPacket {
   int get decimals => _decimals;
   int get length => _length;
 
-  ParameterPacket(Buffer buffer) {
-    _type = buffer.readUint16();
-    _flags = buffer.readUint16();
-    _decimals = buffer.readByte();
-    _length = buffer.readUint32();
-  }
+  ParameterPacket(Buffer buffer) :_type = buffer.readUint16(),
+  _flags = buffer.readUint16(),
+  _decimals = buffer.readByte(),
+  _length = buffer.readUint32();
 }

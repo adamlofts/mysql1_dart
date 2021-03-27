@@ -3,18 +3,18 @@ library mysql1.field;
 import '../buffer.dart';
 
 class Field {
-  final String catalog;
-  final String db;
-  final String table;
-  final String orgTable;
-  final String name;
-  final String orgName;
-  final int characterSet;
-  final int length;
-  final int type;
-  final int flags;
-  final int decimals;
-  final int defaultValue;
+  final String? catalog;
+  final String? db;
+  final String? table;
+  final String? orgTable;
+  final String? name;
+  final String? orgName;
+  final int? characterSet;
+  final int? length;
+  final int? type;
+  final int? flags;
+  final int? decimals;
+  final int? defaultValue;
 
   String get typeString {
     switch (type) {
@@ -119,12 +119,24 @@ class Field {
     final flags = buffer.readUint16();
     final decimals = buffer.readByte();
     buffer.skip(2);
-    int defaultValue;
+    int? defaultValue;
     if (buffer.canReadMore()) {
       defaultValue = buffer.readLengthCodedBinary();
     }
-    return Field._internal(catalog, db, table, orgTable, name, orgName,
-        characterSet, length, type, flags, decimals, defaultValue);
+    return Field._internal(
+      catalog,
+      db,
+      table,
+      orgTable,
+      name,
+      orgName,
+      characterSet,
+      length,
+      type,
+      flags,
+      decimals,
+      defaultValue,
+    );
   }
 
   @override

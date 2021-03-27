@@ -7,30 +7,38 @@ import 'field.dart';
 import 'row.dart';
 
 class ResultsStream extends StreamView<ResultRow> {
-  final int insertId;
-  final int affectedRows;
+  final int? insertId;
+  final int? affectedRows;
 
   final List<Field> fields;
 
-  factory ResultsStream(int insertId, int affectedRows, List<Field> fields,
-      {Stream<ResultRow> stream}) {
+  factory ResultsStream(int? insertId, int? affectedRows, List<Field>? fields,
+      {Stream<ResultRow>? stream}) {
     if (stream != null) {
       var newStream = stream.transform(StreamTransformer.fromHandlers(
           handleDone: (EventSink<ResultRow> sink) {
         sink.close();
       }));
       return ResultsStream._fromStream(
-          insertId, affectedRows, fields, newStream);
+        insertId,
+        affectedRows,
+        fields,
+        newStream,
+      );
     } else {
       var newStream = Stream.fromIterable(<ResultRow>[]);
       return ResultsStream._fromStream(
-          insertId, affectedRows, fields, newStream);
+        insertId,
+        affectedRows,
+        fields,
+        newStream,
+      );
     }
   }
 
   ResultsStream._fromStream(this.insertId, this.affectedRows,
-      List<Field> fields, Stream<ResultRow> stream)
-      : fields = UnmodifiableListView(fields),
+      List<Field>? fields, Stream<ResultRow> stream)
+      : fields = UnmodifiableListView(fields ?? []),
         super(stream);
 
   /// Takes a _ResultsImpl and destreams it. That is, it listens to the stream, collecting

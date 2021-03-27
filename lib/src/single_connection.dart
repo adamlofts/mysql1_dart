@@ -31,9 +31,9 @@ final Logger _log = Logger('MySqlConnection');
 class ConnectionSettings {
   String host;
   int port;
-  String user;
-  String password;
-  String db;
+  String? user;
+  String? password;
+  String? db;
   bool useCompression;
   bool useSSL;
   int maxPacketSize;
@@ -42,30 +42,30 @@ class ConnectionSettings {
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
 
-  ConnectionSettings(
-      {this.host = 'localhost',
-      this.port = 3306,
-      this.user,
-      this.password,
-      this.db,
-      this.useCompression = false,
-      this.useSSL = false,
-      this.maxPacketSize = 16 * 1024 * 1024,
-      this.timeout = const Duration(seconds: 30),
-      this.characterSet = CharacterSet.UTF8MB4});
+  ConnectionSettings({
+    this.host = 'localhost',
+    this.port = 3306,
+    this.user,
+    this.password,
+    this.db,
+    this.useCompression = false,
+    this.useSSL = false,
+    this.maxPacketSize = 16 * 1024 * 1024,
+    this.timeout = const Duration(seconds: 30),
+    this.characterSet = CharacterSet.UTF8MB4,
+  });
 
-  ConnectionSettings.copy(ConnectionSettings o) {
-    host = o.host;
-    port = o.port;
-    user = o.user;
-    password = o.password;
-    db = o.db;
-    useCompression = o.useCompression;
-    useSSL = o.useSSL;
-    maxPacketSize = o.maxPacketSize;
-    timeout = o.timeout;
-    characterSet = o.characterSet;
-  }
+  ConnectionSettings.copy(ConnectionSettings o)
+      : host = o.host,
+        port = o.port,
+        user = o.user,
+        password = o.password,
+        db = o.db,
+        useCompression = o.useCompression,
+        useSSL = o.useSSL,
+        maxPacketSize = o.maxPacketSize,
+        timeout = o.timeout,
+        characterSet = o.characterSet;
 }
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
@@ -111,8 +111,8 @@ class MySqlConnection {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
-    ReqRespConnection conn;
-    Completer handshakeCompleter;
+    ReqRespConnection? conn;
+    late Completer handshakeCompleter;
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
@@ -138,7 +138,9 @@ class MySqlConnection {
         }
       },
       onClosed: () {
-        conn.handleError(SocketException.closed());
+        if (conn == null) {
+          conn!.handleError(SocketException.closed());
+        }
       },
     );
 
@@ -155,7 +157,7 @@ class MySqlConnection {
   /// Run [sql] query on the database using [values] as positional sql parameters.
   ///
   /// eg. ```query('SELECT FROM users WHERE id = ?', [userId])```.
-  Future<Results> query(String sql, [List<Object> values]) async {
+  Future<Results> query(String sql, [List<Object>? values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
     }
@@ -168,7 +170,7 @@ class MySqlConnection {
   /// e.g. ```queryMulti('INSERT INTO USERS (name) VALUES (?)', ['Adam', 'Eve'])```.
   Future<List<Results>> queryMulti(
       String sql, Iterable<List<Object>> values) async {
-    PreparedQuery prepared;
+    PreparedQuery? prepared;
     var ret = <Results>[];
     try {
       prepared = await _conn.processHandler<PreparedQuery>(
@@ -211,8 +213,9 @@ class TransactionContext {
   final MySqlConnection _conn;
   TransactionContext._(this._conn);
 
-  Future<Results> query(String sql, [List values]) => _conn.query(sql, values);
-  Future<List<Results>> queryMulti(String sql, Iterable<List> values) =>
+  Future<Results> query(String sql, [List<Object>? values]) =>
+      _conn.query(sql, values);
+  Future<List<Results>> queryMulti(String sql, Iterable<List<Object>> values) =>
       _conn.queryMulti(sql, values);
   void rollback() => throw _RollbackError();
 }
@@ -221,8 +224,8 @@ class _RollbackError {}
 
 /// An iterable of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
 class Results extends IterableBase<ResultRow> {
-  final int insertId;
-  final int affectedRows;
+  final int? insertId;
+  final int? affectedRows;
   final List<Field> fields;
   final List<ResultRow> _rows;
 
@@ -243,15 +246,17 @@ class ReqRespConnection {
   static const int STATE_PACKET_HEADER = 0;
   static const int STATE_PACKET_DATA = 1;
 
-  Handler _handler;
-  Completer _completer;
+  Handler? _handler;
+
+  Completer? _completer;
 
   final BufferedSocket _socket;
   final _largePacketBuffers = <Buffer>[];
 
   final Buffer _headerBuffer;
+
   final Buffer _compressedHeaderBuffer;
-  Buffer _dataBuffer;
+
   bool _readyForHeader = true;
 
   int _packetNumber = 0;
@@ -261,7 +266,7 @@ class ReqRespConnection {
   bool _useSSL = false;
   final int _maxPacketSize;
 
-  ReqRespConnection(this._socket, this._handler, Completer handshakeCompleter,
+  ReqRespConnection(this._socket, this._handler, Completer? handshakeCompleter,
       this._maxPacketSize)
       : _headerBuffer = Buffer(HEADER_SIZE),
         _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
@@ -269,13 +274,11 @@ class ReqRespConnection {
 
   void close() => _socket.close();
 
-  void handleError(Object e, {bool keepOpen = false, StackTrace st}) {
-    if (_completer != null) {
-      if (_completer.isCompleted) {
-        _log.warning('Ignoring error because no response', e, st);
-      } else {
-        _completer.completeError(e, st);
-      }
+  void handleError(Object e, {bool keepOpen = false, StackTrace? st}) {
+    if (_completer?.isCompleted == true) {
+      _log.warning('Ignoring error because no response', e, st);
+    } else {
+      _completer?.completeError(e, st);
     }
     if (!keepOpen) {
       close();
@@ -283,7 +286,7 @@ class ReqRespConnection {
   }
 
   Future _readPacket() async {
-    _log.fine('readPacket readyForHeader=${_readyForHeader}');
+    _log.fine('readPacket readyForHeader=$_readyForHeader');
     if (_readyForHeader) {
       _readyForHeader = false;
       var buffer = await _socket.readBuffer(_headerBuffer);
@@ -294,14 +297,14 @@ class ReqRespConnection {
   Future _handleHeader(Buffer buffer) async {
     var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
-    _log.fine('about to read $_dataSize bytes for packet ${_packetNumber}');
-    _dataBuffer = Buffer(_dataSize);
-    _log.fine('buffer size=${_dataBuffer.length}');
+    _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
+    final dataBuffer = Buffer(_dataSize);
+    _log.fine('buffer size=${dataBuffer.length}');
     if (_dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
-      var buffer = await _socket.readBuffer(_dataBuffer);
+      var buffer = await _socket.readBuffer(dataBuffer);
       await _handleMoreData(buffer);
     } else {
-      var buffer = await _socket.readBuffer(_dataBuffer);
+      var buffer = await _socket.readBuffer(dataBuffer);
       await _handleData(buffer);
     }
   }
@@ -333,34 +336,35 @@ class ReqRespConnection {
     _headerBuffer.reset();
 
     try {
-      var response = _handler.processResponse(buffer);
+      var response = _handler?.processResponse(buffer);
       if (_handler is HandshakeHandler) {
         _useCompression = (_handler as HandshakeHandler).useCompression;
         _useSSL = (_handler as HandshakeHandler).useSSL;
       }
-      if (response.nextHandler != null) {
+      if (response?.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now
-        _handler = response.nextHandler;
-        await sendBuffer(_handler.createRequest());
+        _handler = response!.nextHandler;
+        await sendBuffer(_handler!.createRequest());
         if (_useSSL && _handler is SSLHandler) {
           _log.fine('Use SSL');
           await _socket.startSSL();
           _handler = (_handler as SSLHandler).nextHandler;
-          await sendBuffer(_handler.createRequest());
+          await sendBuffer(_handler!.createRequest());
           _log.fine('Sent buffer');
           return;
         }
       }
 
-      if (response.finished) {
+      if (response?.finished == true) {
         _log.fine('Finished $_handler');
         _finishAndReuse();
       }
-      if (response.hasResult) {
-        if (_completer.isCompleted) {
-          _completer.completeError(StateError('Request has already completed'));
+      if (response?.hasResult == true) {
+        if (_completer?.isCompleted == true) {
+          _completer
+              ?.completeError(StateError('Request has already completed'));
         }
-        _completer.complete(response.result);
+        _completer?.complete(response!.result);
       }
     } on MySqlException catch (e, st) {
       // This clause means mysql returned an error on the wire. It is not a fatal error

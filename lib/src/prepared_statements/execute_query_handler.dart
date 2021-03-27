@@ -29,43 +29,42 @@ class ExecuteQueryHandler extends Handler {
 
   int _state = STATE_HEADER_PACKET;
 
-  ResultSetHeaderPacket _resultSetHeaderPacket;
+  //late ResultSetHeaderPacket _resultSetHeaderPacket;
   List<Field> fieldPackets;
 //  Map<Symbol, int> _fieldIndex;
-  StreamController<ResultRow> _streamController;
+  StreamController<ResultRow>? _streamController;
 
-  final PreparedQuery _preparedQuery;
+  final PreparedQuery? _preparedQuery;
   final List _values;
-  List preparedValues;
-  OkPacket _okPacket;
+  List? preparedValues;
+  late OkPacket _okPacket;
   final bool _executed;
   bool _cancelled = false;
 
   ExecuteQueryHandler(this._preparedQuery, this._executed, this._values)
-      : super(Logger('ExecuteQueryHandler')) {
-    fieldPackets = <Field>[];
-  }
+      : fieldPackets = <Field>[],
+        super(Logger('ExecuteQueryHandler'));
 
   @override
   Buffer createRequest() {
     var length = 0;
-    var types = List<int>(_values.length * 2);
+    var types = List<int>.filled(_values.length * 2, 0);
     var nullMap = createNullMap();
-    preparedValues = List(_values.length);
+    preparedValues = List.filled(_values.length, null);
     for (var i = 0; i < _values.length; i++) {
       Object value = _values[i];
       var parameterType = _getType(value);
       types[i * 2] = parameterType;
       types[i * 2 + 1] = 0;
-      preparedValues[i] = prepareValue(value);
-      length += measureValue(value, preparedValues[i]);
+      preparedValues![i] = prepareValue(value);
+      length += measureValue(value, preparedValues![i]);
     }
 
     var buffer = writeValuesToBuffer(nullMap, length, types);
     return buffer;
   }
 
-  Object prepareValue(Object value) {
+  Object? prepareValue(Object? value) {
     if (value == null) {
       return null;
     }
@@ -91,7 +90,7 @@ class ExecuteQueryHandler extends Handler {
     return _prepareString(value);
   }
 
-  int measureValue(value, preparedValue) {
+  int measureValue(dynamic value, dynamic preparedValue) {
     if (value != null) {
       if (value is int) {
         return _measureInt(value, preparedValue);
@@ -189,9 +188,9 @@ class ExecuteQueryHandler extends Handler {
     return utf8.encode(value.toString());
   }
 
-  int _measureDouble(value, preparedValue) {
+  int _measureDouble(double value, dynamic preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        preparedValue.length;
+        (preparedValue.length as int);
   }
 
   void _writeDouble(value, preparedValue, Buffer buffer) {
@@ -248,7 +247,7 @@ class ExecuteQueryHandler extends Handler {
     return value;
   }
 
-  int _measureList(value, preparedValue) {
+  int _measureList(List value, dynamic preparedValue) {
     return Buffer.measureLengthCodedBinary(value.length) + value.length;
   }
 
@@ -262,9 +261,9 @@ class ExecuteQueryHandler extends Handler {
     return (value as Blob).toBytes();
   }
 
-  int _measureBlob(value, preparedValue) {
+  int _measureBlob(Blob value, preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        preparedValue.length;
+        (preparedValue.length as int);
   }
 
   void _writeBlob(value, preparedValue, Buffer buffer) {
@@ -277,9 +276,9 @@ class ExecuteQueryHandler extends Handler {
     return utf8.encode(value.toString());
   }
 
-  int _measureString(value, preparedValue) {
+  int _measureString(String value, preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
-        preparedValue.length;
+        (preparedValue.length as int);
   }
 
   void _writeString(value, preparedValue, Buffer buffer) {
@@ -290,13 +289,13 @@ class ExecuteQueryHandler extends Handler {
 
   List<int> createNullMap() {
     var bytes = ((_values.length + 7) / 8).floor().toInt();
-    var nullMap = List<int>(bytes);
+    var nullMap = List<int>.filled(bytes, 0);
     var byte = 0;
     var bit = 0;
     for (var i = 0; i < _values.length; i++) {
-      if (nullMap[byte] == null) {
+      /*if (nullMap[byte] == null) {
         nullMap[byte] = 0;
-      }
+      }*/
       if (_values[i] == null) {
         nullMap[byte] = nullMap[byte] + (1 << bit);
       }
@@ -313,7 +312,7 @@ class ExecuteQueryHandler extends Handler {
   Buffer writeValuesToBuffer(List<int> nullMap, int length, List<int> types) {
     var buffer = Buffer(10 + nullMap.length + 1 + types.length + length);
     buffer.writeByte(COM_STMT_EXECUTE);
-    buffer.writeUint32(_preparedQuery.statementHandlerId);
+    buffer.writeUint32(_preparedQuery!.statementHandlerId);
     buffer.writeByte(0);
     buffer.writeUint32(1);
     buffer.writeList(nullMap);
@@ -321,7 +320,7 @@ class ExecuteQueryHandler extends Handler {
       buffer.writeByte(1);
       buffer.writeList(types);
       for (var i = 0; i < _values.length; i++) {
-        _writeValue(_values[i], preparedValues[i], buffer);
+        _writeValue(_values[i], preparedValues![i], buffer);
       }
     } else {
       buffer.writeByte(0);
@@ -333,7 +332,7 @@ class ExecuteQueryHandler extends Handler {
   HandlerResponse processResponse(Buffer response) {
     var packet;
     if (_cancelled) {
-      _streamController.close();
+      _streamController?.close();
       return HandlerResponse(finished: true);
     }
     if (_state == STATE_HEADER_PACKET) {
@@ -364,9 +363,13 @@ class ExecuteQueryHandler extends Handler {
       _okPacket = packet;
       if ((packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) == 0) {
         return HandlerResponse(
-            finished: true,
-            result: ResultsStream(
-                _okPacket.insertId, _okPacket.affectedRows, null));
+          finished: true,
+          result: ResultsStream(
+            _okPacket.insertId,
+            _okPacket.affectedRows,
+            null,
+          ),
+        );
       }
     }
     return HandlerResponse.notFinished;
@@ -375,23 +378,27 @@ class ExecuteQueryHandler extends Handler {
   HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
     _streamController = StreamController<ResultRow>();
-    _streamController.onCancel = () {
+    _streamController!.onCancel = () {
       _cancelled = true;
     };
     return HandlerResponse(
-        result: ResultsStream(null, null, fieldPackets,
-            stream: _streamController.stream));
+        result: ResultsStream(
+      null,
+      null,
+      fieldPackets,
+      stream: _streamController?.stream,
+    ));
   }
 
   HandlerResponse _handleEndOfRows() {
-    _streamController.close();
+    _streamController?.close();
     return HandlerResponse(finished: true);
   }
 
   void _handleHeaderPacket(Buffer response) {
     log.fine('Got a header packet');
-    _resultSetHeaderPacket = ResultSetHeaderPacket(response);
-    log.fine(_resultSetHeaderPacket.toString());
+    final resultSetHeaderPacket = ResultSetHeaderPacket(response);
+    log.fine(resultSetHeaderPacket.toString());
     _state = STATE_FIELD_PACKETS;
   }
 
@@ -406,6 +413,6 @@ class ExecuteQueryHandler extends Handler {
     log.fine('Got a row packet');
     var dataPacket = BinaryDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
-    _streamController.add(dataPacket);
+    _streamController?.add(dataPacket);
   }
 }

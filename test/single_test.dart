@@ -92,13 +92,13 @@ END
   test('too few parameter count test', () async {
     await conn.query('DROP TABLE IF EXISTS p1');
     await conn.query('CREATE TABLE IF NOT EXISTS p1 (a INT, b INT)');
-    MySqlClientError e;
+    MySqlClientError? e;
     try {
       await conn.query('INSERT INTO `p1` (a, b) VALUES (?, ?)', [1]);
     } on MySqlClientError catch (e1) {
       e = e1;
     }
-    expect(e.message,
+    expect(e?.message,
         'Length of parameters (1) does not match parameter count in query (2)');
   });
   test('json type test', () async {
