@@ -138,8 +138,8 @@ class MySqlConnection {
         }
       },
       onClosed: () {
-        if (conn == null) {
-          conn!.handleError(SocketException.closed());
+        if (conn != null) {
+          conn.handleError(SocketException.closed());
         }
       },
     );

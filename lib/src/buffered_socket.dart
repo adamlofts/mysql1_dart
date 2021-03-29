@@ -52,8 +52,12 @@ class BufferedSocket {
     this.onError,
     this.onClosed,
   ) : log = Logger('BufferedSocket') {
-    _subscription = _socket.listen(_onData,
-        onError: _onSocketError, onDone: _onSocketDone, cancelOnError: true);
+    _subscription = _socket.listen(
+      _onData,
+      onError: _onSocketError,
+      onDone: _onSocketDone,
+      cancelOnError: true,
+    );
   }
 
   void _onSocketError(Object error) {
@@ -121,7 +125,9 @@ class BufferedSocket {
       }
     } else if (event == RawSocketEvent.readClosed) {
       log.fine('READ_CLOSED');
-      onClosed?.call();
+      if (onClosed != null) {
+        onClosed!();
+      }
     } else if (event == RawSocketEvent.closed) {
       log.fine('CLOSED');
     } else if (event == RawSocketEvent.write) {
@@ -158,8 +164,8 @@ class BufferedSocket {
 
   void _writeBuffer() {
     log.fine('_writeBuffer offset=$_writeOffset');
-    var bytesWritten = _writingBuffer!.writeToSocket(
-        _socket, _writeOffset, _writeLength - _writeOffset);
+    var bytesWritten = _writingBuffer!
+        .writeToSocket(_socket, _writeOffset, _writeLength - _writeOffset);
     log.fine('Wrote $bytesWritten bytes');
     if (log.isLoggable(Level.FINE)) {
       log.fine('\n${Buffer.debugChars(_writingBuffer!.list)}');
@@ -200,8 +206,8 @@ class BufferedSocket {
   }
 
   void _readBuffer() {
-    var bytesRead = _readingBuffer!.readFromSocket(
-        _socket, _readingBuffer!.length - _readOffset);
+    var bytesRead = _readingBuffer!
+        .readFromSocket(_socket, _readingBuffer!.length - _readOffset);
     log.fine('read $bytesRead bytes');
     if (log.isLoggable(Level.FINE)) {
       log.fine('\n${Buffer.debugChars(_readingBuffer!.list)}');

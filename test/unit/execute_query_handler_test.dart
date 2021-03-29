@@ -4,14 +4,15 @@ library mysql1.test.unit.execute_query_handler_test;
 
 import 'dart:convert';
 
-import 'package:mockito/mockito.dart';
-
+import 'package:mocktail/mocktail.dart';
 import 'package:mysql1/src/blob.dart';
 import 'package:mysql1/src/prepared_statements/execute_query_handler.dart';
 
 import 'package:mysql1/src/prepared_statements/prepared_query.dart';
 
 import 'package:test/test.dart';
+
+class MockPreparedQuery extends Mock implements PreparedQuery {}
 
 void main() {
   group('ExecuteQueryHandler.createNullMap', () {
@@ -100,7 +101,7 @@ void main() {
 
     test('can write values for unexecuted query', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, false, []);
       handler.preparedValues = [];
@@ -111,7 +112,7 @@ void main() {
 
     test('can write values for executed query', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
@@ -122,7 +123,7 @@ void main() {
 
     test('can write values for executed query with nullmap', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
@@ -134,7 +135,7 @@ void main() {
 
     test('can write values for unexecuted query with values', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       types = [100];
       var handler = ExecuteQueryHandler(preparedQuery, false, [123]);
@@ -255,4 +256,4 @@ void main() {
   });
 }
 
-class MockPreparedQuery extends Mock implements PreparedQuery {}
+/*class MockPreparedQuery extends Mock implements PreparedQuery {}*/

@@ -3,61 +3,15 @@ library buffered_socket_test;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'package:mysql1/src/buffered_socket.dart';
 import 'package:mysql1/src/buffer.dart';
 
-class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
-  MockSocket(StreamController<RawSocketEvent> streamController)
-      : _streamController = streamController,
-        _data = <int>[],
-        super(streamController.stream);
-
-  StreamController<RawSocketEvent> _streamController;
-  List<int> _data;
-  @override
-  int available() => _data.length;
-
-  @override
-  Uint8List? read([int? len]) {
-    var count = len ?? 0;
-    if (count > _data.length) {
-      count = _data.length;
-    }
-    var data = _data.getRange(0, count);
-    var list = Uint8List(data.length);
-    list.setRange(0, data.length, data);
-    _data.removeRange(0, count);
-    return list;
-  }
-
-  void addData(List<int> data) {
-    _data.addAll(data);
-    _streamController.add(RawSocketEvent.READ);
-  }
-
-  void closeRead() {
-    _streamController.add(RawSocketEvent.READ_CLOSED);
-  }
-
-  @override
-  set writeEventsEnabled(bool value) {
-    if (value) {
-      _streamController.add(RawSocketEvent.WRITE);
-    }
-  }
-
-  @override
-  bool setOption(SocketOption option, bool enabled) => true; // No-op
-
-  @override
-  Object noSuchMethod(a) => super.noSuchMethod(a);
-}
+import 'mock_socket.dart';
 
 class MockBuffer extends Mock implements Buffer {}
 
@@ -111,11 +65,14 @@ void main() {
     test('can read data which is not yet available', () async {
       var c = Completer();
       var socket = await BufferedSocket.connect(
-          'localhost', 100, const Duration(seconds: 5),
-          onDataReady: () {},
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+        'localhost',
+        100,
+        const Duration(seconds: 5),
+        onDataReady: () {},
+        onDone: () {},
+        onError: (e) {},
+        socketFactory: factory,
+      );
       var buffer = Buffer(4);
       unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -129,11 +86,14 @@ void main() {
         () async {
       var c = Completer();
       var socket = await BufferedSocket.connect(
-          'localhost', 100, const Duration(seconds: 30),
-          onDataReady: () {},
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+        'localhost',
+        100,
+        const Duration(seconds: 30),
+        onDataReady: () {},
+        onDone: () {},
+        onError: (e) {},
+        socketFactory: factory,
+      );
       var buffer = Buffer(4);
       unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -146,11 +106,14 @@ void main() {
 
     test('cannot read data when already reading', () async {
       var socket = await BufferedSocket.connect(
-          'localhost', 100, const Duration(seconds: 5),
-          onDataReady: () {},
-          onDone: () {},
-          onError: (e) {},
-          socketFactory: factory);
+        'localhost',
+        100,
+        const Duration(seconds: 5),
+        onDataReady: () {},
+        onDone: () {},
+        onError: (e) {},
+        socketFactory: factory,
+      );
       var buffer = Buffer(4);
       unawaited(socket.readBuffer(buffer).then((_) {
         expect(buffer.list, equals([1, 2, 3, 4]));
@@ -164,19 +127,26 @@ void main() {
       'should write buffer',
       () async {
         var socket = await BufferedSocket.connect(
-            'localhost', 100, const Duration(seconds: 5),
-            onDataReady: () {},
-            onDone: () {},
-            onError: (e) {},
-            socketFactory: factory);
+          'localhost',
+          100,
+          const Duration(seconds: 5),
+          onDataReady: () {},
+          onDone: () {},
+          onError: (e) {},
+          socketFactory: factory,
+        );
         var buffer = MockBuffer();
-        when(buffer.length).thenReturn(100);
-        //when(buffer.writeToSocket(any, any, any)).thenReturn(25);
+        when(() => buffer.length).thenReturn(100);
+        when(() => buffer.writeToSocket(rawSocket, 0, 100)).thenReturn(25);
+        when(() => buffer.writeToSocket(rawSocket, 25, 75)).thenReturn(50);
+        when(() => buffer.writeToSocket(rawSocket, 75, 25)).thenReturn(25);
+
         await socket.writeBuffer(buffer);
-        //verify(buffer.writeToSocket(any, any, any)).called(4);
+        verify(() => buffer.writeToSocket(rawSocket, 0, 100)).called(1);
+        verify(() => buffer.writeToSocket(rawSocket, 25, 75)).called(1);
+        verify(() => buffer.writeToSocket(rawSocket, 75, 25)).called(1);
       },
-      skip: true,
-    ); /* FIXME(rxlabz) */
+    );
 
     test(
       'should write part of buffer',
@@ -188,13 +158,12 @@ void main() {
             onError: (e) {},
             socketFactory: factory);
         var buffer = MockBuffer();
-        when(buffer.length).thenReturn(100);
-        //when(buffer.writeToSocket(any, any, any)).thenReturn(25);
+        when(() => buffer.length).thenReturn(100);
+        when(() => buffer.writeToSocket(rawSocket, 25, 50)).thenReturn(50);
         await socket.writeBufferPart(buffer, 25, 50);
-        //verify(buffer.writeToSocket(any, any, any)).called(2);
+        verify(() => buffer.writeToSocket(rawSocket, 25, 50)).called(1);
       },
-      skip: true,
-    ); /* FIXME(rxlabz) */
+    );
 
     test('should send close event', () async {
       var closed = false;
