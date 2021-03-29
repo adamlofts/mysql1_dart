@@ -18,14 +18,15 @@ void main() {
   group('Connection', () {
     test('should throw error if buffer is too big', () {
       /* FIXME(rxlabz) */
-      /*final MAX_PACKET_SIZE = 10;
-      var cnx = ReqRespConnection(null, null, null, MAX_PACKET_SIZE);
+      final MAX_PACKET_SIZE = 10;
+      var socket = MockSocket();
+      var cnx = ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
       final PACKET_SIZE = 11;
       var buffer = Buffer(PACKET_SIZE);
       expect(() {
         cnx.sendBuffer(buffer);
-      }, throwsA(isInstanceOf<MySqlClientError>()));*/
-    }, skip: true);
+      }, throwsA(isInstanceOf<MySqlClientError>()));
+    });
 
     test('should send buffer', () async {
       /* FIXME(rxlabz) */

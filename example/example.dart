@@ -18,12 +18,14 @@ Future main() async {
 
   // Create a table
   await conn.query(
-      'CREATE TABLE IF NOT EXISTS trucs (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name varchar(255), email varchar(255), age int)');
+    'CREATE TABLE IF NOT EXISTS trucs (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name varchar(255), email varchar(255), age int)',
+  );
 
   // Insert some data
   var result = await conn.query(
-      'insert into trucs (name, email, age) values (?, ?, ?)',
-      ['Bob', 'bob@bob.com', 25]);
+    'insert into trucs (name, email, age) values (?, ?, ?)',
+    ['Bob', 'bob@bob.com', 25],
+  );
   print('Inserted row id=${result.insertId}');
 
   // Query the database using a parameterized query

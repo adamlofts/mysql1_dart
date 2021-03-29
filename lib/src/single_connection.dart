@@ -169,12 +169,16 @@ class MySqlConnection {
   ///
   /// e.g. ```queryMulti('INSERT INTO USERS (name) VALUES (?)', ['Adam', 'Eve'])```.
   Future<List<Results>> queryMulti(
-      String sql, Iterable<List<Object>> values) async {
+    String sql,
+    Iterable<List<Object>> values,
+  ) async {
     PreparedQuery? prepared;
     var ret = <Results>[];
     try {
       prepared = await _conn.processHandler<PreparedQuery>(
-          PrepareHandler(sql), _timeout);
+        PrepareHandler(sql),
+        _timeout,
+      );
       _log.fine('Prepared queryMulti query for: $sql');
 
       for (final v in values) {
@@ -266,9 +270,12 @@ class ReqRespConnection {
   bool _useSSL = false;
   final int _maxPacketSize;
 
-  ReqRespConnection(this._socket, this._handler, Completer? handshakeCompleter,
-      this._maxPacketSize)
-      : _headerBuffer = Buffer(HEADER_SIZE),
+  ReqRespConnection(
+    this._socket,
+    this._handler,
+    Completer? handshakeCompleter,
+    this._maxPacketSize,
+  )   : _headerBuffer = Buffer(HEADER_SIZE),
         _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
         _completer = handshakeCompleter;
 

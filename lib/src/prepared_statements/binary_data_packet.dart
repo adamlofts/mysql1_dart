@@ -34,7 +34,7 @@ class BinaryDataPacket extends ResultRow {
       }
       return value;
     });
-    for (var i = 0; i < fieldPackets.length; i++) {
+    /*for (var i = 0; i < fieldPackets.length; i++) {
       var mask = 1 << shift;
       nullMap[i] = (nulls[byte] & mask) != 0;
       shift++;
@@ -42,7 +42,7 @@ class BinaryDataPacket extends ResultRow {
         shift = 0;
         byte++;
       }
-    }
+    }*/
 
     values = List<dynamic>.filled(fieldPackets.length, false);
     for (var i = 0; i < fieldPackets.length; i++) {
