@@ -13,11 +13,11 @@ void initializeTest([String? tableName, String? createSql, String? insertSql]) {
   var options = OptionsFile('connection.options');
 
   var s = ConnectionSettings(
+    host: options.getString('host', 'localhost')!,
+    port: options.getInt('port', 3306)!,
     user: options.getString('user'),
     password: options.getString('password', null),
-    port: options.getInt('port', 3306) ?? 3306,
     db: options.getString('db'),
-    host: options.getString('host', 'localhost') ?? 'localhost',
   );
 
   setUp(() async {

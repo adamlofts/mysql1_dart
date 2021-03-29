@@ -6,17 +6,17 @@ Future main() async {
   // Open a connection (testdb should already exist)
   final conn = await MySqlConnection.connect(
     ConnectionSettings(
-      host: 'localhost',
-      port: 3306,
+      host: '/Applications/MAMP/tmp/mysql/mysql.sock',
       user: 'root',
       password: 'root',
       db: 'testdb',
     ),
+    isUnixSocket: true,
   );
 
   // Create a table
   await conn.query(
-    'CREATE TABLE trucs (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name varchar(255), email varchar(255), age int)',
+    'CREATE TABLE IF NOT EXISTS trucs (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, name varchar(255), email varchar(255), age int)',
   );
 
   // Insert some data

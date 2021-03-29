@@ -2,7 +2,7 @@
 user=root
 password=root
 #defaults to 3306
-port=8889
-db=sqljockeytest
+port=3306
+db=testdb
 #defaults to localhost
 host=localhost
