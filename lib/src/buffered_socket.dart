@@ -145,7 +145,7 @@ class BufferedSocket {
   }
 
   void _writeBuffer() {
-    log.fine('_writeBuffer offset=${_writeOffset}');
+    log.fine('_writeBuffer offset=$_writeOffset');
     var bytesWritten = _writingBuffer.writeToSocket(
         _socket, _writeOffset, _writeLength - _writeOffset);
     log.fine('Wrote $bytesWritten bytes');

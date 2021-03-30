@@ -78,8 +78,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = List<Field>(_parametersToRead);
-      _columns = List<Field>(_columnsToRead);
+      _parameters = List<Field>.filled(_parametersToRead, null);
+      _columns = List<Field>.filled(_columnsToRead, null);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }

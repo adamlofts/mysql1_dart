@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.18.1
+--
+
+* Supporting Unix socket connections.
+
 v0.18.0
 --
 

@@ -74,8 +74,8 @@ class HandshakeHandler extends Handler {
 
         // read null-terminator
         response.readByte();
-        scrambleBuffer =
-            List<int>(scrambleBuffer1.length + scrambleBuffer2.length);
+        scrambleBuffer = List<int>.filled(
+            scrambleBuffer1.length + scrambleBuffer2.length, null);
         scrambleBuffer.setRange(0, 8, scrambleBuffer1);
         scrambleBuffer.setRange(8, 8 + scrambleBuffer2.length, scrambleBuffer2);
       } else {

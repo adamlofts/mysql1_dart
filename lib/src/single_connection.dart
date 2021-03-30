@@ -275,7 +275,7 @@ class ReqRespConnection {
   }
 
   Future _readPacket() async {
-    _log.fine('readPacket readyForHeader=${_readyForHeader}');
+    _log.fine('readPacket readyForHeader=$_readyForHeader');
     if (_readyForHeader) {
       _readyForHeader = false;
       var buffer = await _socket.readBuffer(_headerBuffer);
@@ -286,7 +286,7 @@ class ReqRespConnection {
   Future _handleHeader(Buffer buffer) async {
     var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
-    _log.fine('about to read $_dataSize bytes for packet ${_packetNumber}');
+    _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
     _dataBuffer = Buffer(_dataSize);
     _log.fine('buffer size=${_dataBuffer.length}');
     if (_dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
