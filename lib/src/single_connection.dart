@@ -54,6 +54,27 @@ class ConnectionSettings {
       this.timeout = const Duration(seconds: 30),
       this.characterSet = CharacterSet.UTF8MB4});
 
+  factory ConnectionSettings.socket(
+          {String path,
+          String user,
+          String password,
+          String db,
+          bool useCompression = false,
+          bool useSSL = false,
+          int maxPacketSize = 16 * 1024 * 1024,
+          Duration timeout = const Duration(seconds: 30),
+          int characterSet = CharacterSet.UTF8MB4}) =>
+      ConnectionSettings(
+          host: path,
+          user: user,
+          password: password,
+          db: db,
+          useCompression: useCompression,
+          useSSL: useSSL,
+          maxPacketSize: maxPacketSize,
+          timeout: timeout,
+          characterSet: characterSet);
+
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
     port = o.port;
@@ -106,7 +127,8 @@ class MySqlConnection {
   /// socket.
   /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
   /// server.
-  static Future<MySqlConnection> connect(ConnectionSettings c) async {
+  static Future<MySqlConnection> connect(ConnectionSettings c,
+      {bool isUnixSocket = false}) async {
     assert(!c.useSSL); // Not implemented
     assert(!c.useCompression);
 
@@ -116,7 +138,7 @@ class MySqlConnection {
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
     var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
-        onDataReady: () {
+        isUnixSocket: isUnixSocket, onDataReady: () {
       conn?._readPacket();
     }, onDone: () {
       _log.fine('done');
@@ -274,7 +296,7 @@ class ReqRespConnection {
   }
 
   Future _readPacket() async {
-    _log.fine('readPacket readyForHeader=${_readyForHeader}');
+    _log.fine('readPacket readyForHeader=$_readyForHeader');
     if (_readyForHeader) {
       _readyForHeader = false;
       var buffer = await _socket.readBuffer(_headerBuffer);
@@ -285,7 +307,7 @@ class ReqRespConnection {
   Future _handleHeader(Buffer buffer) async {
     var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
-    _log.fine('about to read $_dataSize bytes for packet ${_packetNumber}');
+    _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
     _dataBuffer = Buffer(_dataSize);
     _log.fine('buffer size=${_dataBuffer.length}');
     if (_dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {

@@ -46,6 +46,8 @@ class Buffer {
   /// Returns the number of bytes read.
   int readFromSocket(RawSocket socket, int count) {
     List<int> bytes = socket.read(count);
+    if (bytes == null) return 0;
+
     var bytesRead = bytes.length;
     _list.setRange(_writePos, _writePos + bytesRead, bytes);
     _writePos += bytesRead;

@@ -20,7 +20,7 @@ class StandardDataPacket extends ResultRow {
   final Map<String, dynamic> fields = <String, dynamic>{};
 
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
-    values = List<dynamic>(fieldPackets.length);
+    values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
 
