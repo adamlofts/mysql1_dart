@@ -54,6 +54,27 @@ class ConnectionSettings {
       this.timeout = const Duration(seconds: 30),
       this.characterSet = CharacterSet.UTF8MB4});
 
+  factory ConnectionSettings.socket(
+          {String path,
+          String user,
+          String password,
+          String db,
+          bool useCompression = false,
+          bool useSSL = false,
+          int maxPacketSize = 16 * 1024 * 1024,
+          Duration timeout = const Duration(seconds: 30),
+          int characterSet = CharacterSet.UTF8MB4}) =>
+      ConnectionSettings(
+          host: path,
+          user: user,
+          password: password,
+          db: db,
+          useCompression: useCompression,
+          useSSL: useSSL,
+          maxPacketSize: maxPacketSize,
+          timeout: timeout,
+          characterSet: characterSet);
+
   ConnectionSettings.copy(ConnectionSettings o) {
     host = o.host;
     port = o.port;
