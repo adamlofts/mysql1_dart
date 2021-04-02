@@ -3,10 +3,10 @@ library mysql1.prepare_ok_packet;
 import '../buffer.dart';
 
 class PrepareOkPacket {
-  int _statementHandlerId;
-  int _columnCount;
-  int _parameterCount;
-  int _warningCount;
+  late int _statementHandlerId;
+  late int _columnCount;
+  late int _parameterCount;
+  late int _warningCount;
 
   int get statementHandlerId => _statementHandlerId;
   int get columnCount => _columnCount;

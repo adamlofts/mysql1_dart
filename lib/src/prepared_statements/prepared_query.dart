@@ -18,6 +18,7 @@ class PreparedQuery {
   PreparedQuery(PrepareHandler handler)
       : sql = handler.sql,
         parameterCount = handler.parameters.length,
-        columns = handler.columns,
+        columns =
+            List.from(handler.columns.where((element) => element != null)),
         statementHandlerId = handler.okPacket.statementHandlerId;
 }

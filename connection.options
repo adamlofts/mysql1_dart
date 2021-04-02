@@ -2,6 +2,6 @@
 user=root
 #defaults to 3306
 port=3306
-db=sqljockeytest
+db=testdb
 #defaults to localhost
 host=localhost

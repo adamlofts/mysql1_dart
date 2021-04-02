@@ -9,7 +9,7 @@ import 'dart:typed_data';
 
 final dt = DateTime.utc(2018, 01, 01, 7, 0);
 
-List get insertValues {
+List<Object>? get insertValues {
   var values = <Object>[];
   values.add(126);
   values.add(164);
@@ -52,7 +52,7 @@ List get insertValues {
 }
 
 List get responseValues {
-  var values = <Object>[];
+  var values = <Object?>[];
   values.add(126);
   values.add(164);
   values.add(165);

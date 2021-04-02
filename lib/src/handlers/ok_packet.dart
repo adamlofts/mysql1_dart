@@ -3,13 +3,13 @@ library mysql1.ok_packet;
 import '../buffer.dart';
 
 class OkPacket {
-  int _affectedRows;
-  int _insertId;
-  int _serverStatus;
-  String _message;
+  late int? _affectedRows;
+  late int? _insertId;
+  late int _serverStatus;
+  late String _message;
 
-  int get affectedRows => _affectedRows;
-  int get insertId => _insertId;
+  int? get affectedRows => _affectedRows;
+  int? get insertId => _insertId;
   int get serverStatus => _serverStatus;
   String get message => _message;
 

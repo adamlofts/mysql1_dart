@@ -6,8 +6,8 @@ import 'package:mysql1/mysql1.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:test/test.dart';
 
-Future setup(MySqlConnection conn, String tableName, String createSql,
-    [String insertSql]) async {
+Future setup(MySqlConnection conn, String tableName, String? createSql,
+    [String? insertSql]) async {
   await TableDropper(conn, [tableName]).dropTables();
   if (createSql != null) {
     var result = await conn.query(createSql);
