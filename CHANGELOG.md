@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.19.0-null-safety.0
+v0.19.0
 --
 
-01 Apr 2021
+02 Apr 2021
 * Breaking: migrate to Dart 2.12.0 with null safety enabled
 
 v0.18.1
