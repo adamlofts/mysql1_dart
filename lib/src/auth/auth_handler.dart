@@ -21,8 +21,8 @@ class AuthHandler extends Handler {
 //  final bool _ssl;
 
   AuthHandler(this.username, this.password, this.db, this.scrambleBuffer,
-      this.clientFlags, this.maxPacketSize, this.characterSet, this.plugin,
-      {bool ssl = false})
+      this.clientFlags, this.maxPacketSize, this.characterSet,
+      {this.plugin, bool ssl = false})
       : /*this._ssl = false,*/
         super(Logger('AuthHandler'));
 

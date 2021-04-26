@@ -148,12 +148,13 @@ class HandshakeHandler extends Handler {
                 clientFlags,
                 _maxPacketSize,
                 _characterSet,
-                pluginName,
+                plugin: pluginName,
               )));
     }
 
     return HandlerResponse(
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, _characterSet, pluginName));
+            clientFlags, _maxPacketSize, _characterSet,
+            plugin: pluginName));
   }
 }
