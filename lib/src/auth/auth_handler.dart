@@ -10,9 +10,6 @@ import '../buffer.dart';
 import '../handlers/handler.dart';
 
 class AuthHandler extends Handler {
-  static const MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
-  static const CACHING_SHA2_PASSWORD = "caching_sha2_password";
-
   final String? username;
   final String? password;
   final String? db;
@@ -45,11 +42,13 @@ class AuthHandler extends Handler {
         hash = List<int>.generate(hashedSaltedPassword.length,
             (index) => hashedSaltedPassword[index] ^ hashedPassword[index]);
       } else {
-        final List<int> shaPwd = sha256.convert(utf8.encode(password!)).bytes;
-        final List<int> shaShaPwd = sha256.convert(shaPwd).bytes;
+        final shaPwd = sha256.convert(utf8.encode(password!)).bytes;
+        final shaShaPwd = sha256.convert(shaPwd).bytes;
         hash =
             sha256.convert(List.from(shaShaPwd)..addAll(scrambleBuffer)).bytes;
-        for (int i = 0; i < hash.length; i++) hash[i] ^= shaPwd[i];
+        for (var i = 0; i < hash.length; i++) {
+          hash[i] ^= shaPwd[i];
+        }
       }
     }
     return hash;

@@ -47,7 +47,7 @@ void main() {
       var username = 'Boris';
       var password = 'Password';
       var handler = AuthHandler(username, password, null, [1, 2, 3, 4],
-          clientFlags, maxPacketSize, characterSet, null);
+          clientFlags, maxPacketSize, characterSet, MYSQL_NATIVE_PASSWORD);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
@@ -78,7 +78,7 @@ void main() {
           clientFlags,
           maxPacketSize,
           characterSet,
-          'mysql_native_password');
+          MYSQL_NATIVE_PASSWORD);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
