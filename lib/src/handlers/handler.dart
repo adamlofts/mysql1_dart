@@ -8,6 +8,9 @@ import '../mysql_exception.dart';
 import '../prepared_statements/prepare_ok_packet.dart';
 import 'ok_packet.dart';
 
+const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
+const String CACHING_SHA2_PASSWORD = "caching_sha2_password";
+
 class _NoResult {
   const _NoResult();
 }

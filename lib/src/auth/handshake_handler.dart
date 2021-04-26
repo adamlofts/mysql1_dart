@@ -12,8 +12,6 @@ import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
 class HandshakeHandler extends Handler {
-  static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
-
   final String? _user;
   final String? _password;
   final String? _db;
@@ -109,7 +107,8 @@ class HandshakeHandler extends Handler {
     }
 
     if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
-        pluginName != MYSQL_NATIVE_PASSWORD) {
+        !(pluginName == MYSQL_NATIVE_PASSWORD ||
+            pluginName == CACHING_SHA2_PASSWORD)) {
       throw MySqlClientError(
           'Authentication plugin not supported: $pluginName');
     }
@@ -149,11 +148,12 @@ class HandshakeHandler extends Handler {
                 clientFlags,
                 _maxPacketSize,
                 _characterSet,
+                pluginName,
               )));
     }
 
     return HandlerResponse(
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, _characterSet));
+            clientFlags, _maxPacketSize, _characterSet, pluginName));
   }
 }
