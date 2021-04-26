@@ -26,7 +26,7 @@ class HandshakeHandler extends Handler {
   int? serverLanguage;
   int? serverStatus;
   int? scrambleLength;
-  late String pluginName;
+  String? pluginName;
   bool useCompression = false;
   bool useSSL = false;
 
@@ -80,8 +80,8 @@ class HandshakeHandler extends Handler {
 
       if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
         pluginName = response.readStringToEnd();
-        if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
-          pluginName = pluginName.substring(0, pluginName.length - 1);
+        if (pluginName!.codeUnitAt(pluginName!.length - 1) == 0) {
+          pluginName = pluginName!.substring(0, pluginName!.length - 1);
         }
       }
     }
