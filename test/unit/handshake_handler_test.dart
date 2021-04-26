@@ -359,7 +359,7 @@ void main() {
           serverCapabilities2,
           scrambleLength,
           scrambleBuffer2,
-          HandshakeHandler.MYSQL_NATIVE_PASSWORD,
+          MYSQL_NATIVE_PASSWORD,
           true);
       var response = handler.processResponse(responseBuffer);
 
