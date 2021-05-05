@@ -113,4 +113,19 @@ END
     final obj = json.decode(result.first.last);
     expect(obj, {'key': 'val'});
   });
+
+  test('client timezone test', () async {
+    await conn.query('DROP TABLE IF EXISTS timezonetest');
+    await conn.query('CREATE TABLE timezonetest(a TIMESTAMP, b DATETIME)');
+    final n = DateTime.now().toUtc();
+    await conn.query('INSERT INTO `timezonetest` (a, b) VALUES (?, ?)', [
+      n,
+      n,
+    ]);
+    var result = await conn.query('SELECT * FROM timezonetest');
+    DateTime ts = result.first.first;
+    DateTime dt = result.first.last;
+    expect(ts.difference(n).inMicroseconds, lessThan(100));
+    expect(dt.difference(n).inMicroseconds, lessThan(100));
+  });
 }
