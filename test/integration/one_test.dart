@@ -220,13 +220,13 @@ void main() {
     expect(query.affectedRows, equals(1));
 
     var results = await conn.query('select atext from test1');
-    var list = await results.toList();
+    var list = results.toList();
     expect(list.length, equals(1));
     expect((list.first[0] as Blob).toString().length, equals(2000));
 
     await conn.query('delete from test1');
     results = await conn.query('select atext from test1');
-    list = await results.toList();
+    list = results.toList();
     expect(list.isEmpty, true);
   });
 
@@ -254,7 +254,7 @@ void main() {
         [127, '123456789.987654321']);
 
     results = await conn.query('select atinyint, adecimal from test1');
-    var list = await results.toList();
+    var list = results.toList();
     var row = list[0];
     expect(row[0], equals(127));
     expect(row[1], equals(123456789.987654321));
@@ -279,7 +279,7 @@ void main() {
         insertValues);
 
     var results = await conn.query('select * from test1');
-    var list = await results.toList();
+    var list = results.toList();
     var row = list[0];
 
     for (var i = 0; i < results.fields.length; i++) {
@@ -318,7 +318,7 @@ void main() {
         .query('insert into test1 (aint, atext) values (?, ?)', [12344, abc]);
     results =
         await conn.query('select atext from test1 where aint = 12344', []);
-    var list = await results.toList();
+    var list = results.toList();
     expect(list.length, equals(1));
     var values = list[0];
     expect(values[0].toString(), equals('ABC\u0000DEF'));
