@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.19.1
+--
+
+05 May 2021
+* Correct parsing of DateTime in non-utc client timezone
+
 v0.19.0
 --
 
