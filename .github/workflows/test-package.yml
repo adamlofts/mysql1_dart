@@ -47,9 +47,10 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         sdk: [stable, 2.12.0]
-        timezone: ["Etc/UTC", "Asia/Singapore"]
+        timezone: ["UTC", "Asia/Singapore"]
     steps:
-      - uses: actions/set-timezone-action@v1.0
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.0
         with:
           timezoneLinux: ${{ matrix.timezone }}
       - uses: actions/checkout@v2
