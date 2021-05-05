@@ -24,7 +24,7 @@ Buffer _createHandshake(protocolVersion, serverVersion, threadId,
     scrambleBuffer2,
     pluginName,
     pluginNameNull]) {
-  int length = 1 + (serverVersion.length as int) + 1 + 4 + 8 + 1 + 2;
+  var length = 1 + (serverVersion.length as int) + 1 + 4 + 8 + 1 + 2;
   if (serverLanguage != null) {
     length += 1 + 2 + 2 + 1 + 10;
     if (scrambleBuffer2 != null) {

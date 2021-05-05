@@ -31,17 +31,17 @@ class MockSocket extends StreamView<RawSocketEvent> implements RawSocket {
 
   void addData(List<int> data) {
     _data.addAll(data);
-    _streamController.add(RawSocketEvent.READ);
+    _streamController.add(RawSocketEvent.read);
   }
 
   void closeRead() {
-    _streamController.add(RawSocketEvent.READ_CLOSED);
+    _streamController.add(RawSocketEvent.readClosed);
   }
 
   @override
   set writeEventsEnabled(bool value) {
     if (value) {
-      _streamController.add(RawSocketEvent.WRITE);
+      _streamController.add(RawSocketEvent.write);
     }
   }
 
