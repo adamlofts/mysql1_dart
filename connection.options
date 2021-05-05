@@ -4,4 +4,4 @@ user=root
 port=3306
 db=testdb
 #defaults to localhost
-host=localhost
+host=mysql
