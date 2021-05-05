@@ -47,7 +47,12 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         sdk: [stable, 2.12.0]
+        timezone: ["UTC", "Asia/Singapore"]
     steps:
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: ${{ matrix.timezone }}
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.0
         with:
