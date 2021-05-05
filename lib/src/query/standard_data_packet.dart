@@ -35,16 +35,16 @@ class StandardDataPacket extends ResultRow {
   /// Dart does not provide a simple way to do this.
   /// See: https://github.com/adamlofts/mysql1_dart/issues/39
   static DateTime parseDateTimeInUtc(String s) {
-    var lt = DateTime.parse(s);  // lt is local time.
+    var localTime = DateTime.parse(s);
     return DateTime.utc(
-      lt.year,
-      lt.month,
-      lt.day,
-      lt.hour,
-      lt.minute,
-      lt.second,
-      lt.millisecond,
-      lt.microsecond,
+      localTime.year,
+      localTime.month,
+      localTime.day,
+      localTime.hour,
+      localTime.minute,
+      localTime.second,
+      localTime.millisecond,
+      localTime.microsecond,
     );
   }
 
