@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/set-timezone-action@v1.0
         with:
-          timezoneLinux: ${{ timezone }}
+          timezoneLinux: ${{ matrix.timezone }}
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.0
         with:
