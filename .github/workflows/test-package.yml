@@ -48,6 +48,7 @@ jobs:
         os: [ubuntu-latest]
         sdk: [stable, 2.12.0]
         timezone: ["UTC", "Asia/Singapore"]
+        mysql: [mysql:5.7, mysql:8]
     steps:
       - name: Set Timezone
         uses: szenius/set-timezone@v1.0
@@ -66,7 +67,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:5.7
+        image: ${{ matrix.mysql }}
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
         ports:
