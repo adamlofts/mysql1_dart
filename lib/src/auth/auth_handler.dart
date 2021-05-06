@@ -80,7 +80,7 @@ class AuthHandler extends Handler {
 
     var encodedUsername = username == null ? <int>[] : utf8.encode(username!);
     late List<int> encodedDb;
-    List<int>? encodedAuth;
+    var encodedAuth = <int>[];
 
     var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = this.clientFlags;
@@ -107,7 +107,7 @@ class AuthHandler extends Handler {
     if (db != null) {
       buffer.writeNullTerminatedList(encodedDb);
     }
-    if (encodedAuth != null) {
+    if (encodedAuth.isNotEmpty) {
       buffer.writeNullTerminatedList(encodedAuth);
     }
 

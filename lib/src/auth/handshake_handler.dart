@@ -56,7 +56,6 @@ class HandshakeHandler extends Handler {
   int? serverLanguage;
   int? serverStatus;
   int? scrambleLength;
-  late String pluginName;
   var _authPlugin = AuthPlugin.none;
   AuthPlugin get authPlugin => _authPlugin;
   bool useCompression = false;
