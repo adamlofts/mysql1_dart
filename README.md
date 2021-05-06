@@ -29,13 +29,24 @@ var userId = 1;
 var results = await conn.query('select name, email from users where id = ?', [userId]);
 ```
 
-Use the results:
+The results returned from the query can be accessed both as a list and as a Map. 
+
+Use the results as an index:
 
 ```dart
 for (var row in results) {
   print('Name: ${row[0]}, email: ${row[1]}');
 });
 ```
+
+Use the results as a Map:
+
+```dart
+for (var row in results) {
+  print('Name: ${row['Name']}, email: ${row['email']})
+});
+```
+
 
 Insert some data
 
@@ -65,4 +76,10 @@ Update some data:
 await conn.query(
     'update users set age=? where name=?',
     [26, 'Bob']);
+```
+
+After making an update or addition, get number of affected rows:
+
+```dart
+print(${result.affectedRows})
 ```
