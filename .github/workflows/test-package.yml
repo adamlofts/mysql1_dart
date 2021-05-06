@@ -48,7 +48,7 @@ jobs:
         os: [ubuntu-latest]
         sdk: [stable, 2.12.0]
         timezone: ["UTC", "Asia/Singapore"]
-        mysql: [mysql:5.7, mysql:8]
+        mysql: ["mysql:5.7", "mysql:8"]
     steps:
       - name: Set Timezone
         uses: szenius/set-timezone@v1.0
