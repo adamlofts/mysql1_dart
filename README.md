@@ -66,3 +66,8 @@ await conn.query(
     'update users set age=? where name=?',
     [26, 'Bob']);
 ```
+
+Flutter Web
+-----------
+
+This package opens a socket to the database. The web platform does not support sockets and so this package does not work on flutter web.
