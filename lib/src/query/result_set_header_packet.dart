@@ -5,15 +5,15 @@ import 'package:logging/logging.dart';
 import '../buffer.dart';
 
 class ResultSetHeaderPacket {
-  int _fieldCount;
-  int _extra;
+  late final int? _fieldCount;
+  int? _extra;
   Logger log;
 
-  int get fieldCount => _fieldCount;
+  int? get fieldCount => _fieldCount;
 
-  ResultSetHeaderPacket(Buffer buffer) {
-    log = Logger('ResultSetHeaderPacket');
-    _fieldCount = buffer.readLengthCodedBinary();
+  ResultSetHeaderPacket(Buffer buffer)
+      : log = Logger('ResultSetHeaderPacket'),
+        _fieldCount = buffer.readLengthCodedBinary() {
     if (buffer.canReadMore()) {
       _extra = buffer.readLengthCodedBinary();
     }

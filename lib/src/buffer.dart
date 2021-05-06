@@ -20,7 +20,7 @@ class Buffer {
   int _readPos = 0;
 
   final Uint8List _list;
-  ByteData _data;
+  late ByteData _data;
 
   Uint8List get list => _list;
 
@@ -45,7 +45,9 @@ class Buffer {
   /// Reads up to [count] bytes from the [socket] into the buffer.
   /// Returns the number of bytes read.
   int readFromSocket(RawSocket socket, int count) {
-    List<int> bytes = socket.read(count);
+    final bytes = socket.read(count)?.toList();
+    if (bytes == null) return 0;
+
     var bytesRead = bytes.length;
     _list.setRange(_writePos, _writePos + bytesRead, bytes);
     _writePos += bytesRead;
@@ -136,7 +138,8 @@ class Buffer {
 
   /// Reads a string of the given [length] from the buffer.
   String readString(int length) {
-    var s = utf8.decode(_list.sublist(_readPos, _readPos + length));
+    var s = utf8.decode(_list.sublist(_readPos, _readPos + length),
+        allowMalformed: true);
     _readPos += length;
     return s;
   }
@@ -144,7 +147,7 @@ class Buffer {
   /// Reads a length coded binary from the buffer. This is specified in the mysql docs.
   /// It will read up to nine bytes from the stream, depending on the first byte.
   /// Returns an unsigned integer.
-  int readLengthCodedBinary() {
+  int? readLengthCodedBinary() {
     var first = readByte();
     if (first < 251) {
       return first;
@@ -201,7 +204,7 @@ class Buffer {
   }
 
   /// Returns a length coded string, read from the buffer.
-  String readLengthCodedString() {
+  String? readLengthCodedString() {
     var length = readLengthCodedBinary();
     if (length == null) {
       return null;

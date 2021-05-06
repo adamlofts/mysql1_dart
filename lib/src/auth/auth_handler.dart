@@ -45,9 +45,9 @@ List<int> _makeCachingSha2Password(List<int> scrambler, String password) {
 }
 
 class AuthHandler extends Handler {
-  final String username;
-  final String password;
-  final String db;
+  final String? username;
+  final String? password;
+  final String? db;
   final List<int> scrambleBuffer;
   final int clientFlags;
   final int maxPacketSize;
@@ -78,14 +78,14 @@ class AuthHandler extends Handler {
     // calculate the mysql password hash
     var hash = getHash();
 
-    var encodedUsername = username == null ? <int>[] : utf8.encode(username);
+    var encodedUsername = username == null ? <int>[] : utf8.encode(username!);
+    late List<int> encodedDb;
     var encodedAuth;
-    List<int> encodedDb;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = this.clientFlags;
     if (db != null) {
-      encodedDb = utf8.encode(db);
+      encodedDb = utf8.encode(db!);
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }

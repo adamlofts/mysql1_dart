@@ -1,6 +1,24 @@
 Changelog
 =========
 
+v0.19.1
+--
+
+05 May 2021
+* Correct parsing of DateTime in non-utc client timezone
+
+v0.19.0
+--
+
+02 Apr 2021
+* Breaking: migrate to Dart 2.12.0 with null safety enabled
+
+v0.18.1
+--
+
+31 Mar 2021
+* Supporting Unix socket connections.
+
 v0.18.0
 --
 
@@ -38,7 +56,7 @@ v0.16.3
 * Breaking: Test for correct query parameter count on the client side
 * Breaking: Tidy up old field by name access code
 * Tidy up `Field` class
- 
+
 
 v0.16.2
 --
@@ -108,30 +126,30 @@ v0.13.0
 v0.12.0
 -------
 * Breaking change: ConnectionPool.close() has been renamed to ConnectionPool.closeConnectionsNow.
-It is a dangerous method to call as it closes all connections even if they are in the middle
-of an operation. ConnectionPool.closeConnectionsWhenNotInUse has been added, which is much
-safer.
+  It is a dangerous method to call as it closes all connections even if they are in the middle
+  of an operation. ConnectionPool.closeConnectionsWhenNotInUse has been added, which is much
+  safer.
 * Fixed an issue with closing prepared queries which caused connections to remain open.
 
 v0.11.0
 -------
 * Added support for packets larger than 16 MB. ConnectionPool's constructor has a new parameter,
-'maxPacketSize', which specifies the maximum packet size in bytes. Using packets larger than
-16 MB is not currently particularly optimised.
+  'maxPacketSize', which specifies the maximum packet size in bytes. Using packets larger than
+  16 MB is not currently particularly optimised.
 * Fixed some issues with authentication. In particular, errors should now be thrown when you
-try to connect to a server which is using an old or unsupported authentication protocol.
+  try to connect to a server which is using an old or unsupported authentication protocol.
 
 v0.10.0
 -------
 * Added SSL connections. Pass 'useSSL: true' to ConnectionPool constructor. If server doesn't support
-SSL, connection will continue unsecured. You can check if the connections are secure by calling
-pool.getConnection().then((cnx) {print(cnx.usingSSL); cnx.release();});
+  SSL, connection will continue unsecured. You can check if the connections are secure by calling
+  pool.getConnection().then((cnx) {print(cnx.usingSSL); cnx.release();});
 
 v0.9.0
 ------
 * Added ConnectionPool.getConnection() which returns a RetainedConnection. Useful
-if you need to keep a specific connection around (for example, if you need to
-lock tables).
+  if you need to keep a specific connection around (for example, if you need to
+  lock tables).
 
 v0.8.3
 ------
@@ -144,14 +162,14 @@ v0.8.1
 v0.8.0
 ------
 * Breaking change: Results no longer has a 'stream' property - it now implements Stream itself.
-As a result, it also no longer has a 'rows' property, or a 'toResultsList()' method - you
-can use 'toList()' to convert it into a list instead.
+  As a result, it also no longer has a 'rows' property, or a 'toResultsList()' method - you
+  can use 'toList()' to convert it into a list instead.
 
 v0.7.0
 ------
 * Rewritten some connection handling code to make it more robust, and
-so that it handles stream operations such as 'first' correctly (i.e.
-without hanging forever).
+  so that it handles stream operations such as 'first' correctly (i.e.
+  without hanging forever).
 * Updated spec for Dart 1.0
 
 v0.6.2
@@ -165,9 +183,9 @@ v0.6.1
 v0.6.0
 ------
 * Change prepared statement syntax. Values must now be passed into the execute() method
-in an array. This change was made because otherwise prepared statements couldn't be used
-asynchronously correctly - if you used the same prepared query object for multiple queries 
-'at the same time', the wrong values could get used.
+  in an array. This change was made because otherwise prepared statements couldn't be used
+  asynchronously correctly - if you used the same prepared query object for multiple queries
+  'at the same time', the wrong values could get used.
 
 v0.5.8
 ------
@@ -219,14 +237,14 @@ v0.4.0
 v0.3.0
 ------
 * Support for M3.
-* Bit fields are now numbers, not lists. 
-* Dates now use the DateTime class instead of the Date class. 
+* Bit fields are now numbers, not lists.
+* Dates now use the DateTime class instead of the Date class.
 * Use new IO classes.
 
 v0.2.0
 ------
 * Support for the new SDK.
- 
+
 v0.1.3
 ------
 * SQLJocky now uses a connection pooling model, so the API has changed somewhat.

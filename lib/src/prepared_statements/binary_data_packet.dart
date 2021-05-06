@@ -13,7 +13,7 @@ import '../results/row.dart';
 class BinaryDataPacket extends ResultRow {
   final Logger log = Logger('BinaryDataPacket');
 
-  BinaryDataPacket.forTests(List _values) {
+  BinaryDataPacket.forTests(List? _values) {
     values = _values;
   }
 
@@ -22,83 +22,87 @@ class BinaryDataPacket extends ResultRow {
     var nulls =
         buffer.readList(((fieldPackets.length + 7 + 2) / 8).floor().toInt());
     log.fine('Nulls: $nulls');
-    var nullMap = List<bool>(fieldPackets.length);
+
     var shift = 2;
     var byte = 0;
-    for (var i = 0; i < fieldPackets.length; i++) {
+    var nullMap = List<bool>.generate(fieldPackets.length, (index) {
       var mask = 1 << shift;
-      nullMap[i] = (nulls[byte] & mask) != 0;
+      final value = (nulls[byte] & mask) != 0;
       shift++;
       if (shift > 7) {
         shift = 0;
         byte++;
       }
-    }
+      return value;
+    });
 
-    values = List<dynamic>(fieldPackets.length);
+    values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       log.fine('$i: ${fieldPackets[i].name}');
       if (nullMap[i]) {
         log.fine('Value: null');
-        values[i] = null;
+        values![i] = null;
         continue;
       }
       var field = fieldPackets[i];
-      values[i] = readField(field, buffer);
-      fields[field.name] = values[i];
+      values![i] = readField(field, buffer);
+      fields[field.name!] = values![i];
     }
   }
 
   @override
-  Object readField(Field field, Buffer buffer) {
+  Object? readField(Field field, Buffer buffer) {
     switch (field.type) {
       case FIELD_TYPE_BLOB:
         log.fine('BLOB');
         var len = buffer.readLengthCodedBinary();
+        if (len == null) {
+          return Blob.fromBytes([]);
+        }
         var value = Blob.fromBytes(buffer.readList(len));
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_TINY:
         log.fine('TINY');
         var value = buffer.readByte();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_SHORT:
         log.fine('SHORT');
         var value = buffer.readInt16();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_INT24:
         log.fine('INT24');
         var value = buffer.readInt32();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_LONG:
         log.fine('LONG');
         var value = buffer.readInt32();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_LONGLONG:
         log.fine('LONGLONG');
         var value = buffer.readInt64();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_NEWDECIMAL:
         log.fine('NEWDECIMAL');
         var len = buffer.readByte();
         var num = buffer.readString(len);
         var value = double.parse(num);
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_FLOAT:
         log.fine('FLOAT');
         var value = buffer.readFloat();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_DOUBLE:
         log.fine('DOUBLE');
         var value = buffer.readDouble();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_BIT:
         log.fine('BIT');
@@ -108,7 +112,7 @@ class BinaryDataPacket extends ResultRow {
         for (var num in list) {
           value = (value << 8) + num;
         }
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_DATETIME:
       case FIELD_TYPE_DATE:
@@ -143,7 +147,7 @@ class BinaryDataPacket extends ResultRow {
 
         var value = DateTime.utc(
             year, month, day, hours, minutes, seconds, billionths ~/ 1000000);
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_TIME:
         log.fine('TIME');
@@ -184,23 +188,28 @@ class BinaryDataPacket extends ResultRow {
       case FIELD_TYPE_YEAR:
         log.fine('YEAR');
         var value = buffer.readInt16();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_STRING:
         log.fine('STRING');
         var value = buffer.readLengthCodedString();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_VAR_STRING:
         log.fine('STRING');
         var value = buffer.readLengthCodedString();
-        log.fine('Value: ${value}');
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_GEOMETRY:
         log.fine('GEOMETRY - not implemented');
         var len = buffer.readByte();
         //TODO
         var value = buffer.readList(len);
+        return value;
+      case FIELD_TYPE_JSON:
+        log.fine('Field type  ${field.type}');
+        var value = buffer.readLengthCodedString();
+        log.fine('Value: $value');
         return value;
       case FIELD_TYPE_NEWDATE:
       case FIELD_TYPE_DECIMAL:

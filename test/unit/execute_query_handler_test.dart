@@ -4,8 +4,7 @@ library mysql1.test.unit.execute_query_handler_test;
 
 import 'dart:convert';
 
-import 'package:mockito/mockito.dart';
-
+import 'package:mocktail/mocktail.dart';
 import 'package:mysql1/src/blob.dart';
 import 'package:mysql1/src/prepared_statements/execute_query_handler.dart';
 
@@ -92,7 +91,7 @@ void main() {
   });
 
   group('ExecuteQueryHandler.writeValuesToBuffer', () {
-    List<int> types;
+    late List<int> types;
 
     setUp(() {
       types = <int>[];
@@ -100,7 +99,7 @@ void main() {
 
     test('can write values for unexecuted query', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, false, []);
       handler.preparedValues = [];
@@ -111,7 +110,7 @@ void main() {
 
     test('can write values for executed query', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
@@ -122,7 +121,7 @@ void main() {
 
     test('can write values for executed query with nullmap', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       var handler = ExecuteQueryHandler(preparedQuery, true, []);
       handler.preparedValues = [];
@@ -134,7 +133,7 @@ void main() {
 
     test('can write values for unexecuted query with values', () {
       var preparedQuery = MockPreparedQuery();
-      when(preparedQuery.statementHandlerId).thenReturn(123);
+      when(() => preparedQuery.statementHandlerId).thenReturn(123);
 
       types = [100];
       var handler = ExecuteQueryHandler(preparedQuery, false, [123]);
@@ -173,7 +172,7 @@ void main() {
 
   group('ExecuteQueryHandler.prepareValue', () {
     MockPreparedQuery preparedQuery;
-    ExecuteQueryHandler handler;
+    late ExecuteQueryHandler handler;
 
     setUp(() {
       preparedQuery = MockPreparedQuery();
@@ -213,7 +212,7 @@ void main() {
 
   group('ExecuteQueryHandler._measureValue', () {
     MockPreparedQuery preparedQuery;
-    ExecuteQueryHandler handler;
+    late ExecuteQueryHandler handler;
 
     setUp(() {
       preparedQuery = MockPreparedQuery();

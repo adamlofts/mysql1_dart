@@ -1,5 +1,7 @@
 library mysql1.prepared_statements_test;
 
+import 'dart:convert';
+
 import 'package:test/test.dart';
 
 import 'package:mysql1/mysql1.dart';
@@ -186,9 +188,34 @@ void main() {
       expect(value, equals(13.93));
     });
 
+    //Test
+    test('can read JSON', () {
+      var dataPacket = BinaryDataPacket.forTests(null);
+      var buffer = Buffer.fromList([
+        15,
+        0x7b,
+        0x22,
+        0x74,
+        0x65,
+        0x73,
+        0x74,
+        0x22,
+        0x3a,
+        0x22,
+        0x74,
+        0x65,
+        0x73,
+        0x74,
+        0x22,
+        0x7d
+      ]);
+      var j = {'test': 'test'};
+      var field = Field.forTests(FIELD_TYPE_JSON);
+      var value = dataPacket.readField(field, buffer);
+      expect(value, equals(json.encode(j)));
+    });
     //test FLOAT
     //test DOUBLE
-
     test('can read BITs', () {
       var dataPacket = BinaryDataPacket.forTests(null);
       var buffer = Buffer.fromList([

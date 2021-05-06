@@ -9,13 +9,13 @@ import '../buffer.dart';
 /// identifiers, and which aren't part of the List object, can be used.
 abstract class ResultRow extends ListBase<dynamic> {
   /// Values as List
-  List<dynamic> values;
+  List<Object?>? values;
 
   /// Values as Map
   final Map<String, dynamic> fields = <String, dynamic>{};
 
   @override
-  int get length => values.length;
+  int get length => values?.length ?? 0;
 
   @override
   set length(int newLength) {
@@ -23,9 +23,9 @@ abstract class ResultRow extends ListBase<dynamic> {
   }
 
   @override
-  dynamic operator [](dynamic index) {
+  dynamic operator [](dynamic? index) {
     if (index is int) {
-      return values[index];
+      return values?[index];
     } else {
       return fields[index.toString()];
     }
@@ -39,5 +39,5 @@ abstract class ResultRow extends ListBase<dynamic> {
   @override
   String toString() => 'Fields: $fields';
 
-  Object readField(Field field, Buffer buffer);
+  Object? readField(Field field, Buffer buffer);
 }

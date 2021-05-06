@@ -22,7 +22,7 @@ const _NO_RESULT = _NoResult();
 /// next packet from the server, and [result] is [_NO_RESULT].
 class HandlerResponse {
   final bool finished;
-  final Handler nextHandler;
+  final Handler? nextHandler;
   final dynamic result;
 
   bool get hasResult => result != _NO_RESULT;

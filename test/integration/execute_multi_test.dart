@@ -16,15 +16,15 @@ void main() {
     ]);
     expect(values, hasLength(3));
 
-    var resultList = await values[0].toList();
+    var resultList = values[0].toList();
     expect(resultList[0][0], equals(1));
     expect(resultList[0][1].toString(), equals('A'));
 
-    resultList = await values[1].toList();
+    resultList = values[1].toList();
     expect(resultList[0][0], equals(2));
     expect(resultList[0][1].toString(), equals('B'));
 
-    resultList = await values[2].toList();
+    resultList = values[2].toList();
     expect(resultList[0][0], equals(3));
     expect(resultList[0][1].toString(), equals('C'));
   });

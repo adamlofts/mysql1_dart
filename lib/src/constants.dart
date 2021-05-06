@@ -100,6 +100,8 @@ const int FIELD_TYPE_YEAR = 0x0d;
 const int FIELD_TYPE_NEWDATE = 0x0e;
 const int FIELD_TYPE_VARCHAR = 0x0f;
 const int FIELD_TYPE_BIT = 0x10;
+
+const int FIELD_TYPE_JSON = 0xf5;
 const int FIELD_TYPE_NEWDECIMAL = 0xf6;
 const int FIELD_TYPE_ENUM = 0xf7;
 const int FIELD_TYPE_SET = 0xf8;

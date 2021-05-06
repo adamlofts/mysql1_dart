@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:logging/logging.dart';
 import 'package:mysql1/mysql1.dart';
@@ -91,13 +92,40 @@ END
   test('too few parameter count test', () async {
     await conn.query('DROP TABLE IF EXISTS p1');
     await conn.query('CREATE TABLE IF NOT EXISTS p1 (a INT, b INT)');
-    MySqlClientError e;
+    MySqlClientError? e;
     try {
       await conn.query('INSERT INTO `p1` (a, b) VALUES (?, ?)', [1]);
     } on MySqlClientError catch (e1) {
       e = e1;
     }
-    expect(e.message,
+    expect(e?.message,
         'Length of parameters (1) does not match parameter count in query (2)');
+  });
+  test('json type test', () async {
+    await conn.query('DROP TABLE IF EXISTS tjson');
+    await conn.query('CREATE TABLE tjson(a int, b json NULL)');
+    await conn.query('INSERT INTO `tjson` (a, b) VALUES (?, ?)', [
+      3,
+      json.encode({'key': 'val'})
+    ]);
+    var result = await conn.query('SELECT * FROM tjson');
+    expect(result.first.first, 3);
+    final obj = json.decode(result.first.last);
+    expect(obj, {'key': 'val'});
+  });
+
+  test('client timezone test', () async {
+    await conn.query('DROP TABLE IF EXISTS timezonetest');
+    await conn.query('CREATE TABLE timezonetest(a TIMESTAMP, b DATETIME)');
+    final n = DateTime.now().toUtc();
+    await conn.query('INSERT INTO `timezonetest` (a, b) VALUES (?, ?)', [
+      n,
+      n,
+    ]);
+    var result = await conn.query('SELECT * FROM timezonetest');
+    DateTime ts = result.first.first;
+    DateTime dt = result.first.last;
+    expect(ts.difference(n).inMicroseconds, lessThan(100));
+    expect(dt.difference(n).inMicroseconds, lessThan(100));
   });
 }

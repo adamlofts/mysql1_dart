@@ -1,0 +1,74 @@
+name: Dart CI
+
+on:
+  # Run on PRs and pushes to the default branch.
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 0 * * 0"
+
+env:
+  PUB_ENVIRONMENT: bot.github
+
+jobs:
+  # Check code formatting and static analysis on a single OS (linux)
+  # against dev, stable, and 2.12.0 (the package's lower bound).
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [stable, 2.12.0]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+        if: always() && steps.install.outcome == 'success'
+      - name: Analyze code
+        run: dart analyze --fatal-infos
+        if: always() && steps.install.outcome == 'success'
+
+  # Run tests on a matrix consisting of two dimensions:
+  # 1. OS: ubuntu-latest
+  # 2. Release channel: dev, stable, and 2.12.0 (the package's lower bound)
+  test:
+    needs: analyze
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        sdk: [stable, 2.12.0]
+        timezone: ["UTC", "Asia/Singapore"]
+    steps:
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: ${{ matrix.timezone }}
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1.0
+        with:
+          sdk: ${{ matrix.sdk }}
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run VM tests
+        run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3

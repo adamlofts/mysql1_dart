@@ -24,7 +24,6 @@ class MySqlException implements Exception {
     buffer.skip(1);
     var sqlState = buffer.readString(5);
     var message = buffer.readStringToEnd();
-
     return MySqlException._raw(errorNumber, sqlState, message);
   }
 

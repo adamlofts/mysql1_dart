@@ -17,16 +17,16 @@ import 'prepare_ok_packet.dart';
 
 class PrepareHandler extends Handler {
   final String _sql;
-  PrepareOkPacket _okPacket;
-  int _parametersToRead;
-  int _columnsToRead;
-  List<Field> _parameters;
-  List<Field> _columns;
+  late PrepareOkPacket _okPacket;
+  late int _parametersToRead;
+  late int _columnsToRead;
+  late List<Field?> _parameters;
+  late List<Field?> _columns;
 
   String get sql => _sql;
   PrepareOkPacket get okPacket => _okPacket;
-  List<Field> get parameters => _parameters;
-  List<Field> get columns => _columns;
+  List<Field?> get parameters => _parameters;
+  List<Field?> get columns => _columns;
 
   PrepareHandler(this._sql) : super(Logger('PrepareHandler'));
 
@@ -78,8 +78,8 @@ class PrepareHandler extends Handler {
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = List<Field>(_parametersToRead);
-      _columns = List<Field>(_columnsToRead);
+      _parameters = List<Field?>.filled(_parametersToRead, null);
+      _columns = List<Field?>.filled(_columnsToRead, null);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }
