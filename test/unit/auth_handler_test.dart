@@ -1,6 +1,7 @@
 library mysql1.auth_handler_test;
 
 import 'package:mysql1/src/auth/auth_handler.dart';
+import 'package:mysql1/src/auth/handshake_handler.dart';
 import 'package:mysql1/src/constants.dart';
 
 import 'package:test/test.dart';
@@ -8,8 +9,8 @@ import 'package:test/test.dart';
 void main() {
   group('auth_handler:', () {
     test('hash password correctly', () {
-      var handler =
-          AuthHandler('username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0);
+      var handler = AuthHandler(
+          'username', 'password', 'db', [1, 2, 3, 4], 0, 100, 0, AuthPlugin.mysqlNativePassword);
 
       var hash = handler.getHash();
 
@@ -46,7 +47,7 @@ void main() {
       var username = 'Boris';
       var password = 'Password';
       var handler = AuthHandler(username, password, null, [1, 2, 3, 4],
-          clientFlags, maxPacketSize, characterSet);
+          clientFlags, maxPacketSize, characterSet, AuthPlugin.mysqlNativePassword);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
@@ -76,7 +77,8 @@ void main() {
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
           clientFlags,
           maxPacketSize,
-          characterSet);
+          characterSet,
+          AuthPlugin.mysqlNativePassword);
 
       var hash = handler.getHash();
       var buffer = handler.createRequest();
@@ -98,8 +100,8 @@ void main() {
     var username = 'Борис';
     var password = 'здрасти';
     var database = 'дтабасе';
-    var handler =
-        AuthHandler(username, password, database, [1, 2, 3, 4], 0, 100, 0);
+    var handler = AuthHandler(
+        username, password, database, [1, 2, 3, 4], 0, 100, 0, AuthPlugin.mysqlNativePassword);
 
     var hash = handler.getHash();
     var buffer = handler.createRequest();

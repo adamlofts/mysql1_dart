@@ -11,6 +11,34 @@ import '../constants.dart';
 import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
+enum AuthPlugin {
+  none,
+  mysqlNativePassword,
+  cachingSha2Password,
+}
+
+AuthPlugin authPluginFromString(String v) {
+  switch (v) {
+    case 'mysql_native_password':
+      return AuthPlugin.mysqlNativePassword;
+    case 'caching_sha2_password':
+      return AuthPlugin.cachingSha2Password;
+    default:
+      throw MySqlClientError('Authentication plugin not supported: $v');
+  }
+}
+
+String authPluginToString(AuthPlugin v) {
+  switch (v) {
+    case AuthPlugin.mysqlNativePassword:
+      return 'mysql_native_password';
+    case AuthPlugin.cachingSha2Password:
+      return 'caching_sha2_password';
+    default:
+      return '';
+  }
+}
+
 class HandshakeHandler extends Handler {
   static const String MYSQL_NATIVE_PASSWORD = 'mysql_native_password';
 
@@ -28,7 +56,8 @@ class HandshakeHandler extends Handler {
   int? serverLanguage;
   int? serverStatus;
   int? scrambleLength;
-  late String pluginName;
+  var _authPlugin = AuthPlugin.none;
+  AuthPlugin get authPlugin => _authPlugin;
   bool useCompression = false;
   bool useSSL = false;
 
@@ -81,10 +110,11 @@ class HandshakeHandler extends Handler {
       }
 
       if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
-        pluginName = response.readStringToEnd();
+        var pluginName = response.readStringToEnd();
         if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
           pluginName = pluginName.substring(0, pluginName.length - 1);
         }
+        _authPlugin = authPluginFromString(pluginName);
       }
     }
   }
@@ -108,18 +138,16 @@ class HandshakeHandler extends Handler {
       throw MySqlClientError('Old Password AUthentication is not supported');
     }
 
-    if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
-        pluginName != MYSQL_NATIVE_PASSWORD) {
-      throw MySqlClientError(
-          'Authentication plugin not supported: $pluginName');
-    }
-
     var clientFlags = CLIENT_PROTOCOL_41 |
         CLIENT_LONG_PASSWORD |
         CLIENT_LONG_FLAG |
         CLIENT_TRANSACTIONS |
         CLIENT_SECURE_CONNECTION |
         CLIENT_MULTI_RESULTS;
+
+    if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
+      clientFlags |= CLIENT_PLUGIN_AUTH;
+    }
 
     if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout('Compression enabled');
@@ -149,11 +177,12 @@ class HandshakeHandler extends Handler {
                 clientFlags,
                 _maxPacketSize,
                 _characterSet,
+                _authPlugin,
               )));
     }
 
     return HandlerResponse(
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, _characterSet));
+            clientFlags, _maxPacketSize, _characterSet, _authPlugin));
   }
 }
