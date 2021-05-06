@@ -1,5 +1,6 @@
 // ignore_for_file: strong_mode_implicit_dynamic_list_literal, strong_mode_implicit_dynamic_parameter, argument_type_not_assignable, invalid_assignment, non_bool_condition, strong_mode_implicit_dynamic_variable, deprecated_member_use
 
+@TestOn('!windows')
 import 'dart:async';
 import 'dart:io';
 
