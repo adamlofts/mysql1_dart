@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.19.2
+
+06 May 2021
+* Add mysql8 to test matrix & support caching_sha2_password auth
+
 v0.19.1
 --
 
