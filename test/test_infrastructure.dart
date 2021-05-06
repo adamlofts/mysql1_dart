@@ -1,7 +1,5 @@
 library mysql1.test.test_infrastructure;
 
-import 'dart:io';
-
 import 'package:options_file/options_file.dart';
 import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
@@ -13,8 +11,6 @@ late MySqlConnection _conn;
 
 void initializeTest([String? tableName, String? createSql, String? insertSql]) {
   var options = OptionsFile('connection.options');
-
-  final password = Platform.environment['TEST_PASSWORD'];
 
   var s = ConnectionSettings(
     user: options.getString('user'),

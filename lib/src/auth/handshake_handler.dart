@@ -12,6 +12,7 @@ import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
 enum AuthPlugin {
+  none,
   mysqlNativePassword,
   cachingSha2Password,
 }
@@ -56,7 +57,7 @@ class HandshakeHandler extends Handler {
   int? serverStatus;
   int? scrambleLength;
   late String pluginName;
-  AuthPlugin _authPlugin;
+  var _authPlugin = AuthPlugin.none;
   AuthPlugin get authPlugin => _authPlugin;
   bool useCompression = false;
   bool useSSL = false;

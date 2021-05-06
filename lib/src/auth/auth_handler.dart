@@ -66,9 +66,9 @@ class AuthHandler extends Handler {
     if (password == null) {
       hash = <int>[];
     } else if (authPlugin == AuthPlugin.cachingSha2Password) {
-      hash = _makeCachingSha2Password(scrambleBuffer, password);
+      hash = _makeCachingSha2Password(scrambleBuffer, password!);
     } else {
-      hash = _makeMysqlNativePassword(scrambleBuffer, password);
+      hash = _makeMysqlNativePassword(scrambleBuffer, password!);
     }
     return hash;
   }
@@ -80,7 +80,7 @@ class AuthHandler extends Handler {
 
     var encodedUsername = username == null ? <int>[] : utf8.encode(username!);
     late List<int> encodedDb;
-    var encodedAuth;
+    List<int>? encodedAuth;
 
     var size = hash.length + encodedUsername.length + 2 + 32;
     var clientFlags = this.clientFlags;
@@ -89,7 +89,7 @@ class AuthHandler extends Handler {
       size += encodedDb.length + 1;
       clientFlags |= CLIENT_CONNECT_WITH_DB;
     }
-    if (clientFlags & CLIENT_PLUGIN_AUTH > 0 && authPlugin != null) {
+    if (clientFlags & CLIENT_PLUGIN_AUTH > 0) {
       encodedAuth = utf8.encode(authPluginToString(authPlugin));
       size += encodedAuth.length + 1;
     }
