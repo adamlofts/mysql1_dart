@@ -75,7 +75,7 @@ class ConnectionSettings {
     int maxPacketSize = 16 * 1024 * 1024,
     Duration timeout = const Duration(seconds: 30),
     int characterSet = CharacterSet.UTF8MB4}) =>
-      ConnectionSettings._(path, 3306, user, password, db, maxPacketSize, timeout, characterSet, false);
+      ConnectionSettings._(path, 3306, user, password, db, maxPacketSize, timeout, characterSet, true);
 
   ConnectionSettings.copy(ConnectionSettings o)
       : host = o.host,
