@@ -3,6 +3,7 @@ library buffered_socket;
 import 'dart:io';
 import 'dart:async';
 import 'package:logging/logging.dart';
+import 'package:mysql1/mysql1.dart';
 import 'buffer.dart';
 
 typedef ErrorHandler = Function(Object err);
@@ -10,8 +11,7 @@ typedef DoneHandler = Function();
 typedef DataReadyHandler = Function();
 typedef ClosedHandler = Function();
 
-typedef SocketFactory = Function(String host, int port, Duration timeout,
-    {bool isUnixSocket});
+typedef SocketFactory = Function(ConnectionSettings conn);
 
 class BufferedSocket {
   final Logger log;
@@ -61,35 +61,27 @@ class BufferedSocket {
     }
   }
 
-  static Future<RawSocket> defaultSocketFactory(
-      String host, int port, Duration timeout,
-      {bool isUnixSocket = false}) {
-    if (isUnixSocket) {
+  static Future<RawSocket> defaultSocketFactory(ConnectionSettings conn) async {
+    if (conn.isUnixSocket) {
       return RawSocket.connect(
-          InternetAddress(host, type: InternetAddressType.unix), port,
-          timeout: timeout);
-    } else {
-      return RawSocket.connect(host, port, timeout: timeout);
+          InternetAddress(conn.host, type: InternetAddressType.unix), conn.port,
+          timeout: conn.timeout);
     }
+    final socket = await RawSocket.connect(conn.host, conn.port, timeout: conn.timeout);
+    socket.setOption(SocketOption.tcpNoDelay, true);
+    return socket;
   }
 
   static Future<BufferedSocket> connect(
-    String host,
-    int port,
-    Duration timeout, {
+      ConnectionSettings conn,
+    {
     DataReadyHandler? onDataReady,
     DoneHandler? onDone,
     ErrorHandler? onError,
     ClosedHandler? onClosed,
     SocketFactory socketFactory = defaultSocketFactory,
-    bool isUnixSocket = false,
   }) async {
-    RawSocket socket;
-    socket =
-        await socketFactory(host, port, timeout, isUnixSocket: isUnixSocket);
-    if (!isUnixSocket) {
-      socket.setOption(SocketOption.tcpNoDelay, true);
-    }
+    final socket = await socketFactory(conn);
     return BufferedSocket._(socket, onDataReady, onDone, onError, onClosed);
   }
 

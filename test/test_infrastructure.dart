@@ -23,7 +23,6 @@ void initializeTest([String? tableName, String? createSql, String? insertSql]) {
   setUp(() async {
     // Ensure db exists
     var checkSettings = ConnectionSettings.copy(s);
-    checkSettings.db = null;
     final c = await MySqlConnection.connect(checkSettings);
     await c.query('CREATE DATABASE IF NOT EXISTS ${s.db} CHARACTER SET utf8');
     await c.close();

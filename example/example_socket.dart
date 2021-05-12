@@ -9,8 +9,7 @@ Future main() async {
       path: '/var/lib/mysql/mysql.sock',
       user: 'root',
       db: 'testdb',
-    ),
-    isUnixSocket: true,
+    )
   );
 
   // Create a table

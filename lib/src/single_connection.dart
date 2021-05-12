@@ -29,51 +29,53 @@ import 'results/row.dart';
 final Logger _log = Logger('MySqlConnection');
 
 class ConnectionSettings {
-  String host;
-  int port;
-  String? user;
-  String? password;
-  String? db;
-  bool useCompression;
-  bool useSSL;
-  int maxPacketSize;
-  int characterSet;
+  final bool isUnixSocket;
+  final String host;
+  final int port;
+  final String? user;
+  final String? password;
+  final String? db;
+  final int maxPacketSize;
+  final int characterSet;
 
   /// The timeout for connecting to the database and for all database operations.
-  Duration timeout;
+  final Duration timeout;
 
-  ConnectionSettings(
-      {this.host = 'localhost',
-      this.port = 3306,
-      this.user,
-      this.password,
-      this.db,
-      this.useCompression = false,
-      this.useSSL = false,
-      this.maxPacketSize = 16 * 1024 * 1024,
-      this.timeout = const Duration(seconds: 30),
-      this.characterSet = CharacterSet.UTF8MB4});
+  ConnectionSettings._(
+    this.host,
+    this.port,
+    this.user,
+    this.password,
+    this.db,
+    this.maxPacketSize,
+    this.timeout,
+    this.characterSet,
+    this.isUnixSocket
+  );
 
-  factory ConnectionSettings.socket(
-          {required String path,
-          String? user,
-          String? password,
-          String? db,
-          bool useCompression = false,
-          bool useSSL = false,
-          int maxPacketSize = 16 * 1024 * 1024,
-          Duration timeout = const Duration(seconds: 30),
-          int characterSet = CharacterSet.UTF8MB4}) =>
-      ConnectionSettings(
-          host: path,
-          user: user,
-          password: password,
-          db: db,
-          useCompression: useCompression,
-          useSSL: useSSL,
-          maxPacketSize: maxPacketSize,
-          timeout: timeout,
-          characterSet: characterSet);
+  factory ConnectionSettings({
+    host = 'localhost',
+    port = 3306,
+    String? user,
+    String? password,
+    String? db,
+    int maxPacketSize = 16 * 1024 * 1024,
+    Duration timeout = const Duration(seconds: 30),
+    int characterSet = CharacterSet.UTF8MB4}) => 
+      ConnectionSettings._(host, port, user, password, db, maxPacketSize, timeout, characterSet, false);
+
+  /// Connection settings for a unix socket
+  factory ConnectionSettings.socket({
+    required String path,
+    String? user,
+    String? password,
+    String? db,
+    bool useCompression = false,
+    bool useSSL = false,
+    int maxPacketSize = 16 * 1024 * 1024,
+    Duration timeout = const Duration(seconds: 30),
+    int characterSet = CharacterSet.UTF8MB4}) =>
+      ConnectionSettings._(path, 3306, user, password, db, maxPacketSize, timeout, characterSet, false);
 
   ConnectionSettings.copy(ConnectionSettings o)
       : host = o.host,
@@ -81,11 +83,10 @@ class ConnectionSettings {
         user = o.user,
         password = o.password,
         db = o.db,
-        useCompression = o.useCompression,
-        useSSL = o.useSSL,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
-        characterSet = o.characterSet;
+        characterSet = o.characterSet,
+        isUnixSocket = o.isUnixSocket;
 }
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
@@ -126,18 +127,13 @@ class MySqlConnection {
   /// socket.
   /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
   /// server.
-  static Future<MySqlConnection> connect(ConnectionSettings c,
-      {bool isUnixSocket = false}) async {
-    assert(!c.useSSL); // Not implemented
-    assert(!c.useCompression);
-
+  static Future<MySqlConnection> connect(ConnectionSettings c) async {
     ReqRespConnection? conn;
     late Completer handshakeCompleter;
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
-    var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
-        isUnixSocket: isUnixSocket, onDataReady: () {
+    var socket = await BufferedSocket.connect(c, onDataReady: () {
       conn?._readPacket();
     }, onDone: () {
       _log.fine('done');
@@ -156,8 +152,7 @@ class MySqlConnection {
       }
     });
 
-    Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
-        c.characterSet, c.db, c.useCompression, c.useSSL);
+    Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize, c.characterSet, c.db);
     handshakeCompleter = Completer<void>();
     conn =
         ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
