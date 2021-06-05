@@ -81,5 +81,5 @@ await conn.query(
 After making an update or addition, get number of affected rows:
 
 ```dart
-print(${result.affectedRows})
+print('${result.affectedRows}')
 ```
