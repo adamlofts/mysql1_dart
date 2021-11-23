@@ -68,10 +68,13 @@ List get responseValues {
   values.add(0x010203); //[1, 2, 3]);
   values.add(123);
 
-  values.add(DateTime.utc(dt.year, dt.month, dt.day)); // date has zero'd out time value
+  values.add(DateTime.utc(
+      dt.year, dt.month, dt.day)); // date has zero'd out time value
   // Datetime has no millis
-  values.add(DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
-  values.add(DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+  values.add(
+      DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
+  values.add(
+      DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
   values.add(Duration(hours: dt.hour, minutes: dt.minute, seconds: dt.second));
   values.add(2012);
 
