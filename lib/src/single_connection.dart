@@ -206,7 +206,9 @@ class MySqlConnection {
     return ret;
   }
 
-  Future transaction(Function queryBlock) async {
+  Future<void> transaction(
+    Future<void> Function(TransactionContext context) queryBlock,
+  ) async {
     await query('start transaction');
     try {
       await queryBlock(TransactionContext._(this));
@@ -215,7 +217,7 @@ class MySqlConnection {
       if (e is! _RollbackError) {
         rethrow;
       }
-      return e;
+      return;
     }
     await query('commit');
   }
@@ -227,7 +229,8 @@ class TransactionContext {
 
   Future<Results> query(String sql, [List<Object?>? values]) =>
       _conn.query(sql, values);
-  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) =>
+  Future<List<Results>> queryMulti(
+          String sql, Iterable<List<Object?>> values) =>
       _conn.queryMulti(sql, values);
   void rollback() => throw _RollbackError();
 }
@@ -295,7 +298,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _readPacket() async {
+  Future<void> _readPacket() async {
     _log.fine('readPacket readyForHeader=$_readyForHeader');
     if (_readyForHeader) {
       _readyForHeader = false;
@@ -304,7 +307,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _handleHeader(Buffer buffer) async {
+  Future<void> _handleHeader(Buffer buffer) async {
     var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
     _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
@@ -319,7 +322,7 @@ class ReqRespConnection {
     }
   }
 
-  Future _handleMoreData(Buffer buffer) async {
+  Future<void> _handleMoreData(Buffer buffer) async {
     _largePacketBuffers.add(buffer);
     if (buffer.length < 0xffffff) {
       var length = _largePacketBuffers.fold<int>(0, (length, buf) {
@@ -392,7 +395,7 @@ class ReqRespConnection {
     _handler = null;
   }
 
-  Future sendBuffer(Buffer buffer) {
+  Future<void> sendBuffer(Buffer buffer) {
     if (buffer.length > _maxPacketSize) {
       throw MySqlClientError(
           'Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)');
@@ -435,7 +438,7 @@ class ReqRespConnection {
   }
 
   /// This method just sends the handler data.
-  Future _processHandlerNoResponse(Handler handler) {
+  Future<void> _processHandlerNoResponse(Handler handler) {
     if (_handler != null) {
       throw MySqlClientError(
           'Connection cannot process a request for $handler while a request is already in progress for $_handler');
