@@ -23,7 +23,7 @@ abstract class ResultRow extends ListBase<dynamic> {
   }
 
   @override
-  dynamic operator [](dynamic? index) {
+  dynamic operator [](dynamic index) {
     if (index is int) {
       return values?[index];
     } else {
