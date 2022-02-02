@@ -4,7 +4,7 @@ description: A library for connecting to and querying MySQL & MariaDB databases.
 homepage: https://github.com/adamlofts/mysql1_dart
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   collection: ^1.15.0
@@ -21,4 +21,3 @@ dev_dependencies:
   test: ^1.16.5
   pedantic: ^1.11.0
   build_runner: ^2.1.2
-

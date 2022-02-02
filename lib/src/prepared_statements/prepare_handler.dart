@@ -18,15 +18,15 @@ import 'prepare_ok_packet.dart';
 class PrepareHandler extends Handler {
   final String _sql;
   late PrepareOkPacket _okPacket;
-  late int _parametersToRead;
-  late int _columnsToRead;
-  late List<Field?> _parameters;
-  late List<Field?> _columns;
+  int? _parametersToRead;
+  int? _columnsToRead;
+  List<Field?>? _parameters;
+  List<Field?>? _columns;
 
   String get sql => _sql;
   PrepareOkPacket get okPacket => _okPacket;
-  List<Field?> get parameters => _parameters;
-  List<Field?> get columns => _columns;
+  List<Field?>? get parameters => _parameters;
+  List<Field?>? get columns => _columns;
 
   PrepareHandler(this._sql) : super(Logger('PrepareHandler'));
 
@@ -45,7 +45,7 @@ class PrepareHandler extends Handler {
     var packet = checkResponse(response, true);
     if (packet == null) {
       log.fine('Not an OK packet, params to read: $_parametersToRead');
-      if (_parametersToRead > -1) {
+      if (_parametersToRead != null && _parameters != null && _parametersToRead! > -1) {
         if (response[0] == PACKET_EOF) {
           log.fine('EOF');
           if (_parametersToRead != 0) {
@@ -55,31 +55,29 @@ class PrepareHandler extends Handler {
         } else {
           var fieldPacket = Field(response);
           log.fine('field packet: $fieldPacket');
-          _parameters[_okPacket.parameterCount - _parametersToRead] =
-              fieldPacket;
+          _parameters![_okPacket.parameterCount - _parametersToRead!] = fieldPacket;
         }
-        _parametersToRead--;
-      } else if (_columnsToRead > -1) {
+        _parametersToRead = _parametersToRead! - 1;
+      } else if (_columnsToRead != null && _columns != null && _columnsToRead! > -1) {
         if (response[0] == PACKET_EOF) {
           log.fine('EOF');
           if (_columnsToRead != 0) {
-            throw createMySqlProtocolError(
-                'Unexpected EOF packet; was expecting another $_columnsToRead column(s)');
+            throw createMySqlProtocolError('Unexpected EOF packet; was expecting another $_columnsToRead column(s)');
           }
         } else {
           var fieldPacket = Field(response);
           log.fine('field packet (column): $fieldPacket');
-          _columns[_okPacket.columnCount - _columnsToRead] = fieldPacket;
+          _columns![_okPacket.columnCount - _columnsToRead!] = fieldPacket;
         }
-        _columnsToRead--;
+        _columnsToRead = _columnsToRead! - 1;
       }
     } else if (packet is PrepareOkPacket) {
       log.fine(packet.toString());
       _okPacket = packet;
       _parametersToRead = packet.parameterCount;
       _columnsToRead = packet.columnCount;
-      _parameters = List<Field?>.filled(_parametersToRead, null);
-      _columns = List<Field?>.filled(_columnsToRead, null);
+      _parameters = List<Field?>.filled(_parametersToRead!, null);
+      _columns = List<Field?>.filled(_columnsToRead!, null);
       if (_parametersToRead == 0) {
         _parametersToRead = -1;
       }
