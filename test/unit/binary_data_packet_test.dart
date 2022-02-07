@@ -4,7 +4,6 @@ import 'package:mysql1/mysql1.dart';
 import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/prepared_statements/binary_data_packet.dart';
-import 'package:mysql1/src/results/field.dart';
 
 import 'package:test/test.dart';
 

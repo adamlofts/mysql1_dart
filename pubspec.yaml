@@ -3,12 +3,6 @@ version: 0.18.1
 description: A library for connecting to and querying MySQL & MariaDB databases.
 homepage: https://github.com/adamlofts/mysql1_dart
 
-authors:
-- Adam Lofts <adam.lofts@gmail.com>
-- James Ots <code@jamesots.com>
-- Faisal Abid <faisal.abid@gmail.com>
-- Ravi Teja Gudapati <tejainece@gmail.com>
-
 environment:
   sdk: '>=2.0.0 <3.0.0'
 
