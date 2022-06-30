@@ -205,7 +205,7 @@ class MySqlConnection {
     }
     return ret;
   }
-  
+
   Future<T?> transaction<T>(
     Future<T> Function(TransactionContext) queryBlock, {
     Function(Object)? onError,
