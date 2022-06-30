@@ -227,7 +227,8 @@ class TransactionContext {
 
   Future<Results> query(String sql, [List<Object?>? values]) =>
       _conn.query(sql, values);
-  Future<List<Results>> queryMulti(String sql, Iterable<List<Object?>> values) =>
+  Future<List<Results>> queryMulti(
+          String sql, Iterable<List<Object?>> values) =>
       _conn.queryMulti(sql, values);
   void rollback() => throw _RollbackError();
 }

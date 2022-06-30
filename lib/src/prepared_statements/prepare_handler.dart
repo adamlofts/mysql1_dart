@@ -45,7 +45,9 @@ class PrepareHandler extends Handler {
     var packet = checkResponse(response, true);
     if (packet == null) {
       log.fine('Not an OK packet, params to read: $_parametersToRead');
-      if (_parametersToRead != null && _parameters != null && _parametersToRead! > -1) {
+      if (_parametersToRead != null &&
+          _parameters != null &&
+          _parametersToRead! > -1) {
         if (response[0] == PACKET_EOF) {
           log.fine('EOF');
           if (_parametersToRead != 0) {
@@ -55,14 +57,18 @@ class PrepareHandler extends Handler {
         } else {
           var fieldPacket = Field(response);
           log.fine('field packet: $fieldPacket');
-          _parameters![_okPacket.parameterCount - _parametersToRead!] = fieldPacket;
+          _parameters![_okPacket.parameterCount - _parametersToRead!] =
+              fieldPacket;
         }
         _parametersToRead = _parametersToRead! - 1;
-      } else if (_columnsToRead != null && _columns != null && _columnsToRead! > -1) {
+      } else if (_columnsToRead != null &&
+          _columns != null &&
+          _columnsToRead! > -1) {
         if (response[0] == PACKET_EOF) {
           log.fine('EOF');
           if (_columnsToRead != 0) {
-            throw createMySqlProtocolError('Unexpected EOF packet; was expecting another $_columnsToRead column(s)');
+            throw createMySqlProtocolError(
+                'Unexpected EOF packet; was expecting another $_columnsToRead column(s)');
           }
         } else {
           var fieldPacket = Field(response);
