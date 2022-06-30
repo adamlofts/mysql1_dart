@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.20.0
+
+30 June 2022
+* Add return to transaction
+* null safety fixes
+
 v0.19.2
 
 06 May 2021
