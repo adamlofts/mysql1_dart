@@ -67,6 +67,17 @@ await conn.query(
     [26, 'Bob']);
 ```
 
+Flutter Macos
+-------------
+You may need add an entitlement to DebugProfile.entitlements and Release.entitlements in macos/Runner.
+
+```
+<key>com.apple.security.network.client</key>
+<true/>
+
+```
+
+
 Flutter Web
 -----------
 
