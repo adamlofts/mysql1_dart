@@ -38,6 +38,8 @@ class ConnectionSettings {
   bool useSSL;
   int maxPacketSize;
   int characterSet;
+    ///Default log level is [Level.INFO]. We can set log level as per convenience of the app
+  Level level;
 
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
@@ -52,7 +54,12 @@ class ConnectionSettings {
       this.useSSL = false,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
-      this.characterSet = CharacterSet.UTF8MB4});
+
+  
+      this.level = Level.INFO,
+      this.characterSet = CharacterSet.UTF8MB4}) {
+    Logger.root.level = level; // defaults to Level.INFO
+  }
 
   factory ConnectionSettings.socket(
           {required String path,
@@ -85,6 +92,7 @@ class ConnectionSettings {
         useSSL = o.useSSL,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
+        level = o.level,
         characterSet = o.characterSet;
 }
 
