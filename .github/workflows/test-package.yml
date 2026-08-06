@@ -40,6 +40,11 @@ jobs:
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest
   # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
+  #
+  # The base matrix connects as root with no password. The `include` leg
+  # gives it a real password, which nothing else here covers. Full
+  # authentication is covered by the unix-socket job below, because it is the
+  # only transport the server will accept a cleartext password over.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -50,6 +55,15 @@ jobs:
         sdk: [stable, 3.0.0]
         timezone: ["UTC", "Asia/Singapore"]
         mysql: ["mysql:5.7", "mysql:8"]
+        password: [""]
+        include:
+          # mysql_native_password with a real password. This works today, and
+          # nothing in the base matrix covers a non-empty password at all.
+          - os: ubuntu-latest
+            sdk: stable
+            timezone: "UTC"
+            mysql: "mysql:5.7"
+            password: "s3cret"
     steps:
       - name: Set Timezone
         uses: szenius/set-timezone@v2.0
@@ -65,12 +79,73 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
+        env:
+          MYSQL_PASSWORD: ${{ matrix.password }}
 
     services:
       mysql:
         image: ${{ matrix.mysql }}
         env:
+          # Both are set on purpose. The entrypoint treats an empty
+          # MYSQL_ROOT_PASSWORD as unset, so the empty legs fall back to
+          # MYSQL_ALLOW_EMPTY_PASSWORD and the password legs get a root
+          # password. `mysqladmin ping` still reports the server as alive
+          # when it denies access, so the health check works either way.
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: ${{ matrix.password }}
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+  # Authentication over a unix socket.
+  #
+  # The first connection by an account the server has not cached asks for full
+  # authentication, and the server only accepts a cleartext password over a
+  # connection nobody else can read - so a unix socket is the only way to
+  # cover that exchange, and the fast auth which follows it, without
+  # implementing the RSA alternative.
+  #
+  # The server runs as a step rather than as a service because the directory
+  # the socket goes in has to exist, and be writable by the server, before the
+  # server starts. Service containers are created before any step runs.
+  unix-socket:
+    needs: analyze
+    runs-on: ubuntu-latest
+    env:
+      SOCKET_DIR: /tmp/mysql-socket
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1.8.0
+        with:
+          sdk: stable
+      - name: Start MySQL on a unix socket
+        run: |
+          mkdir -p "$SOCKET_DIR"
+          chmod 777 "$SOCKET_DIR"
+          docker run -d --name mysql-socket \
+            -e MYSQL_ROOT_PASSWORD=s3cret \
+            -e MYSQL_DATABASE=testdb \
+            -v "$SOCKET_DIR":/var/run/mysqld \
+            mysql:8
+          for i in $(seq 60); do
+            if [ -S "$SOCKET_DIR/mysqld.sock" ] && \
+               docker exec mysql-socket mysqladmin ping -uroot -ps3cret --silent >/dev/null 2>&1; then
+              echo "server ready after ${i} attempts"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not come up"
+          docker logs mysql-socket
+          exit 1
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run VM tests
+        run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+        env:
+          MYSQL_SOCKET: /tmp/mysql-socket/mysqld.sock
+          MYSQL_USER: root
+          MYSQL_PASSWORD: s3cret
+          MYSQL_DATABASE: testdb

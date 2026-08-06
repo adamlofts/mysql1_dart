@@ -24,6 +24,24 @@ const int PACKET_OK = 0;
 const int PACKET_ERROR = 0xFF;
 const int PACKET_EOF = 0xFE;
 
+/// Sent by the server during authentication, carrying data which only the
+/// authentication plugin in use knows how to read.
+const int PACKET_AUTH_MORE_DATA = 0x01;
+
+/// Sent by the server during authentication to ask the client to carry on
+/// with a different plugin. Shares its first byte with [PACKET_EOF], which
+/// cannot arrive during authentication.
+const int PACKET_AUTH_SWITCH_REQUEST = 0xFE;
+
+/// The server has the password cached and authentication is done. An ok
+/// packet follows.
+const int CACHING_SHA2_FAST_AUTH_SUCCESS = 0x03;
+
+/// The server does not have the password cached, so it wants the password
+/// itself: in the clear if the connection is private, RSA encrypted with the
+/// server's public key otherwise.
+const int CACHING_SHA2_PERFORM_FULL_AUTHENTICATION = 0x04;
+
 const int CLIENT_LONG_PASSWORD = 1 << 0;
 const int CLIENT_FOUND_ROWS = 1 << 1;
 const int CLIENT_LONG_FLAG = 1 << 2;

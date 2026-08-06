@@ -35,27 +35,59 @@ Map<String, String> _readOptionsFile() {
   return options;
 }
 
+/// One setting, from the environment if it is there and not empty, otherwise
+/// from `connection.options`.
+///
+/// An empty environment variable counts as unset. A CI matrix has no way to
+/// leave one out, and an empty password is not the same as no password: the
+/// driver sends an empty auth response for null, and a hash of '' otherwise.
+String? _option(String key, String envKey) {
+  final fromEnv = Platform.environment[envKey];
+  if (fromEnv != null && fromEnv.isNotEmpty) {
+    return fromEnv;
+  }
+  return _readOptionsFile()[key];
+}
+
+/// The unix socket to run against, if the tests are not using TCP.
+///
+/// Worth having because the server only asks for - and only accepts - a
+/// cleartext password over a connection nobody else can read, so this is the
+/// only way to exercise caching_sha2_password full authentication without
+/// implementing the RSA alternative.
+String? testSocketPath() => _option('socket', 'MYSQL_SOCKET');
+
 /// How the integration tests reach the database.
 ///
 /// `connection.options` is read first, then any `MYSQL_*` environment
 /// variable overrides it, so a checkout can be pointed at another server
 /// without editing a tracked file.
 ConnectionSettings testConnectionSettings() {
-  final options = _readOptionsFile();
-  final env = Platform.environment;
+  final socket = testSocketPath();
+  if (socket != null) {
+    return ConnectionSettings.socket(
+      path: socket,
+      user: _option('user', 'MYSQL_USER'),
+      password: _option('password', 'MYSQL_PASSWORD'),
+      db: _option('db', 'MYSQL_DATABASE'),
+    );
+  }
 
-  String? value(String key, String envKey) => env[envKey] ?? options[key];
-
-  final port = value('port', 'MYSQL_PORT');
+  final port = _option('port', 'MYSQL_PORT');
 
   return ConnectionSettings(
-    user: value('user', 'MYSQL_USER'),
-    password: value('password', 'MYSQL_PASSWORD'),
+    user: _option('user', 'MYSQL_USER'),
+    password: _option('password', 'MYSQL_PASSWORD'),
     port: port == null ? 3306 : int.parse(port),
-    db: value('db', 'MYSQL_DATABASE'),
-    host: value('host', 'MYSQL_HOST') ?? 'localhost',
+    db: _option('db', 'MYSQL_DATABASE'),
+    host: _option('host', 'MYSQL_HOST') ?? 'localhost',
   );
 }
+
+/// Connect for a test, telling the driver when the settings are a unix
+/// socket. It cannot tell on its own - the path is carried in `host`.
+Future<MySqlConnection> connectForTest(ConnectionSettings settings) =>
+    MySqlConnection.connect(settings, isUnixSocket: testSocketPath() != null);
 
 void initializeTest([String? tableName, String? createSql, String? insertSql]) {
   var s = testConnectionSettings();
@@ -64,11 +96,11 @@ void initializeTest([String? tableName, String? createSql, String? insertSql]) {
     // Ensure db exists
     var checkSettings = ConnectionSettings.copy(s);
     checkSettings.db = null;
-    final c = await MySqlConnection.connect(checkSettings);
+    final c = await connectForTest(checkSettings);
     await c.query('CREATE DATABASE IF NOT EXISTS ${s.db} CHARACTER SET utf8');
     await c.close();
 
-    _conn = await MySqlConnection.connect(s);
+    _conn = await connectForTest(s);
 
     if (tableName != null) {
       await setup(_conn, tableName, createSql, insertSql);
