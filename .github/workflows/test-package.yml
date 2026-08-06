@@ -41,15 +41,13 @@ jobs:
   # 1. OS: ubuntu-latest
   # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
   #
-  # The base matrix connects as root with no password, which is the only case
-  # the driver's authentication has ever been exercised against. The two
-  # `include` legs give it a real password - see the comments on each.
+  # The base matrix connects as root with no password. The `include` leg
+  # gives it a real password, which nothing else here covers. Full
+  # authentication is covered by the unix-socket job below, because it is the
+  # only transport the server will accept a cleartext password over.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
-    # A hyphenated key cannot be read back from `matrix` - the expression
-    # parser treats the hyphens as subtraction - hence the separate name.
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -66,26 +64,6 @@ jobs:
             timezone: "UTC"
             mysql: "mysql:5.7"
             password: "s3cret"
-          # The one authentication case still not supported, kept visible.
-          #
-          # MySQL 8 defaults to caching_sha2_password, and the first time an
-          # account with a password connects the server has nothing cached, so
-          # it asks for full authentication. Answering that on a connection a
-          # third party could read means encrypting the password with the
-          # server's RSA public key, which this driver cannot do - it reports
-          # what to do instead, and test/integration/auth_test.dart asserts
-          # that message.
-          #
-          # So this leg cannot connect at all and every test in it fails. It
-          # is allowed to, rather than holding up the rest: drop
-          # `experimental` to make it blocking, and delete the leg once
-          # full authentication works.
-          - os: ubuntu-latest
-            sdk: stable
-            timezone: "UTC"
-            mysql: "mysql:8"
-            password: "s3cret"
-            experimental: true
     steps:
       - name: Set Timezone
         uses: szenius/set-timezone@v2.0
@@ -118,3 +96,56 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+  # Authentication over a unix socket.
+  #
+  # The first connection by an account the server has not cached asks for full
+  # authentication, and the server only accepts a cleartext password over a
+  # connection nobody else can read - so a unix socket is the only way to
+  # cover that exchange, and the fast auth which follows it, without
+  # implementing the RSA alternative.
+  #
+  # The server runs as a step rather than as a service because the directory
+  # the socket goes in has to exist, and be writable by the server, before the
+  # server starts. Service containers are created before any step runs.
+  unix-socket:
+    needs: analyze
+    runs-on: ubuntu-latest
+    env:
+      SOCKET_DIR: /tmp/mysql-socket
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1.8.0
+        with:
+          sdk: stable
+      - name: Start MySQL on a unix socket
+        run: |
+          mkdir -p "$SOCKET_DIR"
+          chmod 777 "$SOCKET_DIR"
+          docker run -d --name mysql-socket \
+            -e MYSQL_ROOT_PASSWORD=s3cret \
+            -e MYSQL_DATABASE=testdb \
+            -v "$SOCKET_DIR":/var/run/mysqld \
+            mysql:8
+          for i in $(seq 60); do
+            if [ -S "$SOCKET_DIR/mysqld.sock" ] && \
+               docker exec mysql-socket mysqladmin ping -uroot -ps3cret --silent >/dev/null 2>&1; then
+              echo "server ready after ${i} attempts"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not come up"
+          docker logs mysql-socket
+          exit 1
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run VM tests
+        run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+        env:
+          MYSQL_SOCKET: /tmp/mysql-socket/mysqld.sock
+          MYSQL_USER: root
+          MYSQL_PASSWORD: s3cret
+          MYSQL_DATABASE: testdb
