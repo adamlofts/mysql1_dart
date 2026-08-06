@@ -44,7 +44,16 @@ ConnectionSettings testConnectionSettings() {
   final options = _readOptionsFile();
   final env = Platform.environment;
 
-  String? value(String key, String envKey) => env[envKey] ?? options[key];
+  // An empty environment variable counts as unset. A CI matrix has no way to
+  // leave one out, and an empty password is not the same as no password: the
+  // driver sends an empty auth response for null, and a hash of '' otherwise.
+  String? value(String key, String envKey) {
+    final fromEnv = env[envKey];
+    if (fromEnv != null && fromEnv.isNotEmpty) {
+      return fromEnv;
+    }
+    return options[key];
+  }
 
   final port = value('port', 'MYSQL_PORT');
 

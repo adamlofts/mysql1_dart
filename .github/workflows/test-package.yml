@@ -40,6 +40,10 @@ jobs:
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest
   # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
+  #
+  # The base matrix connects as root with no password, which is the only case
+  # the driver's authentication has ever been exercised against. The two
+  # `include` legs give it a real password - see the comments on each.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -50,6 +54,38 @@ jobs:
         sdk: [stable, 3.0.0]
         timezone: ["UTC", "Asia/Singapore"]
         mysql: ["mysql:5.7", "mysql:8"]
+        password: [""]
+        include:
+          # mysql_native_password with a real password. This works today, and
+          # nothing in the base matrix covers a non-empty password at all.
+          - os: ubuntu-latest
+            sdk: stable
+            timezone: "UTC"
+            mysql: "mysql:5.7"
+            password: "s3cret"
+          # RED PIN - expected to fail until the auth handling is fixed.
+          #
+          # MySQL 8 defaults to caching_sha2_password. With a real password
+          # the server answers the handshake response with AuthMoreData
+          # (0x01), which AuthHandler does not handle: it inherits the default
+          # processResponse, whose checkResponse only knows OK (0x00) and ERR
+          # (0xff), so it returns null and *finishes the handshake*. The real
+          # OK packet is then swallowed by a connection with no handler and
+          # every later response is one packet behind, which surfaces as
+          # "Error 1156 (08S01): Got packets out of order".
+          #
+          # The same hole mishandles AuthSwitchRequest (0xfe), so a
+          # mysql_native_password account on a caching_sha2 server fails the
+          # same way. An empty password is the only case that works, because
+          # then the server replies with a plain OK.
+          #
+          # Verified locally against mysql 8.0.31 and 5.7.44: 5.7 with a
+          # password passes all 113 tests, 8 with a password fails at connect.
+          - os: ubuntu-latest
+            sdk: stable
+            timezone: "UTC"
+            mysql: "mysql:8"
+            password: "s3cret"
     steps:
       - name: Set Timezone
         uses: szenius/set-timezone@v2.0
@@ -65,12 +101,20 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
+        env:
+          MYSQL_PASSWORD: ${{ matrix.password }}
 
     services:
       mysql:
         image: ${{ matrix.mysql }}
         env:
+          # Both are set on purpose. The entrypoint treats an empty
+          # MYSQL_ROOT_PASSWORD as unset, so the empty legs fall back to
+          # MYSQL_ALLOW_EMPTY_PASSWORD and the password legs get a root
+          # password. `mysqladmin ping` still reports the server as alive
+          # when it denies access, so the health check works either way.
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: ${{ matrix.password }}
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
