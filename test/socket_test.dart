@@ -18,7 +18,7 @@ class BufferFake extends Fake implements Buffer {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue<Buffer>(BufferFake());
+    registerFallbackValue(BufferFake());
   });
 
   hierarchicalLoggingEnabled = true;
@@ -39,7 +39,7 @@ void main() {
 
   test('timeout connect test', () async {
     // The connect call should raise a timeout.
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12346);
@@ -79,7 +79,7 @@ void main() {
   });
 
   test('socket closed before handshake', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12347);
@@ -95,7 +95,7 @@ void main() {
   });
 
   test('socket too many connections on connect', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12348);
@@ -141,7 +141,7 @@ void main() {
   });
 
   test('bad protocol', () async {
-    var sock;
+    ServerSocket? sock;
     var thrown = false;
     try {
       sock = await ServerSocket.bind('localhost', 12348);

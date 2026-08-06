@@ -1,4 +1,4 @@
-part of integrationtests;
+part of '../integration_test.dart';
 
 /*
 Future deleteInsertSelect(ConnectionPool pool, table, insert, select) async {

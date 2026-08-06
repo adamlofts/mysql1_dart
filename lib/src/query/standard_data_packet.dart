@@ -15,10 +15,6 @@ import '../results/field.dart';
 class StandardDataPacket extends ResultRow {
   final Logger log = Logger('StandardDataPacket');
 
-  /// Values as Map
-  @override
-  final Map<String, dynamic> fields = <String, dynamic>{};
-
   StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
     values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {

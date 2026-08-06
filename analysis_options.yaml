@@ -1,1 +1,9 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    # The protocol constants, and the test fixtures built from them, use the
+    # names the MySQL protocol documentation and C client use. Matching the
+    # spec is worth more here than matching Dart's naming convention.
+    constant_identifier_names: false
+    non_constant_identifier_names: false

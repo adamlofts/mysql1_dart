@@ -6,24 +6,25 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  schedule:
-    - cron: "0 0 * * 0"
+  # No schedule: a workflow with a cron trigger is disabled after 60 days of
+  # repository inactivity, and that disables every trigger, not just the cron.
+  workflow_dispatch:
 
 env:
   PUB_ENVIRONMENT: bot.github
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
-  # against dev, stable, and 2.12.0 (the package's lower bound).
+  # against stable and 3.0.0 (the package's lower bound).
   analyze:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        sdk: [stable, 2.12.0]
+        sdk: [stable, 3.0.0]
     steps:
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1.0
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1.8.0
         with:
           sdk: ${{ matrix.sdk }}
       - id: install
@@ -38,7 +39,7 @@ jobs:
 
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest
-  # 2. Release channel: dev, stable, and 2.12.0 (the package's lower bound)
+  # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -46,16 +47,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        sdk: [stable, 2.12.0]
+        sdk: [stable, 3.0.0]
         timezone: ["UTC", "Asia/Singapore"]
         mysql: ["mysql:5.7", "mysql:8"]
     steps:
       - name: Set Timezone
-        uses: szenius/set-timezone@v1.0
+        uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: ${{ matrix.timezone }}
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1.0
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1.8.0
         with:
           sdk: ${{ matrix.sdk }}
       - id: install

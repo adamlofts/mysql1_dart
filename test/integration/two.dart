@@ -1,4 +1,4 @@
-part of integrationtests;
+part of '../integration_test.dart';
 
 /*
 void runIntTests2(

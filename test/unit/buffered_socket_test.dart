@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:mocktail/mocktail.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 
 import 'package:mysql1/src/buffered_socket.dart';
@@ -17,7 +16,7 @@ class MockBuffer extends Mock implements Buffer {}
 
 void main() {
   group('buffered socket', () {
-    var rawSocket;
+    late MockSocket rawSocket;
     late SocketFactory factory;
 
     setUp(() {
@@ -31,7 +30,7 @@ void main() {
     test('can read data which is already available', () async {
       var c = Completer();
 
-      var socket;
+      late BufferedSocket socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = Buffer(4);
@@ -47,7 +46,7 @@ void main() {
     test('can read data which is partially available', () async {
       var c = Completer();
 
-      var socket;
+      late BufferedSocket socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = Buffer(4);
@@ -111,7 +110,7 @@ void main() {
       }));
       expect(() {
         socket.readBuffer(buffer);
-      }, throwsA(isInstanceOf<StateError>()));
+      }, throwsA(isA<StateError>()));
     });
 
     test('should write buffer', () async {
@@ -149,16 +148,20 @@ void main() {
 
     test('should send close event', () async {
       var closed = false;
-      var onClosed = () {
+      void onClosed() {
         closed = true;
-      };
+      }
+
       await BufferedSocket.connect('localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
           onDone: () {},
           onError: (e) {},
           onClosed: onClosed,
           socketFactory: factory);
-      await rawSocket.closeRead();
+      rawSocket.closeRead();
+      // closeRead only adds to the stream controller; let the event be
+      // delivered before checking that the socket saw it.
+      await Future<void>.delayed(Duration.zero);
       expect(closed, equals(true));
     });
   });

@@ -300,12 +300,12 @@ class ReqRespConnection {
   }
 
   Future _handleHeader(Buffer buffer) async {
-    var _dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
+    var dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
     _packetNumber = buffer[3];
-    _log.fine('about to read $_dataSize bytes for packet $_packetNumber');
-    final dataBuffer = Buffer(_dataSize);
+    _log.fine('about to read $dataSize bytes for packet $_packetNumber');
+    final dataBuffer = Buffer(dataSize);
     _log.fine('buffer size=${dataBuffer.length}');
-    if (_dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
+    if (dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
       var buffer = await _socket.readBuffer(dataBuffer);
       await _handleMoreData(buffer);
     } else {
@@ -322,11 +322,11 @@ class ReqRespConnection {
       });
       var combinedBuffer = Buffer(length);
       var start = 0;
-      _largePacketBuffers.forEach((aBuffer) {
+      for (final aBuffer in _largePacketBuffers) {
         combinedBuffer.list
             .setRange(start, start + aBuffer.length, aBuffer.list);
         start += aBuffer.length;
-      });
+      }
       _largePacketBuffers.clear();
       await _handleData(combinedBuffer);
     } else {
