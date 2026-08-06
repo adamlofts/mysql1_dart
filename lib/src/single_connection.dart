@@ -6,7 +6,6 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
-import 'package:mysql1/src/prepared_statements/prepared_query.dart';
 
 import 'auth/handshake_handler.dart';
 import 'auth/ssl_handler.dart';
@@ -19,10 +18,8 @@ import 'handlers/quit_handler.dart';
 import 'package:pool/pool.dart';
 import 'package:mysql1/src/auth/character_set.dart';
 import 'package:mysql1/src/results/results_impl.dart';
-import 'prepared_statements/close_statement_handler.dart';
-import 'prepared_statements/execute_query_handler.dart';
-import 'prepared_statements/prepare_handler.dart';
 import 'query/query_stream_handler.dart';
+import 'substitute_params.dart';
 import 'results/field.dart';
 import 'results/row.dart';
 
@@ -169,39 +166,31 @@ class MySqlConnection {
   /// Run [sql] query on the database using [values] as positional sql parameters.
   ///
   /// eg. ```query('SELECT FROM users WHERE id = ?', [userId])```.
+  ///
+  /// [values] are substituted into [sql] as literals before it is sent, so the
+  /// server receives one statement with no parameters - see
+  /// [substituteParams] for what that buys and what it assumes.
   Future<Results> query(String sql, [List<Object?>? values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
     }
 
-    return (await queryMulti(sql, [values])).first;
+    return _conn.processHandlerWithResults(
+        QueryStreamHandler(substituteParams(sql, values)), _timeout);
   }
 
   /// Run [sql] query multiple times for each set of positional sql parameters in [values].
   ///
   /// e.g. ```queryMulti('INSERT INTO USERS (name) VALUES (?)', ['Adam', 'Eve'])```.
+  ///
+  /// Each set of values is substituted into [sql] and sent as its own
+  /// statement. Nothing is shared between them beyond the connection.
   Future<List<Results>> queryMulti(
       String sql, Iterable<List<Object?>> values) async {
-    PreparedQuery? prepared;
     var ret = <Results>[];
-    try {
-      prepared = await _conn.processHandler<PreparedQuery>(
-          PrepareHandler(sql), _timeout);
-      _log.fine('Prepared queryMulti query for: $sql');
-
-      for (final v in values) {
-        if (v.length != prepared.parameterCount) {
-          throw MySqlClientError(
-              'Length of parameters (${v.length}) does not match parameter count in query (${prepared.parameterCount})');
-        }
-        var handler = ExecuteQueryHandler(prepared, false /* executed */, v);
-        ret.add(await _conn.processHandlerWithResults(handler, _timeout));
-      }
-    } finally {
-      if (prepared != null) {
-        await _conn.processHandlerNoResponse(
-            CloseStatementHandler(prepared.statementHandlerId), _timeout);
-      }
+    for (final v in values) {
+      ret.add(await _conn.processHandlerWithResults(
+          QueryStreamHandler(substituteParams(sql, v)), _timeout));
     }
     return ret;
   }

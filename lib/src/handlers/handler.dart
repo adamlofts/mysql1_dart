@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 import '../constants.dart';
 import '../buffer.dart';
 import '../mysql_exception.dart';
-import '../prepared_statements/prepare_ok_packet.dart';
 import 'ok_packet.dart';
 
 class _NoResult {
@@ -61,18 +60,11 @@ abstract class Handler {
   /// a [MySqlException] if it was an Error packet, or returns [:null:]
   /// if the packet has not been handled by this method.
   ///
-  dynamic checkResponse(Buffer response,
-      [bool prepareStmt = false, bool isHandlingRows = false]) {
+  dynamic checkResponse(Buffer response, [bool isHandlingRows = false]) {
     if (response[0] == PACKET_OK && !isHandlingRows) {
-      if (prepareStmt) {
-        var okPacket = PrepareOkPacket(response);
-        log.fine(okPacket.toString());
-        return okPacket;
-      } else {
-        var okPacket = OkPacket(response);
-        log.fine(okPacket.toString());
-        return okPacket;
-      }
+      var okPacket = OkPacket(response);
+      log.fine(okPacket.toString());
+      return okPacket;
     } else if (response[0] == PACKET_ERROR) {
       throw createMySqlException(response);
     }

@@ -67,6 +67,29 @@ await conn.query(
     [26, 'Bob']);
 ```
 
+Parameters
+----------
+
+Parameters are bound client side. The values are escaped, written into the
+statement as literals, and the result is sent as a single query - there is no
+server side prepare/execute/close. This is what `mysqlclient` does, and so how
+most MySQL deployments already send their statements.
+
+The reason to do it this way is query planning. A bound value is opaque to the
+optimizer, so if the leading column of an index is a parameter it takes ref
+access on that column and never builds a range, and a keyset page can degrade
+into a scan.
+
+`?` placeholders inside string literals and inside `` ` `` quoted identifiers
+are left alone. `null`, `int`, `double`, `bool`, `String` and `DateTime` (UTC
+only, second precision) can be bound, as can `Blob` and `List<int>` - both are
+written as hex literals, so bytes which are not valid in the connection charset
+survive. Anything else is bound as its `toString()`.
+
+Escaping assumes the connection charset is utf8 or utf8mb4, and that the server
+is not in `NO_BACKSLASH_ESCAPES` mode. Both hold for a connection opened by this
+driver with default settings.
+
 Flutter Web
 -----------
 

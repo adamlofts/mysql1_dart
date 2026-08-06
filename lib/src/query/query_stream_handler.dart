@@ -47,7 +47,7 @@ class QueryStreamHandler extends Handler {
   @override
   HandlerResponse processResponse(Buffer response) {
     log.fine('Processing query response');
-    var packet = checkResponse(response, false, _state == STATE_ROW_PACKETS);
+    var packet = checkResponse(response, _state == STATE_ROW_PACKETS);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
