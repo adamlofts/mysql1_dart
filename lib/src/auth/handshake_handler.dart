@@ -63,10 +63,8 @@ class HandshakeHandler extends Handler {
 
   HandshakeHandler(
       this._user, this._password, this._maxPacketSize, this._characterSet,
-      [String? db, bool useCompression = false, bool useSSL = false])
+      [String? db, this.useCompression = false, this.useSSL = false])
       : _db = db,
-        useCompression = useCompression,
-        useSSL = useSSL,
         super(Logger('HandshakeHandler'));
 
   /// The server initiates the handshake after the client connects,

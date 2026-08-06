@@ -19,7 +19,7 @@ void main() {
 
   setUpAll(() {
     fakeBuffer = FakeBuffer();
-    registerFallbackValue<Buffer>(fakeBuffer);
+    registerFallbackValue(fakeBuffer);
   });
 
   group('Connection', () {
@@ -31,7 +31,7 @@ void main() {
       var buffer = Buffer(PACKET_SIZE);
       expect(() {
         cnx.sendBuffer(buffer);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(isA<MySqlClientError>()));
     });
 
     test('should send buffer', () async {

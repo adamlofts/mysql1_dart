@@ -72,7 +72,7 @@ void main() {
       var response = Buffer.fromList([9]);
       expect(() {
         handler.readResponseBuffer(response);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(isA<MySqlClientError>()));
     });
 
     test('set values and does not throw if handshake protocol is 10', () {
@@ -214,7 +214,7 @@ void main() {
       var serverCapabilities1 = CLIENT_PROTOCOL_41;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
-      var scrambleBuffer2;
+      String? scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
       var pluginName = 'caching_sha2_password';
       var responseBuffer = _createHandshake(
@@ -278,7 +278,7 @@ void main() {
           10, 'version 1', 123, 'abcdefgh', 0, 0, 0, 0, 0, 'buffer');
       expect(() {
         handler.processResponse(response);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(isA<MySqlClientError>()));
     });
 
     test('works when plugin name is not set', () {
@@ -312,8 +312,8 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, isInstanceOf<AuthHandler>());
+      expect(response, isA<HandlerResponse>());
+      expect(response.nextHandler, isA<AuthHandler>());
 
       var clientFlags = CLIENT_PROTOCOL_41 |
           CLIENT_LONG_PASSWORD |
@@ -366,8 +366,8 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
-      expect(response, isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, isInstanceOf<AuthHandler>());
+      expect(response, isA<HandlerResponse>());
+      expect(response.nextHandler, isA<AuthHandler>());
 
       var authHandler = response.nextHandler as AuthHandler;
       expect(authHandler.username, equals(user));
@@ -390,7 +390,7 @@ void main() {
           HandshakeHandler('', '', MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       expect(() {
         handler.processResponse(responseBuffer);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(isA<MySqlClientError>()));
     });
 
     test('throws if plugin is set and is not mysql_native_password', () {
@@ -424,7 +424,7 @@ void main() {
 
       expect(() {
         handler.processResponse(responseBuffer);
-      }, throwsA(isInstanceOf<MySqlClientError>()));
+      }, throwsA(isA<MySqlClientError>()));
     });
 
     test('works when ssl requested', () {
@@ -459,8 +459,8 @@ void main() {
       expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isTrue);
 
-      expect(response, isInstanceOf<HandlerResponse>());
-      expect(response.nextHandler, isInstanceOf<SSLHandler>());
+      expect(response, isA<HandlerResponse>());
+      expect(response.nextHandler, isA<SSLHandler>());
 
       var clientFlags = CLIENT_PROTOCOL_41 |
           CLIENT_LONG_PASSWORD |
@@ -471,7 +471,7 @@ void main() {
           CLIENT_MULTI_RESULTS;
 
       var sslHandler = response.nextHandler as SSLHandler;
-      expect(sslHandler.nextHandler, isInstanceOf<AuthHandler>());
+      expect(sslHandler.nextHandler, isA<AuthHandler>());
       expect(sslHandler.characterSet, equals(CharacterSet.UTF8MB4));
       expect(sslHandler.clientFlags, equals(clientFlags));
       expect(sslHandler.maxPacketSize, equals(MAX_PACKET_SIZE));
