@@ -136,6 +136,8 @@ class Buffer {
   /// buffer is reached.
   String readStringToEnd() => readString(_list.length - _readPos);
 
+  List<int> readListToEnd() => readList(_list.length - _readPos);
+
   /// Reads a string of the given [length] from the buffer.
   String readString(int length) {
     var s = utf8.decode(_list.sublist(_readPos, _readPos + length),

@@ -153,8 +153,17 @@ class MySqlConnection {
       }
     });
 
-    Handler handler = HandshakeHandler(c.user, c.password, c.maxPacketSize,
-        c.characterSet, c.db, c.useCompression, c.useSSL);
+    Handler handler = HandshakeHandler(
+        c.user,
+        c.password,
+        c.maxPacketSize,
+        c.characterSet,
+        c.db,
+        c.useCompression,
+        c.useSSL,
+        // Nobody can get between the client and the server on a unix socket,
+        // which is what lets full authentication send a cleartext password.
+        isUnixSocket || c.useSSL);
     handshakeCompleter = Completer<void>();
     conn =
         ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);

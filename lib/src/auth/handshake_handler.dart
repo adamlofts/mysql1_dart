@@ -61,9 +61,16 @@ class HandshakeHandler extends Handler {
   bool useCompression = false;
   bool useSSL = false;
 
+  /// Whether a third party can read the connection, which decides whether the
+  /// password can be sent in the clear if the server asks for it.
+  final bool isSecure;
+
   HandshakeHandler(
       this._user, this._password, this._maxPacketSize, this._characterSet,
-      [String? db, this.useCompression = false, this.useSSL = false])
+      [String? db,
+      this.useCompression = false,
+      this.useSSL = false,
+      this.isSecure = false])
       : _db = db,
         super(Logger('HandshakeHandler'));
 
@@ -176,11 +183,13 @@ class HandshakeHandler extends Handler {
                 _maxPacketSize,
                 _characterSet,
                 _authPlugin,
+                isSecure: true,
               )));
     }
 
     return HandlerResponse(
         nextHandler: AuthHandler(_user, _password, _db, scrambleBuffer,
-            clientFlags, _maxPacketSize, _characterSet, _authPlugin));
+            clientFlags, _maxPacketSize, _characterSet, _authPlugin,
+            isSecure: isSecure));
   }
 }
