@@ -46,6 +46,14 @@ class QueryStreamHandler extends Handler {
   /// Whether the result set being read is one which follows the result.
   bool _discarding = false;
 
+  /// What went wrong decoding a row, if anything did.
+  ///
+  /// The rows after it are still on the wire, so it is held until they have
+  /// been read and only then given to the caller, who is free to send the next
+  /// request as soon as the rows end.
+  Object? _rowError;
+  StackTrace? _rowErrorStackTrace;
+
   QueryStreamHandler(this._sql) : super(Logger('QueryStreamHandler'));
 
   @override
@@ -122,8 +130,17 @@ class QueryStreamHandler extends Handler {
     // otherwise the stream will be reused in an unfinished state.
     // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
 //    Future.delayed(Duration(seconds: 0), _streamController.close);
-    _streamController?.close();
+    _closeRows();
     return HandlerResponse(finished: true);
+  }
+
+  /// Ends the rows of the result, with the error if one of them had one.
+  void _closeRows() {
+    final error = _rowError;
+    if (error != null) {
+      _streamController?.addError(error, _rowErrorStackTrace);
+    }
+    _streamController?.close();
   }
 
   void _handleHeaderPacket(Buffer response) {
@@ -142,10 +159,17 @@ class QueryStreamHandler extends Handler {
   }
 
   void _handleRowPacket(Buffer response) {
-    if (_discarding) {
+    if (_discarding || _rowError != null) {
       return;
     }
-    var dataPacket = StandardDataPacket(response, fieldPackets);
+    final StandardDataPacket dataPacket;
+    try {
+      dataPacket = StandardDataPacket(response, fieldPackets);
+    } catch (e, st) {
+      _rowError = e;
+      _rowErrorStackTrace = st;
+      return;
+    }
     log.fine(dataPacket.toString());
     _streamController?.add(dataPacket);
   }
@@ -156,7 +180,7 @@ class QueryStreamHandler extends Handler {
       if (moreResults) {
         return HandlerResponse.notFinished;
       }
-      _streamController?.close();
+      _closeRows();
       return HandlerResponse(finished: true);
     }
     _okPacket = packet;
