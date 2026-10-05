@@ -52,9 +52,8 @@ String? _option(String key, String envKey) {
 /// The unix socket to run against, if the tests are not using TCP.
 ///
 /// Worth having because the server only asks for - and only accepts - a
-/// cleartext password over a connection nobody else can read, so this is the
-/// only way to exercise caching_sha2_password full authentication without
-/// implementing the RSA alternative.
+/// cleartext password over a connection nobody else can read, and this is one
+/// of the two there are. TLS is the other.
 String? testSocketPath() => _option('socket', 'MYSQL_SOCKET');
 
 /// The certificate to trust when the tests connect over TLS, if they do.

@@ -11,6 +11,7 @@ import 'constants.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'protocol_connection.dart';
+import 'rsa.dart';
 
 enum AuthPlugin {
   none,
@@ -255,6 +256,39 @@ Buffer handshakeResponse(
   return buffer;
 }
 
+/// The password as it is sent on a connection which others can read: null
+/// terminated, mixed with the [scramble] the server sent so that it is
+/// different every time, and encrypted with the server's public [key].
+List<int> encryptedPassword(
+    String? password, List<int> scramble, RsaPublicKey key) {
+  final plain = [...utf8.encode(password ?? ''), 0];
+  for (var i = 0; i < plain.length; i++) {
+    plain[i] ^= scramble[i % scramble.length];
+  }
+  return rsaEncryptOaep(key, plain);
+}
+
+/// Ask the server for its RSA public key, in the middle of full
+/// authentication.
+///
+/// The key comes back over the same connection it is about to protect, so
+/// this keeps the password from someone who is listening and not from
+/// someone who can change what is sent: they can answer with a key of their
+/// own.
+Future<RsaPublicKey> _requestPublicKey(ProtocolConnection conn) async {
+  conn.send(Buffer.fromList([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
+  final reply = (await conn.next()).payload;
+  if (reply.isNotEmpty && reply[0] == PACKET_ERROR) {
+    throw createMySqlException(Buffer.view(reply));
+  }
+  if (reply.isEmpty || reply[0] != PACKET_AUTH_MORE_DATA) {
+    throw MySqlClientError(
+        'Expected the server\'s public key and got a packet of type '
+        '${reply.isEmpty ? 'none' : reply[0]}');
+  }
+  return parseRsaPublicKeyPem(ascii.decode(reply.sublist(1)));
+}
+
 /// The password itself, null terminated: the answer to a request for full
 /// authentication on a connection nobody else can read.
 Buffer cleartextPassword(String? password) {
@@ -272,7 +306,10 @@ Buffer cleartextPassword(String? password) {
 /// or the password itself - until it does one of the first two.
 ///
 /// [isSecure] is whether nobody else can read the connection as it stands,
-/// which is true of a unix socket. Starting TLS makes it so.
+/// which is true of a unix socket. Starting TLS makes it so. If the server
+/// asks for the password itself it is sent in the clear on such a connection,
+/// and otherwise encrypted with the server's RSA public key: [serverPublicKey]
+/// in PEM if that is given, and if not the key the server sends when asked.
 ///
 /// If TLS is started the server's certificate has to be for [host] and
 /// trusted by [securityContext], or accepted by [onBadCertificate]: see
@@ -290,7 +327,8 @@ Future<void> handshake(ProtocolConnection conn,
     required bool isSecure,
     String? host,
     SecurityContext? securityContext,
-    bool Function(X509Certificate certificate)? onBadCertificate}) async {
+    bool Function(X509Certificate certificate)? onBadCertificate,
+    String? serverPublicKey}) async {
   final greeting = parseGreeting(Buffer.view((await conn.next()).payload));
   var clientFlags = clientCapabilities(greeting, useSSL: useSSL);
   if (db != null) {
@@ -310,12 +348,13 @@ Future<void> handshake(ProtocolConnection conn,
   }
 
   var authPlugin = greeting.authPlugin;
+  var scramble = greeting.scrambleBuffer;
   conn.send(handshakeResponse(
       clientFlags: clientFlags,
       maxPacketSize: maxPacketSize,
       characterSet: characterSet,
       username: user,
-      hash: authHash(authPlugin, greeting.scrambleBuffer, password),
+      hash: authHash(authPlugin, scramble, password),
       db: db,
       authPlugin: authPlugin));
 
@@ -342,7 +381,7 @@ Future<void> handshake(ProtocolConnection conn,
               'Old Password Authentication is not supported');
         }
         authPlugin = authPluginFromString(reply.readNullTerminatedString());
-        var scramble = reply.readListToEnd();
+        scramble = reply.readListToEnd();
         if (scramble.isNotEmpty && scramble.last == 0) {
           scramble = scramble.sublist(0, scramble.length - 1);
         }
@@ -367,19 +406,17 @@ Future<void> handshake(ProtocolConnection conn,
               'Unknown caching_sha2_password auth status $status');
         }
         // The server wants the password itself. In the clear is only safe if
-        // nobody else can read the connection; otherwise it has to be RSA
-        // encrypted with the server's public key, which this driver cannot
-        // do.
-        if (!isSecure) {
-          throw MySqlClientError(
-              'The server asked for full authentication, which this driver '
-              'can only do over a connection nobody else can read. Connect '
-              'over a unix socket, or give the account the '
-              'mysql_native_password plugin. A caching_sha2_password account '
-              'with a password is asked for this until the server has cached '
-              'it.');
+        // nobody else can read the connection.
+        if (isSecure) {
+          conn.send(cleartextPassword(password));
+          break;
         }
-        conn.send(cleartextPassword(password));
+        // Otherwise it is encrypted with the server's public key - the one
+        // the caller vouches for, or failing that the one the server sends.
+        final key = serverPublicKey != null
+            ? parseRsaPublicKeyPem(serverPublicKey)
+            : await _requestPublicKey(conn);
+        conn.send(Buffer.fromList(encryptedPassword(password, scramble, key)));
         break;
 
       default:

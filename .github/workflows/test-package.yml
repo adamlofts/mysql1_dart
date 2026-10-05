@@ -41,10 +41,13 @@ jobs:
   # 1. OS: ubuntu-latest
   # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
   #
-  # The base matrix connects as root with no password. The `include` leg
-  # gives it a real password, which nothing else here covers. Full
-  # authentication is covered by the unix-socket job below, because it is the
-  # only transport the server will accept a cleartext password over.
+  # The base matrix connects as root with no password. The `include` legs
+  # give it a real password. On mysql:8 that is a caching_sha2_password
+  # account over plain TCP, so the first login of each run is full
+  # authentication with the password encrypted under the server's RSA key,
+  # and the ones after it are fast auth. The unix-socket and tls jobs below
+  # cover the other way the password can travel, in the clear over a
+  # connection nobody else can read.
   test:
     needs: analyze
     runs-on: ${{ matrix.os }}
@@ -63,6 +66,18 @@ jobs:
             sdk: stable
             timezone: "UTC"
             mysql: "mysql:5.7"
+            password: "s3cret"
+          # caching_sha2_password with a real password, on both SDKs: the RSA
+          # is arithmetic on big integers written here, not a library.
+          - os: ubuntu-latest
+            sdk: stable
+            timezone: "UTC"
+            mysql: "mysql:8"
+            password: "s3cret"
+          - os: ubuntu-latest
+            sdk: 3.0.0
+            timezone: "UTC"
+            mysql: "mysql:8"
             password: "s3cret"
     steps:
       - name: Set Timezone
@@ -101,9 +116,8 @@ jobs:
   #
   # The first connection by an account the server has not cached asks for full
   # authentication, and the server only accepts a cleartext password over a
-  # connection nobody else can read - so a unix socket is the only way to
-  # cover that exchange, and the fast auth which follows it, without
-  # implementing the RSA alternative.
+  # connection nobody else can read. This covers that exchange over a unix
+  # socket, and the fast auth which follows it.
   #
   # The server runs as a step rather than as a service because the directory
   # the socket goes in has to exist, and be writable by the server, before the
