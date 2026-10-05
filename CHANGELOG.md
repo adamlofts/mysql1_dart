@@ -23,6 +23,17 @@ Breaking:
 * A `DateTime` parameter is sent with its fractional seconds, which the server
   rounds to the precision of the column. It used to be cut to whole seconds.
 * Almost all `FINE` logging is gone.
+* `affectedRows` is never null. For a statement which returns rows it is the
+  number of rows, where it used to be null.
+* `ResultRow`'s constructor takes the result's schema, which breaks a subclass
+  of it outside this package.
+
+Added:
+* The result API is closer to `package:postgres`, so code which reads rows
+  looks the same against either driver. `Results` is now `Result`, a list of
+  rows, and `Field` is now `ResultSchemaColumn`; the old names still work and
+  are deprecated. `Result` and `ResultRow` have a `schema`, and `ResultRow`
+  has `toColumnMap()` and `isSqlNull()`.
 
 Fixed:
 * Logging in to MySQL 8 with a password. `caching_sha2_password` accounts
