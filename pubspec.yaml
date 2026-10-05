@@ -15,3 +15,7 @@ dependencies:
 dev_dependencies:
   lints: ^3.0.0
   test: ^1.16.5
+
+# The key of the certificate the TLS tests present. It protects nothing.
+false_secrets:
+  - /test/unit/tls/test_server_key_intentionally_public.pem
