@@ -12,7 +12,6 @@ import 'auth/ssl_handler.dart';
 import 'buffer.dart';
 import 'constants.dart';
 import 'handlers/handler.dart';
-import 'mysql_client_error.dart';
 import 'protocol_connection.dart';
 import 'query/query_response.dart';
 import 'results/field.dart';
@@ -27,7 +26,6 @@ class ConnectionSettings {
   String? user;
   String? password;
   String? db;
-  bool useCompression;
   bool useSSL;
   int maxPacketSize;
   int characterSet;
@@ -41,7 +39,6 @@ class ConnectionSettings {
       this.user,
       this.password,
       this.db,
-      this.useCompression = false,
       this.useSSL = false,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
@@ -52,7 +49,6 @@ class ConnectionSettings {
           String? user,
           String? password,
           String? db,
-          bool useCompression = false,
           bool useSSL = false,
           int maxPacketSize = 16 * 1024 * 1024,
           Duration timeout = const Duration(seconds: 30),
@@ -62,7 +58,6 @@ class ConnectionSettings {
           user: user,
           password: password,
           db: db,
-          useCompression: useCompression,
           useSSL: useSSL,
           maxPacketSize: maxPacketSize,
           timeout: timeout,
@@ -74,7 +69,6 @@ class ConnectionSettings {
         user = o.user,
         password = o.password,
         db = o.db,
-        useCompression = o.useCompression,
         useSSL = o.useSSL,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
@@ -131,10 +125,6 @@ class MySqlConnection {
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
     assert(!c.useSSL); // Not implemented
-    assert(!c.useCompression);
-    if (c.useCompression) {
-      throw MySqlClientError('Compression is not supported');
-    }
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
@@ -162,7 +152,6 @@ class MySqlConnection {
         c.maxPacketSize,
         c.characterSet,
         c.db,
-        c.useCompression,
         c.useSSL,
         // Nobody can get between the client and the server on a unix socket,
         // which is what lets full authentication send a cleartext password.

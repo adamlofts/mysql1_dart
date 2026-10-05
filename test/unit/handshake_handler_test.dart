@@ -79,8 +79,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -137,8 +137,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -171,8 +171,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -205,8 +205,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -239,8 +239,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -285,8 +285,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -309,7 +309,6 @@ void main() {
           scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
       expect(response, isA<HandlerResponse>());
@@ -337,8 +336,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -363,7 +362,6 @@ void main() {
           true);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isFalse);
 
       expect(response, isA<HandlerResponse>());
@@ -397,8 +395,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -431,8 +429,8 @@ void main() {
       var user = 'bob';
       var password = 'password';
       var db = 'db';
-      var handler = HandshakeHandler(user, password, MAX_PACKET_SIZE,
-          CharacterSet.UTF8MB4, db, true, true);
+      var handler = HandshakeHandler(
+          user, password, MAX_PACKET_SIZE, CharacterSet.UTF8MB4, db, true);
       var serverVersion = 'version 1';
       var threadId = 123882394;
       var serverLanguage = 9;
@@ -456,7 +454,6 @@ void main() {
           scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
       expect(handler.useSSL, isTrue);
 
       expect(response, isA<HandlerResponse>());
