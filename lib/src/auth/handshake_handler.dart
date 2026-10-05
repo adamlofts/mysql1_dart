@@ -58,7 +58,6 @@ class HandshakeHandler extends Handler {
   int? scrambleLength;
   var _authPlugin = AuthPlugin.none;
   AuthPlugin get authPlugin => _authPlugin;
-  bool useCompression = false;
   bool useSSL = false;
 
   /// Whether a third party can read the connection, which decides whether the
@@ -67,10 +66,7 @@ class HandshakeHandler extends Handler {
 
   HandshakeHandler(
       this._user, this._password, this._maxPacketSize, this._characterSet,
-      [String? db,
-      this.useCompression = false,
-      this.useSSL = false,
-      this.isSecure = false])
+      [String? db, this.useSSL = false, this.isSecure = false])
       : _db = db,
         super(Logger('HandshakeHandler'));
 
@@ -152,13 +148,6 @@ class HandshakeHandler extends Handler {
 
     if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
       clientFlags |= CLIENT_PLUGIN_AUTH;
-    }
-
-    if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
-      log.shout('Compression enabled');
-      clientFlags |= CLIENT_COMPRESS;
-    } else {
-      useCompression = false;
     }
 
     if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {

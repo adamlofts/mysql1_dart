@@ -2,26 +2,21 @@ library mysql1.connection;
 
 import 'dart:async';
 import 'dart:collection';
-import 'dart:io';
-import 'dart:math' as math;
+import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
+import 'auth/character_set.dart';
 import 'auth/handshake_handler.dart';
 import 'auth/ssl_handler.dart';
 import 'buffer.dart';
-import 'buffered_socket.dart';
+import 'constants.dart';
 import 'handlers/handler.dart';
-import 'mysql_client_error.dart';
-import 'mysql_exception.dart';
-import 'handlers/quit_handler.dart';
-import 'package:pool/pool.dart';
-import 'package:mysql1/src/auth/character_set.dart';
-import 'package:mysql1/src/results/results_impl.dart';
-import 'query/query_stream_handler.dart';
-import 'substitute_params.dart';
+import 'protocol_connection.dart';
+import 'query/query_response.dart';
 import 'results/field.dart';
 import 'results/row.dart';
+import 'substitute_params.dart';
 
 final Logger _log = Logger('MySqlConnection');
 
@@ -31,7 +26,6 @@ class ConnectionSettings {
   String? user;
   String? password;
   String? db;
-  bool useCompression;
   bool useSSL;
   int maxPacketSize;
   int characterSet;
@@ -45,7 +39,6 @@ class ConnectionSettings {
       this.user,
       this.password,
       this.db,
-      this.useCompression = false,
       this.useSSL = false,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
@@ -56,7 +49,6 @@ class ConnectionSettings {
           String? user,
           String? password,
           String? db,
-          bool useCompression = false,
           bool useSSL = false,
           int maxPacketSize = 16 * 1024 * 1024,
           Duration timeout = const Duration(seconds: 30),
@@ -66,7 +58,6 @@ class ConnectionSettings {
           user: user,
           password: password,
           db: db,
-          useCompression: useCompression,
           useSSL: useSSL,
           maxPacketSize: maxPacketSize,
           timeout: timeout,
@@ -78,7 +69,6 @@ class ConnectionSettings {
         user = o.user,
         password = o.password,
         db = o.db,
-        useCompression = o.useCompression,
         useSSL = o.useSSL,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
@@ -90,7 +80,7 @@ class ConnectionSettings {
 class MySqlConnection {
   final Duration _timeout;
 
-  final ReqRespConnection _conn;
+  final ProtocolConnection _conn;
   bool _sentClose = false;
 
   MySqlConnection(this._timeout, this._conn);
@@ -104,10 +94,19 @@ class MySqlConnection {
     }
     _sentClose = true;
 
-    try {
-      await _conn.processHandlerNoResponse(QuitHandler(), _timeout);
-    } catch (e, st) {
-      _log.warning('Error sending quit on connection', e, st);
+    if (!_conn.isClosed) {
+      try {
+        // Queued behind whatever is in progress, like any other request. There
+        // is no reply to wait for.
+        await _conn.exchange(() async {
+          final request = Buffer(1);
+          request.writeByte(COM_QUIT);
+          _conn.send(request);
+          await _conn.flush();
+        }, _timeout).timeout(_timeout);
+      } catch (e, st) {
+        _log.warning('Error sending quit on connection', e, st);
+      }
     }
 
     _conn.close();
@@ -126,50 +125,67 @@ class MySqlConnection {
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
     assert(!c.useSSL); // Not implemented
-    assert(!c.useCompression);
-
-    ReqRespConnection? conn;
-    late Completer handshakeCompleter;
 
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
-    var socket = await BufferedSocket.connect(c.host, c.port, c.timeout,
-        isUnixSocket: isUnixSocket, onDataReady: () {
-      conn?._readPacket();
-    }, onDone: () {
-      _log.fine('done');
-    }, onError: (Object error) {
-      _log.warning('socket error: $error');
+    final conn = await ProtocolConnection.connect(
+        c.host, c.port, c.timeout, c.maxPacketSize,
+        isUnixSocket: isUnixSocket);
+    try {
+      await conn.exchange(() => _handshake(conn, c, isUnixSocket), c.timeout);
+    } catch (_) {
+      conn.close();
+      rethrow;
+    }
+    return MySqlConnection(c.timeout, conn);
+  }
 
-      // If conn has not been connected there was a connection error.
-      if (conn == null) {
-        handshakeCompleter.completeError(error);
-      } else {
-        conn.handleError(error);
-      }
-    }, onClosed: () {
-      if (conn != null) {
-        conn.handleError(SocketException.closed());
-      }
-    });
-
+  /// The exchange a connection opens with. The server speaks first, and then
+  /// it is a conversation: each packet from the server is handed to whichever
+  /// handler the exchange has reached, which says what to send back, if
+  /// anything, and whether that was the end.
+  static Future<void> _handshake(
+      ProtocolConnection conn, ConnectionSettings c, bool isUnixSocket) async {
     Handler handler = HandshakeHandler(
         c.user,
         c.password,
         c.maxPacketSize,
         c.characterSet,
         c.db,
-        c.useCompression,
         c.useSSL,
         // Nobody can get between the client and the server on a unix socket,
         // which is what lets full authentication send a cleartext password.
         isUnixSocket || c.useSSL);
-    handshakeCompleter = Completer<void>();
-    conn =
-        ReqRespConnection(socket, handler, handshakeCompleter, c.maxPacketSize);
 
-    await handshakeCompleter.future.timeout(c.timeout);
-    return MySqlConnection(c.timeout, conn);
+    while (true) {
+      final packet = await conn.next();
+      final response = handler.processResponse(Buffer.view(packet.payload));
+
+      var next = response.nextHandler;
+      if (next != null) {
+        if (next is SSLHandler) {
+          // Ask for TLS in the clear, and carry on inside it.
+          conn.send(next.createRequest());
+          await conn.startTls();
+          next = next.nextHandler;
+        }
+        handler = next;
+        conn.send(handler.createRequest());
+      }
+
+      if (response.finished) {
+        return;
+      }
+    }
+  }
+
+  Future<Results> _query(String sql) async {
+    final response =
+        await _conn.exchange(() => runQuery(_conn, utf8.encode(sql)), _timeout);
+    // Outside the exchange: the response has been read in full, so a value
+    // which cannot be decoded fails this query and nothing else.
+    return Results._(response.decodeRows(), response.fields, response.insertId,
+        response.affectedRows);
   }
 
   /// Run [sql] query on the database using [values] as positional sql parameters.
@@ -181,11 +197,10 @@ class MySqlConnection {
   /// [substituteParams] for what that buys and what it assumes.
   Future<Results> query(String sql, [List<Object?>? values]) async {
     if (values == null || values.isEmpty) {
-      return _conn.processHandlerWithResults(QueryStreamHandler(sql), _timeout);
+      return _query(sql);
     }
 
-    return _conn.processHandlerWithResults(
-        QueryStreamHandler(substituteParams(sql, values)), _timeout);
+    return _query(substituteParams(sql, values));
   }
 
   /// Run [sql] query multiple times for each set of positional sql parameters in [values].
@@ -198,8 +213,7 @@ class MySqlConnection {
       String sql, Iterable<List<Object?>> values) async {
     var ret = <Results>[];
     for (final v in values) {
-      ret.add(await _conn.processHandlerWithResults(
-          QueryStreamHandler(substituteParams(sql, v)), _timeout));
+      ret.add(await _query(substituteParams(sql, v)));
     }
     return ret;
   }
@@ -247,264 +261,6 @@ class Results extends IterableBase<ResultRow> {
 
   Results._(this._rows, this.fields, this.insertId, this.affectedRows);
 
-  static Future<Results> _read(ResultsStream r) async {
-    var rows = await r.toList();
-    return Results._(rows, r.fields, r.insertId, r.affectedRows);
-  }
-
   @override
   Iterator<ResultRow> get iterator => _rows.iterator;
-}
-
-class ReqRespConnection {
-  static const int HEADER_SIZE = 4;
-  static const int COMPRESSED_HEADER_SIZE = 7;
-  static const int STATE_PACKET_HEADER = 0;
-  static const int STATE_PACKET_DATA = 1;
-
-  Handler? _handler;
-  Completer? _completer;
-
-  final BufferedSocket _socket;
-  final _largePacketBuffers = <Buffer>[];
-
-  final Buffer _headerBuffer;
-  final Buffer _compressedHeaderBuffer;
-
-  bool _readyForHeader = true;
-
-  int _packetNumber = 0;
-
-  int _compressedPacketNumber = 0;
-  bool _useCompression = false;
-  bool _useSSL = false;
-  final int _maxPacketSize;
-
-  ReqRespConnection(this._socket, this._handler, Completer? handshakeCompleter,
-      this._maxPacketSize)
-      : _headerBuffer = Buffer(HEADER_SIZE),
-        _compressedHeaderBuffer = Buffer(COMPRESSED_HEADER_SIZE),
-        _completer = handshakeCompleter;
-
-  void close() => _socket.close();
-
-  void handleError(Object e, {bool keepOpen = false, StackTrace? st}) {
-    if (_completer?.isCompleted == true) {
-      _log.warning('Ignoring error because no response', e, st);
-    } else {
-      _completer?.completeError(e, st);
-    }
-    if (!keepOpen) {
-      close();
-    }
-  }
-
-  Future _readPacket() async {
-    _log.fine('readPacket readyForHeader=$_readyForHeader');
-    if (_readyForHeader) {
-      _readyForHeader = false;
-      var buffer = await _socket.readBuffer(_headerBuffer);
-      await _handleHeader(buffer);
-    }
-  }
-
-  Future _handleHeader(Buffer buffer) async {
-    var dataSize = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
-    _packetNumber = buffer[3];
-    _log.fine('about to read $dataSize bytes for packet $_packetNumber');
-    final dataBuffer = Buffer(dataSize);
-    _log.fine('buffer size=${dataBuffer.length}');
-    if (dataSize == 0xffffff || _largePacketBuffers.isNotEmpty) {
-      var buffer = await _socket.readBuffer(dataBuffer);
-      await _handleMoreData(buffer);
-    } else {
-      var buffer = await _socket.readBuffer(dataBuffer);
-      await _handleData(buffer);
-    }
-  }
-
-  Future _handleMoreData(Buffer buffer) async {
-    _largePacketBuffers.add(buffer);
-    if (buffer.length < 0xffffff) {
-      var length = _largePacketBuffers.fold<int>(0, (length, buf) {
-        return length + buf.length;
-      });
-      var combinedBuffer = Buffer(length);
-      var start = 0;
-      for (final aBuffer in _largePacketBuffers) {
-        combinedBuffer.list
-            .setRange(start, start + aBuffer.length, aBuffer.list);
-        start += aBuffer.length;
-      }
-      _largePacketBuffers.clear();
-      await _handleData(combinedBuffer);
-    } else {
-      _readyForHeader = true;
-      _headerBuffer.reset();
-      await _readPacket();
-    }
-  }
-
-  Future _handleData(Buffer buffer) async {
-    _readyForHeader = true;
-    _headerBuffer.reset();
-
-    try {
-      var response = _handler?.processResponse(buffer);
-      if (_handler is HandshakeHandler) {
-        _useCompression = (_handler as HandshakeHandler).useCompression;
-        _useSSL = (_handler as HandshakeHandler).useSSL;
-      }
-      if (response?.nextHandler != null) {
-        // if handler.processResponse() returned a Handler, pass control to that handler now
-        _handler = response!.nextHandler;
-        await sendBuffer(_handler!.createRequest());
-        if (_useSSL && _handler is SSLHandler) {
-          _log.fine('Use SSL');
-          await _socket.startSSL();
-          _handler = (_handler as SSLHandler).nextHandler;
-          await sendBuffer(_handler!.createRequest());
-          _log.fine('Sent buffer');
-          return;
-        }
-      }
-
-      if (response?.finished == true) {
-        _log.fine('Finished $_handler');
-        _finishAndReuse();
-      }
-      if (response?.hasResult == true) {
-        if (_completer?.isCompleted == true) {
-          _completer
-              ?.completeError(StateError('Request has already completed'));
-        }
-        _completer?.complete(response!.result);
-      }
-    } on MySqlException catch (e, st) {
-      // This clause means mysql returned an error on the wire. It is not a fatal error
-      // and the connection can stay open.
-      _log.fine('completing with MySqlException: $e');
-      _finishAndReuse();
-      handleError(e, st: st, keepOpen: true);
-    } catch (e, st) {
-      // Errors here are fatal_finishAndReuse();
-      handleError(e, st: st);
-    }
-  }
-
-  void _finishAndReuse() {
-    _handler = null;
-  }
-
-  Future sendBuffer(Buffer buffer) {
-    if (buffer.length > _maxPacketSize) {
-      throw MySqlClientError(
-          'Buffer length (${buffer.length}) bigger than maxPacketSize ($_maxPacketSize)');
-    }
-    if (_useCompression) {
-      _headerBuffer[0] = buffer.length & 0xFF;
-      _headerBuffer[1] = (buffer.length & 0xFF00) >> 8;
-      _headerBuffer[2] = (buffer.length & 0xFF0000) >> 16;
-      _headerBuffer[3] = ++_packetNumber;
-      var encodedHeader = zlib.encode(_headerBuffer.list);
-      var encodedBuffer = zlib.encode(buffer.list);
-      _compressedHeaderBuffer
-          .writeUint24(encodedHeader.length + encodedBuffer.length);
-      _compressedHeaderBuffer.writeByte(++_compressedPacketNumber);
-      _compressedHeaderBuffer.writeUint24(4 + buffer.length);
-      return _socket.writeBuffer(_compressedHeaderBuffer);
-    } else {
-      _log.fine('sendBuffer header');
-      return _sendBufferPart(buffer, 0);
-    }
-  }
-
-  Future<Buffer> _sendBufferPart(Buffer buffer, int start) async {
-    var len = math.min(buffer.length - start, 0xFFFFFF);
-
-    _headerBuffer[0] = len & 0xFF;
-    _headerBuffer[1] = (len & 0xFF00) >> 8;
-    _headerBuffer[2] = (len & 0xFF0000) >> 16;
-    _headerBuffer[3] = ++_packetNumber;
-    _log.fine('sending header, packet $_packetNumber');
-    await _socket.writeBuffer(_headerBuffer);
-    _log.fine(
-        'sendBuffer body, buffer length=${buffer.length}, start=$start, len=$len');
-    await _socket.writeBufferPart(buffer, start, len);
-    if (len == 0xFFFFFF) {
-      return _sendBufferPart(buffer, start + len);
-    } else {
-      return buffer;
-    }
-  }
-
-  /// This method just sends the handler data.
-  Future _processHandlerNoResponse(Handler handler) {
-    if (_handler != null) {
-      throw MySqlClientError(
-          'Connection cannot process a request for $handler while a request is already in progress for $_handler');
-    }
-    _packetNumber = -1;
-    _compressedPacketNumber = -1;
-    return sendBuffer(handler.createRequest());
-  }
-
-  /// Processes a handler, from sending the initial request to handling any packets returned from
-  /// mysql
-  Future<T> _processHandler<T>(Handler handler) async {
-    if (_handler != null) {
-      throw MySqlClientError(
-          'Connection cannot process a request for $handler while a request is already in progress for $_handler');
-    }
-    _log.fine('start handler $handler');
-    _packetNumber = -1;
-    _compressedPacketNumber = -1;
-    final c = Completer<T>();
-    _completer = c;
-    _handler = handler;
-    await sendBuffer(handler.createRequest());
-    return c.future;
-  }
-
-  final Pool pool = Pool(1);
-
-  /// The 3 functions below this line are the main interface to the running handlers on the connection.
-  /// Each function MUST queue the handlers in the pool and MUST tidy up the connection (leave _handler null)
-  /// before finishing.
-
-  Future<T> processHandler<T>(Handler handler, Duration timeout) {
-    return pool.withResource(() async {
-      try {
-        var ret = await _processHandler<T>(handler).timeout(timeout);
-        return ret;
-      } finally {
-        _handler = null;
-      }
-    });
-  }
-
-  Future<Results> processHandlerWithResults(Handler handler, Duration timeout) {
-    return pool.withResource(() async {
-      try {
-        var results =
-            await _processHandler<ResultsStream>(handler).timeout(timeout);
-        // Read all of the results. This is so we can close the handler before returning to the
-        // user. Obviously this is not super efficient but it guarantees correct api use.
-        var ret = await Results._read(results).timeout(timeout);
-        return ret;
-      } finally {
-        _handler = null;
-      }
-    });
-  }
-
-  Future<void> processHandlerNoResponse(Handler handler, Duration timeout) {
-    return pool.withResource(() {
-      try {
-        return _processHandlerNoResponse(handler).timeout(timeout);
-      } finally {
-        _handler = null;
-      }
-    });
-  }
 }

@@ -31,6 +31,13 @@ class Buffer {
     _data = ByteData.view(_list.buffer);
   }
 
+  /// Creates a [Buffer] which reads [list] in place, without copying it.
+  Buffer.view(Uint8List list)
+      : _list = list,
+        log = Logger('Buffer') {
+    _data = ByteData.sublistView(list);
+  }
+
   /// Creates a [Buffer] with the given [list] as backing storage
   Buffer.fromList(List<int> list)
       : _list = Uint8List(list.length),
