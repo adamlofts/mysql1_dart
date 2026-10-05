@@ -1,6 +1,7 @@
 library mysql1.handshake;
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
@@ -266,6 +267,10 @@ Buffer cleartextPassword(String? password) {
 /// [isSecure] is whether nobody else can read the connection as it stands,
 /// which is true of a unix socket. Starting TLS makes it so.
 ///
+/// If TLS is started the server's certificate has to be for [host] and
+/// trusted by [securityContext], or accepted by [onBadCertificate]: see
+/// [ProtocolConnection.startTls].
+///
 /// Throws [MySqlException] if the server refuses, and [MySqlClientError] if
 /// it asks for something this driver cannot do.
 Future<void> handshake(ProtocolConnection conn,
@@ -275,13 +280,19 @@ Future<void> handshake(ProtocolConnection conn,
     required int maxPacketSize,
     required int characterSet,
     required bool useSSL,
-    required bool isSecure}) async {
+    required bool isSecure,
+    String? host,
+    SecurityContext? securityContext,
+    bool Function(X509Certificate certificate)? onBadCertificate}) async {
   final greeting = parseGreeting(Buffer.view((await conn.next()).payload));
   final clientFlags = clientCapabilities(greeting, useSSL: useSSL);
 
   if (clientFlags & CLIENT_SSL != 0) {
     conn.send(sslRequest(clientFlags, maxPacketSize, characterSet));
-    await conn.startTls();
+    await conn.startTls(
+        host: host,
+        context: securityContext,
+        onBadCertificate: onBadCertificate);
     isSecure = true;
   }
 

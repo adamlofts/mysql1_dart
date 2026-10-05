@@ -10,8 +10,8 @@ import 'package:mysql1/src/protocol_connection.dart';
 class FakeServer {
   final ServerSocket _listener;
   final ProtocolConnection client;
-  final Socket _socket;
-  final PacketReader _requests;
+  Socket _socket;
+  PacketReader _requests;
 
   FakeServer._(this._listener, this.client, this._socket)
       : _requests = PacketReader(_socket.transform(const PacketFramer()));
@@ -35,6 +35,15 @@ class FakeServer {
           encodePackets(Uint8List.fromList(payload), sequenceId++);
       _socket.add(bytes);
     }
+  }
+
+  /// Switch the server's end to TLS, presenting the certificate in
+  /// [context]. Completes when the client has done the same, and fails if
+  /// the client would not.
+  Future<void> startTls(SecurityContext context) async {
+    _requests.pause();
+    _socket = await SecureSocket.secureServer(_socket, context);
+    _requests = PacketReader(_socket.transform(const PacketFramer()));
   }
 
   /// Drop the connection from the server's end.
