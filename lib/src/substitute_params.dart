@@ -95,7 +95,8 @@ List<int> _findPlaceholders(String sql) {
 ///
 /// The types accepted are the ones the driver used to encode into an EXECUTE
 /// packet, and they keep the same contract - in particular a [DateTime] must
-/// be in UTC and is written to second precision.
+/// be in UTC. It is written with its fractional seconds when it has any, which
+/// the server rounds to the precision of the column.
 String sqlLiteral(Object? value) {
   if (value == null) {
     return 'NULL';
@@ -164,6 +165,9 @@ String _dateTimeLiteral(DateTime value) {
     throw MySqlClientError('DateTime value is not in UTC');
   }
   String pad(int value, int width) => value.toString().padLeft(width, '0');
+  final micros = value.millisecond * 1000 + value.microsecond;
+  final fraction = micros == 0 ? '' : '.${pad(micros, 6)}';
   return "'${pad(value.year, 4)}-${pad(value.month, 2)}-${pad(value.day, 2)} "
-      "${pad(value.hour, 2)}:${pad(value.minute, 2)}:${pad(value.second, 2)}'";
+      "${pad(value.hour, 2)}:${pad(value.minute, 2)}:${pad(value.second, 2)}"
+      "$fraction'";
 }
