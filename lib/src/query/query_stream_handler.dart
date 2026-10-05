@@ -12,6 +12,7 @@ import '../buffer.dart';
 
 import '../handlers/handler.dart';
 import '../handlers/ok_packet.dart';
+import '../mysql_exception.dart';
 
 import '../results/row.dart';
 import '../results/field.dart';
@@ -33,6 +34,18 @@ class QueryStreamHandler extends Handler {
 
   StreamController<ResultRow>? _streamController;
 
+  /// Whether the result has been handed to the caller.
+  ///
+  /// The response to CALL is every result set the procedure selects and then
+  /// an ok packet for the call itself. The first of them is the result; what
+  /// follows is read and dropped, because all of it has to be off the wire
+  /// before the next request goes out. The row stream of the result stays open
+  /// until then, since its closing is what tells the connection it is free.
+  bool _resultSent = false;
+
+  /// Whether the result set being read is one which follows the result.
+  bool _discarding = false;
+
   QueryStreamHandler(this._sql) : super(Logger('QueryStreamHandler'));
 
   @override
@@ -47,13 +60,21 @@ class QueryStreamHandler extends Handler {
   @override
   HandlerResponse processResponse(Buffer response) {
     log.fine('Processing query response');
+    final controller = _streamController;
+    if (response[0] == PACKET_ERROR && controller != null) {
+      // The caller already has the result, so the error can only reach it
+      // through the rows.
+      controller.addError(createMySqlException(response));
+      controller.close();
+      return HandlerResponse(finished: true);
+    }
     var packet = checkResponse(response, _state == STATE_ROW_PACKETS);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
           return _handleEndOfFields();
         } else if (_state == STATE_ROW_PACKETS) {
-          return _handleEndOfRows();
+          return _handleEndOfRows(response);
         }
       } else {
         switch (_state) {
@@ -76,6 +97,11 @@ class QueryStreamHandler extends Handler {
 
   HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
+    if (_resultSent) {
+      _discarding = true;
+      return HandlerResponse.notFinished;
+    }
+    _resultSent = true;
     _streamController = StreamController<ResultRow>(onCancel: () {
       _streamController!.close();
     });
@@ -84,7 +110,14 @@ class QueryStreamHandler extends Handler {
             stream: _streamController!.stream));
   }
 
-  HandlerResponse _handleEndOfRows() {
+  HandlerResponse _handleEndOfRows(Buffer response) {
+    // An eof packet is the marker, two bytes of warning count, then the status.
+    final serverStatus =
+        response.length >= 5 ? response[3] | (response[4] << 8) : 0;
+    if ((serverStatus & SERVER_MORE_RESULTS_EXISTS) != 0) {
+      _state = STATE_HEADER_PACKET;
+      return HandlerResponse.notFinished;
+    }
     // the connection's _handler field needs to have been nulled out before the stream is closed,
     // otherwise the stream will be reused in an unfinished state.
     // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
@@ -100,18 +133,32 @@ class QueryStreamHandler extends Handler {
   }
 
   void _handleFieldPacket(Buffer response) {
+    if (_resultSent) {
+      return;
+    }
     var fieldPacket = Field(response);
     log.fine(fieldPacket.toString());
     fieldPackets.add(fieldPacket);
   }
 
   void _handleRowPacket(Buffer response) {
+    if (_discarding) {
+      return;
+    }
     var dataPacket = StandardDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
     _streamController?.add(dataPacket);
   }
 
   HandlerResponse _handleOkPacket(OkPacket packet) {
+    final moreResults = (packet.serverStatus & SERVER_MORE_RESULTS_EXISTS) != 0;
+    if (_resultSent) {
+      if (moreResults) {
+        return HandlerResponse.notFinished;
+      }
+      _streamController?.close();
+      return HandlerResponse(finished: true);
+    }
     _okPacket = packet;
     var finished = false;
     // TODO: I think this is to do with multiple queries. Will probably break.
