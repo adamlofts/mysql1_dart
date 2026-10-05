@@ -3,6 +3,7 @@ library mysql1.tls_test;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mysql1/mysql1.dart' show MySqlClientError;
 import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/handshake.dart';
@@ -18,11 +19,11 @@ const _timeout = Duration(seconds: 5);
 const _certificate = 'test/unit/tls/server_cert.pem';
 const _key = 'test/unit/tls/server_key.pem';
 
-/// The greeting of a server which can do TLS.
-List<int> _greeting() {
-  const capabilities = CLIENT_PROTOCOL_41 |
+/// The greeting of a server which can do TLS, or says it cannot.
+List<int> _greeting({bool tls = true}) {
+  final capabilities = CLIENT_PROTOCOL_41 |
       CLIENT_SECURE_CONNECTION |
-      CLIENT_SSL |
+      (tls ? CLIENT_SSL : 0) |
       CLIENT_PLUGIN_AUTH;
   return [
     10, // protocol version
@@ -215,6 +216,21 @@ void main() {
         [PACKET_OK, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 3);
       await done;
+    });
+
+    test('does not log in to a server which cannot do TLS', () async {
+      final done = logIn(context: trusting(_certificate));
+      server.send([_greeting(tls: false)], sequenceId: 0);
+
+      await expectLater(
+          done,
+          throwsA(isA<MySqlClientError>()
+              .having((e) => e.message, 'message', contains('TLS'))));
+
+      // Nothing was sent: not who is logging in, and not a hash of the
+      // password.
+      server.client.close();
+      await expectLater(server.nextRequest(), throwsA(isA<SocketException>()));
     });
 
     test('does not log in when the certificate is not trusted', () async {

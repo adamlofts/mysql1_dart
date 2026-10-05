@@ -24,6 +24,9 @@ class ConnectionSettings {
   String? user;
   String? password;
   String? db;
+
+  /// Whether to connect over TLS. If the server cannot, the connection fails:
+  /// it is not made without.
   bool useSSL;
 
   /// The certificates to trust when [useSSL] is set. The system's roots if

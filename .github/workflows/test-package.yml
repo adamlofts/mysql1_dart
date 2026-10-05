@@ -150,7 +150,8 @@ jobs:
           MYSQL_PASSWORD: s3cret
           MYSQL_DATABASE: testdb
 
-  # A server which refuses any connection that is not over TLS.
+  # A server which refuses any connection that is not over TLS, and one which
+  # cannot do TLS at all.
   #
   # The whole suite runs over TLS, with the server's certificate checked: it
   # is the one in test/unit/tls, which is for localhost and 127.0.0.1, and the
@@ -195,6 +196,28 @@ jobs:
           echo "server did not come up"
           docker logs mysql-tls
           exit 1
+      # A second server, with TLS turned off, for the one test which checks
+      # that asking for TLS does not settle for a connection without it.
+      # Nothing logs in to it, so all it has to do is answer.
+      - name: Start MySQL without TLS
+        run: |
+          docker run -d --name mysql-no-tls \
+            -e MYSQL_ROOT_PASSWORD=s3cret \
+            -p 3307:3306 \
+            mysql:8 \
+            --tls-version=
+          # The entrypoint's temporary server is ready on port 0. The real one
+          # says 3306.
+          for i in $(seq 60); do
+            if docker logs mysql-no-tls 2>&1 | grep -q "ready for connections.*port: 3306"; then
+              echo "server ready after ${i} attempts"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not come up"
+          docker logs mysql-no-tls
+          exit 1
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -207,3 +230,4 @@ jobs:
           MYSQL_PASSWORD: s3cret
           MYSQL_DATABASE: testdb
           MYSQL_SSL_CA: test/unit/tls/server_cert.pem
+          MYSQL_NO_TLS_PORT: 3307

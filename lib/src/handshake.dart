@@ -131,10 +131,13 @@ ServerGreeting parseGreeting(Buffer packet) {
 
 /// The capabilities to claim, given what the server has.
 ///
-/// CLIENT_SSL is among them if [useSSL] and the server can do it, and that is
-/// how the caller knows whether to start TLS.
+/// CLIENT_SSL is among them if [useSSL], and that is how the caller knows to
+/// start TLS.
 ///
-/// Throws [MySqlClientError] for a server too old to talk to.
+/// Throws [MySqlClientError] for a server too old to talk to, and for one
+/// which cannot do TLS when [useSSL] asks for it. Carrying on without would
+/// let anyone between the client and the server turn TLS off, by taking the
+/// flag out of a greeting which is sent in the clear.
 int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
   final serverCapabilities = greeting.serverCapabilities;
   if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
@@ -153,7 +156,11 @@ int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
   if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
     clientFlags |= CLIENT_PLUGIN_AUTH;
   }
-  if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
+  if (useSSL) {
+    if ((serverCapabilities & CLIENT_SSL) == 0) {
+      throw MySqlClientError(
+          'TLS was asked for and the server does not support it');
+    }
     clientFlags |= CLIENT_SSL;
   }
   return clientFlags;

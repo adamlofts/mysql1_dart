@@ -308,11 +308,15 @@ void main() {
       expect(flags, equals(base));
     });
 
-    test('does not ask for ssl if the server does not have it', () {
-      final flags = clientCapabilities(
-          greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION),
-          useSSL: true);
-      expect(flags, equals(base));
+    // Not a connection without it: the greeting is sent in the clear, and
+    // whoever can change it could turn TLS off.
+    test('throws if ssl is wanted and the server does not have it', () {
+      expect(
+          () => clientCapabilities(
+              greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION),
+              useSSL: true),
+          throwsA(isA<MySqlClientError>()
+              .having((e) => e.message, 'message', contains('TLS'))));
     });
   });
 

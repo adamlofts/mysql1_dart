@@ -64,6 +64,14 @@ String? testSocketPath() => _option('socket', 'MYSQL_SOCKET');
 /// address the certificate is for.
 String? testTlsCertificate() => _option('ssl_ca', 'MYSQL_SSL_CA');
 
+/// The port of a second server which has TLS turned off, if there is one.
+/// It is on the same host as the first, and only has to answer: nothing logs
+/// in to it.
+int? testNoTlsPort() {
+  final port = _option('no_tls_port', 'MYSQL_NO_TLS_PORT');
+  return port == null ? null : int.parse(port);
+}
+
 /// Whether nobody else can read the connection the tests use, which decides
 /// whether the server can be sent a password in the clear.
 bool testConnectionIsPrivate() =>
