@@ -98,11 +98,6 @@ void main() {
     await expectConnectionWorks();
   });
 
-  test('the host can be an address the certificate is for', () async {
-    await startTls(host: '127.0.0.1', context: trusting(_certificate));
-    await expectConnectionWorks();
-  });
-
   test('a trusted certificate for another host is refused', () async {
     await expectLater(
         startTls(host: 'db.example.com', context: trusting(_certificate)),

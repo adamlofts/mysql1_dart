@@ -33,6 +33,9 @@ class ConnectionSettings {
   /// this is null.
   ///
   /// The server's certificate has to chain to one of them and be for [host].
+  /// Dart 3.0 only matches a host which is a name: a certificate which lists
+  /// an address is not accepted for that address there, though it is on a
+  /// current SDK.
   /// A server with a certificate of its own making - which is what MySQL
   /// generates for itself - needs that certificate, or the authority which
   /// signed it, added to a context given here.
