@@ -143,3 +143,10 @@ const int ENUM_FLAG = 0x0100;
 const int AUTO_INCREMENT_FLAG = 0x0200;
 const int TIMESTAMP_FLAG = 0x0400;
 const int SET_FLAG = 0x0800;
+
+/// The character sets a connection can be opened with. Both are utf8, which
+/// is what makes binding parameters as literals safe.
+class CharacterSet {
+  static const int UTF8 = 33;
+  static const int UTF8MB4 = 45;
+}

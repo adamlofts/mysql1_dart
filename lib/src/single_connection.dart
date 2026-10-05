@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
-import 'character_set.dart';
 import 'handshake.dart';
 import 'buffer.dart';
 import 'constants.dart';
