@@ -1,6 +1,58 @@
 Changelog
 =========
 
+v0.21.0
+--
+
+05 Oct 2026
+
+The connection has been rewritten, and most of this release is what that
+fixed. Several changes are breaking.
+
+Breaking:
+* Requires Dart 3.0.
+* Query parameters are written into the statement as literals and sent as
+  plain SQL. Prepared statements are no longer used. The connection character
+  set must be utf8 or utf8mb4, the server must not be in
+  `NO_BACKSLASH_ESCAPES` mode, and a `double` which is not finite is refused.
+* A query which times out closes the connection. Its response was otherwise
+  liable to be taken for the answer to the next query.
+* `useSSL` checks the server's certificate and that it is for the host.
+  Pass `onBadCertificate: (_) => true` for the old behaviour, or a
+  `securityContext` to trust a private authority. Both are new settings on
+  `ConnectionSettings`.
+* `useSSL` fails if the server does not support TLS, rather than connecting
+  without it.
+* `ConnectionSettings.useCompression` is removed. It never worked.
+* A `DateTime` parameter is sent with its fractional seconds, which the server
+  rounds to the precision of the column. It used to be cut to whole seconds.
+* Almost all `FINE` logging is gone.
+
+Fixed:
+* Logging in to MySQL 8 with a password. `caching_sha2_password` accounts
+  left the connection one packet out of step, which showed up as the first
+  query returning nothing, each query returning the previous query's rows,
+  `RangeError ... Not in inclusive range 0..5`, "Got packets out of order" or
+  "Socket has been closed". An account whose plugin is not the server's
+  default now logs in too.
+* A `caching_sha2_password` account the server has not cached can log in over
+  TLS or a unix socket. Over plain TCP it is refused with a message saying so.
+* `CALL`: every query after a stored procedure call returned the results of
+  the one before it.
+* `DATETIME(n)` and `TIMESTAMP(n)` parameters lost their fraction. Reading a
+  `TIME(n)` column hung, and a negative `TIME` was read wrongly.
+* A value of 16MB or more returned no rows, and a row which exactly filled a
+  packet sent the driver into a loop ("Illegal length 0").
+* A value which cannot be decoded, such as a `POINT`, fails the query at once.
+  It used to hang until the timeout and close the connection.
+* An error from the server part way through a result is reported instead of
+  being dropped.
+* Over TLS the database in the settings was not selected.
+* `useSSL` can be used in debug builds.
+
+Performance:
+* Reading a large result is about ten times faster.
+
 v0.20.0
 --
 
