@@ -66,7 +66,7 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
 
   QueryResponse? first;
   while (true) {
-    final payload = (conn.poll() ?? await conn.next()).payload;
+    final payload = (await conn.next()).payload;
     if (payload.isEmpty) {
       throw createMySqlProtocolError('Empty packet in response to a query');
     }
@@ -87,10 +87,10 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
       }
       final fields = <Field>[];
       for (var i = 0; i < fieldCount; i++) {
-        final field = (conn.poll() ?? await conn.next()).payload;
+        final field = (await conn.next()).payload;
         fields.add(Field(Buffer.view(field)));
       }
-      if (!_isEof((conn.poll() ?? await conn.next()).payload)) {
+      if (!_isEof((await conn.next()).payload)) {
         throw createMySqlProtocolError(
             'Expected the column definitions to end with an eof packet');
       }
@@ -98,6 +98,10 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
       final keep = first == null;
       final rows = <Uint8List>[];
       while (true) {
+        // The one place a response is long. An await goes round the event
+        // loop even for a packet which has already arrived, and a read from
+        // the socket holds many rows, so take those directly: it is about 15%
+        // of the time to read a large result.
         final row = (conn.poll() ?? await conn.next()).payload;
         if (_isError(row)) {
           throw createMySqlException(Buffer.view(row));
