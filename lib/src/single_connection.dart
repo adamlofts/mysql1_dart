@@ -148,8 +148,6 @@ class MySqlConnection {
   /// server.
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
-    assert(!c.useSSL); // Not implemented
-
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
     final conn = await ProtocolConnection.connect(

@@ -72,10 +72,11 @@ void main() {
 
     // Nothing is cached for a brand new account, so the server asks for full
     // authentication: the password itself rather than a hash of it.
-    if (testSocketPath() == null) {
-      // Over TCP that means encrypting it with the server's public key, which
-      // needs RSA this driver does not have. Say so, rather than carrying on
-      // out of step with the server. Change this when it gains RSA.
+    if (!testConnectionIsPrivate()) {
+      // Over plain TCP that means encrypting it with the server's public key,
+      // which needs RSA this driver does not have. Say so, rather than
+      // carrying on out of step with the server. Change this when it gains
+      // RSA.
       await expectLater(
           connectForTest(settingsFor(sha2User)),
           throwsA(isA<MySqlClientError>().having(
@@ -83,8 +84,8 @@ void main() {
       return;
     }
 
-    // Over a unix socket nobody can read the connection, so the password goes
-    // in the clear and authentication completes.
+    // Over a unix socket or TLS nobody can read the connection, so the
+    // password goes in the clear and authentication completes.
     final first = await connectForTest(settingsFor(sha2User));
     expect((await first.query('select 1 + ? as answer', [41])).first.first,
         equals(42));

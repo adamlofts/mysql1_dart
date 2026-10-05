@@ -149,3 +149,61 @@ jobs:
           MYSQL_USER: root
           MYSQL_PASSWORD: s3cret
           MYSQL_DATABASE: testdb
+
+  # A server which refuses any connection that is not over TLS.
+  #
+  # The whole suite runs over TLS, with the server's certificate checked: it
+  # is the one in test/unit/tls, which is for localhost and 127.0.0.1, and the
+  # tests trust it and nothing else. root has a password, so this is also
+  # full authentication for caching_sha2_password over TCP - the server will
+  # take the password in the clear inside TLS.
+  #
+  # The server runs as a step rather than as a service because it needs
+  # arguments and the certificate, and a service container can be given
+  # neither: it starts before the checkout.
+  tls:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1.8.0
+        with:
+          sdk: stable
+      - name: Start MySQL requiring TLS
+        run: |
+          # The server runs as its own user and has to be able to read the key.
+          chmod 644 test/unit/tls/server_key.pem
+          docker run -d --name mysql-tls \
+            -e MYSQL_ROOT_PASSWORD=s3cret \
+            -e MYSQL_DATABASE=testdb \
+            -p 3306:3306 \
+            -v "$PWD/test/unit/tls":/certs:ro \
+            mysql:8 \
+            --require-secure-transport=ON \
+            --ssl-cert=/certs/server_cert.pem \
+            --ssl-key=/certs/server_key.pem \
+            --ssl-ca=/certs/server_cert.pem
+          # The entrypoint starts a temporary server to set up, stops it and
+          # starts the real one. Only the real one listens on TCP.
+          for i in $(seq 60); do
+            if docker exec mysql-tls mysqladmin ping -h127.0.0.1 -uroot -ps3cret --silent >/dev/null 2>&1; then
+              echo "server ready after ${i} attempts"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "server did not come up"
+          docker logs mysql-tls
+          exit 1
+      - id: install
+        name: Install dependencies
+        run: dart pub get
+      - name: Run VM tests
+        run: dart test --platform vm
+        if: always() && steps.install.outcome == 'success'
+        env:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_USER: root
+          MYSQL_PASSWORD: s3cret
+          MYSQL_DATABASE: testdb
+          MYSQL_SSL_CA: test/unit/tls/server_cert.pem

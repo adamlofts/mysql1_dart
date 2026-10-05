@@ -6,3 +6,7 @@ port=3306
 db=test
 #defaults to localhost
 host=localhost
+#to connect over TLS, the certificate to trust: the server's own or the
+#authority which signed it. The server has to be reached by a name or address
+#the certificate is for.
+#ssl_ca=test/unit/tls/server_cert.pem

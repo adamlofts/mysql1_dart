@@ -285,7 +285,13 @@ Future<void> handshake(ProtocolConnection conn,
     SecurityContext? securityContext,
     bool Function(X509Certificate certificate)? onBadCertificate}) async {
   final greeting = parseGreeting(Buffer.view((await conn.next()).payload));
-  final clientFlags = clientCapabilities(greeting, useSSL: useSSL);
+  var clientFlags = clientCapabilities(greeting, useSSL: useSSL);
+  if (db != null) {
+    // Here and not only in the response: the request for TLS carries the
+    // flags too, and the server goes by the ones it saw first. Without this
+    // a connection over TLS logs in and has no database selected.
+    clientFlags |= CLIENT_CONNECT_WITH_DB;
+  }
 
   if (clientFlags & CLIENT_SSL != 0) {
     conn.send(sslRequest(clientFlags, maxPacketSize, characterSet));

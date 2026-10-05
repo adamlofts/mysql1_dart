@@ -146,14 +146,15 @@ void main() {
       ..usePrivateKey(_key);
 
     Future<void> logIn(
-        {SecurityContext? context,
+        {String? db,
+        SecurityContext? context,
         bool Function(X509Certificate)? onBadCertificate}) {
       final client = server.client;
       return client.exchange(
           () => handshake(client,
               user: 'username',
               password: 'password',
-              db: null,
+              db: db,
               maxPacketSize: 1024,
               characterSet: CharacterSet.UTF8MB4,
               useSSL: true,
@@ -193,6 +194,26 @@ void main() {
       server.send([
         [PACKET_OK, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 5);
+      await done;
+    });
+
+    // The server goes by the flags in the request for TLS, so a database
+    // which is only flagged in the response after it is not selected.
+    test('says in both packets that it names a database', () async {
+      final done = logIn(db: 'db', context: trusting(_certificate));
+      server.send([_greeting()], sequenceId: 0);
+
+      final request = Buffer.view((await server.nextRequest()).payload);
+      final requestFlags = request.readUint32();
+      expect(requestFlags & CLIENT_CONNECT_WITH_DB, isNot(0));
+
+      await server.startTls(serverContext());
+      final response = Buffer.view((await server.nextRequest()).payload);
+      expect(response.readUint32(), equals(requestFlags));
+
+      server.send([
+        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+      ], sequenceId: 3);
       await done;
     });
 
