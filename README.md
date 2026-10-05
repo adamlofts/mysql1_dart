@@ -6,6 +6,15 @@ A MySQL driver for the Dart programming language. Works on Flutter and on the se
 This library aims to provide an easy to use interface to MySQL. `mysql1` originated 
 as a fork of the SQLJocky driver.
 
+Principles
+----------
+
+- Keep behavior and defaults close to the major MySQL drivers: MySQLdb
+  (`mysqlclient`), the C client (`libmysqlclient`), Connector/J and
+  `go-sql-driver/mysql`.
+- Keep the API similar to `package:postgres`.
+- Good defaults.
+
 Usage
 -----
 
@@ -79,16 +88,6 @@ The reason to do it this way is query planning. A bound value is opaque to the
 optimizer, so if the leading column of an index is a parameter it takes ref
 access on that column and never builds a range, and a keyset page can degrade
 into a scan.
-
-`?` placeholders inside string literals and inside `` ` `` quoted identifiers
-are left alone. `null`, `int`, `double`, `bool`, `String` and `DateTime` (UTC
-only, second precision) can be bound, as can `Blob` and `List<int>` - both are
-written as hex literals, so bytes which are not valid in the connection charset
-survive. Anything else is bound as its `toString()`.
-
-Escaping assumes the connection charset is utf8 or utf8mb4, and that the server
-is not in `NO_BACKSLASH_ESCAPES` mode. Both hold for a connection opened by this
-driver with default settings.
 
 Flutter Web
 -----------
