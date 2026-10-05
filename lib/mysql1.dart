@@ -7,7 +7,7 @@ export 'src/mysql_protocol_error.dart' hide createMySqlProtocolError;
 export 'src/single_connection.dart'
     show MySqlConnection, TransactionContext, Results, ConnectionSettings;
 
-export 'src/auth/character_set.dart';
+export 'src/constants.dart' show CharacterSet;
 
 export 'src/results/field.dart' show Field;
 export 'src/results/row.dart';

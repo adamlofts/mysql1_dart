@@ -4,12 +4,12 @@ import 'dart:typed_data';
 
 import '../buffer.dart';
 import '../constants.dart';
-import '../handlers/ok_packet.dart';
 import '../mysql_exception.dart';
 import '../mysql_protocol_error.dart';
 import '../protocol_connection.dart';
 import '../results/field.dart';
 import '../results/row.dart';
+import 'ok_packet.dart';
 import 'standard_data_packet.dart';
 
 /// What a query sent back, with the rows still as they came off the wire.
