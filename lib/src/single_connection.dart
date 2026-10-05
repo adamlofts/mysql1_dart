@@ -7,11 +7,9 @@ import 'dart:convert';
 import 'package:logging/logging.dart';
 
 import 'auth/character_set.dart';
-import 'auth/handshake_handler.dart';
-import 'auth/ssl_handler.dart';
+import 'auth/handshake.dart';
 import 'buffer.dart';
 import 'constants.dart';
-import 'handlers/handler.dart';
 import 'protocol_connection.dart';
 import 'query/query_response.dart';
 import 'results/field.dart';
@@ -132,51 +130,24 @@ class MySqlConnection {
         c.host, c.port, c.timeout, c.maxPacketSize,
         isUnixSocket: isUnixSocket);
     try {
-      await conn.exchange(() => _handshake(conn, c, isUnixSocket), c.timeout);
+      await conn.exchange(
+          () => handshake(conn,
+              user: c.user,
+              password: c.password,
+              db: c.db,
+              maxPacketSize: c.maxPacketSize,
+              characterSet: c.characterSet,
+              useSSL: c.useSSL,
+              // Nobody can get between the client and the server on a unix
+              // socket, which is what lets full authentication send a
+              // cleartext password.
+              isSecure: isUnixSocket),
+          c.timeout);
     } catch (_) {
       conn.close();
       rethrow;
     }
     return MySqlConnection(c.timeout, conn);
-  }
-
-  /// The exchange a connection opens with. The server speaks first, and then
-  /// it is a conversation: each packet from the server is handed to whichever
-  /// handler the exchange has reached, which says what to send back, if
-  /// anything, and whether that was the end.
-  static Future<void> _handshake(
-      ProtocolConnection conn, ConnectionSettings c, bool isUnixSocket) async {
-    Handler handler = HandshakeHandler(
-        c.user,
-        c.password,
-        c.maxPacketSize,
-        c.characterSet,
-        c.db,
-        c.useSSL,
-        // Nobody can get between the client and the server on a unix socket,
-        // which is what lets full authentication send a cleartext password.
-        isUnixSocket || c.useSSL);
-
-    while (true) {
-      final packet = await conn.next();
-      final response = handler.processResponse(Buffer.view(packet.payload));
-
-      var next = response.nextHandler;
-      if (next != null) {
-        if (next is SSLHandler) {
-          // Ask for TLS in the clear, and carry on inside it.
-          conn.send(next.createRequest());
-          await conn.startTls();
-          next = next.nextHandler;
-        }
-        handler = next;
-        conn.send(handler.createRequest());
-      }
-
-      if (response.finished) {
-        return;
-      }
-    }
   }
 
   Future<Results> _query(String sql) async {
