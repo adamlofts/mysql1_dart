@@ -56,10 +56,12 @@ class ProtocolConnection {
   }
 
   void _listen() {
-    _reader = PacketReader(_socket.transform(const PacketFramer()));
-    // A failed write is reported here as well as to whoever is reading, and
-    // has to be listened for or it is an unhandled error.
-    _socket.done.then((_) {}, onError: (_) {});
+    final reader =
+        _reader = PacketReader(_socket.transform(const PacketFramer()));
+    // A write which fails is reported on the socket's done future and nowhere
+    // else. Whoever sent it is by then waiting for the reply, so that is who
+    // is told.
+    _socket.done.catchError(reader.fail);
   }
 
   bool get isClosed => _closed;

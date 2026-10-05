@@ -156,9 +156,13 @@ class PacketReader {
     _wake();
   }
 
-  void _onError(Object error, StackTrace stackTrace) {
-    _error = error;
-    _errorStackTrace = stackTrace;
+  void _onError(Object error, StackTrace stackTrace) => fail(error, stackTrace);
+
+  /// End the reading with [error]. The packets which have already arrived can
+  /// still be read, and after them [next] throws it.
+  void fail(Object error, StackTrace stackTrace) {
+    _error ??= error;
+    _errorStackTrace ??= stackTrace;
     _wake();
   }
 

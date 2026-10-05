@@ -244,6 +244,21 @@ void main() {
       await expectLater(next, throwsA(isA<OSError>()));
     });
 
+    test('failing the reader fails whoever is waiting', () async {
+      final next = reader.next();
+      reader.fail(const OSError('broken pipe'), StackTrace.current);
+      await expectLater(next, throwsA(isA<OSError>()));
+      expect(reader.isClosed, isTrue);
+    });
+
+    test('what arrived before a failure can still be read', () async {
+      source.add([packet(1)]);
+      await pumpEventQueue();
+      reader.fail(const OSError('broken pipe'), StackTrace.current);
+      expect((await reader.next()).payload, equals([1]));
+      await expectLater(reader.next(), throwsA(isA<OSError>()));
+    });
+
     test('closing the reader fails whoever is waiting', () async {
       final next = reader.next();
       reader.close();
