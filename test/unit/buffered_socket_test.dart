@@ -61,6 +61,35 @@ void main() {
       return c.future;
     });
 
+    // The server ends a payload which is an exact multiple of the largest
+    // packet with an empty packet, and a socket cannot be asked for no bytes.
+    test('can read an empty buffer when no data is available', () async {
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
+          onDataReady: () {},
+          onDone: () {},
+          onError: (e) {},
+          socketFactory: factory);
+      var buffer = await socket
+          .readBuffer(Buffer(0))
+          .timeout(const Duration(seconds: 1));
+      expect(buffer.length, equals(0));
+    });
+
+    test('can read an empty buffer ahead of data which is available', () async {
+      var socket = await BufferedSocket.connect(
+          'localhost', 100, const Duration(seconds: 5),
+          onDataReady: () {},
+          onDone: () {},
+          onError: (e) {},
+          socketFactory: factory);
+      rawSocket.addData([1, 2, 3, 4]);
+      await socket.readBuffer(Buffer(0)).timeout(const Duration(seconds: 1));
+      var buffer = Buffer(4);
+      await socket.readBuffer(buffer).timeout(const Duration(seconds: 1));
+      expect(buffer.list, equals([1, 2, 3, 4]));
+    });
+
     test('can read data which is not yet available', () async {
       var c = Completer();
       var socket = await BufferedSocket.connect(
