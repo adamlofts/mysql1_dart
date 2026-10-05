@@ -90,7 +90,10 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
         final field = (await conn.next()).payload;
         fields.add(Field(Buffer.view(field)));
       }
-      if (!_isEof((await conn.next()).payload)) {
+      // The column definitions end with an eof packet, and then the rows
+      // start.
+      final endOfColumns = (await conn.next()).payload;
+      if (!_isEof(endOfColumns)) {
         throw createMySqlProtocolError(
             'Expected the column definitions to end with an eof packet');
       }
