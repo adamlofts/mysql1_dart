@@ -42,11 +42,11 @@ jobs:
   # 2. Release channel: stable, and 3.0.0 (the package's lower bound)
   #
   # The base matrix connects as root with no password. The `include` legs
-  # give it a real password. On mysql:8 that is a caching_sha2_password
-  # account over plain TCP, so the first login of each run is full
-  # authentication with the password encrypted under the server's RSA key,
-  # and the ones after it are fast auth. The unix-socket and tls jobs below
-  # cover the other way the password can travel, in the clear over a
+  # give it a real password. On mysql:8 and mysql:9 that is a
+  # caching_sha2_password account over plain TCP, so the first login of each
+  # run is full authentication with the password encrypted under the server's
+  # RSA key, and the ones after it are fast auth. The unix-socket and tls jobs
+  # below cover the other way the password can travel, in the clear over a
   # connection nobody else can read.
   test:
     needs: analyze
@@ -57,7 +57,7 @@ jobs:
         os: [ubuntu-latest]
         sdk: [stable, 3.0.0]
         timezone: ["UTC", "Asia/Singapore"]
-        mysql: ["mysql:5.7", "mysql:8"]
+        mysql: ["mysql:5.7", "mysql:8", "mysql:9"]
         password: [""]
         include:
           # mysql_native_password with a real password. This works today, and
@@ -78,6 +78,13 @@ jobs:
             sdk: 3.0.0
             timezone: "UTC"
             mysql: "mysql:8"
+            password: "s3cret"
+          # The same on mysql:9, which has no mysql_native_password to fall
+          # back on.
+          - os: ubuntu-latest
+            sdk: stable
+            timezone: "UTC"
+            mysql: "mysql:9"
             password: "s3cret"
     steps:
       - name: Set Timezone

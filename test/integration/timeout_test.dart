@@ -11,6 +11,10 @@ import '../test_infrastructure.dart';
 // will arrive whenever it does. The connection cannot be used for anything
 // else without that response being taken for the answer, so it is closed.
 void main() {
+  // Neither test uses the connection this opens. It is here because it makes
+  // the database, which is not there if this file is the first to run.
+  initializeTest();
+
   test('a query which times out closes the connection', () async {
     final settings = ConnectionSettings.copy(testConnectionSettings())
       ..timeout = const Duration(milliseconds: 500);
