@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'field.dart';
+import 'schema.dart';
 import '../buffer.dart';
 
 /// A row of data. Fields can be retrieved by index, or by name.
@@ -8,6 +9,11 @@ import '../buffer.dart';
 /// When retrieving a field by name, only fields which are valid Dart
 /// identifiers, and which aren't part of the List object, can be used.
 abstract class ResultRow extends ListBase<dynamic> {
+  /// The columns of the result this row is from.
+  final ResultSchema schema;
+
+  ResultRow(this.schema);
+
   /// Values as List
   List<Object?>? values;
 
@@ -36,8 +42,15 @@ abstract class ResultRow extends ListBase<dynamic> {
     throw UnsupportedError('Cannot modify row');
   }
 
+  /// Whether the value at [columnIndex] is null.
+  bool isSqlNull(int columnIndex) => values?[columnIndex] == null;
+
+  /// A map from each column's name to its value in this row. Where two
+  /// columns have the same name it has the value of the later one.
+  Map<String, dynamic> toColumnMap() => Map.of(fields);
+
   @override
   String toString() => 'Fields: $fields';
 
-  Object? readField(Field field, Buffer buffer);
+  Object? readField(ResultSchemaColumn field, Buffer buffer);
 }
