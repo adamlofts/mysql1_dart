@@ -5,21 +5,25 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:mysql1/mysql1.dart';
-import 'package:mysql1/src/buffer.dart';
-import 'package:mysql1/src/buffered_socket.dart';
-import 'package:mysql1/src/single_connection.dart';
+import 'package:mysql1/src/protocol_connection.dart';
 import 'package:test/test.dart';
 
-class MockBufferedSocket extends Mock implements BufferedSocket {}
-
-class BufferFake extends Fake implements Buffer {}
-
 void main() {
-  setUpAll(() {
-    registerFallbackValue(BufferFake());
-  });
+  /// A connection to a server which accepts it and then never says anything.
+  Future<ProtocolConnection> connectToSilence() async {
+    final listener = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final sockets = <Socket>[];
+    listener.listen(sockets.add);
+    addTearDown(() async {
+      for (final socket in sockets) {
+        socket.destroy();
+      }
+      await listener.close();
+    });
+    return ProtocolConnection.connect(
+        '127.0.0.1', listener.port, const Duration(seconds: 5), 1024);
+  }
 
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.OFF;
@@ -58,24 +62,16 @@ void main() {
   test(
       'calling close on a broken socket should respect the socket timeout. close never throws.',
       () async {
-    var m = MockBufferedSocket();
-    when(() => m.close()).thenReturn(null);
-
-    var r = ReqRespConnection(m, null, null, 1024);
+    var r = await connectToSilence();
     var conn = MySqlConnection(const Duration(microseconds: 5), r);
     await conn.close(); // does not timeout the test.
   });
 
   test('calling query on a broken socket should respect the socket timeout',
       () async {
-    var m = MockBufferedSocket();
-    when(() => m.writeBuffer(any<Buffer>()))
-        .thenAnswer((_) => Future.value(BufferFake()));
-    when(() => m.writeBufferPart(any<Buffer>(), any<int>(), any<int>()))
-        .thenAnswer((_) => Future.value(BufferFake()));
-    var r = ReqRespConnection(m, null, null, 1024);
-    var conn = MySqlConnection(const Duration(microseconds: 5), r);
-    expect(conn.query('SELECT 1'), throwsA(timeoutMatcher));
+    var r = await connectToSilence();
+    var conn = MySqlConnection(const Duration(milliseconds: 5), r);
+    await expectLater(conn.query('SELECT 1'), throwsA(timeoutMatcher));
   });
 
   test('socket closed before handshake', () async {
