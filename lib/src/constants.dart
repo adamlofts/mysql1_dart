@@ -42,6 +42,10 @@ const int CACHING_SHA2_FAST_AUTH_SUCCESS = 0x03;
 /// server's public key otherwise.
 const int CACHING_SHA2_PERFORM_FULL_AUTHENTICATION = 0x04;
 
+/// Sent by the client, as a packet of its own, to ask for the server's RSA
+/// public key. The reply is [PACKET_AUTH_MORE_DATA] and the key in PEM.
+const int CACHING_SHA2_REQUEST_PUBLIC_KEY = 0x02;
+
 const int CLIENT_LONG_PASSWORD = 1 << 0;
 const int CLIENT_FOUND_ROWS = 1 << 1;
 const int CLIENT_LONG_FLAG = 1 << 2;

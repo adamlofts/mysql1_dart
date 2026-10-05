@@ -50,6 +50,20 @@ class ConnectionSettings {
   /// no check on who is at the other end.
   bool Function(X509Certificate certificate)? onBadCertificate;
 
+  /// The server's RSA public key, in PEM, for a connection which is not over
+  /// TLS or a unix socket.
+  ///
+  /// A `caching_sha2_password` account - the default since MySQL 8 - has to
+  /// send its password to the server the first time it logs in, and again
+  /// whenever the server has forgotten it. Without TLS it is encrypted with
+  /// this key.
+  ///
+  /// If this is null the driver asks the server for the key. That keeps the
+  /// password from anyone who is only listening. It does not keep it from
+  /// someone who can change what is sent, who can supply a key of their own:
+  /// giving the key here does, and so does [useSSL].
+  String? serverPublicKey;
+
   int maxPacketSize;
   int characterSet;
 
@@ -65,6 +79,7 @@ class ConnectionSettings {
       this.useSSL = false,
       this.securityContext,
       this.onBadCertificate,
+      this.serverPublicKey,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
       this.characterSet = CharacterSet.UTF8MB4});
@@ -77,6 +92,7 @@ class ConnectionSettings {
           bool useSSL = false,
           SecurityContext? securityContext,
           bool Function(X509Certificate certificate)? onBadCertificate,
+          String? serverPublicKey,
           int maxPacketSize = 16 * 1024 * 1024,
           Duration timeout = const Duration(seconds: 30),
           int characterSet = CharacterSet.UTF8MB4}) =>
@@ -88,6 +104,7 @@ class ConnectionSettings {
           useSSL: useSSL,
           securityContext: securityContext,
           onBadCertificate: onBadCertificate,
+          serverPublicKey: serverPublicKey,
           maxPacketSize: maxPacketSize,
           timeout: timeout,
           characterSet: characterSet);
@@ -101,6 +118,7 @@ class ConnectionSettings {
         useSSL = o.useSSL,
         securityContext = o.securityContext,
         onBadCertificate = o.onBadCertificate,
+        serverPublicKey = o.serverPublicKey,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
         characterSet = o.characterSet;
@@ -172,6 +190,7 @@ class MySqlConnection {
               host: c.host,
               securityContext: c.securityContext,
               onBadCertificate: c.onBadCertificate,
+              serverPublicKey: c.serverPublicKey,
               // Nobody can get between the client and the server on a unix
               // socket, which is what lets full authentication send a
               // cleartext password.

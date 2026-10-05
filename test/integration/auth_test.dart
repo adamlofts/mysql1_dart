@@ -71,21 +71,10 @@ void main() {
     await createUser(sha2User, 'caching_sha2_password');
 
     // Nothing is cached for a brand new account, so the server asks for full
-    // authentication: the password itself rather than a hash of it.
-    if (!testConnectionIsPrivate()) {
-      // Over plain TCP that means encrypting it with the server's public key,
-      // which needs RSA this driver does not have. Say so, rather than
-      // carrying on out of step with the server. Change this when it gains
-      // RSA.
-      await expectLater(
-          connectForTest(settingsFor(sha2User)),
-          throwsA(isA<MySqlClientError>().having(
-              (e) => e.message, 'message', contains('full authentication'))));
-      return;
-    }
-
-    // Over a unix socket or TLS nobody can read the connection, so the
-    // password goes in the clear and authentication completes.
+    // authentication: the password itself rather than a hash of it. Over a
+    // unix socket or TLS nobody can read the connection and it goes in the
+    // clear. Over plain TCP it is encrypted with the server's RSA key, which
+    // the driver asks the server for.
     final first = await connectForTest(settingsFor(sha2User));
     expect((await first.query('select 1 + ? as answer', [41])).first.first,
         equals(42));
@@ -99,6 +88,26 @@ void main() {
     expect((await second.query('select 1 + ? as answer', [41])).first.first,
         equals(42));
     await second.close();
+  });
+
+  // The server only finds out the password is wrong once it has been sent in
+  // full, so this goes all the way through full authentication first.
+  test('rejects a wrong password for an account the server has not cached',
+      () async {
+    if (!await pluginAvailable('caching_sha2_password')) {
+      markTestSkipped('this server has no caching_sha2_password plugin');
+      return;
+    }
+    await createUser(sha2User, 'caching_sha2_password');
+
+    final settings = settingsFor(sha2User)..password = 'not the password';
+    await expectLater(
+        connectForTest(settings),
+        throwsA(anyOf(
+            isA<MySqlException>()
+                .having((e) => e.errorNumber, 'errorNumber', 1045),
+            // Over a unix socket the close can beat the error packet.
+            isA<SocketException>())));
   });
 
   test('rejects a wrong password cleanly', () async {

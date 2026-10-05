@@ -10,6 +10,7 @@ import 'package:mysql1/src/constants.dart';
 import 'package:test/test.dart';
 
 import 'fake_server.dart';
+import 'rsa_test_key.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
@@ -450,7 +451,8 @@ void main() {
     Future<(Future<void>, Buffer)> greet(
         {AuthPlugin plugin = AuthPlugin.cachingSha2Password,
         String? password = 'password',
-        bool isSecure = false}) async {
+        bool isSecure = false,
+        String? serverPublicKey}) async {
       final client = server.client;
       final done = client.exchange(
           () => handshake(client,
@@ -460,7 +462,8 @@ void main() {
               maxPacketSize: MAX_PACKET_SIZE,
               characterSet: CharacterSet.UTF8MB4,
               useSSL: false,
-              isSecure: isSecure),
+              isSecure: isSecure,
+              serverPublicKey: serverPublicKey),
           const Duration(seconds: 5));
       server.send([_greeting(plugin).list], sequenceId: 0);
       final answer = await server.nextRequest();
@@ -564,14 +567,119 @@ void main() {
       await done;
     });
 
-    test('full authentication is refused when anyone could read it', () async {
+    /// What the server reads from an encrypted password: decrypted with its
+    /// private key, and with the [scramble] it was mixed with taken out.
+    List<int> readEncryptedPassword(List<int> encrypted, List<int> scramble) {
+      final mixed = testRsaDecryptOaep(encrypted);
+      return [
+        for (var i = 0; i < mixed.length; i++)
+          mixed[i] ^ scramble[i % scramble.length]
+      ];
+    }
+
+    final greetingScramble = '$_scramble1$_scramble2'.codeUnits;
+
+    /// The server's reply to a request for its public key.
+    List<int> publicKey(String pem) =>
+        [PACKET_AUTH_MORE_DATA, ...ascii.encode(pem)];
+
+    // On a connection others can read, the password is encrypted with the
+    // server's key, and if the caller did not give one the server is asked.
+    test('full authentication asks for the key when anyone could read it',
+        () async {
       final (done, _) = await greet(isSecure: false);
       server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
           sequenceId: 2);
+
+      final request = await server.nextRequest();
+      expect(request.sequenceId, equals(3));
+      expect(request.payload, equals([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
+      server.send([publicKey(testPublicKeyPem)], sequenceId: 4);
+
+      final password = await server.nextRequest();
+      expect(password.sequenceId, equals(5));
+      expect(password.payload, hasLength(256));
+      expect(readEncryptedPassword(password.payload, greetingScramble),
+          equals([...utf8.encode('password'), 0]));
+
+      server.send([ok], sequenceId: 6);
+      await done;
+    });
+
+    test('full authentication uses a key it was given without asking',
+        () async {
+      final (done, _) =
+          await greet(isSecure: false, serverPublicKey: testPublicKeyPem);
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 2);
+
+      // Straight to the password: no request for the key first.
+      final password = await server.nextRequest();
+      expect(password.sequenceId, equals(3));
+      expect(readEncryptedPassword(password.payload, greetingScramble),
+          equals([...utf8.encode('password'), 0]));
+
+      server.send([ok], sequenceId: 4);
+      await done;
+    });
+
+    test('the password is mixed with the scramble of a switch', () async {
+      final (done, _) = await greet(plugin: AuthPlugin.mysqlNativePassword);
+      final scramble = List.generate(20, (i) => 100 + i);
+      server.send([authSwitchRequest('caching_sha2_password', scramble)],
+          sequenceId: 2);
+      await server.nextRequest();
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 4);
+      await server.nextRequest();
+      server.send([publicKey(testPublicKeyPem)], sequenceId: 6);
+
+      final password = await server.nextRequest();
+      expect(readEncryptedPassword(password.payload, scramble),
+          equals([...utf8.encode('password'), 0]));
+
+      server.send([ok], sequenceId: 8);
+      await done;
+    });
+
+    test('a wrong password is refused after it has been sent', () async {
+      final (done, _) = await greet(isSecure: false);
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 2);
+      await server.nextRequest();
+      server.send([publicKey(testPublicKeyPem)], sequenceId: 4);
+      await server.nextRequest();
+      server.send([accessDenied], sequenceId: 6);
       await expectLater(
           done,
-          throwsA(isA<MySqlClientError>().having(
-              (e) => e.message, 'message', contains('full authentication'))));
+          throwsA(isA<MySqlException>()
+              .having((e) => e.errorNumber, 'errorNumber', 1045)));
+    });
+
+    test('an error in place of the key throws', () async {
+      final (done, _) = await greet(isSecure: false);
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 2);
+      await server.nextRequest();
+      server.send([accessDenied], sequenceId: 4);
+      await expectLater(done, throwsA(isA<MySqlException>()));
+    });
+
+    test('something which is not a key in place of the key throws', () async {
+      final (done, _) = await greet(isSecure: false);
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 2);
+      await server.nextRequest();
+      server.send([publicKey('not a key')], sequenceId: 4);
+      await expectLater(done, throwsA(isA<MySqlClientError>()));
+    });
+
+    test('a key which is given and is not a key throws', () async {
+      final (done, _) =
+          await greet(isSecure: false, serverPublicKey: 'not a key');
+      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+          sequenceId: 2);
+      await expectLater(done, throwsA(isA<MySqlClientError>()));
     });
 
     test('full authentication sends the password when nobody can read it',
