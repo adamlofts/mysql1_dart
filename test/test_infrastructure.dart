@@ -57,6 +57,26 @@ String? _option(String key, String envKey) {
 /// implementing the RSA alternative.
 String? testSocketPath() => _option('socket', 'MYSQL_SOCKET');
 
+/// The certificate to trust when the tests connect over TLS, if they do.
+///
+/// Setting it is what turns TLS on. It is the server's own certificate or the
+/// authority which signed it, and the server has to be reached by a name or
+/// address the certificate is for.
+String? testTlsCertificate() => _option('ssl_ca', 'MYSQL_SSL_CA');
+
+/// The port of a second server which has TLS turned off, if there is one.
+/// It is on the same host as the first, and only has to answer: nothing logs
+/// in to it.
+int? testNoTlsPort() {
+  final port = _option('no_tls_port', 'MYSQL_NO_TLS_PORT');
+  return port == null ? null : int.parse(port);
+}
+
+/// Whether nobody else can read the connection the tests use, which decides
+/// whether the server can be sent a password in the clear.
+bool testConnectionIsPrivate() =>
+    testSocketPath() != null || testTlsCertificate() != null;
+
 /// How the integration tests reach the database.
 ///
 /// `connection.options` is read first, then any `MYSQL_*` environment
@@ -74,8 +94,14 @@ ConnectionSettings testConnectionSettings() {
   }
 
   final port = _option('port', 'MYSQL_PORT');
+  final certificate = testTlsCertificate();
 
   return ConnectionSettings(
+    useSSL: certificate != null,
+    securityContext: certificate == null
+        ? null
+        : (SecurityContext(withTrustedRoots: false)
+          ..setTrustedCertificates(certificate)),
     user: _option('user', 'MYSQL_USER'),
     password: _option('password', 'MYSQL_PASSWORD'),
     port: port == null ? 3306 : int.parse(port),

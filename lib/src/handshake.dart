@@ -1,6 +1,7 @@
 library mysql1.handshake;
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
@@ -130,10 +131,13 @@ ServerGreeting parseGreeting(Buffer packet) {
 
 /// The capabilities to claim, given what the server has.
 ///
-/// CLIENT_SSL is among them if [useSSL] and the server can do it, and that is
-/// how the caller knows whether to start TLS.
+/// CLIENT_SSL is among them if [useSSL], and that is how the caller knows to
+/// start TLS.
 ///
-/// Throws [MySqlClientError] for a server too old to talk to.
+/// Throws [MySqlClientError] for a server too old to talk to, and for one
+/// which cannot do TLS when [useSSL] asks for it. Carrying on without would
+/// let anyone between the client and the server turn TLS off, by taking the
+/// flag out of a greeting which is sent in the clear.
 int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
   final serverCapabilities = greeting.serverCapabilities;
   if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
@@ -152,7 +156,11 @@ int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
   if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
     clientFlags |= CLIENT_PLUGIN_AUTH;
   }
-  if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
+  if (useSSL) {
+    if ((serverCapabilities & CLIENT_SSL) == 0) {
+      throw MySqlClientError(
+          'TLS was asked for and the server does not support it');
+    }
     clientFlags |= CLIENT_SSL;
   }
   return clientFlags;
@@ -266,6 +274,10 @@ Buffer cleartextPassword(String? password) {
 /// [isSecure] is whether nobody else can read the connection as it stands,
 /// which is true of a unix socket. Starting TLS makes it so.
 ///
+/// If TLS is started the server's certificate has to be for [host] and
+/// trusted by [securityContext], or accepted by [onBadCertificate]: see
+/// [ProtocolConnection.startTls].
+///
 /// Throws [MySqlException] if the server refuses, and [MySqlClientError] if
 /// it asks for something this driver cannot do.
 Future<void> handshake(ProtocolConnection conn,
@@ -275,13 +287,25 @@ Future<void> handshake(ProtocolConnection conn,
     required int maxPacketSize,
     required int characterSet,
     required bool useSSL,
-    required bool isSecure}) async {
+    required bool isSecure,
+    String? host,
+    SecurityContext? securityContext,
+    bool Function(X509Certificate certificate)? onBadCertificate}) async {
   final greeting = parseGreeting(Buffer.view((await conn.next()).payload));
-  final clientFlags = clientCapabilities(greeting, useSSL: useSSL);
+  var clientFlags = clientCapabilities(greeting, useSSL: useSSL);
+  if (db != null) {
+    // Here and not only in the response: the request for TLS carries the
+    // flags too, and the server goes by the ones it saw first. Without this
+    // a connection over TLS logs in and has no database selected.
+    clientFlags |= CLIENT_CONNECT_WITH_DB;
+  }
 
   if (clientFlags & CLIENT_SSL != 0) {
     conn.send(sslRequest(clientFlags, maxPacketSize, characterSet));
-    await conn.startTls();
+    await conn.startTls(
+        host: host,
+        context: securityContext,
+        onBadCertificate: onBadCertificate);
     isSecure = true;
   }
 

@@ -130,12 +130,21 @@ class ProtocolConnection {
     return packet;
   }
 
-  /// Switch the connection to TLS. The server's certificate is not checked.
-  Future<void> startTls() async {
+  /// Switch the connection to TLS.
+  ///
+  /// The server's certificate has to be one [context] trusts - the system's
+  /// roots, if there is no context - and has to be for [host]. One which is
+  /// not is put to [onBadCertificate], and with nothing to ask the connection
+  /// fails with a [HandshakeException].
+  Future<void> startTls(
+      {String? host,
+      SecurityContext? context,
+      bool Function(X509Certificate certificate)? onBadCertificate}) async {
     // The socket's subscription stops getting events once TLS takes over, and
     // pausing it rather than cancelling is what leaves the socket open.
     _reader.pause();
-    _socket = await SecureSocket.secure(_socket, onBadCertificate: (_) => true);
+    _socket = await SecureSocket.secure(_socket,
+        host: host, context: context, onBadCertificate: onBadCertificate);
     _listen();
   }
 

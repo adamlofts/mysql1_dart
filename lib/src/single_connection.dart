@@ -3,6 +3,7 @@ library mysql1.connection;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 
@@ -23,7 +24,31 @@ class ConnectionSettings {
   String? user;
   String? password;
   String? db;
+
+  /// Whether to connect over TLS. If the server cannot, the connection fails:
+  /// it is not made without.
   bool useSSL;
+
+  /// The certificates to trust when [useSSL] is set. The system's roots if
+  /// this is null.
+  ///
+  /// The server's certificate has to chain to one of them and be for [host].
+  /// Dart 3.0 only matches a host which is a name: a certificate which lists
+  /// an address is not accepted for that address there, though it is on a
+  /// current SDK.
+  /// A server with a certificate of its own making - which is what MySQL
+  /// generates for itself - needs that certificate, or the authority which
+  /// signed it, added to a context given here.
+  SecurityContext? securityContext;
+
+  /// Asked about a server certificate which was not trusted or is not for
+  /// [host], when [useSSL] is set. Return true to connect anyway.
+  ///
+  /// With no callback such a certificate fails the connection with a
+  /// [HandshakeException]. Returning true for everything is encryption with
+  /// no check on who is at the other end.
+  bool Function(X509Certificate certificate)? onBadCertificate;
+
   int maxPacketSize;
   int characterSet;
 
@@ -37,6 +62,8 @@ class ConnectionSettings {
       this.password,
       this.db,
       this.useSSL = false,
+      this.securityContext,
+      this.onBadCertificate,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
       this.characterSet = CharacterSet.UTF8MB4});
@@ -47,6 +74,8 @@ class ConnectionSettings {
           String? password,
           String? db,
           bool useSSL = false,
+          SecurityContext? securityContext,
+          bool Function(X509Certificate certificate)? onBadCertificate,
           int maxPacketSize = 16 * 1024 * 1024,
           Duration timeout = const Duration(seconds: 30),
           int characterSet = CharacterSet.UTF8MB4}) =>
@@ -56,6 +85,8 @@ class ConnectionSettings {
           password: password,
           db: db,
           useSSL: useSSL,
+          securityContext: securityContext,
+          onBadCertificate: onBadCertificate,
           maxPacketSize: maxPacketSize,
           timeout: timeout,
           characterSet: characterSet);
@@ -67,6 +98,8 @@ class ConnectionSettings {
         password = o.password,
         db = o.db,
         useSSL = o.useSSL,
+        securityContext = o.securityContext,
+        onBadCertificate = o.onBadCertificate,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
         characterSet = o.characterSet;
@@ -121,8 +154,6 @@ class MySqlConnection {
   /// server.
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
-    assert(!c.useSSL); // Not implemented
-
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
 
     final conn = await ProtocolConnection.connect(
@@ -137,6 +168,9 @@ class MySqlConnection {
               maxPacketSize: c.maxPacketSize,
               characterSet: c.characterSet,
               useSSL: c.useSSL,
+              host: c.host,
+              securityContext: c.securityContext,
+              onBadCertificate: c.onBadCertificate,
               // Nobody can get between the client and the server on a unix
               // socket, which is what lets full authentication send a
               // cleartext password.
