@@ -173,7 +173,7 @@ jobs:
       - name: Start MySQL requiring TLS
         run: |
           # The server runs as its own user and has to be able to read the key.
-          chmod 644 test/unit/tls/server_key.pem
+          chmod 644 test/unit/tls/test_server_key_intentionally_public.pem
           docker run -d --name mysql-tls \
             -e MYSQL_ROOT_PASSWORD=s3cret \
             -e MYSQL_DATABASE=testdb \
@@ -181,9 +181,9 @@ jobs:
             -v "$PWD/test/unit/tls":/certs:ro \
             mysql:8 \
             --require-secure-transport=ON \
-            --ssl-cert=/certs/server_cert.pem \
-            --ssl-key=/certs/server_key.pem \
-            --ssl-ca=/certs/server_cert.pem
+            --ssl-cert=/certs/test_server_cert_intentionally_public.pem \
+            --ssl-key=/certs/test_server_key_intentionally_public.pem \
+            --ssl-ca=/certs/test_server_cert_intentionally_public.pem
           # The entrypoint starts a temporary server to set up, stops it and
           # starts the real one. Only the real one listens on TCP.
           for i in $(seq 60); do
@@ -229,5 +229,5 @@ jobs:
           MYSQL_USER: root
           MYSQL_PASSWORD: s3cret
           MYSQL_DATABASE: testdb
-          MYSQL_SSL_CA: test/unit/tls/server_cert.pem
+          MYSQL_SSL_CA: test/unit/tls/test_server_cert_intentionally_public.pem
           MYSQL_NO_TLS_PORT: 3307

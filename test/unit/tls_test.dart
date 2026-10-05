@@ -16,8 +16,8 @@ const _timeout = Duration(seconds: 5);
 // A certificate signed by nobody but itself, for localhost and 127.0.0.1.
 // This is the position a MySQL server is in with the certificate it makes
 // for itself: a client only trusts it if it has been told to.
-const _certificate = 'test/unit/tls/server_cert.pem';
-const _key = 'test/unit/tls/server_key.pem';
+const _certificate = 'test/unit/tls/test_server_cert_intentionally_public.pem';
+const _key = 'test/unit/tls/test_server_key_intentionally_public.pem';
 
 /// The greeting of a server which can do TLS, or says it cannot.
 List<int> _greeting({bool tls = true}) {
