@@ -11,11 +11,13 @@ import '../buffer.dart';
 
 import '../results/row.dart';
 import '../results/field.dart';
+import '../results/schema.dart';
 
 class StandardDataPacket extends ResultRow {
   final Logger log = Logger('StandardDataPacket');
 
-  StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
+  StandardDataPacket(Buffer buffer, ResultSchema schema) : super(schema) {
+    final fieldPackets = schema.columns;
     values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
@@ -61,7 +63,7 @@ class StandardDataPacket extends ResultRow {
   }
 
   @override
-  Object? readField(Field field, Buffer buffer) {
+  Object? readField(ResultSchemaColumn field, Buffer buffer) {
     List<int> list;
     var length = buffer.readLengthCodedBinary();
     if (length != null) {

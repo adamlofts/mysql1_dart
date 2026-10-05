@@ -9,6 +9,7 @@ import '../mysql_protocol_error.dart';
 import '../protocol_connection.dart';
 import '../results/field.dart';
 import '../results/row.dart';
+import '../results/schema.dart';
 import 'ok_packet.dart';
 import 'standard_data_packet.dart';
 
@@ -20,19 +21,22 @@ import 'standard_data_packet.dart';
 class QueryResponse {
   final int? insertId;
   final int? affectedRows;
-  final List<Field> fields;
+  final ResultSchema schema;
   final List<Uint8List> _rows;
 
   QueryResponse.ok(this.insertId, this.affectedRows)
-      : fields = const [],
+      : schema = ResultSchema(const []),
         _rows = const [];
 
-  QueryResponse.rows(this.fields, this._rows)
-      : insertId = null,
+  QueryResponse.rows(List<ResultSchemaColumn> fields, this._rows)
+      : schema = ResultSchema(fields),
+        insertId = null,
         affectedRows = null;
 
+  List<ResultSchemaColumn> get fields => schema.columns;
+
   List<ResultRow> decodeRows() => [
-        for (final row in _rows) StandardDataPacket(Buffer.view(row), fields),
+        for (final row in _rows) StandardDataPacket(Buffer.view(row), schema),
       ];
 }
 
@@ -85,10 +89,10 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
         throw createMySqlProtocolError(
             'Unexpected packet type ${payload[0]} in response to a query');
       }
-      final fields = <Field>[];
+      final fields = <ResultSchemaColumn>[];
       for (var i = 0; i < fieldCount; i++) {
         final field = (await conn.next()).payload;
-        fields.add(Field(Buffer.view(field)));
+        fields.add(ResultSchemaColumn(Buffer.view(field)));
       }
       // The column definitions end with an eof packet, and then the rows
       // start.

@@ -414,6 +414,29 @@ void main() {
     expect(v1, equals(v3));
   });
 
+  test('a result is a list of rows with a schema', () async {
+    await conn.query('delete from test1');
+    await conn.query('insert into test1 (atinyint, asmallint) values (1, 2)');
+    await conn.query('insert into test1 (atinyint, asmallint) values (3, 4)');
+
+    final Result result = await conn
+        .query('select atinyint as a, asmallint from test1 order by atinyint');
+    expect(result.length, equals(2));
+    expect(result.affectedRows, equals(2));
+    expect(result[1][0], equals(3));
+    expect(result.schema.columns.map((c) => c.columnName),
+        equals(['a', 'asmallint']));
+    expect(result.fields, same(result.schema.columns));
+    expect(result[0].schema, same(result.schema));
+    expect(result[0].toColumnMap(), equals({'a': 1, 'asmallint': 2}));
+    expect(() => result.add(result[0]), throwsUnsupportedError);
+
+    final update = await conn.query('update test1 set asmallint = 5');
+    expect(update, isEmpty);
+    expect(update.schema.columns, isEmpty);
+    expect(update.affectedRows, equals(2));
+  });
+
   test('disallow non-utc datetime serialization', () async {
     expect(() async {
       var results = await conn
@@ -425,7 +448,7 @@ void main() {
   });
 }
 
-void _showResults(Results results) {
+void _showResults(Result results) {
   var fieldNames = <String>[];
   for (var field in results.fields) {
     fieldNames.add('${field.name}:${field.type}');

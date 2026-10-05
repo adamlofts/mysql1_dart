@@ -103,6 +103,26 @@ void main() {
     await expectWireIsClean();
   });
 
+  test('a row knows its columns', () async {
+    final response = await query([
+      [2],
+      _field('n', FIELD_TYPE_LONG),
+      _field('m', FIELD_TYPE_LONG),
+      _eof(),
+      // The value 1, and the marker for null.
+      [1, 0x31, 0xfb],
+      _eof(),
+    ]);
+    expect(
+        response.schema.columns.map((c) => c.columnName), equals(['n', 'm']));
+
+    final row = response.decodeRows().single;
+    expect(row.schema, same(response.schema));
+    expect(row.toColumnMap(), equals({'n': 1, 'm': null}));
+    expect(row.isSqlNull(0), isFalse);
+    expect(row.isSqlNull(1), isTrue);
+  });
+
   test('an error', () async {
     await expectLater(query([_error]),
         throwsA(isA<MySqlException>().having((e) => e.errorNumber, '', 1146)));

@@ -31,7 +31,7 @@ void runErrorTests(
       var futures = [];
       for (var i = 0; i < 1; i++) {
         var c = new Completer();
-        pool.query('squiggle').then((Results results) {
+        pool.query('squiggle').then((Result results) {
           results.listen((row) {}, onDone: () {
             c.complete();
           });

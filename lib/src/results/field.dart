@@ -2,7 +2,8 @@ library mysql1.field;
 
 import '../buffer.dart';
 
-class Field {
+/// A column of a result.
+class ResultSchemaColumn {
   final String? catalog;
   final String? db;
   final String? table;
@@ -15,6 +16,10 @@ class Field {
   final int? flags;
   final int? decimals;
   final int? defaultValue;
+
+  /// The name of the column in the result, which is its alias if it was
+  /// given one. The same as [name].
+  String? get columnName => name;
 
   String get typeString {
     switch (type) {
@@ -79,7 +84,7 @@ class Field {
     }
   }
 
-  Field._internal(
+  ResultSchemaColumn._internal(
       this.catalog,
       this.db,
       this.table,
@@ -92,7 +97,7 @@ class Field {
       this.flags,
       this.decimals,
       this.defaultValue);
-  Field.forTests(this.type)
+  ResultSchemaColumn.forTests(this.type)
       : catalog = null,
         db = null,
         table = null,
@@ -105,7 +110,7 @@ class Field {
         decimals = null,
         defaultValue = null;
 
-  factory Field(Buffer buffer) {
+  factory ResultSchemaColumn(Buffer buffer) {
     final catalog = buffer.readLengthCodedString();
     final db = buffer.readLengthCodedString();
     final table = buffer.readLengthCodedString();
@@ -123,8 +128,8 @@ class Field {
     if (buffer.canReadMore()) {
       defaultValue = buffer.readLengthCodedBinary();
     }
-    return Field._internal(catalog, db, table, orgTable, name, orgName,
-        characterSet, length, type, flags, decimals, defaultValue);
+    return ResultSchemaColumn._internal(catalog, db, table, orgTable, name,
+        orgName, characterSet, length, type, flags, decimals, defaultValue);
   }
 
   @override
@@ -134,3 +139,7 @@ class Field {
       'Length: $length, Type: $type, Flags: $flags, Decimals: $decimals, '
       'Default Value: $defaultValue';
 }
+
+/// The name [ResultSchemaColumn] had before.
+@Deprecated('Use ResultSchemaColumn')
+typedef Field = ResultSchemaColumn;

@@ -14,6 +14,7 @@ import 'protocol_connection.dart';
 import 'query/query_response.dart';
 import 'results/field.dart';
 import 'results/row.dart';
+import 'results/schema.dart';
 import 'substitute_params.dart';
 
 final Logger _log = Logger('MySqlConnection');
@@ -183,13 +184,14 @@ class MySqlConnection {
     return MySqlConnection(c.timeout, conn);
   }
 
-  Future<Results> _query(String sql) async {
+  Future<Result> _query(String sql) async {
     final response =
         await _conn.exchange(() => runQuery(_conn, utf8.encode(sql)), _timeout);
     // Outside the exchange: the response has been read in full, so a value
     // which cannot be decoded fails this query and nothing else.
-    return Results._(response.decodeRows(), response.fields, response.insertId,
-        response.affectedRows);
+    final rows = response.decodeRows();
+    return Result._(rows, response.schema, response.insertId,
+        response.affectedRows ?? rows.length);
   }
 
   /// Run [sql] query on the database using [values] as positional sql parameters.
@@ -199,7 +201,7 @@ class MySqlConnection {
   /// [values] are substituted into [sql] as literals before it is sent, so the
   /// server receives one statement with no parameters - see
   /// [substituteParams] for what that buys and what it assumes.
-  Future<Results> query(String sql, [List<Object?>? values]) async {
+  Future<Result> query(String sql, [List<Object?>? values]) async {
     if (values == null || values.isEmpty) {
       return _query(sql);
     }
@@ -213,9 +215,9 @@ class MySqlConnection {
   ///
   /// Each set of values is substituted into [sql] and sent as its own
   /// statement. Nothing is shared between them beyond the connection.
-  Future<List<Results>> queryMulti(
+  Future<List<Result>> queryMulti(
       String sql, Iterable<List<Object?>> values) async {
-    var ret = <Results>[];
+    var ret = <Result>[];
     for (final v in values) {
       ret.add(await _query(substituteParams(sql, v)));
     }
@@ -246,25 +248,32 @@ class TransactionContext {
   final MySqlConnection _conn;
   TransactionContext._(this._conn);
 
-  Future<Results> query(String sql, [List<Object?>? values]) =>
+  Future<Result> query(String sql, [List<Object?>? values]) =>
       _conn.query(sql, values);
-  Future<List<Results>> queryMulti(
-          String sql, Iterable<List<Object?>> values) =>
+  Future<List<Result>> queryMulti(String sql, Iterable<List<Object?>> values) =>
       _conn.queryMulti(sql, values);
   void rollback() => throw _RollbackError();
 }
 
 class _RollbackError {}
 
-/// An iterable of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
-class Results extends IterableBase<ResultRow> {
+/// The list of result rows returned by [MySqlConnection.query] or [MySqlConnection.queryMulti].
+class Result extends UnmodifiableListView<ResultRow> {
   final int? insertId;
-  final int? affectedRows;
-  final List<Field> fields;
-  final List<ResultRow> _rows;
 
-  Results._(this._rows, this.fields, this.insertId, this.affectedRows);
+  /// The number of rows the statement changed, or the number of rows it
+  /// returned if it is one which returns rows.
+  final int affectedRows;
 
-  @override
-  Iterator<ResultRow> get iterator => _rows.iterator;
+  /// The columns of the result.
+  final ResultSchema schema;
+
+  Result._(super.rows, this.schema, this.insertId, this.affectedRows);
+
+  /// The columns of the result. The same as the columns of [schema].
+  List<ResultSchemaColumn> get fields => schema.columns;
 }
+
+/// The name [Result] had before it was a list.
+@Deprecated('Use Result')
+typedef Results = Result;

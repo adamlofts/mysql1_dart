@@ -24,7 +24,7 @@ void runNullMapTests(
 
     test('read data', () {
       var c = new Completer();
-      pool.query('select * from nullmap').then((Results results) {
+      pool.query('select * from nullmap').then((Result results) {
         results.listen((row) {
           expect(row[0], equals(null));
           expect(row[1].toString(), equals('b'));
