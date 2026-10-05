@@ -123,9 +123,11 @@ void main() {
           equals("'2018-01-02 03:04:05'"));
     });
 
-    test('DateTime is written to second precision', () {
+    test('DateTime is written with its fractional seconds', () {
       expect(sqlLiteral(DateTime.utc(2018, 1, 2, 3, 4, 5, 678)),
-          equals("'2018-01-02 03:04:05'"));
+          equals("'2018-01-02 03:04:05.678000'"));
+      expect(sqlLiteral(DateTime.utc(2018, 1, 2, 3, 4, 5, 0, 9)),
+          equals("'2018-01-02 03:04:05.000009'"));
     });
 
     test('DateTime must be in UTC', () {

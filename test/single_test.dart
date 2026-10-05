@@ -125,7 +125,8 @@ END
     var result = await conn.query('SELECT * FROM timezonetest');
     DateTime ts = result.first.first;
     DateTime dt = result.first.last;
-    expect(ts.difference(n).inMicroseconds, lessThan(100));
-    expect(dt.difference(n).inMicroseconds, lessThan(100));
+    // The columns hold whole seconds, so the server rounds the fraction.
+    expect(ts.difference(n).abs(), lessThan(Duration(seconds: 1)));
+    expect(dt.difference(n).abs(), lessThan(Duration(seconds: 1)));
   });
 }

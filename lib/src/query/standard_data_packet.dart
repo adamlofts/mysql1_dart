@@ -44,6 +44,22 @@ class StandardDataPacket extends ResultRow {
     );
   }
 
+  /// Parse a time string, `[-]HH:MM:SS[.ffffff]`
+  ///
+  /// The hours run to 838, and the sign applies to the whole value.
+  static Duration parseTime(String s) {
+    final negative = s.startsWith('-');
+    final parts = (negative ? s.substring(1) : s).split(':');
+    final seconds = parts[2].split('.');
+    final duration = Duration(
+        hours: int.parse(parts[0]),
+        minutes: int.parse(parts[1]),
+        seconds: int.parse(seconds[0]),
+        microseconds:
+            seconds.length > 1 ? int.parse(seconds[1].padRight(6, '0')) : 0);
+    return negative ? -duration : duration;
+  }
+
   @override
   Object? readField(Field field, Buffer buffer) {
     List<int> list;
@@ -80,13 +96,7 @@ class StandardDataPacket extends ResultRow {
         return parseDateTimeInUtc(s);
       case FIELD_TYPE_TIME: // time
         var s = utf8.decode(list);
-        var parts = s.split(':');
-        return Duration(
-            days: 0,
-            hours: int.parse(parts[0]),
-            minutes: int.parse(parts[1]),
-            seconds: int.parse(parts[2]),
-            milliseconds: 0);
+        return parseTime(s);
       case FIELD_TYPE_YEAR: // year
         var s = utf8.decode(list);
         return int.parse(s);
