@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.21.1
+--
+
+05 Oct 2026
+* An account with a password on MySQL 8 can log in over a connection which
+  is not TLS or a unix socket. A `caching_sha2_password` account has to send
+  the server its password the first time it logs in, and the driver now
+  encrypts it with the server's RSA public key, which it asks the server for.
+  It used to refuse.
+* `ConnectionSettings.serverPublicKey` takes that key in PEM, for anyone who
+  would rather give it than have the server asked.
+
 v0.21.0
 --
 
