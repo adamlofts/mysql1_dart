@@ -78,7 +78,9 @@ class QueryStreamHandler extends Handler {
     }
     var packet = checkResponse(response, _state == STATE_ROW_PACKETS);
     if (packet == null) {
-      if (response[0] == PACKET_EOF) {
+      // A row can start with the same byte: it is also the marker for a
+      // value of 16MB or more. An eof packet is never that long.
+      if (response[0] == PACKET_EOF && response.length < 9) {
         if (_state == STATE_FIELD_PACKETS) {
           return _handleEndOfFields();
         } else if (_state == STATE_ROW_PACKETS) {

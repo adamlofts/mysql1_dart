@@ -176,6 +176,12 @@ class BufferedSocket {
     if (_readingBuffer != null) {
       throw StateError('Cannot read from socket, already reading');
     }
+    if (buffer.length == 0) {
+      // An empty packet, which is how the server ends a payload that is an
+      // exact multiple of the largest packet. There is nothing to wait for,
+      // and a socket cannot be asked for no bytes.
+      return Future.value(buffer);
+    }
     _readingBuffer = buffer;
     _readOffset = 0;
     _readCompleter = Completer<Buffer>();

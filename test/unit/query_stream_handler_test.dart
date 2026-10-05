@@ -36,6 +36,21 @@ Buffer _row(List<String> values) =>
 Buffer _eof() => Buffer.fromList([PACKET_EOF, 0, 0, 0, 0]);
 
 void main() {
+  // The marker for a value of 16MB or more is the byte an eof packet starts
+  // with. What tells them apart is that an eof packet is short.
+  test('a row which starts with the eof marker is a row', () async {
+    final handler = QueryStreamHandler('select n from t');
+    handler.processResponse(Buffer.fromList([1])); // one column
+    handler.processResponse(_field('n', FIELD_TYPE_LONG));
+    final results = handler.processResponse(_eof()).result as ResultsStream;
+
+    // The value 7, with its length written in the eight byte form.
+    final row = Buffer.fromList([PACKET_EOF, 1, 0, 0, 0, 0, 0, 0, 0, 0x37]);
+    expect(handler.processResponse(row).finished, isFalse);
+    expect(handler.processResponse(_eof()).finished, isTrue);
+    expect((await results.toList()).map((r) => r[0]), equals([7]));
+  });
+
   group('a row which cannot be decoded', () {
     late QueryStreamHandler handler;
     late ResultsStream results;
