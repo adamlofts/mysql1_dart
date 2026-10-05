@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:mysql1/mysql1.dart';
-import 'package:mysql1/src/auth/handshake.dart';
+import 'package:mysql1/src/handshake.dart';
 import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:test/test.dart';

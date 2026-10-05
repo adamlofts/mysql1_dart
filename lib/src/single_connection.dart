@@ -6,8 +6,8 @@ import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
-import 'auth/character_set.dart';
-import 'auth/handshake.dart';
+import 'character_set.dart';
+import 'handshake.dart';
 import 'buffer.dart';
 import 'constants.dart';
 import 'protocol_connection.dart';

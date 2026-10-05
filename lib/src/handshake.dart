@@ -5,11 +5,11 @@ import 'dart:math' as math;
 
 import 'package:crypto/crypto.dart';
 
-import '../buffer.dart';
-import '../constants.dart';
-import '../mysql_client_error.dart';
-import '../mysql_exception.dart';
-import '../protocol_connection.dart';
+import 'buffer.dart';
+import 'constants.dart';
+import 'mysql_client_error.dart';
+import 'mysql_exception.dart';
+import 'protocol_connection.dart';
 
 enum AuthPlugin {
   none,
