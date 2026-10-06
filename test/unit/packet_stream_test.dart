@@ -163,6 +163,16 @@ void main() {
       expect(last, equals(1));
     });
 
+    test('the bytes after the last whole packet can be taken back', () {
+      final splitter = PacketSplitter();
+      final packets = splitter.add(_bytes([1, 0, 0, 0, 7, 22, 3, 1]));
+      expect(packets.single.payload, equals([7]));
+      expect(splitter.takePending(), equals([22, 3, 1]));
+      expect(splitter.takePending(), isEmpty);
+      // Framing starts afresh at a header.
+      expect(splitter.add(_bytes([1, 0, 0, 1, 8])).single.payload, equals([8]));
+    });
+
     test('what is encoded can be framed', () async {
       final payload = Uint8List(maxPacketPayload * 2 + 5)..[0] = 3;
       final (bytes, _) = encodePackets(payload, 0);

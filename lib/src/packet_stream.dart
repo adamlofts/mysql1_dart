@@ -33,19 +33,17 @@ class PacketFramer extends StreamTransformerBase<Uint8List, List<Packet>> {
   const PacketFramer();
 
   @override
-  Stream<List<Packet>> bind(Stream<Uint8List> stream) {
-    final splitter = _PacketSplitter();
-    return stream.transform(StreamTransformer.fromHandlers(
-        handleData: (Uint8List chunk, EventSink<List<Packet>> sink) {
-      final packets = splitter.add(chunk);
-      if (packets.isNotEmpty) {
-        sink.add(packets);
-      }
-    }));
-  }
+  Stream<List<Packet>> bind(Stream<Uint8List> stream) =>
+      PacketSplitter().bind(stream);
 }
 
-class _PacketSplitter {
+/// The state of the framing: the bytes of a packet which has only partly
+/// arrived.
+///
+/// [PacketFramer] makes one of these for each stream it is bound to. Code
+/// which may hand the wire over to something else - TLS - makes its own and
+/// uses [bind], so that it can see what the framing is holding at that point.
+class PacketSplitter {
   static const int _headerSize = 4;
 
   /// Bytes which have arrived but do not yet make up what is being waited for.
@@ -58,6 +56,19 @@ class _PacketSplitter {
   /// The parts so far of a payload which was split because of its length.
   BytesBuilder? _parts;
 
+  /// The packets carried by [stream], an event for each chunk which completes
+  /// at least one.
+  Stream<List<Packet>> bind(Stream<Uint8List> stream) {
+    return stream.transform(StreamTransformer.fromHandlers(
+        handleData: (Uint8List chunk, EventSink<List<Packet>> sink) {
+      final packets = add(chunk);
+      if (packets.isNotEmpty) {
+        sink.add(packets);
+      }
+    }));
+  }
+
+  /// The packets completed by [chunk], the next bytes from the wire.
   List<Packet> add(Uint8List chunk) {
     Uint8List data;
     if (_pending.isEmpty) {
@@ -105,6 +116,14 @@ class _PacketSplitter {
       _pending.add(Uint8List.sublistView(data, offset));
     }
     return packets;
+  }
+
+  /// The bytes which have arrived since the last whole packet, taken out so
+  /// that whatever takes over the wire can read them. Framing starts again
+  /// from a header.
+  Uint8List takePending() {
+    _needed = _headerSize;
+    return _pending.takeBytes();
   }
 }
 

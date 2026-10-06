@@ -8,6 +8,7 @@ import 'package:pool/pool.dart';
 import 'buffer.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
+import 'mysql_protocol_error.dart';
 import 'packet_stream.dart';
 
 /// The connection to the server, as something which packets are sent to and
@@ -20,6 +21,7 @@ import 'packet_stream.dart';
 /// nothing else can use the connection until it is done.
 class ProtocolConnection {
   Socket _socket;
+  late PacketSplitter _splitter;
   late PacketReader _reader;
   final int _maxPacketSize;
 
@@ -56,8 +58,8 @@ class ProtocolConnection {
   }
 
   void _listen() {
-    final reader =
-        _reader = PacketReader(_socket.transform(const PacketFramer()));
+    final splitter = _splitter = PacketSplitter();
+    final reader = _reader = PacketReader(splitter.bind(_socket));
     // A write which fails is reported on the socket's done future and nowhere
     // else. Whoever sent it is by then waiting for the reply, so that is who
     // is told.
@@ -143,6 +145,14 @@ class ProtocolConnection {
     // The socket's subscription stops getting events once TLS takes over, and
     // pausing it rather than cancelling is what leaves the socket open.
     _reader.pause();
+    // Whatever has arrived in the clear and not been read is lost when TLS
+    // takes over the socket, so there must be nothing. A server which sends
+    // anything after the greeting before it is asked for TLS is not speaking
+    // the protocol, and the connection would only hang or fail obscurely.
+    if (_reader.poll() != null || _splitter.takePending().isNotEmpty) {
+      throw createMySqlProtocolError(
+          'The server sent more before TLS was started than was read');
+    }
     _socket = await SecureSocket.secure(_socket,
         host: host, context: context, onBadCertificate: onBadCertificate);
     _listen();
