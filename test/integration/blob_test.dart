@@ -5,16 +5,16 @@ import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';
 
-const tableName = 'blobtable';
-
 void main() {
-  initializeTest(tableName, 'create table $tableName (stuff blob)');
+  initializeTest('blobs', 'create table blobs (stuff blob)');
 
-  test('write blob', () async {
-    await conn.query('insert into $tableName (stuff) values (?)', [
+  // 0xc3 0x28 is not valid UTF-8, so a blob which is decoded as text on the
+  // way in or out would not survive the round trip.
+  test('bytes which are not text come back as they went in', () async {
+    await conn.query('insert into blobs (stuff) values (?)', [
       [0xc3, 0x28]
-    ]); // this is an invalid UTF8 string
-    var results = await conn.query('select * from $tableName');
+    ]);
+    final results = await conn.query('select stuff from blobs');
     expect((results.first[0] as Blob).toBytes(), equals([0xc3, 0x28]));
   });
 }

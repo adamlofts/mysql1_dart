@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
 
-import 'test_util.dart';
-
 MySqlConnection get conn => _conn;
 late MySqlConnection _conn;
 
@@ -114,25 +112,34 @@ ConnectionSettings testConnectionSettings() {
 Future<MySqlConnection> connectForTest(ConnectionSettings settings) =>
     MySqlConnection.connect(settings, isUnixSocket: testSocketPath() != null);
 
+/// Give every test in the file a fresh connection, as [conn], and if
+/// [tableName] is given an empty table of that name made with [createSql],
+/// with the rows [insertSql] puts in it.
+///
+/// The database is created first if it is missing, over a connection which
+/// names no database.
 void initializeTest([String? tableName, String? createSql, String? insertSql]) {
-  var s = testConnectionSettings();
+  final settings = testConnectionSettings();
 
   setUp(() async {
-    // Ensure db exists
-    var checkSettings = ConnectionSettings.copy(s);
-    checkSettings.db = null;
-    final c = await connectForTest(checkSettings);
-    await c.query('CREATE DATABASE IF NOT EXISTS ${s.db} CHARACTER SET utf8');
-    await c.close();
+    final withoutDb = ConnectionSettings.copy(settings)..db = null;
+    final admin = await connectForTest(withoutDb);
+    await admin.query(
+        'CREATE DATABASE IF NOT EXISTS ${settings.db} CHARACTER SET utf8');
+    await admin.close();
 
-    _conn = await connectForTest(s);
+    _conn = await connectForTest(settings);
 
     if (tableName != null) {
-      await setup(_conn, tableName, createSql, insertSql);
+      await _conn.query('DROP TABLE IF EXISTS $tableName');
+      if (createSql != null) {
+        await _conn.query(createSql);
+      }
+      if (insertSql != null) {
+        await _conn.query(insertSql);
+      }
     }
   });
 
-  tearDown(() async {
-    await _conn.close();
-  });
+  tearDown(() => _conn.close());
 }
