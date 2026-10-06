@@ -10,7 +10,6 @@ import '../protocol_connection.dart';
 import '../results/field.dart';
 import '../results/row.dart';
 import '../results/schema.dart';
-import 'ok_packet.dart';
 import 'standard_data_packet.dart';
 
 /// What a query sent back, with the rows still as they came off the wire.
@@ -51,6 +50,11 @@ bool _isEof(Uint8List payload) =>
 bool _isError(Uint8List payload) =>
     payload.isNotEmpty && payload[0] == PACKET_ERROR;
 
+/// Whether [serverStatus], from an ok or eof packet, says another result
+/// follows this one.
+bool _moreResults(int serverStatus) =>
+    serverStatus & SERVER_MORE_RESULTS_EXISTS != 0;
+
 /// Send [sql] and read everything the server sends back for it. Call this
 /// inside [ProtocolConnection.exchange].
 ///
@@ -80,9 +84,13 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
 
     var moreResults = false;
     if (payload[0] == PACKET_OK) {
-      final ok = OkPacket(payload);
-      first ??= QueryResponse.ok(ok.insertId, ok.affectedRows);
-      moreResults = (ok.serverStatus & SERVER_MORE_RESULTS_EXISTS) != 0;
+      // The marker, the affected rows, the insert id, then the status. The
+      // warning count and message after that are not kept.
+      final ok = PayloadReader(payload)..skip(1);
+      final affectedRows = ok.readLengthEncodedInt();
+      final insertId = ok.readLengthEncodedInt();
+      first ??= QueryResponse.ok(insertId, affectedRows);
+      moreResults = _moreResults(ok.readUint16());
     } else {
       final fieldCount = PayloadReader(payload).readLengthEncodedInt();
       if (fieldCount == null) {
@@ -114,9 +122,10 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
           throw createMySqlException(row);
         }
         if (_isEof(row)) {
-          // The marker, two bytes of warning count, then the status.
-          final serverStatus = row.length >= 5 ? row[3] | (row[4] << 8) : 0;
-          moreResults = (serverStatus & SERVER_MORE_RESULTS_EXISTS) != 0;
+          // The marker, the warning count, then the status.
+          final serverStatus =
+              row.length >= 5 ? (PayloadReader(row)..skip(3)).readUint16() : 0;
+          moreResults = _moreResults(serverStatus);
           break;
         }
         if (keep) {
