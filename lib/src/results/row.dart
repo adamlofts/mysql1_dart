@@ -1,8 +1,6 @@
 import 'dart:collection';
 
-import 'field.dart';
 import 'schema.dart';
-import '../buffer.dart';
 
 /// A row of data. Fields can be retrieved by index, or by name.
 ///
@@ -51,6 +49,4 @@ abstract class ResultRow extends ListBase<dynamic> {
 
   @override
   String toString() => 'Fields: $fields';
-
-  Object? readField(ResultSchemaColumn field, Buffer buffer);
 }

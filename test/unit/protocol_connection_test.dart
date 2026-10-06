@@ -1,10 +1,10 @@
 library mysql1.protocol_connection_test;
 
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:mysql1/mysql1.dart' show MySqlClientError, MySqlException;
-import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/mysql_exception.dart';
 import 'package:test/test.dart';
 
@@ -29,9 +29,9 @@ void main() {
     final client = server.client;
     for (var i = 0; i < 2; i++) {
       final exchange = client.exchange(() async {
-        client.send(Buffer.fromList([1]));
+        client.send(Uint8List.fromList([1]));
         await client.next();
-        client.send(Buffer.fromList([2]));
+        client.send(Uint8List.fromList([2]));
         await client.next();
       }, _timeout);
 
@@ -52,7 +52,7 @@ void main() {
     final events = <String>[];
     Future<void> exchange(int n) => client.exchange(() async {
           events.add('start $n');
-          client.send(Buffer.fromList([n]));
+          client.send(Uint8List.fromList([n]));
           await client.next();
           events.add('end $n');
         }, _timeout);
@@ -76,7 +76,7 @@ void main() {
       () async {
     final client = server.client;
     await expectLater(
-        client.exchange(() async => client.send(Buffer(1025)), _timeout),
+        client.exchange(() async => client.send(Uint8List(1025)), _timeout),
         throwsA(isA<MySqlClientError>()));
     expect(client.isClosed, isFalse);
   });
@@ -86,9 +86,9 @@ void main() {
   test('an error from the server leaves the connection open', () async {
     final client = server.client;
     final exchange = client.exchange(() async {
-      client.send(Buffer.fromList([1]));
+      client.send(Uint8List.fromList([1]));
       final packet = await client.next();
-      throw createMySqlException(Buffer.view(packet.payload));
+      throw createMySqlException(packet.payload);
     }, _timeout);
     await server.nextRequest();
     server.send([_error]);
@@ -102,7 +102,7 @@ void main() {
     final client = server.client;
     await expectLater(
         client.exchange(() async {
-          client.send(Buffer.fromList([1]));
+          client.send(Uint8List.fromList([1]));
           await client.next();
         }, const Duration(milliseconds: 20)),
         throwsA(isA<TimeoutException>()));
@@ -114,7 +114,7 @@ void main() {
   test('an exchange which fails part way closes the connection', () async {
     final client = server.client;
     final exchange = client.exchange(() async {
-      client.send(Buffer.fromList([1]));
+      client.send(Uint8List.fromList([1]));
       await client.next();
       throw const FormatException('nonsense');
     }, _timeout);
@@ -129,7 +129,7 @@ void main() {
   test('the server going away fails whoever is reading', () async {
     final client = server.client;
     final exchange = client.exchange(() async {
-      client.send(Buffer.fromList([1]));
+      client.send(Uint8List.fromList([1]));
       await client.next();
     }, _timeout);
     await server.nextRequest();

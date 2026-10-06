@@ -1,27 +1,32 @@
 library mysql1.ok_packet;
 
-import '../buffer.dart';
+import 'dart:typed_data';
 
+import '../payload.dart';
+
+/// What the server says when a request succeeds and there are no rows.
 class OkPacket {
-  late int? _affectedRows;
-  late int? _insertId;
-  late int _serverStatus;
-  late String _message;
+  final int? affectedRows;
+  final int? insertId;
+  final int serverStatus;
+  final int warnings;
+  final String message;
 
-  int? get affectedRows => _affectedRows;
-  int? get insertId => _insertId;
-  int get serverStatus => _serverStatus;
-  String get message => _message;
+  OkPacket._(this.affectedRows, this.insertId, this.serverStatus, this.warnings,
+      this.message);
 
-  OkPacket(Buffer buffer) {
-    buffer.seek(1);
-    _affectedRows = buffer.readLengthCodedBinary();
-    _insertId = buffer.readLengthCodedBinary();
-    _serverStatus = buffer.readUint16();
-    _message = buffer.readStringToEnd();
+  factory OkPacket(Uint8List payload) {
+    final reader = PayloadReader(payload)..skip(1);
+    final affectedRows = reader.readLengthEncodedInt();
+    final insertId = reader.readLengthEncodedInt();
+    final serverStatus = reader.readUint16();
+    final warnings = reader.readUint16();
+    return OkPacket._(affectedRows, insertId, serverStatus, warnings,
+        reader.readRestAsString());
   }
 
   @override
   String toString() =>
-      'OK: affected rows: $affectedRows, insert id: $insertId, server status: $serverStatus, message: $message';
+      'OK: affected rows: $affectedRows, insert id: $insertId, '
+      'server status: $serverStatus, warnings: $warnings, message: $message';
 }

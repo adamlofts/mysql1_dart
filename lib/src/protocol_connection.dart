@@ -2,10 +2,10 @@ library mysql1.protocol_connection;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:pool/pool.dart';
 
-import 'buffer.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'mysql_protocol_error.dart';
@@ -97,15 +97,15 @@ class ProtocolConnection {
   }
 
   /// Send [payload] as the next packet of the exchange.
-  void send(Buffer payload) {
+  void send(Uint8List payload) {
     if (_closed) {
       throw StateError('Cannot write to socket, it is closed');
     }
     if (payload.length > _maxPacketSize) {
       throw MySqlClientError(
-          'Buffer length (${payload.length}) bigger than maxPacketSize ($_maxPacketSize)');
+          'Payload length (${payload.length}) bigger than maxPacketSize ($_maxPacketSize)');
     }
-    final (bytes, sequenceId) = encodePackets(payload.list, _sequenceId + 1);
+    final (bytes, sequenceId) = encodePackets(payload, _sequenceId + 1);
     _sequenceId = sequenceId;
     _sent = true;
     _socket.add(bytes);
