@@ -1,8 +1,12 @@
 library mysql1.my_sql_exception;
 
-import 'buffer.dart';
+import 'dart:typed_data';
 
-MySqlException createMySqlException(Buffer buffer) => MySqlException._(buffer);
+import 'payload.dart';
+
+/// The exception for an error packet, [payload].
+MySqlException createMySqlException(Uint8List payload) =>
+    MySqlException._(payload);
 
 /// An exception which is returned by the MySQL server.
 class MySqlException implements Exception {
@@ -18,13 +22,15 @@ class MySqlException implements Exception {
   MySqlException._raw(this.errorNumber, this.sqlState, this.message);
 
   /// Create a [MySqlException] based on an error response from the mysql server
-  factory MySqlException._(Buffer buffer) {
-    buffer.seek(1);
-    var errorNumber = buffer.readUint16();
-    buffer.skip(1);
-    var sqlState = buffer.readString(5);
-    var message = buffer.readStringToEnd();
-    return MySqlException._raw(errorNumber, sqlState, message);
+  factory MySqlException._(Uint8List payload) {
+    // The marker byte, the number, a '#', the five characters of the SQL
+    // state, and the message to the end.
+    final reader = PayloadReader(payload)..skip(1);
+    final errorNumber = reader.readUint16();
+    reader.skip(1);
+    final sqlState = reader.readString(5);
+    return MySqlException._raw(
+        errorNumber, sqlState, reader.readRestAsString());
   }
 
   @override

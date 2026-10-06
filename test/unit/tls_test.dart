@@ -2,11 +2,12 @@ library mysql1.tls_test;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:mysql1/mysql1.dart' show MySqlClientError, MySqlProtocolError;
-import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/handshake.dart';
+import 'package:mysql1/src/payload.dart';
 import 'package:test/test.dart';
 
 import 'fake_server.dart';
@@ -74,7 +75,7 @@ void main() {
   Future<void> expectConnectionWorks() async {
     final client = server.client;
     final exchange = client.exchange(() async {
-      client.send(Buffer.fromList([1, 2, 3]));
+      client.send(Uint8List.fromList([1, 2, 3]));
       return (await client.next()).payload;
     }, _timeout);
     expect((await server.nextRequest()).payload, equals([1, 2, 3]));
@@ -170,12 +171,12 @@ void main() {
       final request = await server.nextRequest();
       expect(request.sequenceId, equals(1));
       expect(request.payload, hasLength(32));
-      final flags = Buffer.view(request.payload).readUint32();
+      final flags = PayloadReader(request.payload).readUint32();
       expect(flags & CLIENT_SSL, isNot(0));
 
       await server.startTls(serverContext());
 
-      final response = Buffer.view((await server.nextRequest()).payload);
+      final response = PayloadReader((await server.nextRequest()).payload);
       response.skip(32);
       expect(response.readNullTerminatedString(), equals('username'));
 
@@ -199,12 +200,12 @@ void main() {
       final done = logIn(db: 'db', context: trusting(_certificate));
       server.send([_greeting()], sequenceId: 0);
 
-      final request = Buffer.view((await server.nextRequest()).payload);
+      final request = PayloadReader((await server.nextRequest()).payload);
       final requestFlags = request.readUint32();
       expect(requestFlags & CLIENT_CONNECT_WITH_DB, isNot(0));
 
       await server.startTls(serverContext());
-      final response = Buffer.view((await server.nextRequest()).payload);
+      final response = PayloadReader((await server.nextRequest()).payload);
       expect(response.readUint32(), equals(requestFlags));
 
       server.send([

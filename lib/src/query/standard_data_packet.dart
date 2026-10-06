@@ -3,11 +3,13 @@
 library mysql1.standard_data_packet;
 
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:logging/logging.dart';
 
 import '../constants.dart';
 import '../blob.dart';
-import '../buffer.dart';
+import '../payload.dart';
 
 import '../results/row.dart';
 import '../results/field.dart';
@@ -16,14 +18,15 @@ import '../results/schema.dart';
 class StandardDataPacket extends ResultRow {
   final Logger log = Logger('StandardDataPacket');
 
-  StandardDataPacket(Buffer buffer, ResultSchema schema) : super(schema) {
+  StandardDataPacket(Uint8List row, ResultSchema schema) : super(schema) {
+    final reader = PayloadReader(row);
     final fieldPackets = schema.columns;
     values = List<dynamic>.filled(fieldPackets.length, null);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
 
       log.fine('$i: ${field.name}');
-      values![i] = readField(field, buffer);
+      values![i] = readField(field, reader);
       fields[field.name!] = values![i];
     }
   }
@@ -62,15 +65,13 @@ class StandardDataPacket extends ResultRow {
     return negative ? -duration : duration;
   }
 
-  @override
-  Object? readField(ResultSchemaColumn field, Buffer buffer) {
-    List<int> list;
-    var length = buffer.readLengthCodedBinary();
-    if (length != null) {
-      list = buffer.readList(length);
-    } else {
+  /// The next value in [reader], decoded as [field] says.
+  Object? readField(ResultSchemaColumn field, PayloadReader reader) {
+    final length = reader.readLengthEncodedInt();
+    if (length == null) {
       return null;
     }
+    final list = reader.readBytes(length);
 
     switch (field.type) {
       case FIELD_TYPE_TINY: // tinyint/bool

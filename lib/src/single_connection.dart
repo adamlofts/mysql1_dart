@@ -4,11 +4,11 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
 
 import 'handshake.dart';
-import 'buffer.dart';
 import 'constants.dart';
 import 'protocol_connection.dart';
 import 'query/query_response.dart';
@@ -148,9 +148,7 @@ class MySqlConnection {
         // Queued behind whatever is in progress, like any other request. There
         // is no reply to wait for.
         await _conn.exchange(() async {
-          final request = Buffer(1);
-          request.writeByte(COM_QUIT);
-          _conn.send(request);
+          _conn.send(Uint8List.fromList([COM_QUIT]));
           await _conn.flush();
         }, _timeout).timeout(_timeout);
       } catch (e, st) {

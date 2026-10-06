@@ -2,11 +2,12 @@ library mysql1.handshake_test;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:mysql1/mysql1.dart';
 import 'package:mysql1/src/handshake.dart';
-import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
+import 'package:mysql1/src/payload.dart';
 import 'package:test/test.dart';
 
 import 'fake_server.dart';
@@ -14,60 +15,47 @@ import 'rsa_test_key.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
-Buffer _createHandshake(protocolVersion, serverVersion, threadId,
-    scrambleBuffer, serverCapabilities,
-    [serverLanguage,
-    serverStatus,
-    serverCapabilities2,
-    scrambleLength,
-    scrambleBuffer2,
-    pluginName,
-    pluginNameNull]) {
-  var length = 1 + (serverVersion.length as int) + 1 + 4 + 8 + 1 + 2;
+Uint8List _createHandshake(int protocolVersion, String serverVersion,
+    int threadId, String scrambleBuffer, int serverCapabilities,
+    [int? serverLanguage,
+    int? serverStatus,
+    int? serverCapabilities2,
+    int? scrambleLength,
+    String? scrambleBuffer2,
+    String? pluginName,
+    bool pluginNameNull = false]) {
+  final response = BytesBuilder()
+    ..addByte(protocolVersion)
+    ..addNullTerminated(serverVersion.codeUnits)
+    ..addUint32(threadId)
+    ..add(scrambleBuffer.codeUnits)
+    ..addByte(0)
+    ..addUint16(serverCapabilities);
   if (serverLanguage != null) {
-    length += 1 + 2 + 2 + 1 + 10;
+    response
+      ..addByte(serverLanguage)
+      ..addUint16(serverStatus!)
+      ..addUint16(serverCapabilities2!)
+      ..addByte(scrambleLength!)
+      ..addZeros(10);
     if (scrambleBuffer2 != null) {
-      length += (scrambleBuffer2.length as int) + 1;
+      response.addNullTerminated(scrambleBuffer2.codeUnits);
     }
     if (pluginName != null) {
-      length += pluginName.length as int;
+      response.add(pluginName.codeUnits);
       if (pluginNameNull) {
-        length++;
+        response.addByte(0);
       }
     }
   }
-
-  var response = Buffer(length);
-  response.writeByte(protocolVersion);
-  response.writeNullTerminatedList(serverVersion.codeUnits);
-  response.writeInt32(threadId);
-  response.writeList(scrambleBuffer.codeUnits);
-  response.writeByte(0);
-  response.writeInt16(serverCapabilities);
-  if (serverLanguage != null) {
-    response.writeByte(serverLanguage);
-    response.writeInt16(serverStatus);
-    response.writeInt16(serverCapabilities2);
-    response.writeByte(scrambleLength);
-    response.fill(10, 0);
-    if (scrambleBuffer2 != null) {
-      response.writeNullTerminatedList(scrambleBuffer2.codeUnits);
-    }
-    if (pluginName != null) {
-      response.writeList(pluginName.codeUnits);
-      if (pluginNameNull) {
-        response.writeByte(0);
-      }
-    }
-  }
-  return response;
+  return response.takeBytes();
 }
 
 const _scramble1 = 'abcdefgh';
 const _scramble2 = 'ijklmnopqrstuvwxyz';
 
 /// A greeting from a server whose default plugin is [plugin].
-Buffer _greeting(AuthPlugin plugin) => _createHandshake(
+Uint8List _greeting(AuthPlugin plugin) => _createHandshake(
     10,
     'version 1',
     123882394,
@@ -84,7 +72,7 @@ Buffer _greeting(AuthPlugin plugin) => _createHandshake(
 void main() {
   group('parseGreeting', () {
     test('throws if handshake protocol is not 10', () {
-      var response = Buffer.fromList([9]);
+      var response = Uint8List.fromList([9]);
       expect(() {
         parseGreeting(response);
       }, throwsA(isA<MySqlClientError>()));
@@ -349,7 +337,7 @@ void main() {
     test('a handshake response with no database', () {
       var clientFlags = 12345;
       var hash = authHash(AuthPlugin.mysqlNativePassword, [1, 2, 3, 4], 'Pass');
-      var buffer = handshakeResponse(
+      final response = handshakeResponse(
           clientFlags: clientFlags,
           maxPacketSize: 9898,
           characterSet: 56,
@@ -358,14 +346,14 @@ void main() {
           db: null,
           authPlugin: AuthPlugin.mysqlNativePassword);
 
-      buffer.seek(0);
+      final buffer = PayloadReader(response);
       expect(buffer.readUint32(), equals(clientFlags));
       expect(buffer.readUint32(), equals(9898));
       expect(buffer.readByte(), equals(56));
       buffer.skip(23);
       expect(buffer.readNullTerminatedString(), equals('Boris'));
       expect(buffer.readByte(), equals(hash.length));
-      expect(buffer.readList(hash.length), equals(hash));
+      expect(buffer.readBytes(hash.length), equals(hash));
       expect(buffer.hasMore, isFalse);
     });
 
@@ -373,7 +361,7 @@ void main() {
       var clientFlags = 2435623 & ~CLIENT_CONNECT_WITH_DB;
       var hash = authHash(AuthPlugin.mysqlNativePassword,
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'wibblededee');
-      var buffer = handshakeResponse(
+      final response = handshakeResponse(
           clientFlags: clientFlags,
           maxPacketSize: 34536,
           characterSet: 255,
@@ -382,7 +370,7 @@ void main() {
           db: 'thisisthenameofthedatabase',
           authPlugin: AuthPlugin.mysqlNativePassword);
 
-      buffer.seek(0);
+      final buffer = PayloadReader(response);
       expect(buffer.readUint32(), equals(clientFlags | CLIENT_CONNECT_WITH_DB));
       expect(buffer.readUint32(), equals(34536));
       expect(buffer.readByte(), equals(255));
@@ -390,7 +378,7 @@ void main() {
       expect(buffer.readNullTerminatedString(),
           equals('iamtheuserwantingtologin'));
       expect(buffer.readByte(), equals(hash.length));
-      expect(buffer.readList(hash.length), equals(hash));
+      expect(buffer.readBytes(hash.length), equals(hash));
       expect(buffer.readNullTerminatedString(),
           equals('thisisthenameofthedatabase'));
       expect(buffer.hasMore, isFalse);
@@ -399,7 +387,7 @@ void main() {
     test('a handshake response in utf8', () {
       var hash =
           authHash(AuthPlugin.mysqlNativePassword, [1, 2, 3, 4], 'здрасти');
-      var buffer = handshakeResponse(
+      final response = handshakeResponse(
           clientFlags: 0,
           maxPacketSize: 100,
           characterSet: 0,
@@ -408,29 +396,28 @@ void main() {
           db: 'дтабасе',
           authPlugin: AuthPlugin.mysqlNativePassword);
 
-      buffer.seek(0);
-      buffer.skip(32);
+      final buffer = PayloadReader(response)..skip(32);
       expect(buffer.readNullTerminatedString(), equals('Борис'));
       expect(buffer.readByte(), equals(hash.length));
-      expect(buffer.readList(hash.length), equals(hash));
+      expect(buffer.readBytes(hash.length), equals(hash));
       expect(buffer.readNullTerminatedString(), equals('дтабасе'));
       expect(buffer.hasMore, isFalse);
     });
 
     test('an ssl request is the start of a handshake response', () {
-      var buffer = sslRequest(12345, 9898, 56);
-      expect(buffer.length, equals(32));
-      buffer.seek(0);
+      final request = sslRequest(12345, 9898, 56);
+      expect(request.length, equals(32));
+      final buffer = PayloadReader(request);
       expect(buffer.readUint32(), equals(12345));
       expect(buffer.readUint32(), equals(9898));
       expect(buffer.readByte(), equals(56));
-      expect(buffer.readList(23), everyElement(0));
+      expect(buffer.readBytes(23), everyElement(0));
     });
 
     test('a cleartext password is null terminated', () {
-      expect(cleartextPassword('password').list,
+      expect(cleartextPassword('password'),
           equals([...utf8.encode('password'), 0]));
-      expect(cleartextPassword(null).list, equals([0]));
+      expect(cleartextPassword(null), equals([0]));
     });
   });
 
@@ -448,7 +435,7 @@ void main() {
 
     /// Greet the client as a server whose default is [plugin], and return
     /// the handshake along with the client's answer.
-    Future<(Future<void>, Buffer)> greet(
+    Future<(Future<void>, PayloadReader)> greet(
         {AuthPlugin plugin = AuthPlugin.cachingSha2Password,
         String? password = 'password',
         bool isSecure = false,
@@ -465,10 +452,10 @@ void main() {
               isSecure: isSecure,
               serverPublicKey: serverPublicKey),
           const Duration(seconds: 5));
-      server.send([_greeting(plugin).list], sequenceId: 0);
+      server.send([_greeting(plugin)], sequenceId: 0);
       final answer = await server.nextRequest();
       expect(answer.sequenceId, equals(1));
-      return (done, Buffer.view(answer.payload));
+      return (done, PayloadReader(answer.payload));
     }
 
     /// affected rows, insert id, server status, warnings.
@@ -499,7 +486,6 @@ void main() {
       final hash = authHash(AuthPlugin.cachingSha2Password,
           '$_scramble1$_scramble2'.codeUnits, 'password');
 
-      answer.seek(0);
       final flags = answer.readUint32();
       expect(flags & CLIENT_PLUGIN_AUTH, isNot(0));
       expect(flags & CLIENT_CONNECT_WITH_DB, isNot(0));
@@ -509,7 +495,7 @@ void main() {
       answer.skip(23);
       expect(answer.readNullTerminatedString(), equals('username'));
       expect(answer.readByte(), equals(hash.length));
-      expect(answer.readList(hash.length), equals(hash));
+      expect(answer.readBytes(hash.length), equals(hash));
       expect(answer.readNullTerminatedString(), equals('db'));
       expect(
           answer.readNullTerminatedString(), equals('caching_sha2_password'));

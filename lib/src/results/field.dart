@@ -1,6 +1,8 @@
 library mysql1.field;
 
-import '../buffer.dart';
+import 'dart:typed_data';
+
+import '../payload.dart';
 
 /// A column of a result.
 class ResultSchemaColumn {
@@ -110,23 +112,27 @@ class ResultSchemaColumn {
         decimals = null,
         defaultValue = null;
 
-  factory ResultSchemaColumn(Buffer buffer) {
-    final catalog = buffer.readLengthCodedString();
-    final db = buffer.readLengthCodedString();
-    final table = buffer.readLengthCodedString();
-    final orgTable = buffer.readLengthCodedString();
-    final name = buffer.readLengthCodedString();
-    final orgName = buffer.readLengthCodedString();
-    buffer.skip(1);
-    final characterSet = buffer.readUint16();
-    final length = buffer.readUint32();
-    final type = buffer.readByte();
-    final flags = buffer.readUint16();
-    final decimals = buffer.readByte();
-    buffer.skip(2);
+  /// The column from its definition packet, [payload].
+  factory ResultSchemaColumn(Uint8List payload) {
+    final reader = PayloadReader(payload);
+    final catalog = reader.readLengthEncodedString();
+    final db = reader.readLengthEncodedString();
+    final table = reader.readLengthEncodedString();
+    final orgTable = reader.readLengthEncodedString();
+    final name = reader.readLengthEncodedString();
+    final orgName = reader.readLengthEncodedString();
+    // The length of the fixed fields which follow, always 0x0c.
+    reader.skip(1);
+    final characterSet = reader.readUint16();
+    final length = reader.readUint32();
+    final type = reader.readByte();
+    final flags = reader.readUint16();
+    final decimals = reader.readByte();
+    // Two bytes of filler.
+    reader.skip(2);
     int? defaultValue;
-    if (buffer.canReadMore()) {
-      defaultValue = buffer.readLengthCodedBinary();
+    if (reader.hasMore) {
+      defaultValue = reader.readLengthEncodedInt();
     }
     return ResultSchemaColumn._internal(catalog, db, table, orgTable, name,
         orgName, characterSet, length, type, flags, decimals, defaultValue);

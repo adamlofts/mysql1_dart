@@ -3,13 +3,14 @@ library mysql1.handshake;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
-import 'buffer.dart';
 import 'constants.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
+import 'payload.dart';
 import 'protocol_connection.dart';
 import 'rsa.dart';
 
@@ -76,19 +77,19 @@ class ServerGreeting {
 /// Throws [MySqlException] if it is an error instead, which is how the server
 /// turns a connection away, and [MySqlClientError] if it is a protocol this
 /// driver does not speak.
-ServerGreeting parseGreeting(Buffer packet) {
-  if (packet[0] == PACKET_ERROR) {
-    throw createMySqlException(packet);
+ServerGreeting parseGreeting(Uint8List payload) {
+  if (payload.isNotEmpty && payload[0] == PACKET_ERROR) {
+    throw createMySqlException(payload);
   }
 
-  packet.seek(0);
+  final packet = PayloadReader(payload);
   final protocolVersion = packet.readByte();
   if (protocolVersion != 10) {
     throw MySqlClientError('Protocol not supported');
   }
   final serverVersion = packet.readNullTerminatedString();
   final threadId = packet.readUint32();
-  var scrambleBuffer = packet.readList(8);
+  List<int> scrambleBuffer = packet.readBytes(8);
   packet.skip(1);
   var serverCapabilities = packet.readUint16();
 
@@ -103,14 +104,14 @@ ServerGreeting parseGreeting(Buffer packet) {
     scrambleLength = packet.readByte();
     packet.skip(10);
     if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
-      final rest = packet.readList(math.max(13, scrambleLength - 8) - 1);
+      final rest = packet.readBytes(math.max(13, scrambleLength - 8) - 1);
       // The null terminator.
       packet.readByte();
       scrambleBuffer = [...scrambleBuffer, ...rest];
     }
 
     if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
-      var pluginName = packet.readStringToEnd();
+      var pluginName = packet.readRestAsString();
       if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
         pluginName = pluginName.substring(0, pluginName.length - 1);
       }
@@ -169,14 +170,13 @@ int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
 
 /// The packet which asks for TLS. It is the start of the handshake response,
 /// sent in the clear; the whole response follows once TLS is up.
-Buffer sslRequest(int clientFlags, int maxPacketSize, int characterSet) {
-  final buffer = Buffer(32);
-  buffer.seekWrite(0);
-  buffer.writeUint32(clientFlags);
-  buffer.writeUint32(maxPacketSize);
-  buffer.writeByte(characterSet);
-  buffer.fill(23, 0);
-  return buffer;
+Uint8List sslRequest(int clientFlags, int maxPacketSize, int characterSet) {
+  final request = BytesBuilder(copy: false)
+    ..addUint32(clientFlags)
+    ..addUint32(maxPacketSize)
+    ..addByte(characterSet)
+    ..addZeros(23);
+  return request.takeBytes();
 }
 
 /// What proves the client knows [password], for [plugin] and the seed the
@@ -215,7 +215,7 @@ List<int> _cachingSha2Hash(List<int> scramble, String password) {
 
 /// The client's answer to the greeting: who it is, the proof of its password
 /// as [hash], and the database to use.
-Buffer handshakeResponse(
+Uint8List handshakeResponse(
     {required int clientFlags,
     required int maxPacketSize,
     required int characterSet,
@@ -223,37 +223,24 @@ Buffer handshakeResponse(
     required List<int> hash,
     required String? db,
     required AuthPlugin authPlugin}) {
-  final encodedUsername = username == null ? <int>[] : utf8.encode(username);
-  var encodedDb = <int>[];
-  var encodedAuth = <int>[];
-
-  var size = hash.length + encodedUsername.length + 2 + 32;
   if (db != null) {
-    encodedDb = utf8.encode(db);
-    size += encodedDb.length + 1;
     clientFlags |= CLIENT_CONNECT_WITH_DB;
   }
-  if (clientFlags & CLIENT_PLUGIN_AUTH > 0) {
-    encodedAuth = utf8.encode(authPluginToString(authPlugin));
-    size += encodedAuth.length + 1;
-  }
-
-  final buffer = Buffer(size);
-  buffer.seekWrite(0);
-  buffer.writeUint32(clientFlags);
-  buffer.writeUint32(maxPacketSize);
-  buffer.writeByte(characterSet);
-  buffer.fill(23, 0);
-  buffer.writeNullTerminatedList(encodedUsername);
-  buffer.writeByte(hash.length);
-  buffer.writeList(hash);
+  final response = BytesBuilder(copy: false)
+    ..addUint32(clientFlags)
+    ..addUint32(maxPacketSize)
+    ..addByte(characterSet)
+    ..addZeros(23)
+    ..addNullTerminated(username == null ? const [] : utf8.encode(username))
+    ..addByte(hash.length)
+    ..add(hash);
   if (db != null) {
-    buffer.writeNullTerminatedList(encodedDb);
+    response.addNullTerminated(utf8.encode(db));
   }
-  if (encodedAuth.isNotEmpty) {
-    buffer.writeNullTerminatedList(encodedAuth);
+  if (clientFlags & CLIENT_PLUGIN_AUTH > 0) {
+    response.addNullTerminated(utf8.encode(authPluginToString(authPlugin)));
   }
-  return buffer;
+  return response.takeBytes();
 }
 
 /// The password as it is sent on a connection which others can read: null
@@ -276,10 +263,10 @@ List<int> encryptedPassword(
 /// someone who can change what is sent: they can answer with a key of their
 /// own.
 Future<RsaPublicKey> _requestPublicKey(ProtocolConnection conn) async {
-  conn.send(Buffer.fromList([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
+  conn.send(Uint8List.fromList([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
   final reply = (await conn.next()).payload;
   if (reply.isNotEmpty && reply[0] == PACKET_ERROR) {
-    throw createMySqlException(Buffer.view(reply));
+    throw createMySqlException(reply);
   }
   if (reply.isEmpty || reply[0] != PACKET_AUTH_MORE_DATA) {
     throw MySqlClientError(
@@ -291,12 +278,8 @@ Future<RsaPublicKey> _requestPublicKey(ProtocolConnection conn) async {
 
 /// The password itself, null terminated: the answer to a request for full
 /// authentication on a connection nobody else can read.
-Buffer cleartextPassword(String? password) {
-  final encoded = password == null ? <int>[] : utf8.encode(password);
-  final buffer = Buffer(encoded.length + 1);
-  buffer.writeNullTerminatedList(encoded);
-  return buffer;
-}
+Uint8List cleartextPassword(String? password) =>
+    Uint8List.fromList([if (password != null) ...utf8.encode(password), 0]);
 
 /// Open the conversation on a new connection and log in. Call this inside
 /// [ProtocolConnection.exchange].
@@ -329,7 +312,7 @@ Future<void> handshake(ProtocolConnection conn,
     SecurityContext? securityContext,
     bool Function(X509Certificate certificate)? onBadCertificate,
     String? serverPublicKey}) async {
-  final greeting = parseGreeting(Buffer.view((await conn.next()).payload));
+  final greeting = parseGreeting((await conn.next()).payload);
   var clientFlags = clientCapabilities(greeting, useSSL: useSSL);
   if (db != null) {
     // Here and not only in the response: the request for TLS carries the
@@ -362,7 +345,7 @@ Future<void> handshake(ProtocolConnection conn,
   // end leaves the real one unread, and every reply after it is then the
   // reply to the request before.
   while (true) {
-    final reply = Buffer.view((await conn.next()).payload);
+    final reply = (await conn.next()).payload;
     switch (reply[0]) {
       case PACKET_OK:
         return;
@@ -374,18 +357,18 @@ Future<void> handshake(ProtocolConnection conn,
         // The account does not use the plugin named in the greeting, so the
         // server names the one it does use and sends a new seed. The answer
         // is the bare hash, with no header of its own.
-        reply.seek(1);
-        if (!reply.hasMore) {
+        if (reply.length == 1) {
           // A bare 0xfe asks for mysql_old_password, the pre-4.1 hash.
           throw MySqlClientError(
               'Old Password Authentication is not supported');
         }
-        authPlugin = authPluginFromString(reply.readNullTerminatedString());
-        scramble = reply.readListToEnd();
+        final request = PayloadReader(reply)..skip(1);
+        authPlugin = authPluginFromString(request.readNullTerminatedString());
+        scramble = request.readRest();
         if (scramble.isNotEmpty && scramble.last == 0) {
           scramble = scramble.sublist(0, scramble.length - 1);
         }
-        conn.send(Buffer.fromList(authHash(authPlugin, scramble, password)));
+        conn.send(Uint8List.fromList(authHash(authPlugin, scramble, password)));
         break;
 
       case PACKET_AUTH_MORE_DATA:
@@ -395,8 +378,7 @@ Future<void> handshake(ProtocolConnection conn,
           throw MySqlClientError('Unexpected auth data for '
               '${authPluginToString(authPlugin)} authentication');
         }
-        reply.seek(1);
-        final status = reply.readByte();
+        final status = (PayloadReader(reply)..skip(1)).readByte();
         if (status == CACHING_SHA2_FAST_AUTH_SUCCESS) {
           // The server had the password cached. The ok packet comes next.
           break;
@@ -416,7 +398,8 @@ Future<void> handshake(ProtocolConnection conn,
         final key = serverPublicKey != null
             ? parseRsaPublicKeyPem(serverPublicKey)
             : await _requestPublicKey(conn);
-        conn.send(Buffer.fromList(encryptedPassword(password, scramble, key)));
+        conn.send(
+            Uint8List.fromList(encryptedPassword(password, scramble, key)));
         break;
 
       default:
