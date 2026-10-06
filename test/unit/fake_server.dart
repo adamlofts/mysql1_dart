@@ -7,14 +7,24 @@ import 'package:mysql1/src/protocol_connection.dart';
 
 /// The server's end of a connection over loopback, for tests which need to
 /// say exactly which packets come back.
+///
+/// It reads the socket only when a request is asked for, so a test can let
+/// the client get ahead and then see how the server copes.
 class FakeServer {
   final ServerSocket _listener;
   final ProtocolConnection client;
   Socket _socket;
-  PacketReader _requests;
+  late PacketSplitter _splitter;
+  late PacketReader _requests;
 
-  FakeServer._(this._listener, this.client, this._socket)
-      : _requests = PacketReader(_socket.transform(const PacketFramer()));
+  FakeServer._(this._listener, this.client, this._socket) {
+    _listen();
+  }
+
+  void _listen() {
+    final splitter = _splitter = PacketSplitter();
+    _requests = PacketReader(splitter.bind(_socket))..pause();
+  }
 
   static Future<FakeServer> start(
       {int maxPacketSize = 16 * 1024 * 1024}) async {
@@ -42,8 +52,13 @@ class FakeServer {
   /// the client would not.
   Future<void> startTls(SecurityContext context) async {
     _requests.pause();
-    _socket = await SecureSocket.secureServer(_socket, context);
-    _requests = PacketReader(_socket.transform(const PacketFramer()));
+    // The client begins the TLS handshake as soon as it has asked for TLS, so
+    // the start of the handshake can arrive in the same read as the request
+    // and have been taken for the start of the next packet. Give it to TLS.
+    final bufferedData = _splitter.takePending();
+    _socket = await SecureSocket.secureServer(_socket, context,
+        bufferedData: bufferedData.isEmpty ? null : bufferedData);
+    _listen();
   }
 
   /// Drop the connection from the server's end.

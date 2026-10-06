@@ -3,7 +3,7 @@ library mysql1.tls_test;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:mysql1/mysql1.dart' show MySqlClientError;
+import 'package:mysql1/mysql1.dart' show MySqlClientError, MySqlProtocolError;
 import 'package:mysql1/src/buffer.dart';
 import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/handshake.dart';
@@ -226,6 +226,39 @@ void main() {
       // password.
       server.client.close();
       await expectLater(server.nextRequest(), throwsA(isA<SocketException>()));
+    });
+
+    // The client begins the TLS handshake as soon as it has asked for TLS,
+    // so the start of the handshake can be in the same read as the request.
+    // The server has to hand what it has read ahead to TLS, or the handshake
+    // waits forever at both ends. The wait is what lets the client get ahead.
+    test('logs in when the server reads the request for TLS late', () async {
+      final done = logIn(context: trusting(_certificate));
+      server.send([_greeting()], sequenceId: 0);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      await server.nextRequest();
+      await server.startTls(serverContext());
+      await server.nextRequest();
+      server.send([
+        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+      ], sequenceId: 3);
+      await done;
+    });
+
+    // The client has the same problem the other way round. A server never
+    // sends more than the greeting before TLS, so rather than hand anything
+    // over the client refuses to go on.
+    test('does not start TLS if the server has sent more than the greeting',
+        () async {
+      final done = logIn(context: trusting(_certificate));
+      server.send([
+        _greeting(),
+        [1, 2, 3]
+      ], sequenceId: 0);
+
+      await expectLater(done, throwsA(isA<MySqlProtocolError>()));
+      expect(server.client.isClosed, isTrue);
     });
 
     test('does not log in when the certificate is not trusted', () async {
