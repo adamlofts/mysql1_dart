@@ -60,10 +60,10 @@ Uint8List _greeting(AuthPlugin plugin) => _createHandshake(
     'version 1',
     123882394,
     _scramble1,
-    CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION,
+    Capability.protocol41.bit | Capability.secureConnection.bit,
     9,
     999,
-    CLIENT_PLUGIN_AUTH >> 0x10,
+    Capability.pluginAuth.bit >> 0x10,
     _scramble1.length + _scramble2.length + 1,
     _scramble2,
     authPluginToString(plugin),
@@ -83,7 +83,8 @@ void main() {
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
-      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
+      var serverCapabilities1 =
+          Capability.protocol41.bit | Capability.secureConnection.bit;
       var serverCapabilities2 = 0;
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
@@ -115,7 +116,8 @@ void main() {
       var serverVersion = 'version 1';
       var scrambleBuffer1 = 'abcdefgh';
       var threadId = 123882394;
-      var serverCapabilities = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
+      var serverCapabilities =
+          Capability.protocol41.bit | Capability.secureConnection.bit;
 
       var responseBuffer = _createHandshake(
           10, serverVersion, threadId, scrambleBuffer1, serverCapabilities);
@@ -134,8 +136,9 @@ void main() {
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
-      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
-      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var serverCapabilities1 =
+          Capability.protocol41.bit | Capability.secureConnection.bit;
+      var serverCapabilities2 = Capability.pluginAuth.bit >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
@@ -163,8 +166,9 @@ void main() {
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
-      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
-      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var serverCapabilities1 =
+          Capability.protocol41.bit | Capability.secureConnection.bit;
+      var serverCapabilities2 = Capability.pluginAuth.bit >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrstuvwxyz';
       var scrambleLength = scrambleBuffer1.length + scrambleBuffer2.length + 1;
@@ -192,8 +196,8 @@ void main() {
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
-      var serverCapabilities1 = CLIENT_PROTOCOL_41;
-      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var serverCapabilities1 = Capability.protocol41.bit;
+      var serverCapabilities2 = Capability.pluginAuth.bit >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
       String? scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
@@ -221,8 +225,9 @@ void main() {
       var threadId = 123882394;
       var serverLanguage = 9;
       var serverStatus = 999;
-      var serverCapabilities1 = CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION;
-      var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
+      var serverCapabilities1 =
+          Capability.protocol41.bit | Capability.secureConnection.bit;
+      var serverCapabilities2 = Capability.pluginAuth.bit >> 0x10;
       var scrambleBuffer1 = 'abcdefgh';
       var scrambleBuffer2 = 'ijklmnopqrst';
       var scrambleLength = 5;
@@ -251,12 +256,12 @@ void main() {
         parseGreeting(_createHandshake(10, 'version 1', 123, 'abcdefgh',
             capabilities1, 9, 999, capabilities2, 21, 'ijklmnopqrstuvwxyz'));
 
-    const base = CLIENT_PROTOCOL_41 |
-        CLIENT_LONG_PASSWORD |
-        CLIENT_LONG_FLAG |
-        CLIENT_TRANSACTIONS |
-        CLIENT_SECURE_CONNECTION |
-        CLIENT_MULTI_RESULTS;
+    final base = Capability.protocol41.bit |
+        Capability.longPassword.bit |
+        Capability.longFlag.bit |
+        Capability.transactions.bit |
+        Capability.secureConnection.bit |
+        Capability.multiResults.bit;
 
     test('throws if server protocol is not 4.1', () {
       expect(() => clientCapabilities(greeting(0), useSSL: false),
@@ -265,13 +270,14 @@ void main() {
 
     test('throws if old password authentication is requested', () {
       expect(
-          () => clientCapabilities(greeting(CLIENT_PROTOCOL_41), useSSL: false),
+          () => clientCapabilities(greeting(Capability.protocol41.bit),
+              useSSL: false),
           throwsA(isA<MySqlClientError>()));
     });
 
     test('the flags for a server with nothing optional', () {
       final flags = clientCapabilities(
-          greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION),
+          greeting(Capability.protocol41.bit | Capability.secureConnection.bit),
           useSSL: false);
       expect(flags, equals(base));
     });
@@ -280,19 +286,23 @@ void main() {
       final flags = clientCapabilities(
           parseGreeting(_greeting(AuthPlugin.mysqlNativePassword)),
           useSSL: false);
-      expect(flags, equals(base | CLIENT_PLUGIN_AUTH));
+      expect(flags, equals(base | Capability.pluginAuth.bit));
     });
 
     test('asks for ssl if it is wanted and the server has it', () {
       final flags = clientCapabilities(
-          greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION | CLIENT_SSL),
+          greeting(Capability.protocol41.bit |
+              Capability.secureConnection.bit |
+              Capability.ssl.bit),
           useSSL: true);
-      expect(flags, equals(base | CLIENT_SSL));
+      expect(flags, equals(base | Capability.ssl.bit));
     });
 
     test('does not ask for ssl if it is not wanted', () {
       final flags = clientCapabilities(
-          greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION | CLIENT_SSL),
+          greeting(Capability.protocol41.bit |
+              Capability.secureConnection.bit |
+              Capability.ssl.bit),
           useSSL: false);
       expect(flags, equals(base));
     });
@@ -302,7 +312,8 @@ void main() {
     test('throws if ssl is wanted and the server does not have it', () {
       expect(
           () => clientCapabilities(
-              greeting(CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION),
+              greeting(
+                  Capability.protocol41.bit | Capability.secureConnection.bit),
               useSSL: true),
           throwsA(isA<MySqlClientError>()
               .having((e) => e.message, 'message', contains('TLS'))));
@@ -358,7 +369,7 @@ void main() {
     });
 
     test('a handshake response with a database', () {
-      var clientFlags = 2435623 & ~CLIENT_CONNECT_WITH_DB;
+      var clientFlags = 2435623 & ~Capability.connectWithDb.bit;
       var hash = authHash(AuthPlugin.mysqlNativePassword,
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'wibblededee');
       final response = handshakeResponse(
@@ -371,7 +382,8 @@ void main() {
           authPlugin: AuthPlugin.mysqlNativePassword);
 
       final buffer = PayloadReader(response);
-      expect(buffer.readUint32(), equals(clientFlags | CLIENT_CONNECT_WITH_DB));
+      expect(buffer.readUint32(),
+          equals(clientFlags | Capability.connectWithDb.bit));
       expect(buffer.readUint32(), equals(34536));
       expect(buffer.readByte(), equals(255));
       buffer.skip(23);
@@ -459,10 +471,10 @@ void main() {
     }
 
     /// affected rows, insert id, server status, warnings.
-    const ok = [PACKET_OK, 0, 0, 2, 0, 0, 0];
+    const ok = [Packet.ok, 0, 0, 2, 0, 0, 0];
 
     final accessDenied = [
-      PACKET_ERROR,
+      Packet.error,
       0x15,
       0x04, // 1045
       0x23, // '#'
@@ -470,11 +482,11 @@ void main() {
       ...utf8.encode('Access denied'),
     ];
 
-    List<int> authMoreData(int status) => [PACKET_AUTH_MORE_DATA, status];
+    List<int> authMoreData(int status) => [Packet.authMoreData, status];
 
     /// `0xfe`, the plugin name, then a fresh scramble with a null terminator.
     List<int> authSwitchRequest(String plugin, List<int> scramble) => [
-          PACKET_AUTH_SWITCH_REQUEST,
+          Packet.authSwitch,
           ...utf8.encode(plugin),
           0,
           ...scramble,
@@ -487,9 +499,9 @@ void main() {
           '$_scramble1$_scramble2'.codeUnits, 'password');
 
       final flags = answer.readUint32();
-      expect(flags & CLIENT_PLUGIN_AUTH, isNot(0));
-      expect(flags & CLIENT_CONNECT_WITH_DB, isNot(0));
-      expect(flags & CLIENT_SSL, equals(0));
+      expect(flags & Capability.pluginAuth.bit, isNot(0));
+      expect(flags & Capability.connectWithDb.bit, isNot(0));
+      expect(flags & Capability.ssl.bit, equals(0));
       expect(answer.readUint32(), equals(MAX_PACKET_SIZE));
       expect(answer.readByte(), equals(CharacterSet.UTF8MB4));
       answer.skip(23);
@@ -544,8 +556,7 @@ void main() {
       var finished = false;
       unawaited(done.then((_) => finished = true));
 
-      server
-          .send([authMoreData(CACHING_SHA2_FAST_AUTH_SUCCESS)], sequenceId: 2);
+      server.send([authMoreData(cachingSha2FastAuthSuccess)], sequenceId: 2);
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(finished, isFalse);
 
@@ -567,19 +578,19 @@ void main() {
 
     /// The server's reply to a request for its public key.
     List<int> publicKey(String pem) =>
-        [PACKET_AUTH_MORE_DATA, ...ascii.encode(pem)];
+        [Packet.authMoreData, ...ascii.encode(pem)];
 
     // On a connection others can read, the password is encrypted with the
     // server's key, and if the caller did not give one the server is asked.
     test('full authentication asks for the key when anyone could read it',
         () async {
       final (done, _) = await greet(isSecure: false);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
 
       final request = await server.nextRequest();
       expect(request.sequenceId, equals(3));
-      expect(request.payload, equals([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
+      expect(request.payload, equals([cachingSha2RequestPublicKey]));
       server.send([publicKey(testPublicKeyPem)], sequenceId: 4);
 
       final password = await server.nextRequest();
@@ -596,7 +607,7 @@ void main() {
         () async {
       final (done, _) =
           await greet(isSecure: false, serverPublicKey: testPublicKeyPem);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
 
       // Straight to the password: no request for the key first.
@@ -615,7 +626,7 @@ void main() {
       server.send([authSwitchRequest('caching_sha2_password', scramble)],
           sequenceId: 2);
       await server.nextRequest();
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 4);
       await server.nextRequest();
       server.send([publicKey(testPublicKeyPem)], sequenceId: 6);
@@ -630,7 +641,7 @@ void main() {
 
     test('a wrong password is refused after it has been sent', () async {
       final (done, _) = await greet(isSecure: false);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
       await server.nextRequest();
       server.send([publicKey(testPublicKeyPem)], sequenceId: 4);
@@ -644,7 +655,7 @@ void main() {
 
     test('an error in place of the key throws', () async {
       final (done, _) = await greet(isSecure: false);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
       await server.nextRequest();
       server.send([accessDenied], sequenceId: 4);
@@ -653,7 +664,7 @@ void main() {
 
     test('something which is not a key in place of the key throws', () async {
       final (done, _) = await greet(isSecure: false);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
       await server.nextRequest();
       server.send([publicKey('not a key')], sequenceId: 4);
@@ -663,7 +674,7 @@ void main() {
     test('a key which is given and is not a key throws', () async {
       final (done, _) =
           await greet(isSecure: false, serverPublicKey: 'not a key');
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
       await expectLater(done, throwsA(isA<MySqlClientError>()));
     });
@@ -671,7 +682,7 @@ void main() {
     test('full authentication sends the password when nobody can read it',
         () async {
       final (done, _) = await greet(isSecure: true);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
 
       final password = await server.nextRequest();
@@ -685,7 +696,7 @@ void main() {
     test('full authentication with no password sends just the terminator',
         () async {
       final (done, _) = await greet(password: null, isSecure: true);
-      server.send([authMoreData(CACHING_SHA2_PERFORM_FULL_AUTHENTICATION)],
+      server.send([authMoreData(cachingSha2PerformFullAuthentication)],
           sequenceId: 2);
 
       expect((await server.nextRequest()).payload, equals([0]));
@@ -701,8 +712,7 @@ void main() {
 
     test('auth data for a plugin which does not send any throws', () async {
       final (done, _) = await greet(plugin: AuthPlugin.mysqlNativePassword);
-      server
-          .send([authMoreData(CACHING_SHA2_FAST_AUTH_SUCCESS)], sequenceId: 2);
+      server.send([authMoreData(cachingSha2FastAuthSuccess)], sequenceId: 2);
       await expectLater(done, throwsA(isA<MySqlClientError>()));
     });
 
@@ -740,8 +750,7 @@ void main() {
               authHash(AuthPlugin.cachingSha2Password, scramble, 'password')));
 
       // Having switched, the data this plugin sends is understood.
-      server
-          .send([authMoreData(CACHING_SHA2_FAST_AUTH_SUCCESS)], sequenceId: 4);
+      server.send([authMoreData(cachingSha2FastAuthSuccess)], sequenceId: 4);
       server.send([ok], sequenceId: 5);
       await done;
     });
@@ -758,7 +767,7 @@ void main() {
         () async {
       final (done, _) = await greet();
       server.send([
-        [PACKET_AUTH_SWITCH_REQUEST]
+        [Packet.authSwitch]
       ], sequenceId: 2);
       await expectLater(
           done,

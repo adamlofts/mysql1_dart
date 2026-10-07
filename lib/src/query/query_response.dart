@@ -45,15 +45,15 @@ class QueryResponse {
 /// A row can start with the same byte: it is also the marker for a value of
 /// 16MB or more. An eof packet is never that long.
 bool _isEof(Uint8List payload) =>
-    payload.isNotEmpty && payload[0] == PACKET_EOF && payload.length < 9;
+    payload.isNotEmpty && payload[0] == Packet.eof && payload.length < 9;
 
 bool _isError(Uint8List payload) =>
-    payload.isNotEmpty && payload[0] == PACKET_ERROR;
+    payload.isNotEmpty && payload[0] == Packet.error;
 
 /// Whether [serverStatus], from an ok or eof packet, says another result
 /// follows this one.
 bool _moreResults(int serverStatus) =>
-    serverStatus & SERVER_MORE_RESULTS_EXISTS != 0;
+    serverStatus & ServerStatus.moreResults.bit != 0;
 
 /// Send [sql] and read everything the server sends back for it. Call this
 /// inside [ProtocolConnection.exchange].
@@ -68,7 +68,7 @@ bool _moreResults(int serverStatus) =>
 /// wherever in it that comes.
 Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
   final request = Uint8List(sql.length + 1);
-  request[0] = COM_QUERY;
+  request[0] = Command.query.code;
   request.setRange(1, request.length, sql);
   conn.send(request);
 
@@ -83,7 +83,7 @@ Future<QueryResponse> runQuery(ProtocolConnection conn, List<int> sql) async {
     }
 
     var moreResults = false;
-    if (payload[0] == PACKET_OK) {
+    if (payload[0] == Packet.ok) {
       // The marker, the affected rows, the insert id, then the status. The
       // warning count and message after that are not kept.
       final ok = PayloadReader(payload)..skip(1);

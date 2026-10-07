@@ -1,155 +1,115 @@
-/* Copyright (C) 2000 MySQL AB
-   Copyright (C) 2012 James Ots
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; version 2 of the License.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
-
 library mysql1.constants;
 
-/*
- * This file is based on excerpts from include/mysql_com.h
- */
+/// The values of the client/server protocol which this driver uses, from the
+/// protocol documentation. The links are to the page each group is on.
+///
+/// Only what the driver sends or checks is here.
 
-const int PACKET_OK = 0;
-const int PACKET_ERROR = 0xFF;
-const int PACKET_EOF = 0xFE;
+/// The first byte of a payload from the server, where it says which kind of
+/// packet it is. The rest of the payload depends on it.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_response_packets.html
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets.html
+abstract final class Packet {
+  static const int ok = 0x00;
+  static const int error = 0xff;
+  static const int eof = 0xfe;
 
-/// Sent by the server during authentication, carrying data which only the
-/// authentication plugin in use knows how to read.
-const int PACKET_AUTH_MORE_DATA = 0x01;
+  /// During authentication: data for the plugin in use.
+  static const int authMoreData = 0x01;
 
-/// Sent by the server during authentication to ask the client to carry on
-/// with a different plugin. Shares its first byte with [PACKET_EOF], which
-/// cannot arrive during authentication.
-const int PACKET_AUTH_SWITCH_REQUEST = 0xFE;
+  /// During authentication: carry on with another plugin. The same byte as
+  /// [eof], which cannot arrive during authentication.
+  static const int authSwitch = 0xfe;
+}
 
-/// The server has the password cached and authentication is done. An ok
-/// packet follows.
-const int CACHING_SHA2_FAST_AUTH_SUCCESS = 0x03;
+/// What the client and server each say they can do. The greeting carries the
+/// server's, and the handshake response the client's, as bits or'd together.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/group__group__cs__capabilities__flags.html
+enum Capability {
+  longPassword(1 << 0),
+  longFlag(1 << 2),
+  connectWithDb(1 << 3),
+  protocol41(1 << 9),
+  ssl(1 << 11),
+  transactions(1 << 13),
+  secureConnection(1 << 15),
+  multiResults(1 << 17),
+  pluginAuth(1 << 19);
 
-/// The server does not have the password cached, so it wants the password
-/// itself: in the clear if the connection is private, RSA encrypted with the
-/// server's public key otherwise.
-const int CACHING_SHA2_PERFORM_FULL_AUTHENTICATION = 0x04;
+  const Capability(this.bit);
 
-/// Sent by the client, as a packet of its own, to ask for the server's RSA
-/// public key. The reply is [PACKET_AUTH_MORE_DATA] and the key in PEM.
-const int CACHING_SHA2_REQUEST_PUBLIC_KEY = 0x02;
+  final int bit;
+}
 
-const int CLIENT_LONG_PASSWORD = 1 << 0;
-const int CLIENT_FOUND_ROWS = 1 << 1;
-const int CLIENT_LONG_FLAG = 1 << 2;
-const int CLIENT_CONNECT_WITH_DB = 1 << 3;
-const int CLIENT_NO_SCHEMA = 1 << 4;
-const int CLIENT_COMPRESS = 1 << 5;
-const int CLIENT_ODBC = 1 << 6;
-const int CLIENT_LOCAL_FILES = 1 << 7;
-const int CLIENT_IGNORE_SPACE = 1 << 8;
-const int CLIENT_PROTOCOL_41 = 1 << 9;
-const int CLIENT_INTERACTIVE = 1 << 10;
-const int CLIENT_SSL = 1 << 11;
-const int CLIENT_IGNORE_SIGPIPE = 1 << 12;
-const int CLIENT_TRANSACTIONS = 1 << 13;
-const int CLIENT_RESERVED = 1 << 14;
-const int CLIENT_SECURE_CONNECTION = 1 << 15;
-const int CLIENT_MULTI_STATEMENTS = 1 << 16;
-const int CLIENT_MULTI_RESULTS = 1 << 17;
-const int CLIENT_PLUGIN_AUTH = 1 << 19;
+/// The bits of the server status in an ok or eof packet.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_ok_packet.html
+enum ServerStatus {
+  /// Another result set follows this one.
+  moreResults(1 << 3);
 
-const int SERVER_STATUS_IN_TRANS = 1;
-const int SERVER_STATUS_AUTOCOMMIT = 2;
-const int SERVER_MORE_RESULTS_EXISTS = 8;
+  const ServerStatus(this.bit);
 
-const int ERROR_UNKNOWN_TABLE = 1051;
-const int
-    ERROR_CANNOT_DELETE_OR_UPDATE_PARENT_ROW_FOREIGN_KEY_CONSTRAINT_FAILS =
-    1217;
+  final int bit;
+}
 
-const int COM_SLEEP = 0x00;
-const int COM_QUIT = 0x01;
-const int COM_INIT_DB = 0x02;
-const int COM_QUERY = 0x03;
-const int COM_FIELD_LIST = 0x04;
-const int COM_CREATE_DB = 0x05;
-const int COM_DROP_DB = 0x06;
-const int COM_REFRESH = 0x07;
-const int COM_SHUTDOWN = 0x08;
-const int COM_STATISTICS = 0x09;
-const int COM_PROCESS_INFO = 0x0a;
-const int COM_CONNECT = 0x0b;
-const int COM_PROCESS_KILL = 0x0c;
-const int COM_DEBUG = 0x0d;
-const int COM_PING = 0x0e;
-const int COM_TIME = 0x0f;
-const int COM_DELAYED_INSERT = 0x10;
-const int COM_CHANGE_USER = 0x11;
-const int COM_BINLOG_DUMP = 0x12;
-const int COM_TABLE_DUMP = 0x13;
-const int COM_CONNECT_OUT = 0x14;
-const int COM_REGISTER_SLAVE = 0x15;
-const int COM_STMT_PREPARE = 0x16;
-const int COM_STMT_EXECUTE = 0x17;
-const int COM_STMT_SEND_LONG_DATA = 0x18;
-const int COM_STMT_CLOSE = 0x19;
-const int COM_STMT_RESET = 0x1a;
-const int COM_SET_OPTION = 0x1b;
-const int COM_STMT_FETCH = 0x1c;
+/// The first byte of a request, saying what the client wants done.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_command_phase.html
+enum Command {
+  quit(0x01),
+  query(0x03);
 
-const int FIELD_TYPE_DECIMAL = 0x00;
-const int FIELD_TYPE_TINY = 0x01;
-const int FIELD_TYPE_SHORT = 0x02;
-const int FIELD_TYPE_LONG = 0x03;
-const int FIELD_TYPE_FLOAT = 0x04;
-const int FIELD_TYPE_DOUBLE = 0x05;
-const int FIELD_TYPE_NULL = 0x06;
-const int FIELD_TYPE_TIMESTAMP = 0x07;
-const int FIELD_TYPE_LONGLONG = 0x08;
-const int FIELD_TYPE_INT24 = 0x09;
-const int FIELD_TYPE_DATE = 0x0a;
-const int FIELD_TYPE_TIME = 0x0b;
-const int FIELD_TYPE_DATETIME = 0x0c;
-const int FIELD_TYPE_YEAR = 0x0d;
-const int FIELD_TYPE_NEWDATE = 0x0e;
-const int FIELD_TYPE_VARCHAR = 0x0f;
-const int FIELD_TYPE_BIT = 0x10;
+  const Command(this.code);
 
-const int FIELD_TYPE_JSON = 0xf5;
-const int FIELD_TYPE_NEWDECIMAL = 0xf6;
-const int FIELD_TYPE_ENUM = 0xf7;
-const int FIELD_TYPE_SET = 0xf8;
-const int FIELD_TYPE_TINY_BLOB = 0xf9;
-const int FIELD_TYPE_MEDIUM_BLOB = 0xfa;
-const int FIELD_TYPE_LONG_BLOB = 0xfb;
-const int FIELD_TYPE_BLOB = 0xfc;
-const int FIELD_TYPE_VAR_STRING = 0xfd;
-const int FIELD_TYPE_STRING = 0xfe;
-const int FIELD_TYPE_GEOMETRY = 0xff;
+  final int code;
+}
 
-const int NOT_NULL_FLAG = 0x0001;
-const int PRI_KEY_FLAG = 0x0002;
-const int UNIQUE_KEY_FLAG = 0x0004;
-const int MULTIPLE_KEY_FLAG = 0x0008;
-const int BLOB_FLAG = 0x0010;
-const int UNSIGNED_FLAG = 0x0020;
-const int ZEROFILL_FLAG = 0x0040;
-const int BINARY_FLAG = 0x0080;
-const int ENUM_FLAG = 0x0100;
-const int AUTO_INCREMENT_FLAG = 0x0200;
-const int TIMESTAMP_FLAG = 0x0400;
-const int SET_FLAG = 0x0800;
+/// The type of a column, as the server gives it in a column definition.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/field__types_8h.html
+enum ColumnType {
+  tiny(0x01),
+  short(0x02),
+  long(0x03),
+  float(0x04),
+  double(0x05),
+  timestamp(0x07),
+  longLong(0x08),
+  int24(0x09),
+  date(0x0a),
+  time(0x0b),
+  dateTime(0x0c),
+  year(0x0d),
+  bit(0x10),
+  json(0xf5),
+  newDecimal(0xf6),
+  tinyBlob(0xf9),
+  mediumBlob(0xfa),
+  longBlob(0xfb),
+  blob(0xfc),
+  varString(0xfd),
+  string(0xfe),
+  geometry(0xff);
+
+  const ColumnType(this.code);
+
+  final int code;
+
+  static final Map<int, ColumnType> _byCode = {
+    for (final type in values) type.code: type
+  };
+
+  /// The type with [code], or null for one this driver does not know.
+  static ColumnType? of(int? code) => _byCode[code];
+}
 
 /// The character sets a connection can be opened with. Both are utf8, which
 /// is what makes binding parameters as literals safe.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_basic_character_set.html
 class CharacterSet {
   static const int UTF8 = 33;
   static const int UTF8MB4 = 45;

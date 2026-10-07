@@ -148,7 +148,7 @@ class MySqlConnection {
         // Queued behind whatever is in progress, like any other request. There
         // is no reply to wait for.
         await _conn.exchange(() async {
-          _conn.send(Uint8List.fromList([COM_QUIT]));
+          _conn.send(Uint8List.fromList([Command.quit.code]));
           await _conn.flush();
         }, _timeout).timeout(_timeout);
       } catch (e, st) {

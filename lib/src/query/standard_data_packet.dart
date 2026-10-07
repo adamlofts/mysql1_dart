@@ -73,51 +73,52 @@ class StandardDataPacket extends ResultRow {
     }
     final list = reader.readBytes(length);
 
-    switch (field.type) {
-      case FIELD_TYPE_TINY: // tinyint/bool
-      case FIELD_TYPE_SHORT: // smallint
-      case FIELD_TYPE_INT24: // mediumint
-      case FIELD_TYPE_LONGLONG: // bigint/serial
-      case FIELD_TYPE_LONG: // int
+    switch (ColumnType.of(field.type)) {
+      case ColumnType.tiny: // tinyint/bool
+      case ColumnType.short: // smallint
+      case ColumnType.int24: // mediumint
+      case ColumnType.longLong: // bigint/serial
+      case ColumnType.long: // int
         var s = utf8.decode(list);
         return int.parse(s);
-      case FIELD_TYPE_NEWDECIMAL: // decimal
-      case FIELD_TYPE_FLOAT: // float
-      case FIELD_TYPE_DOUBLE: // double
+      case ColumnType.newDecimal: // decimal
+      case ColumnType.float: // float
+      case ColumnType.double: // double
         var s = utf8.decode(list);
         return double.parse(s);
-      case FIELD_TYPE_BIT: // bit
+      case ColumnType.bit: // bit
         var value = 0;
         for (var num in list) {
           value = (value << 8) + num;
         }
         return value;
-      case FIELD_TYPE_DATE: // date
-      case FIELD_TYPE_DATETIME: // datetime
-      case FIELD_TYPE_TIMESTAMP: // timestamp
+      case ColumnType.date: // date
+      case ColumnType.dateTime: // datetime
+      case ColumnType.timestamp: // timestamp
         var s = utf8.decode(list);
         return parseDateTimeInUtc(s);
-      case FIELD_TYPE_TIME: // time
+      case ColumnType.time: // time
         var s = utf8.decode(list);
         return parseTime(s);
-      case FIELD_TYPE_YEAR: // year
+      case ColumnType.year: // year
         var s = utf8.decode(list);
         return int.parse(s);
-      case FIELD_TYPE_JSON:
+      case ColumnType.json:
         var s = utf8.decode(list);
         return s;
-      case FIELD_TYPE_STRING: // char/binary/enum/set
-      case FIELD_TYPE_VAR_STRING: // varchar/varbinary
+      case ColumnType.string: // char/binary/enum/set
+      case ColumnType.varString: // varchar/varbinary
         var s = utf8.decode(list);
         return s;
-      case FIELD_TYPE_BLOB:
-      case FIELD_TYPE_TINY_BLOB:
-      case FIELD_TYPE_MEDIUM_BLOB:
-      case FIELD_TYPE_LONG_BLOB: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
+      case ColumnType.blob:
+      case ColumnType.tinyBlob:
+      case ColumnType.mediumBlob:
+      case ColumnType
+            .longBlob: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
         return Blob.fromBytes(list);
-      case FIELD_TYPE_GEOMETRY: // geometry
-        var s = utf8.decode(list);
-        return s;
+      case ColumnType.geometry:
+        // Well-known binary with the SRID in front: bytes, not text.
+        return Blob.fromBytes(list);
       default:
         return null;
     }

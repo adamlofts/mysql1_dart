@@ -22,10 +22,10 @@ const _key = 'test/unit/tls/test_server_key_intentionally_public.pem';
 
 /// The greeting of a server which can do TLS, or says it cannot.
 List<int> _greeting({bool tls = true}) {
-  final capabilities = CLIENT_PROTOCOL_41 |
-      CLIENT_SECURE_CONNECTION |
-      (tls ? CLIENT_SSL : 0) |
-      CLIENT_PLUGIN_AUTH;
+  final capabilities = Capability.protocol41.bit |
+      Capability.secureConnection.bit |
+      (tls ? Capability.ssl.bit : 0) |
+      Capability.pluginAuth.bit;
   return [
     10, // protocol version
     ...utf8.encode('version 1'), 0,
@@ -172,7 +172,7 @@ void main() {
       expect(request.sequenceId, equals(1));
       expect(request.payload, hasLength(32));
       final flags = PayloadReader(request.payload).readUint32();
-      expect(flags & CLIENT_SSL, isNot(0));
+      expect(flags & Capability.ssl.bit, isNot(0));
 
       await server.startTls(serverContext());
 
@@ -183,13 +183,13 @@ void main() {
       // The connection is now one nobody else can read, so the password
       // itself can be asked for and is sent.
       server.send([
-        [PACKET_AUTH_MORE_DATA, CACHING_SHA2_PERFORM_FULL_AUTHENTICATION]
+        [Packet.authMoreData, cachingSha2PerformFullAuthentication]
       ], sequenceId: 3);
       final password = await server.nextRequest();
       expect(password.payload, equals([...utf8.encode('password'), 0]));
 
       server.send([
-        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+        [Packet.ok, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 5);
       await done;
     });
@@ -202,14 +202,14 @@ void main() {
 
       final request = PayloadReader((await server.nextRequest()).payload);
       final requestFlags = request.readUint32();
-      expect(requestFlags & CLIENT_CONNECT_WITH_DB, isNot(0));
+      expect(requestFlags & Capability.connectWithDb.bit, isNot(0));
 
       await server.startTls(serverContext());
       final response = PayloadReader((await server.nextRequest()).payload);
       expect(response.readUint32(), equals(requestFlags));
 
       server.send([
-        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+        [Packet.ok, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 3);
       await done;
     });
@@ -242,7 +242,7 @@ void main() {
       await server.startTls(serverContext());
       await server.nextRequest();
       server.send([
-        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+        [Packet.ok, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 3);
       await done;
     });
@@ -279,7 +279,7 @@ void main() {
       await server.startTls(serverContext());
       await server.nextRequest();
       server.send([
-        [PACKET_OK, 0, 0, 2, 0, 0, 0]
+        [Packet.ok, 0, 0, 2, 0, 0, 0]
       ], sequenceId: 3);
       await done;
     });
