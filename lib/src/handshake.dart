@@ -14,6 +14,14 @@ import 'payload.dart';
 import 'protocol_connection.dart';
 import 'rsa.dart';
 
+/// The states caching_sha2_password sends in an [Packet.authMoreData] packet,
+/// and the request the client sends for the server's public key.
+///
+/// https://dev.mysql.com/doc/dev/mysql-server/latest/page_caching_sha2_authentication_exchanges.html
+const int cachingSha2FastAuthSuccess = 0x03;
+const int cachingSha2PerformFullAuthentication = 0x04;
+const int cachingSha2RequestPublicKey = 0x02;
+
 enum AuthPlugin {
   none,
   mysqlNativePassword,
@@ -78,7 +86,7 @@ class ServerGreeting {
 /// turns a connection away, and [MySqlClientError] if it is a protocol this
 /// driver does not speak.
 ServerGreeting parseGreeting(Uint8List payload) {
-  if (payload.isNotEmpty && payload[0] == PACKET_ERROR) {
+  if (payload.isNotEmpty && payload[0] == Packet.error) {
     throw createMySqlException(payload);
   }
 
@@ -103,14 +111,14 @@ ServerGreeting parseGreeting(Uint8List payload) {
     serverCapabilities += (packet.readUint16() << 0x10);
     scrambleLength = packet.readByte();
     packet.skip(10);
-    if (serverCapabilities & CLIENT_SECURE_CONNECTION > 0) {
+    if (serverCapabilities & Capability.secureConnection.bit > 0) {
       final rest = packet.readBytes(math.max(13, scrambleLength - 8) - 1);
       // The null terminator.
       packet.readByte();
       scrambleBuffer = [...scrambleBuffer, ...rest];
     }
 
-    if (serverCapabilities & CLIENT_PLUGIN_AUTH > 0) {
+    if (serverCapabilities & Capability.pluginAuth.bit > 0) {
       var pluginName = packet.readRestAsString();
       if (pluginName.codeUnitAt(pluginName.length - 1) == 0) {
         pluginName = pluginName.substring(0, pluginName.length - 1);
@@ -133,7 +141,7 @@ ServerGreeting parseGreeting(Uint8List payload) {
 
 /// The capabilities to claim, given what the server has.
 ///
-/// CLIENT_SSL is among them if [useSSL], and that is how the caller knows to
+/// Capability.ssl.bit is among them if [useSSL], and that is how the caller knows to
 /// start TLS.
 ///
 /// Throws [MySqlClientError] for a server too old to talk to, and for one
@@ -142,28 +150,28 @@ ServerGreeting parseGreeting(Uint8List payload) {
 /// flag out of a greeting which is sent in the clear.
 int clientCapabilities(ServerGreeting greeting, {required bool useSSL}) {
   final serverCapabilities = greeting.serverCapabilities;
-  if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+  if ((serverCapabilities & Capability.protocol41.bit) == 0) {
     throw MySqlClientError('Unsupported protocol (must be 4.1 or newer');
   }
-  if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
+  if ((serverCapabilities & Capability.secureConnection.bit) == 0) {
     throw MySqlClientError('Old Password AUthentication is not supported');
   }
 
-  var clientFlags = CLIENT_PROTOCOL_41 |
-      CLIENT_LONG_PASSWORD |
-      CLIENT_LONG_FLAG |
-      CLIENT_TRANSACTIONS |
-      CLIENT_SECURE_CONNECTION |
-      CLIENT_MULTI_RESULTS;
-  if (serverCapabilities & CLIENT_PLUGIN_AUTH != 0) {
-    clientFlags |= CLIENT_PLUGIN_AUTH;
+  var clientFlags = Capability.protocol41.bit |
+      Capability.longPassword.bit |
+      Capability.longFlag.bit |
+      Capability.transactions.bit |
+      Capability.secureConnection.bit |
+      Capability.multiResults.bit;
+  if (serverCapabilities & Capability.pluginAuth.bit != 0) {
+    clientFlags |= Capability.pluginAuth.bit;
   }
   if (useSSL) {
-    if ((serverCapabilities & CLIENT_SSL) == 0) {
+    if ((serverCapabilities & Capability.ssl.bit) == 0) {
       throw MySqlClientError(
           'TLS was asked for and the server does not support it');
     }
-    clientFlags |= CLIENT_SSL;
+    clientFlags |= Capability.ssl.bit;
   }
   return clientFlags;
 }
@@ -224,7 +232,7 @@ Uint8List handshakeResponse(
     required String? db,
     required AuthPlugin authPlugin}) {
   if (db != null) {
-    clientFlags |= CLIENT_CONNECT_WITH_DB;
+    clientFlags |= Capability.connectWithDb.bit;
   }
   final response = BytesBuilder(copy: false)
     ..addUint32(clientFlags)
@@ -237,7 +245,7 @@ Uint8List handshakeResponse(
   if (db != null) {
     response.addNullTerminated(utf8.encode(db));
   }
-  if (clientFlags & CLIENT_PLUGIN_AUTH > 0) {
+  if (clientFlags & Capability.pluginAuth.bit > 0) {
     response.addNullTerminated(utf8.encode(authPluginToString(authPlugin)));
   }
   return response.takeBytes();
@@ -263,12 +271,12 @@ List<int> encryptedPassword(
 /// someone who can change what is sent: they can answer with a key of their
 /// own.
 Future<RsaPublicKey> _requestPublicKey(ProtocolConnection conn) async {
-  conn.send(Uint8List.fromList([CACHING_SHA2_REQUEST_PUBLIC_KEY]));
+  conn.send(Uint8List.fromList([cachingSha2RequestPublicKey]));
   final reply = (await conn.next()).payload;
-  if (reply.isNotEmpty && reply[0] == PACKET_ERROR) {
+  if (reply.isNotEmpty && reply[0] == Packet.error) {
     throw createMySqlException(reply);
   }
-  if (reply.isEmpty || reply[0] != PACKET_AUTH_MORE_DATA) {
+  if (reply.isEmpty || reply[0] != Packet.authMoreData) {
     throw MySqlClientError(
         'Expected the server\'s public key and got a packet of type '
         '${reply.isEmpty ? 'none' : reply[0]}');
@@ -318,10 +326,10 @@ Future<void> handshake(ProtocolConnection conn,
     // Here and not only in the response: the request for TLS carries the
     // flags too, and the server goes by the ones it saw first. Without this
     // a connection over TLS logs in and has no database selected.
-    clientFlags |= CLIENT_CONNECT_WITH_DB;
+    clientFlags |= Capability.connectWithDb.bit;
   }
 
-  if (clientFlags & CLIENT_SSL != 0) {
+  if (clientFlags & Capability.ssl.bit != 0) {
     conn.send(sslRequest(clientFlags, maxPacketSize, characterSet));
     await conn.startTls(
         host: host,
@@ -347,13 +355,13 @@ Future<void> handshake(ProtocolConnection conn,
   while (true) {
     final reply = (await conn.next()).payload;
     switch (reply[0]) {
-      case PACKET_OK:
+      case Packet.ok:
         return;
 
-      case PACKET_ERROR:
+      case Packet.error:
         throw createMySqlException(reply);
 
-      case PACKET_AUTH_SWITCH_REQUEST:
+      case Packet.authSwitch:
         // The account does not use the plugin named in the greeting, so the
         // server names the one it does use and sends a new seed. The answer
         // is the bare hash, with no header of its own.
@@ -371,7 +379,7 @@ Future<void> handshake(ProtocolConnection conn,
         conn.send(Uint8List.fromList(authHash(authPlugin, scramble, password)));
         break;
 
-      case PACKET_AUTH_MORE_DATA:
+      case Packet.authMoreData:
         // Data which only the plugin in use can interpret, and only
         // caching_sha2_password sends any.
         if (authPlugin != AuthPlugin.cachingSha2Password) {
@@ -379,11 +387,11 @@ Future<void> handshake(ProtocolConnection conn,
               '${authPluginToString(authPlugin)} authentication');
         }
         final status = (PayloadReader(reply)..skip(1)).readByte();
-        if (status == CACHING_SHA2_FAST_AUTH_SUCCESS) {
+        if (status == cachingSha2FastAuthSuccess) {
           // The server had the password cached. The ok packet comes next.
           break;
         }
-        if (status != CACHING_SHA2_PERFORM_FULL_AUTHENTICATION) {
+        if (status != cachingSha2PerformFullAuthentication) {
           throw MySqlClientError(
               'Unknown caching_sha2_password auth status $status');
         }

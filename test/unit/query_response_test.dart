@@ -36,14 +36,14 @@ List<int> _row(List<String> values) =>
 
 /// The eof packet which ends the column definitions and the rows.
 List<int> _eof({bool moreResults = false}) =>
-    [PACKET_EOF, 0, 0, moreResults ? SERVER_MORE_RESULTS_EXISTS : 0, 0];
+    [Packet.eof, 0, 0, moreResults ? ServerStatus.moreResults.bit : 0, 0];
 
 /// An ok packet: no rows affected, no insert id, then the status.
 List<int> _ok({int affectedRows = 0, bool moreResults = false}) => [
-      PACKET_OK,
+      Packet.ok,
       affectedRows,
       0,
-      moreResults ? SERVER_MORE_RESULTS_EXISTS : 0,
+      moreResults ? ServerStatus.moreResults.bit : 0,
       0,
       0,
       0
@@ -55,7 +55,7 @@ final _error = [0xff, 0x7a, 0x04, ...'#42S02No such table'.codeUnits];
 /// A result set of one int column called n holding [values].
 List<List<int>> _resultSet(List<String> values, {bool moreResults = false}) => [
       [1], // one column
-      _field('n', FIELD_TYPE_LONG),
+      _field('n', ColumnType.long.code),
       _eof(),
       for (final v in values) _row([v]),
       _eof(moreResults: moreResults),
@@ -76,7 +76,7 @@ void main() {
     final result = client.exchange(
         () => runQuery(client, utf8.encode('select n from t')), _timeout);
     final request = await server.nextRequest();
-    expect(request.payload.first, equals(COM_QUERY));
+    expect(request.payload.first, equals(Command.query.code));
     expect(utf8.decode(request.payload.sublist(1)), equals('select n from t'));
     server.send(response);
     return result;
@@ -106,8 +106,8 @@ void main() {
   test('a row knows its columns', () async {
     final response = await query([
       [2],
-      _field('n', FIELD_TYPE_LONG),
-      _field('m', FIELD_TYPE_LONG),
+      _field('n', ColumnType.long.code),
+      _field('m', ColumnType.long.code),
       _eof(),
       // The value 1, and the marker for null.
       [1, 0x31, 0xfb],
@@ -134,10 +134,10 @@ void main() {
   test('a row which starts with the eof marker is a row', () async {
     final response = await query([
       [1],
-      _field('n', FIELD_TYPE_LONG),
+      _field('n', ColumnType.long.code),
       _eof(),
       // The value 7, with its length written in the eight byte form.
-      [PACKET_EOF, 1, 0, 0, 0, 0, 0, 0, 0, 0x37],
+      [Packet.eof, 1, 0, 0, 0, 0, 0, 0, 0, 0x37],
       _eof(),
     ]);
     expect(response.decodeRows().map((r) => r[0]), equals([7]));
@@ -194,7 +194,7 @@ void main() {
     await expectLater(
         query([
           [1],
-          _field('n', FIELD_TYPE_LONG),
+          _field('n', ColumnType.long.code),
           _eof(),
           _row(['1']),
           _error,
