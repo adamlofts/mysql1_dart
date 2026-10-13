@@ -2,21 +2,21 @@ import 'dart:collection';
 
 import 'schema.dart';
 
-/// A row of data. Fields can be retrieved by index, or by name.
+/// A row of data. Values can be read by index, or by column name.
 ///
-/// When retrieving a field by name, only fields which are valid Dart
-/// identifiers, and which aren't part of the List object, can be used.
+/// A name no column of the result has reads as null.
 abstract class ResultRow extends ListBase<dynamic> {
   /// The columns of the result this row is from.
   final ResultSchema schema;
 
   ResultRow(this.schema);
 
-  /// Values as List
+  /// The values of this row, in the order [schema] gives the columns.
   List<Object?>? values;
 
-  /// Values as Map
-  final Map<String, dynamic> fields = <String, dynamic>{};
+  /// What [toColumnMap] returns, under the name it had before.
+  @Deprecated('Use toColumnMap()')
+  Map<String, dynamic> get fields => toColumnMap();
 
   @override
   int get length => values?.length ?? 0;
@@ -27,12 +27,9 @@ abstract class ResultRow extends ListBase<dynamic> {
   }
 
   @override
-  dynamic operator [](dynamic index) {
-    if (index is int) {
-      return values?[index];
-    } else {
-      return fields[index.toString()];
-    }
+  dynamic operator [](Object? index) {
+    final column = index is int ? index : schema.indexByName[index.toString()];
+    return column == null ? null : values?[column];
   }
 
   @override
@@ -45,8 +42,11 @@ abstract class ResultRow extends ListBase<dynamic> {
 
   /// A map from each column's name to its value in this row. Where two
   /// columns have the same name it has the value of the later one.
-  Map<String, dynamic> toColumnMap() => Map.of(fields);
+  Map<String, dynamic> toColumnMap() => {
+        for (final column in schema.indexByName.entries)
+          column.key: values?[column.value]
+      };
 
   @override
-  String toString() => 'Fields: $fields';
+  String toString() => 'ResultRow(${toColumnMap()})';
 }

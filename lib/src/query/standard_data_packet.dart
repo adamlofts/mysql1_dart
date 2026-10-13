@@ -16,19 +16,14 @@ import '../results/field.dart';
 import '../results/schema.dart';
 
 class StandardDataPacket extends ResultRow {
-  final Logger log = Logger('StandardDataPacket');
+  static final Logger _log = Logger('StandardDataPacket');
 
   StandardDataPacket(Uint8List row, ResultSchema schema) : super(schema) {
     final reader = PayloadReader(row);
-    final fieldPackets = schema.columns;
-    values = List<dynamic>.filled(fieldPackets.length, null);
-    for (var i = 0; i < fieldPackets.length; i++) {
-      var field = fieldPackets[i];
-
-      log.fine('$i: ${field.name}');
-      values![i] = readField(field, reader);
-      fields[field.name!] = values![i];
-    }
+    values = [
+      for (final column in schema.columns) readField(column, reader),
+    ];
+    _log.finest(() => 'row $values');
   }
 
   /// Parse a date or datetime string with no timezone as UTC
@@ -73,57 +68,43 @@ class StandardDataPacket extends ResultRow {
     }
     final list = reader.readBytes(length);
 
-    switch (ColumnType.of(field.type)) {
-      case ColumnType.tiny: // tinyint/bool
-      case ColumnType.short: // smallint
-      case ColumnType.int24: // mediumint
-      case ColumnType.longLong: // bigint/serial
-      case ColumnType.long: // int
-        var s = utf8.decode(list);
-        return int.parse(s);
-      case ColumnType.newDecimal: // decimal
-      case ColumnType.float: // float
-      case ColumnType.double: // double
-        var s = utf8.decode(list);
-        return double.parse(s);
-      case ColumnType.bit: // bit
-        var value = 0;
-        for (var num in list) {
-          value = (value << 8) + num;
-        }
-        return value;
-      case ColumnType.date: // date
-      case ColumnType.dateTime: // datetime
-      case ColumnType.timestamp: // timestamp
-        var s = utf8.decode(list);
-        return parseDateTimeInUtc(s);
-      case ColumnType.time: // time
-        var s = utf8.decode(list);
-        return parseTime(s);
-      case ColumnType.year: // year
-        var s = utf8.decode(list);
-        return int.parse(s);
-      case ColumnType.json:
-        var s = utf8.decode(list);
-        return s;
-      case ColumnType.string: // char/binary/enum/set
-      case ColumnType.varString: // varchar/varbinary
-        var s = utf8.decode(list);
-        return s;
-      case ColumnType.blob:
-      case ColumnType.tinyBlob:
-      case ColumnType.mediumBlob:
-      case ColumnType
-            .longBlob: // tinytext/text/mediumtext/longtext/tinyblob/mediumblob/blob/longblob
-        return Blob.fromBytes(list);
-      case ColumnType.geometry:
-        // Well-known binary with the SRID in front: bytes, not text.
-        return Blob.fromBytes(list);
-      default:
-        return null;
-    }
+    return switch (ColumnType.of(field.type)) {
+      // tinyint/bool, smallint, mediumint, int, bigint/serial, year
+      ColumnType.tiny ||
+      ColumnType.short ||
+      ColumnType.int24 ||
+      ColumnType.long ||
+      ColumnType.longLong ||
+      ColumnType.year =>
+        int.parse(utf8.decode(list)),
+      // decimal, float, double
+      ColumnType.newDecimal ||
+      ColumnType.float ||
+      ColumnType.double =>
+        double.parse(utf8.decode(list)),
+      // bit, big endian over as many bytes as the declared width needs
+      ColumnType.bit => list.fold<int>(0, (value, byte) => (value << 8) + byte),
+      // date, datetime, timestamp
+      ColumnType.date ||
+      ColumnType.dateTime ||
+      ColumnType.timestamp =>
+        parseDateTimeInUtc(utf8.decode(list)),
+      ColumnType.time => parseTime(utf8.decode(list)),
+      // char/binary/enum/set, varchar/varbinary and json, all as text
+      ColumnType.string ||
+      ColumnType.varString ||
+      ColumnType.json =>
+        utf8.decode(list),
+      // tinytext/text/mediumtext/longtext and the blob types as bytes, and
+      // geometry, which is well-known binary with the SRID in front
+      ColumnType.tinyBlob ||
+      ColumnType.blob ||
+      ColumnType.mediumBlob ||
+      ColumnType.longBlob ||
+      ColumnType.geometry =>
+        Blob.fromBytes(list),
+      // A type this driver does not know.
+      null => null,
+    };
   }
-
-  @override
-  String toString() => 'Fields: $fields';
 }
