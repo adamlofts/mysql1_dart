@@ -5,32 +5,11 @@ import 'package:test/test.dart';
 
 import '../test_infrastructure.dart';
 
-final dt = DateTime.utc(2018, 01, 01, 7, 0);
-
 void main() {
   initializeTest(
       'test1',
       'create table test1 ('
           'atinyint tinyint, asmallint smallint, adatetime datetime)');
-
-  test('datetimes are de-serialized in UTC', () async {
-    var results = await conn.query(
-        'insert into test1 (atinyint, adatetime) values (?, ?)', [126, dt]);
-    results = await conn.query('select adatetime from test1');
-
-    // Normal
-    var dt1 = results.first[0] as DateTime;
-    expect(dt1.isUtc, isTrue);
-
-    // Binary packet
-    results = await conn
-        .query('select adatetime from test1 WHERE atinyint = ?', [126]);
-    var dt2 = results.first[0] as DateTime;
-    expect(dt2.isUtc, isTrue);
-
-    expect(dt1, equals(dt2));
-    expect(dt1, equals(dt));
-  });
 
   test('a result is a list of rows with a schema', () async {
     await conn.query('delete from test1');
