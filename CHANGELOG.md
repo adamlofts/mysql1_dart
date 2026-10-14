@@ -1,6 +1,30 @@
 Changelog
 =========
 
+v0.22.0
+--
+
+14 Oct 2026
+
+The licence is now MIT, not GPL. #98 has the detail: every contributor whose
+code is still in the driver agreed to the change, and what was not agreed has
+been rewritten. The notice keeps 2012, the year SQLJocky, which this was
+forked from, first carried one.
+
+Breaking:
+* `ResultRow.fields` is deprecated, for `toColumnMap()`. It is a getter onto
+  that now rather than a map each row holds, so the map it hands back is a
+  copy and writing to it no longer changes the row.
+* `ResultRow.toString()` prints `ResultRow({a: 1})` rather than
+  `Fields: {a: 1}`.
+
+Changed:
+* A row reads a value by name through its result's schema, which holds where
+  each named column is, so a result builds one of those maps instead of one
+  per row. Reading by name or by index is otherwise unchanged, including
+  which of two columns of the same name is read, and a name no column has
+  still reads as null.
+
 v0.21.1
 --
 
