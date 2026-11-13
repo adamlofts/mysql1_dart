@@ -1,6 +1,33 @@
 Changelog
 =========
 
+Unreleased
+--
+
+Breaking:
+* A `DECIMAL` value is read as a `String` holding its exact value, not a
+  `double`. A double cannot hold every decimal: `12345678901234567.89` read
+  as `12345678901234568.0`.
+* A query parameter of a type with no SQL literal form - a list which is not
+  bytes, a map, any other object - throws `MySqlClientError`. It used to be
+  written as its `toString()`, so `NOT IN (?)` with a list matched every row.
+  A `String`, `BigInt` or `Duration` is still written as text.
+* `ConnectionSettings.characterSet` must be a utf8 or utf8mb4 collation, or
+  `connect` throws `MySqlClientError`. Escaping parameters is not safe in
+  charsets such as GBK or SJIS.
+
+Fixed:
+* A `DATETIME`, `TIMESTAMP` or `DATE` is read as UTC directly. It was read
+  as local time first, so in a time zone with daylight saving a value in the
+  hour the clocks skip came back an hour later.
+* A transaction whose rollback fails throws the error which caused the
+  rollback, not the rollback's.
+
+Added:
+* `MySqlConnection.isClosed`, true once the connection cannot be used: closed,
+  timed out, or closed by the server, which is what it does to a connection
+  left idle past its `wait_timeout`. For a pool to drop such connections.
+
 v0.22.0
 --
 

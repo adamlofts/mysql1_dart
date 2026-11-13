@@ -113,4 +113,20 @@ enum ColumnType {
 class CharacterSet {
   static const int UTF8 = 33;
   static const int UTF8MB4 = 45;
+
+  /// Whether [id] is a collation of utf8mb3 or utf8mb4 that fits the one
+  /// byte the handshake has for it. Escaping is unsafe in any other charset:
+  /// in GBK or SJIS a multi-byte sequence can swallow the escape.
+  ///
+  /// https://dev.mysql.com/doc/refman/8.0/en/information-schema-collations-table.html
+  static bool isUtf8(int id) =>
+      id == 33 || // utf8mb3_general_ci
+      id == 45 || // utf8mb4_general_ci
+      id == 46 || // utf8mb4_bin
+      id == 76 || // utf8mb3_tolower_ci
+      id == 83 || // utf8mb3_bin
+      (id >= 192 && id <= 215) || // utf8mb3 unicode and language collations
+      id == 223 || // utf8mb3_general_mysql500_ci
+      (id >= 224 && id <= 247) || // utf8mb4 unicode and language collations
+      id == 255; // utf8mb4_0900_ai_ci
 }

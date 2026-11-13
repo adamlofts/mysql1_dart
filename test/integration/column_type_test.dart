@@ -74,7 +74,7 @@ void main() {
     expect(row['longLong'], equals(5));
     expect(row['float'], equals(1.5));
     expect(row['double'], equals(2.5));
-    expect(row['newDecimal'], equals(3.25));
+    expect(row['newDecimal'], equals('3.25'));
     expect(row['bit'], equals(5));
     expect(row['date'], equals(DateTime.utc(2020, 1, 2)));
     expect(row['dateTime'], equals(DateTime.utc(2020, 1, 2, 3, 4, 5)));

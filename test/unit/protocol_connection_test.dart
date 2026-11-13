@@ -4,7 +4,13 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:io';
 
-import 'package:mysql1/mysql1.dart' show MySqlClientError, MySqlException;
+import 'package:mysql1/mysql1.dart'
+    show
+        CharacterSet,
+        ConnectionSettings,
+        MySqlClientError,
+        MySqlConnection,
+        MySqlException;
 import 'package:mysql1/src/mysql_exception.dart';
 import 'package:test/test.dart';
 
@@ -136,5 +142,45 @@ void main() {
     server.hangUp();
     await expectLater(exchange, throwsA(isA<SocketException>()));
     expect(client.isClosed, isTrue);
+  });
+
+  // What a server does to a connection left idle past its wait_timeout. A
+  // pool has to see it before handing the connection out.
+  test('a connection the server closes while idle is closed', () async {
+    final conn = MySqlConnection(_timeout, server.client);
+    expect(conn.isClosed, isFalse);
+    server.hangUp();
+    for (var i = 0; i < 100 && !conn.isClosed; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+    expect(conn.isClosed, isTrue);
+  });
+
+  test('a rollback which fails does not hide the error which caused it',
+      () async {
+    final conn = MySqlConnection(_timeout, server.client);
+    final transaction = conn.transaction<void>((_) async {
+      server.hangUp();
+      throw const FormatException('the real error');
+    });
+    await server.nextRequest(); // start transaction
+    server.send([
+      [0, 0, 0, 2, 0, 0, 0] // ok
+    ]);
+    await expectLater(transaction, throwsA(isA<FormatException>()));
+  });
+
+  test('a character set which is not utf8 is refused before connecting',
+      () async {
+    for (final gbkOrSjis in [28, 13]) {
+      await expectLater(
+          MySqlConnection.connect(
+              ConnectionSettings(port: 1, characterSet: gbkOrSjis)),
+          throwsA(isA<MySqlClientError>()));
+    }
+    expect(CharacterSet.isUtf8(CharacterSet.UTF8), isTrue);
+    expect(CharacterSet.isUtf8(CharacterSet.UTF8MB4), isTrue);
+    expect(CharacterSet.isUtf8(255), isTrue); // utf8mb4_0900_ai_ci
+    expect(CharacterSet.isUtf8(8), isFalse); // latin1
   });
 }

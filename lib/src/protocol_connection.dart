@@ -66,7 +66,9 @@ class ProtocolConnection {
     _socket.done.catchError(reader.fail);
   }
 
-  bool get isClosed => _closed;
+  /// Closed here, or by the server - which is what it does to a connection
+  /// left idle past its wait_timeout.
+  bool get isClosed => _closed || _reader.isClosed;
 
   /// Run [body] as the only thing using the connection, giving it [timeout]
   /// to finish.
