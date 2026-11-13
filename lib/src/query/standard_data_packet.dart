@@ -28,21 +28,12 @@ class StandardDataPacket extends ResultRow {
 
   /// Parse a date or datetime string with no timezone as UTC
   ///
-  /// Dart does not provide a simple way to do this.
+  /// Parsed with a `Z` appended rather than as local time: a local time in
+  /// the hour a daylight saving change skips does not exist, and would come
+  /// back an hour later.
   /// See: https://github.com/adamlofts/mysql1_dart/issues/39
-  static DateTime parseDateTimeInUtc(String s) {
-    var localTime = DateTime.parse(s);
-    return DateTime.utc(
-      localTime.year,
-      localTime.month,
-      localTime.day,
-      localTime.hour,
-      localTime.minute,
-      localTime.second,
-      localTime.millisecond,
-      localTime.microsecond,
-    );
-  }
+  static DateTime parseDateTimeInUtc(String s) =>
+      DateTime.parse(s.length == 10 ? '${s}T00:00:00Z' : '${s}Z');
 
   /// Parse a time string, `[-]HH:MM:SS[.ffffff]`
   ///
@@ -77,11 +68,10 @@ class StandardDataPacket extends ResultRow {
       ColumnType.longLong ||
       ColumnType.year =>
         int.parse(utf8.decode(list)),
-      // decimal, float, double
-      ColumnType.newDecimal ||
-      ColumnType.float ||
-      ColumnType.double =>
-        double.parse(utf8.decode(list)),
+      // decimal as its exact text: a double cannot hold every decimal value
+      ColumnType.newDecimal => utf8.decode(list),
+      // float, double
+      ColumnType.float || ColumnType.double => double.parse(utf8.decode(list)),
       // bit, big endian over as many bytes as the declared width needs
       ColumnType.bit => list.fold<int>(0, (value, byte) => (value << 8) + byte),
       // date, datetime, timestamp

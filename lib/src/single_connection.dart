@@ -10,6 +10,7 @@ import 'package:logging/logging.dart';
 
 import 'handshake.dart';
 import 'constants.dart';
+import 'mysql_client_error.dart';
 import 'protocol_connection.dart';
 import 'query/query_response.dart';
 import 'results/field.dart';
@@ -134,6 +135,11 @@ class MySqlConnection {
 
   MySqlConnection(this._timeout, this._conn);
 
+  /// Whether the connection can no longer be used: it was closed, or a query
+  /// timed out or the socket failed, which closes it. A pool should drop such
+  /// a connection and open another.
+  bool get isClosed => _conn.isClosed;
+
   /// Close the connection
   ///
   /// This method will never throw
@@ -172,6 +178,10 @@ class MySqlConnection {
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
     _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
+    if (!CharacterSet.isUtf8(c.characterSet)) {
+      throw MySqlClientError('Character set ${c.characterSet} is not a utf8 '
+          'or utf8mb4 collation, which parameters need to be escaped safely');
+    }
 
     final conn = await ProtocolConnection.connect(
         c.host, c.port, c.timeout, c.maxPacketSize,
@@ -251,7 +261,13 @@ class MySqlConnection {
       await query('commit');
       return result;
     } catch (e) {
-      await query('rollback');
+      try {
+        await query('rollback');
+      } catch (rollbackError, st) {
+        // Most often the connection is gone, which rolls back anyway. The
+        // error which got us here is the one to report.
+        _log.warning('Error rolling back transaction', rollbackError, st);
+      }
       if (e is! _RollbackError) {
         rethrow;
       }
