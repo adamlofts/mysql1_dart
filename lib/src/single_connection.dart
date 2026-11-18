@@ -251,7 +251,13 @@ class MySqlConnection {
       await query('commit');
       return result;
     } catch (e) {
-      await query('rollback');
+      try {
+        await query('rollback');
+      } catch (rollbackError, st) {
+        // Most often the connection is gone, which rolls back anyway. The
+        // error which got us here is the one to report.
+        _log.warning('Error rolling back transaction', rollbackError, st);
+      }
       if (e is! _RollbackError) {
         rethrow;
       }
