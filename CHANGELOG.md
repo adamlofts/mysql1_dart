@@ -1,6 +1,48 @@
 Changelog
 =========
 
+v0.23.0
+--
+
+Unreleased
+
+A `DECIMAL` is now read as a `String` holding the exact value the server
+sent, rather than a `double`. A double cannot hold every decimal value:
+`12345678901234567.89` read as `12345678901234568.0`, and amounts of money
+lost their cents. This is the change most likely to need code changing on
+upgrade, and not only where a column is declared `DECIMAL`: MySQL also sends
+a `DECIMAL` for `SUM()` and `AVG()` of an integer column, for `/` between
+integers, and for a literal such as `1.5`. Code which takes any of those as a
+`double`, as `row[0] as double` does, now throws. Turn the text into an exact
+type, such as `Decimal` from `package:decimal`. Where a double is close
+enough, call `double.parse` on it, or ask the server for one with
+`CAST(x AS DOUBLE)` (MySQL 8.0.17 and later) or `x + 0e0`. `FLOAT` and
+`DOUBLE` are still read as `double`.
+
+Breaking:
+* A `DECIMAL` value is read as a `String`, as above.
+* A parameter of a type with no SQL literal form throws `MySqlClientError`.
+  It used to be written as its `toString()`, so a list of strings passed for
+  `IN (?)` became the one string `'[a, b]'` and matched nothing, and under
+  `NOT IN` matched every row. The types still written are `int`, `double`,
+  `bool`, `String`, `DateTime`, `Duration`, `BigInt`, `Blob` and `List<int>`,
+  which is bytes.
+* `connect` throws `MySqlClientError` when `ConnectionSettings.characterSet`
+  is not a utf8 or utf8mb4 collation. Parameters have been escaped on the
+  client since 0.21.0, which is only safe in those character sets: in GBK or
+  SJIS a crafted value can swallow the escape. The default,
+  `CharacterSet.UTF8MB4`, is unchanged.
+
+Fixed:
+* A `DATETIME`, `TIMESTAMP` or `DATE` in the hour the clocks skip for
+  daylight saving read an hour late when the process was in a time zone which
+  has it. Where the clocks went forward at midnight, as in America/Sao_Paulo
+  until 2019, that was every `DATE` on the day they did, which read as 01:00.
+* A transaction whose rollback fails throws the error which caused the
+  rollback, not the rollback's own failure. That is most often a query which
+  timed out: it closes the connection, and the rollback then threw "Cannot
+  write to socket, it is closed". The rollback's failure is logged.
+
 v0.22.0
 --
 
