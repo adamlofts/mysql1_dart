@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:mysql1/mysql1.dart' show MySqlException;
 import 'package:mysql1/src/constants.dart';
 import 'package:mysql1/src/query/query_response.dart';
+import 'package:mysql1/src/query/standard_data_packet.dart';
 import 'package:test/test.dart';
 
 import 'fake_server.dart';
@@ -121,6 +122,15 @@ void main() {
     expect(row.toColumnMap(), equals({'n': 1, 'm': null}));
     expect(row.isSqlNull(0), isFalse);
     expect(row.isSqlNull(1), isTrue);
+  });
+
+  // Parsed as local time, a time in the hour a daylight saving change skips
+  // came back an hour later. Run with TZ=Europe/Bucharest to see it fail.
+  test('a datetime is read as UTC whatever the local time zone', () {
+    expect(StandardDataPacket.parseDateTimeInUtc('2026-03-29 03:30:00.5'),
+        equals(DateTime.utc(2026, 3, 29, 3, 30, 0, 500)));
+    expect(StandardDataPacket.parseDateTimeInUtc('2026-03-29'),
+        equals(DateTime.utc(2026, 3, 29)));
   });
 
   test('an error', () async {
