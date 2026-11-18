@@ -114,8 +114,17 @@ void main() {
       expect(sqlLiteral('テスト 💯'), equals("'テスト 💯'"));
     });
 
-    test('a value which is not a known type is stringified', () {
+    test('a Duration and a BigInt are written as strings', () {
       expect(sqlLiteral(Duration(seconds: 1)), equals("'0:00:01.000000'"));
+      expect(sqlLiteral(BigInt.parse('18446744073709551615')),
+          equals("'18446744073709551615'"));
+    });
+
+    test('a value which is not a known type throws', () {
+      // Stringified, ['a', 'b'] would be the literal '[a, b]'.
+      expect(() => sqlLiteral(['a', 'b']), throwsA(isA<MySqlClientError>()));
+      expect(() => sqlLiteral({'a': 1}), throwsA(isA<MySqlClientError>()));
+      expect(() => sqlLiteral(Object()), throwsA(isA<MySqlClientError>()));
     });
 
     test('DateTime', () {

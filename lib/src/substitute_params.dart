@@ -122,7 +122,12 @@ String sqlLiteral(Object? value) {
   if (value is Blob) {
     return _bytesLiteral(value.toBytes());
   }
-  return _stringLiteral(value.toString());
+  if (value is String || value is BigInt || value is Duration) {
+    return _stringLiteral(value.toString());
+  }
+  // Anything else stringified - a list of ids for IN (?), say - would match
+  // nothing, and under NOT IN every row.
+  throw MySqlClientError('A ${value.runtimeType} has no SQL literal form');
 }
 
 String _stringLiteral(String value) {
