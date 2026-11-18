@@ -56,7 +56,10 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         sdk: [stable, 3.0.0]
-        timezone: ["UTC", "Asia/Singapore"]
+        # Europe/Bucharest is ahead of UTC and has daylight saving, so a value
+        # read as local time rather than UTC fails here, including in the hour
+        # the clocks skip, which a zone with no daylight saving cannot show.
+        timezone: ["UTC", "Europe/Bucharest"]
         mysql: ["mysql:5.7", "mysql:8", "mysql:9"]
         password: [""]
         include:
