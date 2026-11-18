@@ -153,6 +153,18 @@ void main() {
     expect(response.decodeRows().map((r) => r[0]), equals([7]));
   });
 
+  // A double cannot hold it: it would read as 12345678901234568.0.
+  test('a decimal is read as its exact text', () async {
+    final response = await query([
+      [1],
+      _field('d', ColumnType.newDecimal.code),
+      _eof(),
+      _row(['12345678901234567.89']),
+      _eof(),
+    ]);
+    expect(response.decodeRows().single[0], equals('12345678901234567.89'));
+  });
+
   group('a row which cannot be decoded', () {
     test('is read like any other', () async {
       await query(_resultSet(['1', 'abc', '2']));
