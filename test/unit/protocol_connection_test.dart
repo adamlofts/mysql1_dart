@@ -4,7 +4,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:io';
 
-import 'package:mysql1/mysql1.dart' show MySqlClientError, MySqlException;
+import 'package:mysql1/mysql1.dart'
+    show MySqlClientError, MySqlConnection, MySqlException;
 import 'package:mysql1/src/mysql_exception.dart';
 import 'package:test/test.dart';
 
@@ -136,5 +137,19 @@ void main() {
     server.hangUp();
     await expectLater(exchange, throwsA(isA<SocketException>()));
     expect(client.isClosed, isTrue);
+  });
+
+  test('a rollback which fails does not hide the error which caused it',
+      () async {
+    final conn = MySqlConnection(_timeout, server.client);
+    final transaction = conn.transaction<void>((_) async {
+      server.hangUp();
+      throw const FormatException('the real error');
+    });
+    await server.nextRequest(); // start transaction
+    server.send([
+      [0, 0, 0, 2, 0, 0, 0] // ok
+    ]);
+    await expectLater(transaction, throwsA(isA<FormatException>()));
   });
 }
