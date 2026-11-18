@@ -77,11 +77,10 @@ class StandardDataPacket extends ResultRow {
       ColumnType.longLong ||
       ColumnType.year =>
         int.parse(utf8.decode(list)),
-      // decimal, float, double
-      ColumnType.newDecimal ||
-      ColumnType.float ||
-      ColumnType.double =>
-        double.parse(utf8.decode(list)),
+      // decimal as its exact text: a double cannot hold every decimal value
+      ColumnType.newDecimal => utf8.decode(list),
+      // float, double
+      ColumnType.float || ColumnType.double => double.parse(utf8.decode(list)),
       // bit, big endian over as many bytes as the declared width needs
       ColumnType.bit => list.fold<int>(0, (value, byte) => (value << 8) + byte),
       // date, datetime, timestamp
