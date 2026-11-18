@@ -25,8 +25,14 @@ Breaking:
   It used to be written as its `toString()`, so a list of strings passed for
   `IN (?)` became the one string `'[a, b]'` and matched nothing, and under
   `NOT IN` matched every row. The types still written are `int`, `double`,
-  `bool`, `String`, `DateTime`, `Duration`, `BigInt`, `Blob` and `List<int>`,
-  which is bytes.
+  `bool`, `String`, `DateTime`, `Duration`, `BigInt`, and bytes.
+* Bytes are a `Uint8List` or a `Blob`. Any other list throws, a `List<int>`
+  included, so wrap one in `Uint8List.fromList` or `Blob.fromBytes`. A
+  `List<int>` used to be written as a hex literal, which MySQL compares with
+  a number as a number, so a list of ids passed for `IN (?)` matched the
+  wrong row: `[1, 2]` became `X'0102'` and matched id 258. A one-element list
+  of a value up to 255, such as `[3]`, matched 3 by coincidence, and that is
+  code this breaks: write `= ?`, or one `?` per value.
 * `connect` throws `MySqlClientError` when `ConnectionSettings.characterSet`
   is not a utf8 or utf8mb4 collation. Parameters have been escaped on the
   client since 0.21.0, which is only safe in those character sets: in GBK or
