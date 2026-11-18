@@ -4,7 +4,7 @@ Changelog
 v0.23.0
 --
 
-Unreleased
+18 Nov 2026
 
 A `DECIMAL` is now read as a `String` holding the exact value the server
 sent, rather than a `double`. A double cannot hold every decimal value:
