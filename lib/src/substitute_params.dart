@@ -1,5 +1,7 @@
 library mysql1.substitute_params;
 
+import 'dart:typed_data';
+
 import 'blob.dart';
 import 'mysql_client_error.dart';
 
@@ -97,6 +99,9 @@ List<int> _findPlaceholders(String sql) {
 /// packet, and they keep the same contract - in particular a [DateTime] must
 /// be in UTC. It is written with its fractional seconds when it has any, which
 /// the server rounds to the precision of the column.
+///
+/// Bytes are a [Uint8List] or a [Blob]. Any other list throws, a `List<int>`
+/// included, so that a list of ids given for `IN (?)` is not taken for bytes.
 String sqlLiteral(Object? value) {
   if (value == null) {
     return 'NULL';
@@ -116,7 +121,7 @@ String sqlLiteral(Object? value) {
   if (value is bool) {
     return value ? '1' : '0';
   }
-  if (value is List<int>) {
+  if (value is Uint8List) {
     return _bytesLiteral(value);
   }
   if (value is Blob) {
@@ -125,8 +130,13 @@ String sqlLiteral(Object? value) {
   if (value is String || value is BigInt || value is Duration) {
     return _stringLiteral(value.toString());
   }
-  // Anything else stringified - a list of ids for IN (?), say - would match
-  // nothing, and under NOT IN every row.
+  // A list of ids for IN (?) is one value, not several. Stringified it matched
+  // nothing. Taken for bytes it was a hex literal, which MySQL compares with a
+  // number as a number, so [1, 2] matched id 258.
+  if (value is List) {
+    throw MySqlClientError('A ${value.runtimeType} has no SQL literal form. '
+        'Pass bytes as a Uint8List or a Blob, and for IN write one ? per value');
+  }
   throw MySqlClientError('A ${value.runtimeType} has no SQL literal form');
 }
 

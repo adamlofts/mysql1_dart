@@ -1,5 +1,7 @@
 library mysql1.substitute_params_test;
 
+import 'dart:typed_data';
+
 import 'package:mysql1/mysql1.dart';
 import 'package:mysql1/src/substitute_params.dart';
 
@@ -145,24 +147,41 @@ void main() {
     });
 
     test('bytes become a hex literal', () {
-      expect(sqlLiteral([65, 66, 67, 68]), equals("X'41424344'"));
+      expect(sqlLiteral(Uint8List.fromList([65, 66, 67, 68])),
+          equals("X'41424344'"));
       expect(
           sqlLiteral(Blob.fromBytes([65, 66, 67, 68])), equals("X'41424344'"));
     });
 
     test('bytes which are not valid utf8 become a hex literal', () {
-      expect(sqlLiteral([0xc3, 0x28]), equals("X'c328'"));
+      expect(sqlLiteral(Uint8List.fromList([0xc3, 0x28])), equals("X'c328'"));
     });
 
     test('empty bytes become an empty string', () {
       // X'' is not valid syntax.
-      expect(sqlLiteral(<int>[]), equals("''"));
+      expect(sqlLiteral(Uint8List(0)), equals("''"));
       expect(sqlLiteral(Blob.fromBytes([])), equals("''"));
     });
 
-    test('a list which is not bytes throws', () {
-      expect(() => sqlLiteral([256]), throwsA(isA<MySqlClientError>()));
-      expect(() => sqlLiteral([-1]), throwsA(isA<MySqlClientError>()));
+    // Taken for bytes, [1, 2] was X'0102', which MySQL compares with a number
+    // as 258: IN (?) matched id 258, not 1 and 2.
+    test('a list of ints which is not a Uint8List throws', () {
+      final throwsWithHint = throwsA(isA<MySqlClientError>()
+          .having((e) => e.message, 'message', contains('Uint8List')));
+      expect(() => sqlLiteral([1, 2]), throwsWithHint);
+      expect(() => sqlLiteral(<int>[]), throwsWithHint);
+      expect(
+          () => substituteParams('select * from t where id in (?)', [
+                [1, 2]
+              ]),
+          throwsWithHint);
+    });
+
+    test('a Blob which holds a value that is not a byte throws', () {
+      expect(() => sqlLiteral(Blob.fromBytes([256])),
+          throwsA(isA<MySqlClientError>()));
+      expect(() => sqlLiteral(Blob.fromBytes([-1])),
+          throwsA(isA<MySqlClientError>()));
     });
   });
 }
