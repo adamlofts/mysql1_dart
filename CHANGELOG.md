@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Unreleased
+--
+
+The driver can be used from Flutter web. A browser cannot open a TCP socket,
+so the connection is carried over a WebSocket to `bin/mysql_bridge.dart`,
+which opens the database connection. `ConnectionSettings.bridgeUrl` and
+`bridgeToken` select it. `useSSL` is not available on that path. The bridge
+dials only the host it was configured with.
+
+On a server, on Flutter mobile and on the desktop, a connection with no
+`bridgeUrl` is unchanged.
+
 v0.23.0
 --
 

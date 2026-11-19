@@ -1,8 +1,9 @@
 library mysql1.packet_stream;
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
+
+import 'net/io_types.dart';
 
 /// The most a single packet on the wire can carry. A longer payload is split
 /// into packets of exactly this size followed by a shorter one - an empty one,

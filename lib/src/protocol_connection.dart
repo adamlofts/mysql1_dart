@@ -1,7 +1,6 @@
 library mysql1.protocol_connection;
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:pool/pool.dart';
@@ -9,6 +8,9 @@ import 'package:pool/pool.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'mysql_protocol_error.dart';
+import 'net/byte_channel.dart';
+import 'net/connector.dart';
+import 'net/io_types.dart';
 import 'packet_stream.dart';
 
 /// The connection to the server, as something which packets are sent to and
@@ -20,7 +22,7 @@ import 'packet_stream.dart';
 /// [send] and reads with [poll] and [next], as ordinary sequential code, and
 /// nothing else can use the connection until it is done.
 class ProtocolConnection {
-  Socket _socket;
+  final ByteChannel _channel;
   late PacketSplitter _splitter;
   late PacketReader _reader;
   final int _maxPacketSize;
@@ -38,32 +40,32 @@ class ProtocolConnection {
 
   bool _closed = false;
 
-  ProtocolConnection(this._socket, this._maxPacketSize) {
+  ProtocolConnection(this._channel, this._maxPacketSize) {
     _listen();
   }
 
   static Future<ProtocolConnection> connect(
       String host, int port, Duration timeout, int maxPacketSize,
-      {bool isUnixSocket = false}) async {
-    final Socket socket;
-    if (isUnixSocket) {
-      socket = await Socket.connect(
-          InternetAddress(host, type: InternetAddressType.unix), port,
-          timeout: timeout);
-    } else {
-      socket = await Socket.connect(host, port, timeout: timeout);
-      socket.setOption(SocketOption.tcpNoDelay, true);
-    }
-    return ProtocolConnection(socket, maxPacketSize);
+      {bool isUnixSocket = false,
+      String? bridgeUrl,
+      String? bridgeToken}) async {
+    final channel = await openByteChannel(
+        host: host,
+        port: port,
+        timeout: timeout,
+        isUnixSocket: isUnixSocket,
+        bridgeUrl: bridgeUrl,
+        bridgeToken: bridgeToken);
+    return ProtocolConnection(channel, maxPacketSize);
   }
 
   void _listen() {
     final splitter = _splitter = PacketSplitter();
-    final reader = _reader = PacketReader(splitter.bind(_socket));
-    // A write which fails is reported on the socket's done future and nowhere
+    final reader = _reader = PacketReader(splitter.bind(_channel.stream));
+    // A write which fails is reported on the channel's done future and nowhere
     // else. Whoever sent it is by then waiting for the reply, so that is who
     // is told.
-    _socket.done.catchError(reader.fail);
+    _channel.done.catchError(reader.fail);
   }
 
   bool get isClosed => _closed;
@@ -108,11 +110,11 @@ class ProtocolConnection {
     final (bytes, sequenceId) = encodePackets(payload, _sequenceId + 1);
     _sequenceId = sequenceId;
     _sent = true;
-    _socket.add(bytes);
+    _channel.add(bytes);
   }
 
-  /// Wait until everything sent has been handed to the operating system.
-  Future<void> flush() => _socket.flush();
+  /// Wait until everything sent has been handed on.
+  Future<void> flush() => _channel.flush();
 
   /// The next packet of the response if it has already arrived, and null if
   /// not. `poll() ?? await next()` avoids a trip round the event loop for a
@@ -153,7 +155,7 @@ class ProtocolConnection {
       throw createMySqlProtocolError(
           'The server sent more before TLS was started than was read');
     }
-    _socket = await SecureSocket.secure(_socket,
+    await _channel.startTls(
         host: host, context: context, onBadCertificate: onBadCertificate);
     _listen();
   }
@@ -166,6 +168,6 @@ class ProtocolConnection {
     }
     _closed = true;
     _reader.close();
-    _socket.destroy();
+    _channel.destroy();
   }
 }

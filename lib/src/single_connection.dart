@@ -3,7 +3,6 @@ library mysql1.connection;
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:logging/logging.dart';
@@ -11,6 +10,9 @@ import 'package:logging/logging.dart';
 import 'handshake.dart';
 import 'constants.dart';
 import 'mysql_client_error.dart';
+import 'net/io_types.dart';
+import 'net/platform.dart';
+import 'net/web_guard.dart';
 import 'protocol_connection.dart';
 import 'query/query_response.dart';
 import 'results/field.dart';
@@ -29,6 +31,10 @@ class ConnectionSettings {
 
   /// Whether to connect over TLS. If the server cannot, the connection fails:
   /// it is not made without.
+  ///
+  /// Not available through [bridgeUrl], or from the browser. MySQL upgrades a
+  /// connection it has already opened, and a page has no way to do that
+  /// upgrade. See [bridgeUrl].
   bool useSSL;
 
   /// The certificates to trust when [useSSL] is set. The system's roots if
@@ -71,6 +77,32 @@ class ConnectionSettings {
   /// The timeout for connecting to the database and for all database operations.
   Duration timeout;
 
+  /// The WebSocket URL of a mysql1 bridge (`ws://` or `wss://`, path `/mysql`).
+  ///
+  /// The browser cannot open a TCP socket, so a Flutter web app cannot connect
+  /// to [host] and [port] itself. Set this to a bridge started from
+  /// `bin/mysql_bridge.dart`. The bridge opens the database connection, to the
+  /// host it was configured with, and carries the protocol bytes. [host] and
+  /// [port] are not sent to it and do not choose the database: a page that
+  /// could name the address could point the bridge at any host it can reach.
+  ///
+  /// Leave this null on a server, on Flutter mobile and on the desktop. The
+  /// driver then connects to [host] and [port] directly, as before.
+  ///
+  /// The URL is part of the built web app. Use `wss://` whenever the page is
+  /// not served from the same machine as the bridge. A page served over HTTPS
+  /// cannot open a `ws://` URL.
+  String? bridgeUrl;
+
+  /// The secret [bridgeUrl] checks before it opens the database connection.
+  ///
+  /// It has to be the bridge's `MYSQL_BRIDGE_TOKEN`. It is required whenever
+  /// [bridgeUrl] is set, and on every connection from the browser. It is part
+  /// of the built web app, as are [user] and [password]: anyone who can load
+  /// the app can read all three and connect through the bridge. The database
+  /// user should only be able to do what that app does.
+  String? bridgeToken;
+
   ConnectionSettings(
       {this.host = 'localhost',
       this.port = 3306,
@@ -83,7 +115,9 @@ class ConnectionSettings {
       this.serverPublicKey,
       this.maxPacketSize = 16 * 1024 * 1024,
       this.timeout = const Duration(seconds: 30),
-      this.characterSet = CharacterSet.UTF8MB4});
+      this.characterSet = CharacterSet.UTF8MB4,
+      this.bridgeUrl,
+      this.bridgeToken});
 
   factory ConnectionSettings.socket(
           {required String path,
@@ -122,7 +156,9 @@ class ConnectionSettings {
         serverPublicKey = o.serverPublicKey,
         maxPacketSize = o.maxPacketSize,
         timeout = o.timeout,
-        characterSet = o.characterSet;
+        characterSet = o.characterSet,
+        bridgeUrl = o.bridgeUrl,
+        bridgeToken = o.bridgeToken;
 }
 
 /// Represents a connection to the database. Use [connect] to open a connection. You
@@ -170,17 +206,33 @@ class MySqlConnection {
   /// socket.
   /// A [TimeoutException] is thrown if there is a timeout in the handshake with the
   /// server.
+  ///
+  /// From the browser, or whenever [ConnectionSettings.bridgeUrl] is set, the
+  /// bytes are carried over that WebSocket instead of a socket opened here.
+  /// [ConnectionSettings.host] is then not the address that gets dialed.
   static Future<MySqlConnection> connect(ConnectionSettings c,
       {bool isUnixSocket = false}) async {
-    _log.fine('opening connection to ${c.host}:${c.port}/${c.db}');
+    final bridge = c.bridgeUrl;
+    _log.fine(bridge == null || bridge.isEmpty
+        ? 'opening connection to ${c.host}:${c.port}/${c.db}'
+        : 'opening connection to ${c.db} through bridge $bridge');
     if (!CharacterSet.isUtf8(c.characterSet)) {
       throw MySqlClientError('Character set ${c.characterSet} is not a utf8 '
           'or utf8mb4 collation, which parameters need to be escaped safely');
     }
+    if (isBrowser || (bridge != null && bridge.isNotEmpty)) {
+      requireBridge(
+          isUnixSocket: isUnixSocket,
+          useSSL: c.useSSL,
+          bridgeUrl: bridge,
+          bridgeToken: c.bridgeToken);
+    }
 
     final conn = await ProtocolConnection.connect(
         c.host, c.port, c.timeout, c.maxPacketSize,
-        isUnixSocket: isUnixSocket);
+        isUnixSocket: isUnixSocket,
+        bridgeUrl: c.bridgeUrl,
+        bridgeToken: c.bridgeToken);
     try {
       await conn.exchange(
           () => handshake(conn,

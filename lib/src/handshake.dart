@@ -1,7 +1,6 @@
 library mysql1.handshake;
 
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -9,6 +8,7 @@ import 'package:crypto/crypto.dart';
 
 import 'constants.dart';
 import 'mysql_client_error.dart';
+import 'net/io_types.dart';
 import 'mysql_exception.dart';
 import 'payload.dart';
 import 'protocol_connection.dart';

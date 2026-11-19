@@ -92,4 +92,53 @@ into a scan.
 Flutter Web
 -----------
 
-This package opens a socket to the database. The web platform does not support sockets and so this package does not work on flutter web.
+A page cannot open a TCP socket, so it cannot connect to MySQL's port on its
+own. No change in this package removes that: browsers withhold raw sockets on
+purpose, and a web app which could open port 3306 could also open every other
+port of every machine the user can reach. The protocol code is the same. On
+the web those bytes are carried over a WebSocket to a bridge, and the bridge
+is what opens the database connection.
+
+The bridge connects only to the host it was started with. The page does not
+get to choose the address.
+
+```
+MYSQL_BRIDGE_TOKEN   required, at least 16 characters
+MYSQL_HOST           default 127.0.0.1
+MYSQL_PORT           default 3306
+MYSQL_BRIDGE_BIND    default 127.0.0.1
+MYSQL_BRIDGE_PORT    default 8080
+MYSQL_BRIDGE_ORIGIN  if set, the only Origin which is upgraded
+```
+
+```
+dart run mysql1:mysql_bridge
+```
+
+From Flutter web:
+
+```dart
+var conn = await MySqlConnection.connect(ConnectionSettings(
+  user: 'bob',
+  password: 'wibble',
+  db: 'mydb',
+  bridgeUrl: 'ws://localhost:8080/mysql',
+  bridgeToken: 'a long random secret',
+));
+```
+
+`useSSL` stays off on that connection. The browser cannot perform MySQL's TLS
+upgrade. Use `wss://` when the bridge is not on the same machine as the
+browser. A page served with HTTPS cannot open a `ws://` URL. An account using
+`caching_sha2_password` which has not logged in from the bridge's address
+before needs `serverPublicKey`, because the password would otherwise have to
+travel inside MySQL's TLS upgrade.
+
+`user`, `password` and `bridgeToken` are part of the built web app. Anyone
+who can load the app can read them and use the bridge. Give that database
+user only what the app needs, and leave the bridge on loopback unless the
+people who can open it are the people who should be able to log in.
+
+On a server, on Flutter mobile and on the desktop, `connect` still opens a
+socket to `host` and `port`. `bridgeUrl` is not required there. Setting it
+uses the bridge from those targets too.
